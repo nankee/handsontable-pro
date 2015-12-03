@@ -1,0 +1,26 @@
+/*!
+ * Handsontable HiddenRows
+ */
+.handsontable th.beforeHiddenRow::after,
+.handsontable th.afterHiddenRow::before {
+  color: #bbb;
+  font-size: 6pt;
+  position: absolute;
+  left: 1px;
+}
+
+.handsontable th.beforeHiddenRow,
+.handsontable th.afterHiddenRow {
+  position: relative;
+}
+
+.handsontable th.beforeHiddenRow::after {
+  content: '▲';
+  bottom: -6px;
+}
+
+.handsontable th.afterHiddenRow::before {
+  content: '▼';
+  top: -5px;
+}
+

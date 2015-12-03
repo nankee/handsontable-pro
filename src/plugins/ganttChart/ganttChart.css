@@ -1,0 +1,162 @@
+.handsontable.ganttChart td:not(.rangeBar) {
+    border: 0;
+    border-right: 1px solid #F3F3F3;
+    border-top: 1px solid #F1EAEA;
+}
+
+.handsontable.ganttChart td.rangeBar {
+    border-right: 0;
+    /*border-top: 3px solid #fff;*/
+    -webkit-box-shadow: inset 0px 3px 0px 0px rgba(255,255,255,1);
+    -moz-box-shadow: inset 0px 3px 0px 0px rgba(255,255,255,1);
+    box-shadow: inset 0px 3px 0px 0px rgba(255,255,255,1);
+}
+
+.handsontable.ganttChart tbody tr th {
+    padding-top: 3px;
+}
+
+.handsontable.ganttChart tr:first-of-type td {
+    border-top: 1px solid #CCC;
+}
+
+.handsontable.ganttChart tr td:first-of-type {
+    border-left: 1px solid #CCC;
+}
+
+.handsontable.ganttChart td.rangeBar.color-1 {
+    background: #002F32
+}
+
+.handsontable.ganttChart td.rangeBar.color-1.partial {
+    background: #00464a
+}
+
+.handsontable.ganttChart td.rangeBar.color-2 {
+    background: #42826C
+}
+
+.handsontable.ganttChart td.rangeBar.color-2.partial {
+    background: #5bb394
+}
+
+.handsontable.ganttChart td.rangeBar.color-3 {
+    background: #A5C77F
+}
+
+.handsontable.ganttChart td.rangeBar.color-3.partial {
+    background: #d0faa0
+}
+
+.handsontable.ganttChart td.rangeBar.color-4 {
+    background: #FFC861
+}
+
+.handsontable.ganttChart td.rangeBar.color-4.partial {
+    background: #ffe272
+}
+
+.handsontable.ganttChart td.rangeBar.color-5 {
+    background: #C84663
+}
+
+.handsontable.ganttChart td.rangeBar.color-5.partial {
+    background: #fa577d
+}
+
+.handsontable.ganttChart td.rangeBar.color-6 {
+    background: #5A1F00
+}
+
+.handsontable.ganttChart td.rangeBar.color-6.partial {
+    background: #8c2f00
+}
+
+.handsontable.ganttChart td.rangeBar.color-7 {
+    background: #D1570D
+}
+
+.handsontable.ganttChart td.rangeBar.color-7.partial {
+    background: #ff6912
+}
+
+.handsontable.ganttChart td.rangeBar.color-8 {
+    background: #FDE792
+}
+
+.handsontable.ganttChart td.rangeBar.color-8.partial {
+    background: #fdf5ad
+}
+
+.handsontable.ganttChart td.rangeBar.color-9 {
+    background: #477725
+}
+
+.handsontable.ganttChart td.rangeBar.color-9.partial {
+    background: #66a836
+}
+
+.handsontable.ganttChart td.rangeBar.color-10 {
+    background: #A9CC66
+}
+
+.handsontable.ganttChart td.rangeBar.color-10.partial {
+    background: #b7cc89
+}
+
+/*.rangeBar.red {*/
+/*background: #b71700;*/
+/*}*/
+/*.rangeBar.red.partial {*/
+/*background: #ff6162;*/
+/*}*/
+
+.handsontable.ganttChart td.rangeBar.color-green {
+    background: #48b703;
+}
+
+.handsontable.ganttChart td.rangeBar.color-green.partial {
+    background: #8edf5a;
+}
+
+/*.rangeBar.blue {*/
+/*background: #1a46b7;*/
+/*}*/
+/*.rangeBar.blue.partial {*/
+/*background: #6294ea;*/
+/*}*/
+
+/*.rangeBar.yellow {*/
+/*background: #e9dd00;*/
+/*}*/
+/*.rangeBar.yellow.partial {*/
+/*background: #f4f272;*/
+/*}*/
+
+/*.rangeBar.pink {*/
+/*background: #e869e2;*/
+/*}*/
+/*.rangeBar.pink.partial {*/
+/*background: #e8afe8;*/
+/*}*/
+
+/*.rangeBar.orange {*/
+/*background: #e8811b;*/
+/*}*/
+/*.rangeBar.orange.partial {*/
+/*background: #e8a45c;*/
+/*}*/
+
+/*.rangeBar.violet {*/
+/*background: #9730e8;*/
+/*}*/
+/*.rangeBar.violet.partial {*/
+/*background: #c482e8;*/
+/*}*/
+
+/*.rangeBar.lightblue {*/
+/*background: #10cce8;*/
+/*}*/
+/*.rangeBar.lightblue.partial {*/
+/*background: #89d2e8;*/
+/*}*/
