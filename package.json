@@ -4,7 +4,7 @@
   "homepage": "http://handsontable.com/",
   "repository": {
     "type": "git",
-    "url": "https://git.handsontable.com/handsontable/handsontable-pro.git"
+    "url": "https://my.handsontable.com/handsontable/handsontable-pro.git"
   },
   "author": "Handsoncode <hello@handsontable.com>",
   "version": "1.0.0-beta1",
