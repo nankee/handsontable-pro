@@ -29,7 +29,8 @@
   "ignore": [
     "**/.*",
     "node_modules",
-    "src"
+    "src",
+    "test"
   ],
   "dependencies": {
     "zeroclipboard": "2.2.0",
