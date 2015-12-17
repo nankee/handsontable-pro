@@ -22,7 +22,7 @@ import {RowsMapper} from './rowsMapper';
  * // Access to trimRows plugin instance:
  * var trimRowsPlugin = hot.getPlugin('trimRows');
  *
- * // Show row programmatically:
+ * // Hide row programmatically:
  * trimRowsPlugin.trimRow(1);
  * // Show rows
  * trimRowsPlugin.trimRow(1, 2, 9);
@@ -30,7 +30,7 @@ import {RowsMapper} from './rowsMapper';
  * trimRowsPlugin.trimRows([1, 2, 9]);
  * hot.render();
  * ...
- * // Hide row programmatically:
+ * // Show row programmatically:
  * trimRowsPlugin.untrimRow(1);
  * // Hide rows
  * trimRowsPlugin.untrimRow(1, 2, 9);
