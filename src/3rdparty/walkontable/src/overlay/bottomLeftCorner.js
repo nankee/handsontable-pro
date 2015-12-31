@@ -79,7 +79,9 @@ class WalkontableBottomLeftCornerOverlay extends WalkontableOverlay {
       finalBottom = finalBottom + 'px';
       finalLeft = finalLeft + 'px';
 
-      setOverlayPosition(overlayRoot, finalLeft, null, finalBottom);
+      overlayRoot.style.top = '';
+      overlayRoot.style.left = finalLeft;
+      overlayRoot.style.bottom = finalBottom;
 
     } else {
       this.repositionOverlay();

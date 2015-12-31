@@ -78,7 +78,9 @@ class WalkontableBottomOverlay extends WalkontableOverlay {
       headerPosition = finalBottom;
       finalBottom = finalBottom + 'px';
 
-      setOverlayPosition(overlayRoot, finalLeft, null, finalBottom);
+      overlayRoot.style.top = '';
+      overlayRoot.style.left = finalLeft;
+      overlayRoot.style.bottom = finalBottom;
 
     } else {
       headerPosition = this.getScrollPosition();
