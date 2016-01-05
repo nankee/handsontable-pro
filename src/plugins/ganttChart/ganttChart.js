@@ -10,6 +10,7 @@ import BasePlugin from 'handsontable/plugins/_base.js';
 
 /**
  * @plugin GanttChart
+ * @pro
  * @dependencies CollapsibleColumns
  *
  * @description

@@ -45,6 +45,25 @@ describe('Filters UI', function() {
     expect(document.querySelector('.htFiltersConditionsMenu.handsontable table')).not.toBeNull();
   });
 
+  it('should appear conditional options menu in the proper place after UISelect element click', function() {
+    var hot = handsontable({
+      data: getDataForFilters(),
+      columns: getColumnsForFilters(),
+      filters: true,
+      dropdownMenu: true,
+      width: 500,
+      height: 300
+    });
+    hot.rootElement.style.marginTop = '1000px';
+
+    dropdownMenu(1);
+    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+
+    var rect = document.querySelector('.htFiltersConditionsMenu.handsontable table').getBoundingClientRect();
+
+    expect(rect.top).toBeGreaterThan(500);
+  });
+
   it('should disappear conditional options menu after outside the table click', function() {
     var hot = handsontable({
       data: getDataForFilters(),

@@ -1,5 +1,5 @@
 import {BaseUI} from './_base';
-import {addClass} from 'handsontable/helpers/dom/element';
+import {addClass, getWindowScrollTop, getWindowScrollLeft} from 'handsontable/helpers/dom/element';
 import {Menu} from 'handsontable/plugins/contextMenu/menu';
 import {clone, extend} from 'handsontable/helpers/object';
 
@@ -101,8 +101,8 @@ class SelectUI extends BaseUI {
     if (this.menu) {
       this.menu.open();
       this.menu.setPosition({
-        left: rect.left - 5,
-        top: rect.top,
+        left: getWindowScrollLeft() + rect.left - 5,
+        top: getWindowScrollTop() + rect.top,
         width: rect.width,
         height: rect.height
       });
