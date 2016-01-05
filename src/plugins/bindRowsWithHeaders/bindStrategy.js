@@ -7,6 +7,7 @@ const strategies = {};
 /**
  * @class BindStrategy
  * @plugin BindRowsWithHeaders
+ * @private
  * @pro
  */
 class BindStrategy {
