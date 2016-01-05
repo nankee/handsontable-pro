@@ -157,8 +157,33 @@ class Filters extends BasePlugin {
   }
 
   /**
+   * @description
    * Add formula to the formulas collection at specified column index.
    *
+   * Possible predefined formulas:
+   *  * `begins_with` - Begins with
+   *  * `between` - Between
+   *  * `by_value` - By value
+   *  * `contains` - Contains
+   *  * `empty` - Empty
+   *  * `ends_with` - Ends with
+   *  * `eq` - Equal
+   *  * `gt` - Greater than
+   *  * `gte` - Greater than or equal
+   *  * `lt` - Less than
+   *  * `lte` - Less than or equal
+   *  * `none` - None (no filter)
+   *  * `not_between` - Not between
+   *  * `not_contains` - Not contains
+   *  * `not_empty` - Not empty
+   *  * `neq` - Not equal
+   *
+   * @example
+   * ```js
+   * // Add filter "Greater than" 95 to column at index 1
+   * hot.getPlugin('filters').addFormula(1, 'gt', [95]);
+   * hot.getPlugin('filters').filter();
+   * ```
    * @param {Number} column Column index.
    * @param {String} name Formula short name.
    * @param {Array} args Formula arguments.
