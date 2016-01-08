@@ -5,6 +5,7 @@ import {substitute, padStart} from 'handsontable/helpers/string';
 
 /**
  * @plugin ExportFile
+ * @private
  */
 class BaseType {
   /**

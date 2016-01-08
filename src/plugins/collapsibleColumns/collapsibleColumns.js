@@ -12,6 +12,7 @@ import {
   getPlugin
 } from 'handsontable/plugins';
 import {stopImmediatePropagation} from 'handsontable/helpers/dom/event';
+import {eventManager} from 'handsontable/eventManager';
 import BasePlugin from 'handsontable/plugins/_base';
 
 /**
@@ -85,6 +86,12 @@ class CollapsibleColumns extends BasePlugin {
      * @type {Number}
      */
     this.columnHeaderLevelCount = null;
+    /**
+     * Event manager instance reference.
+     *
+     * @type {EventManager}
+     */
+    this.eventManager = null;
 
   }
 
@@ -120,6 +127,8 @@ class CollapsibleColumns extends BasePlugin {
     this.addHook('afterInit', () => this.onAfterInit());
     this.addHook('afterGetColHeader', (col, TH) => this.onAfterGetColHeader(col, TH));
     this.addHook('beforeOnCellMouseDown', (event, coords, TD) => this.onBeforeOnCellMouseDown(event, coords, TD));
+
+    this.eventManager = eventManager(this.hot);
 
     super.enablePlugin();
   }
@@ -459,13 +468,13 @@ class CollapsibleColumns extends BasePlugin {
         }
 
         this.markSectionAs('collapsed', coords.row, coords.col, true);
-
+        this.eventManager.fireEvent(event.target, 'mouseup');
         this.toggleCollapsibleSection(coords, 'collapse');
 
       } else if (hasClass(event.target, 'collapsed')) {
 
         this.markSectionAs('expanded', coords.row, coords.col, true);
-
+        this.eventManager.fireEvent(event.target, 'mouseup');
         this.toggleCollapsibleSection(coords, 'expand');
       }
 

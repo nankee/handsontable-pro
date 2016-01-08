@@ -460,14 +460,24 @@ class NestedHeaders extends BasePlugin {
       let toCoords = wot.selections[1].cellRange ? wot.selections[1].cellRange.to : null;
       let highlightCoords = wot.selections[1].cellRange ? wot.selections[1].cellRange.highlight : null;
       let rowCount = this.hot.countRows();
+      let fromCoordsNestedParent = this.getNestedParent(this.rowCoordsToLevel(coords.row), fromCoords.col);
+      let rightColspan = this.getColspan(coords.row, toCoords.col);
 
       if (fromCoords === null || toCoords === null || highlightCoords === null) {
         return;
       }
 
       if (highlightCoords.col === toCoords.col && (toCoords.col !== fromCoords.col)) {
-        this.hot.selection.setRangeStart(new WalkontableCellCoords(0, toCoords.col + this.getColspan(coords.row, toCoords.col) - 1));
+        this.hot.selection.setRangeStart(new WalkontableCellCoords(0, toCoords.col + rightColspan - 1));
         this.hot.selection.setRangeEnd(new WalkontableCellCoords(rowCount - 1, fromCoords.col));
+
+      } else if (highlightCoords.col === fromCoords.col && (fromCoords.col !== fromCoordsNestedParent) && (toCoords.col !== fromCoords.col)) {
+        let currentLevel = this.rowCoordsToLevel(coords.row);
+        let leftSectionNestedParent = this.getNestedParent(currentLevel, toCoords.col - 1);
+        let leftColspan = this.getColspan(coords.row, leftSectionNestedParent);
+
+        this.hot.selection.setRangeStart(new WalkontableCellCoords(0, fromCoords.col - leftColspan + 1));
+        this.hot.selection.setRangeEnd(new WalkontableCellCoords(rowCount - 1, toCoords.col + rightColspan - 1));
 
       } else {
         this.hot.selection.setRangeEnd(new WalkontableCellCoords(rowCount - 1, coords.col + currentColspan - 1));

@@ -623,7 +623,9 @@ var $WalkontableViewportColumnsCalculator = WalkontableViewportColumnsCalculator
       this.stretchAllColumnsWidth = [];
       this.needVerifyLastColumnWidth = true;
     } else if (this.stretch === 'last' && totalWidth !== Infinity) {
-      this.stretchLastWidth = -remainingSize + this._getColumnWidth(totalColumns - 1);
+      var columnWidth$__1 = this._getColumnWidth(totalColumns - 1);
+      var lastColumnWidth = -remainingSize + columnWidth$__1;
+      this.stretchLastWidth = lastColumnWidth >= 0 ? lastColumnWidth : columnWidth$__1;
     }
   },
   getStretchedColumnWidth: function(column, baseWidth) {
@@ -1301,15 +1303,16 @@ function WalkontableEvent(instance) {
       }
     }, 30);
   };
-  var lastMouseOver;
   var onMouseOver = function(event) {
     var table,
-        td;
+        td,
+        mainWOT;
     if (that.instance.hasSetting('onCellMouseOver')) {
       table = that.instance.wtTable.TABLE;
       td = closest(event.realTarget, ['TD', 'TH'], table);
-      if (td && td !== lastMouseOver && isChildOf(td, table)) {
-        lastMouseOver = td;
+      mainWOT = that.instance.cloneSource || that.instance;
+      if (td && td !== mainWOT.lastMouseOver && isChildOf(td, table)) {
+        mainWOT.lastMouseOver = td;
         that.instance.getSetting('onCellMouseOver', event, that.instance.wtTable.getCoords(td), td, that.instance);
       }
     }
@@ -1513,13 +1516,13 @@ var WalkontableOverlay = function WalkontableOverlay(wotInstance) {
   defineGetter(this, 'wot', wotInstance, {writable: false});
   this.instance = this.wot;
   this.type = '';
+  this.mainTableScrollableElement = null;
   this.TABLE = this.wot.wtTable.TABLE;
   this.hider = this.wot.wtTable.hider;
   this.spreader = this.wot.wtTable.spreader;
   this.holder = this.wot.wtTable.holder;
   this.wtRootElement = this.wot.wtTable.wtRootElement;
   this.trimmingContainer = getTrimmingContainer(this.hider.parentNode.parentNode);
-  this.mainTableScrollableElement = getScrollableElement(this.wot.wtTable.TABLE);
   this.needFullRender = this.shouldBeRendered();
   this.areElementSizesAdjusted = false;
 };
@@ -1543,6 +1546,12 @@ var $WalkontableOverlay = WalkontableOverlay;
     clone.appendChild(clonedTable);
     this.type = direction;
     this.wot.wtTable.wtRootElement.parentNode.appendChild(clone);
+    var preventOverflow = this.wot.getSetting('preventOverflow');
+    if (preventOverflow === true || preventOverflow === 'horizontal' && this.type === $WalkontableOverlay.CLONE_TOP || preventOverflow === 'vertical' && this.type === $WalkontableOverlay.CLONE_LEFT) {
+      this.mainTableScrollableElement = window;
+    } else {
+      this.mainTableScrollableElement = getScrollableElement(this.wot.wtTable.TABLE);
+    }
     return new Walkontable({
       cloneSource: this.wot,
       cloneOverlay: this,
@@ -1645,6 +1654,7 @@ var $__0 = ($___46__46__47__46__46__47__46__46__47__46__46__47_helpers_47_dom_47
     getWindowScrollTop = $__0.getWindowScrollTop,
     hasClass = $__0.hasClass,
     outerWidth = $__0.outerWidth,
+    innerHeight = $__0.innerHeight,
     removeClass = $__0.removeClass,
     setOverlayPosition = $__0.setOverlayPosition;
 var WalkontableOverlay = ($___95_base__ = require("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).WalkontableOverlay;
@@ -1663,7 +1673,8 @@ var $WalkontableLeftOverlay = WalkontableLeftOverlay;
     }
     var overlayRoot = this.clone.wtTable.holder.parentNode;
     var headerPosition = 0;
-    if (this.trimmingContainer === window) {
+    var preventOverflow = this.wot.getSetting('preventOverflow');
+    if (this.trimmingContainer === window && (!preventOverflow || preventOverflow !== 'horizontal')) {
       var box = this.wot.wtTable.hider.getBoundingClientRect();
       var left = Math.ceil(box.left);
       var right = Math.ceil(box.right);
@@ -1719,9 +1730,12 @@ var $WalkontableLeftOverlay = WalkontableLeftOverlay;
     var scrollbarHeight = masterHolder.clientHeight === masterHolder.offsetHeight ? 0 : getScrollbarWidth();
     var overlayRoot = this.clone.wtTable.holder.parentNode;
     var overlayRootStyle = overlayRoot.style;
+    var preventOverflow = this.wot.getSetting('preventOverflow');
     var tableWidth;
-    if (this.trimmingContainer !== window) {
-      overlayRootStyle.height = this.wot.wtViewport.getWorkspaceHeight() - scrollbarHeight + 'px';
+    if (this.trimmingContainer !== window || preventOverflow === 'vertical') {
+      var height = this.wot.wtViewport.getWorkspaceHeight() - scrollbarHeight;
+      height = Math.min(height, innerHeight(this.wot.wtTable.wtRootElement));
+      overlayRootStyle.height = height + 'px';
     }
     this.clone.wtTable.holder.style.height = overlayRootStyle.height;
     tableWidth = outerWidth(this.clone.wtTable.TABLE);
@@ -1778,11 +1792,12 @@ var $WalkontableLeftOverlay = WalkontableLeftOverlay;
     this.setScrollPosition(newX);
   },
   getTableParentOffset: function() {
-    if (this.trimmingContainer === window) {
-      return this.wot.wtTable.holderOffset.left;
-    } else {
-      return 0;
+    var preventOverflow = this.wot.getSetting('preventOverflow');
+    var offset = 0;
+    if (!preventOverflow && this.trimmingContainer === window) {
+      offset = this.wot.wtTable.holderOffset.left;
     }
+    return offset;
   },
   getScrollPosition: function() {
     return getScrollLeft(this.mainTableScrollableElement);
@@ -1828,6 +1843,7 @@ var $__0 = ($___46__46__47__46__46__47__46__46__47__46__46__47_helpers_47_dom_47
     getWindowScrollLeft = $__0.getWindowScrollLeft,
     hasClass = $__0.hasClass,
     outerHeight = $__0.outerHeight,
+    innerWidth = $__0.innerWidth,
     removeClass = $__0.removeClass,
     setOverlayPosition = $__0.setOverlayPosition;
 var WalkontableOverlay = ($___95_base__ = require("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).WalkontableOverlay;
@@ -1846,7 +1862,8 @@ var $WalkontableTopOverlay = WalkontableTopOverlay;
     }
     var overlayRoot = this.clone.wtTable.holder.parentNode;
     var headerPosition = 0;
-    if (this.wot.wtOverlays.leftOverlay.trimmingContainer === window) {
+    var preventOverflow = this.wot.getSetting('preventOverflow');
+    if (this.trimmingContainer === window && (!preventOverflow || preventOverflow !== 'vertical')) {
       var box = this.wot.wtTable.hider.getBoundingClientRect();
       var top = Math.ceil(box.top);
       var bottom = Math.ceil(box.bottom);
@@ -1903,9 +1920,12 @@ var $WalkontableTopOverlay = WalkontableTopOverlay;
     var scrollbarWidth = masterHolder.clientWidth === masterHolder.offsetWidth ? 0 : getScrollbarWidth();
     var overlayRoot = this.clone.wtTable.holder.parentNode;
     var overlayRootStyle = overlayRoot.style;
+    var preventOverflow = this.wot.getSetting('preventOverflow');
     var tableHeight;
-    if (this.trimmingContainer !== window) {
-      overlayRootStyle.width = this.wot.wtViewport.getWorkspaceWidth() - scrollbarWidth + 'px';
+    if (this.trimmingContainer !== window || preventOverflow === 'horizontal') {
+      var width = this.wot.wtViewport.getWorkspaceWidth() - scrollbarWidth;
+      width = Math.min(width, innerWidth(this.wot.wtTable.wtRootElement));
+      overlayRootStyle.width = width + 'px';
     }
     this.clone.wtTable.holder.style.width = overlayRootStyle.width;
     tableHeight = outerHeight(this.clone.wtTable.TABLE);
@@ -1979,7 +1999,7 @@ var $WalkontableTopOverlay = WalkontableTopOverlay;
     if (this.wot.getSetting('fixedRowsTop') === 0 && this.wot.getSetting('columnHeaders').length > 0) {
       var masterParent = this.wot.wtTable.holder.parentNode;
       var previousState = hasClass(masterParent, 'innerBorderTop');
-      if (position) {
+      if (position || this.wot.getSetting('totalRows') === 0) {
         addClass(masterParent, 'innerBorderTop');
       } else {
         removeClass(masterParent, 'innerBorderTop');
@@ -2034,23 +2054,24 @@ var $WalkontableTopLeftCornerOverlay = WalkontableTopLeftCornerOverlay;
     var overlayRoot = this.clone.wtTable.holder.parentNode;
     var tableHeight = outerHeight(this.clone.wtTable.TABLE);
     var tableWidth = outerWidth(this.clone.wtTable.TABLE);
+    var preventOverflow = this.wot.getSetting('preventOverflow');
     if (this.trimmingContainer === window) {
       var box = this.wot.wtTable.hider.getBoundingClientRect();
       var top = Math.ceil(box.top);
       var left = Math.ceil(box.left);
       var bottom = Math.ceil(box.bottom);
       var right = Math.ceil(box.right);
-      var finalLeft;
-      var finalTop;
-      if (left < 0 && (right - overlayRoot.offsetWidth) > 0) {
-        finalLeft = -left + 'px';
-      } else {
-        finalLeft = '0';
+      var finalLeft = '0';
+      var finalTop = '0';
+      if (!preventOverflow || preventOverflow === 'vertical') {
+        if (left < 0 && (right - overlayRoot.offsetWidth) > 0) {
+          finalLeft = -left + 'px';
+        }
       }
-      if (top < 0 && (bottom - overlayRoot.offsetHeight) > 0) {
-        finalTop = -top + 'px';
-      } else {
-        finalTop = '0';
+      if (!preventOverflow || preventOverflow === 'horizontal') {
+        if (top < 0 && (bottom - overlayRoot.offsetHeight) > 0) {
+          finalTop = -top + 'px';
+        }
       }
       setOverlayPosition(overlayRoot, finalLeft, finalTop);
     }
@@ -2087,7 +2108,7 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
   this.eventManager = new EventManager(this.wot);
   this.wot.update('scrollbarWidth', getScrollbarWidth());
   this.wot.update('scrollbarHeight', getScrollbarWidth());
-  this.mainTableScrollableElement = getScrollableElement(this.wot.wtTable.TABLE);
+  this.scrollableElement = getScrollableElement(this.wot.wtTable.TABLE);
   this.topOverlay = WalkontableOverlay.createOverlay(WalkontableOverlay.CLONE_TOP, this.wot);
   if (typeof WalkontableBottomOverlay === 'undefined') {
     this.bottomOverlay = {needFullRender: false};
@@ -2165,9 +2186,16 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
     this.eventManager.addEventListener(document, 'visibilitychange', (function() {
       return $__3.onKeyUp();
     }));
-    this.eventManager.addEventListener(this.mainTableScrollableElement, 'scroll', (function(event) {
+    var topOverlayScrollable = this.topOverlay.mainTableScrollableElement;
+    var leftOverlayScrollable = this.leftOverlay.mainTableScrollableElement;
+    this.eventManager.addEventListener(topOverlayScrollable, 'scroll', (function(event) {
       return $__3.onTableScroll(event);
     }));
+    if (topOverlayScrollable !== leftOverlayScrollable) {
+      this.eventManager.addEventListener(leftOverlayScrollable, 'scroll', (function(event) {
+        return $__3.onTableScroll(event);
+      }));
+    }
     if (this.topOverlay.needFullRender) {
       this.eventManager.addEventListener(this.topOverlay.clone.wtTable.holder, 'scroll', (function(event) {
         return $__3.onTableScroll(event);
@@ -2218,8 +2246,13 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
     if (Handsontable.mobileBrowser) {
       return;
     }
-    if (this.keyPressed && this.mainTableScrollableElement !== window && !event.target.contains(this.mainTableScrollableElement)) {
-      return;
+    var masterHorizontal = this.leftOverlay.mainTableScrollableElement;
+    var masterVertical = this.topOverlay.mainTableScrollableElement;
+    var target = event.target;
+    if (this.keyPressed) {
+      if ((masterVertical !== window && target !== window && !event.target.contains(masterVertical)) || (masterHorizontal !== window && target !== window && !event.target.contains(masterHorizontal))) {
+        return;
+      }
     }
     if (event.type === 'scroll') {
       this.syncScrollPositions(event);
@@ -2268,7 +2301,8 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
       this.syncScrollWithMaster();
       return;
     }
-    var master = this.mainTableScrollableElement;
+    var masterHorizontal = this.leftOverlay.mainTableScrollableElement;
+    var masterVertical = this.topOverlay.mainTableScrollableElement;
     var target = event.target;
     var tempScrollValue = 0;
     var scrollValueChanged = false;
@@ -2276,6 +2310,7 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
     var leftOverlay;
     var bottomOverlay;
     var delegatedScroll = false;
+    var preventOverflow = this.wot.getSetting('preventOverflow');
     if (this.topOverlay.needFullRender) {
       topOverlay = this.topOverlay.clone.wtTable.holder;
     }
@@ -2288,19 +2323,23 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
     if (target === document) {
       target = window;
     }
-    if (target === master) {
-      tempScrollValue = getScrollLeft(target);
+    if (target === masterHorizontal || target === masterVertical) {
+      if (preventOverflow) {
+        tempScrollValue = getScrollLeft(this.scrollableElement);
+      } else {
+        tempScrollValue = getScrollLeft(target);
+      }
       if (this.overlayScrollPositions.master.left !== tempScrollValue) {
         this.horizontalScrolling = true;
         this.overlayScrollPositions.master.left = tempScrollValue;
         scrollValueChanged = true;
         if (topOverlay) {
           topOverlay.scrollLeft = tempScrollValue;
-          delegatedScroll = (this.mainTableScrollableElement !== window);
+          delegatedScroll = (masterHorizontal !== window);
         }
         if (bottomOverlay) {
           bottomOverlay.scrollLeft = tempScrollValue;
-          delegatedScroll = (this.mainTableScrollableElement !== window);
+          delegatedScroll = (masterHorizontal !== window);
         }
       }
       tempScrollValue = getScrollTop(target);
@@ -2310,7 +2349,7 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
         scrollValueChanged = true;
         if (leftOverlay) {
           leftOverlay.scrollTop = tempScrollValue;
-          delegatedScroll = (this.mainTableScrollableElement !== window);
+          delegatedScroll = (masterVertical !== window);
         }
       }
     } else if (target === bottomOverlay) {
@@ -2319,11 +2358,11 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
         this.horizontalScrolling = true;
         this.overlayScrollPositions.bottom.left = tempScrollValue;
         scrollValueChanged = true;
-        master.scrollLeft = tempScrollValue;
+        masterHorizontal.scrollLeft = tempScrollValue;
       }
       if (fakeScrollValue !== null) {
         scrollValueChanged = true;
-        master.scrollTop += fakeScrollValue;
+        masterVertical.scrollTop += fakeScrollValue;
       }
     } else if (target === topOverlay) {
       tempScrollValue = getScrollLeft(target);
@@ -2331,11 +2370,11 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
         this.horizontalScrolling = true;
         this.overlayScrollPositions.top.left = tempScrollValue;
         scrollValueChanged = true;
-        master.scrollLeft = tempScrollValue;
+        masterHorizontal.scrollLeft = tempScrollValue;
       }
       if (fakeScrollValue !== null) {
         scrollValueChanged = true;
-        master.scrollTop += fakeScrollValue;
+        masterVertical.scrollTop += fakeScrollValue;
       }
     } else if (target === leftOverlay) {
       tempScrollValue = getScrollTop(target);
@@ -2343,11 +2382,11 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
         this.verticalScrolling = true;
         this.overlayScrollPositions.left.top = tempScrollValue;
         scrollValueChanged = true;
-        master.scrollTop = tempScrollValue;
+        masterVertical.scrollTop = tempScrollValue;
       }
       if (fakeScrollValue !== null) {
         scrollValueChanged = true;
-        master.scrollLeft += fakeScrollValue;
+        masterVertical.scrollLeft += fakeScrollValue;
       }
     }
     if (!this.keyPressed && scrollValueChanged && event.type === 'scroll') {
@@ -2453,41 +2492,181 @@ Object.defineProperties(exports, {
     }},
   __esModule: {value: true}
 });
+var $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__,
+    $___46__46__47__46__46__47__46__46__47_helpers_47_number__;
+var $__0 = ($___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__ = require("helpers/dom/element"), $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__}),
+    innerHeight = $__0.innerHeight,
+    innerWidth = $__0.innerWidth,
+    getScrollLeft = $__0.getScrollLeft,
+    getScrollTop = $__0.getScrollTop,
+    offset = $__0.offset;
+var $__1 = ($___46__46__47__46__46__47__46__46__47_helpers_47_number__ = require("helpers/number"), $___46__46__47__46__46__47__46__46__47_helpers_47_number__ && $___46__46__47__46__46__47__46__46__47_helpers_47_number__.__esModule && $___46__46__47__46__46__47__46__46__47_helpers_47_number__ || {default: $___46__46__47__46__46__47__46__46__47_helpers_47_number__}),
+    rangeEach = $__1.rangeEach,
+    rangeEachReverse = $__1.rangeEachReverse;
 var WalkontableScroll = function WalkontableScroll(wotInstance) {
   this.wot = wotInstance;
   this.instance = wotInstance;
 };
-($traceurRuntime.createClass)(WalkontableScroll, {scrollViewport: function(coords) {
+($traceurRuntime.createClass)(WalkontableScroll, {
+  scrollViewport: function(coords) {
     if (!this.wot.drawn) {
       return;
     }
-    var totalRows = this.wot.getSetting('totalRows');
-    var totalColumns = this.wot.getSetting('totalColumns');
-    var fixedRowsTop = this.instance.getSetting('fixedRowsTop');
-    var fixedRowsBottom = this.instance.getSetting('fixedRowsBottom');
-    var fixedColumnsLeft = this.instance.getSetting('fixedColumnsLeft');
+    var $__3 = this._getVariables(),
+        topOverlay = $__3.topOverlay,
+        leftOverlay = $__3.leftOverlay,
+        totalRows = $__3.totalRows,
+        totalColumns = $__3.totalColumns,
+        fixedRowsTop = $__3.fixedRowsTop,
+        fixedRowsBottom = $__3.fixedRowsBottom,
+        fixedColumnsLeft = $__3.fixedColumnsLeft;
     if (coords.row < 0 || coords.row > totalRows - 1) {
-      throw new Error('row ' + coords.row + ' does not exist');
+      throw new Error(("row " + coords.row + " does not exist"));
     }
     if (coords.col < 0 || coords.col > totalColumns - 1) {
-      throw new Error('column ' + coords.col + ' does not exist');
+      throw new Error(("column " + coords.col + " does not exist"));
     }
-    if (coords.row > this.instance.wtTable.getLastVisibleRow() && coords.row < totalRows - fixedRowsBottom) {
-      this.wot.wtOverlays.topOverlay.scrollTo(coords.row, true);
-    } else if (coords.row >= fixedRowsTop && coords.row < this.instance.wtTable.getFirstVisibleRow()) {
-      this.wot.wtOverlays.topOverlay.scrollTo(coords.row);
+    if (coords.row >= fixedRowsTop && coords.row < this.getFirstVisibleRow()) {
+      topOverlay.scrollTo(coords.row);
+    } else if (coords.row > this.getLastVisibleRow() && coords.row < totalRows - fixedRowsBottom) {
+      topOverlay.scrollTo(coords.row, true);
     }
-    if (coords.col > this.instance.wtTable.getLastVisibleColumn()) {
-      this.wot.wtOverlays.leftOverlay.scrollTo(coords.col, true);
-    } else if (coords.col >= fixedColumnsLeft && coords.col < this.instance.wtTable.getFirstVisibleColumn()) {
-      this.wot.wtOverlays.leftOverlay.scrollTo(coords.col);
+    if (coords.col >= fixedColumnsLeft && coords.col < this.getFirstVisibleColumn()) {
+      leftOverlay.scrollTo(coords.col);
+    } else if (coords.col > this.getLastVisibleColumn()) {
+      leftOverlay.scrollTo(coords.col, true);
     }
-  }}, {});
+  },
+  getFirstVisibleRow: function() {
+    var $__3 = this._getVariables(),
+        topOverlay = $__3.topOverlay,
+        wtTable = $__3.wtTable,
+        wtViewport = $__3.wtViewport,
+        totalRows = $__3.totalRows,
+        fixedRowsTop = $__3.fixedRowsTop;
+    var firstVisibleRow = wtTable.getFirstVisibleRow();
+    if (topOverlay.mainTableScrollableElement === window) {
+      var rootElementOffset = offset(wtTable.wtRootElement);
+      var totalTableHeight = innerHeight(wtTable.hider);
+      var windowHeight = innerHeight(window);
+      var windowScrollTop = getScrollTop(window);
+      if (rootElementOffset.top + totalTableHeight - windowHeight <= windowScrollTop) {
+        var rowsHeight = wtViewport.getColumnHeaderHeight();
+        rowsHeight += topOverlay.sumCellSizes(0, fixedRowsTop);
+        rangeEachReverse(totalRows, 1, (function(row) {
+          rowsHeight += topOverlay.sumCellSizes(row - 1, row);
+          if (rootElementOffset.top + totalTableHeight - rowsHeight <= windowScrollTop) {
+            firstVisibleRow = row;
+            return false;
+          }
+        }));
+      }
+    }
+    return firstVisibleRow;
+  },
+  getLastVisibleRow: function() {
+    var $__3 = this._getVariables(),
+        topOverlay = $__3.topOverlay,
+        wtTable = $__3.wtTable,
+        wtViewport = $__3.wtViewport,
+        totalRows = $__3.totalRows;
+    var lastVisibleRow = wtTable.getLastVisibleRow();
+    if (topOverlay.mainTableScrollableElement === window) {
+      var rootElementOffset = offset(wtTable.wtRootElement);
+      var windowHeight = innerHeight(window);
+      var windowScrollTop = getScrollTop(window);
+      if (rootElementOffset.top > windowScrollTop) {
+        var rowsHeight = wtViewport.getColumnHeaderHeight();
+        rangeEach(1, totalRows, (function(row) {
+          rowsHeight += topOverlay.sumCellSizes(row - 1, row);
+          if (rootElementOffset.top + rowsHeight - windowScrollTop >= windowHeight) {
+            lastVisibleRow = row - 2;
+            return false;
+          }
+        }));
+      }
+    }
+    return lastVisibleRow;
+  },
+  getFirstVisibleColumn: function() {
+    var $__3 = this._getVariables(),
+        leftOverlay = $__3.leftOverlay,
+        wtTable = $__3.wtTable,
+        wtViewport = $__3.wtViewport,
+        totalColumns = $__3.totalColumns,
+        fixedColumnsLeft = $__3.fixedColumnsLeft;
+    var firstVisibleColumn = wtTable.getFirstVisibleColumn();
+    if (leftOverlay.mainTableScrollableElement === window) {
+      var rootElementOffset = offset(wtTable.wtRootElement);
+      var totalTableWidth = innerWidth(wtTable.hider);
+      var windowWidth = innerWidth(window);
+      var windowScrollLeft = getScrollLeft(window);
+      if (rootElementOffset.left + totalTableWidth - windowWidth <= windowScrollLeft) {
+        var columnsWidth = wtViewport.getRowHeaderWidth();
+        rangeEachReverse(totalColumns, 1, (function(column) {
+          columnsWidth += leftOverlay.sumCellSizes(column - 1, column);
+          if (rootElementOffset.left + totalTableWidth - columnsWidth <= windowScrollLeft) {
+            firstVisibleColumn = column;
+            return false;
+          }
+        }));
+      }
+    }
+    return firstVisibleColumn;
+  },
+  getLastVisibleColumn: function() {
+    var $__3 = this._getVariables(),
+        leftOverlay = $__3.leftOverlay,
+        wtTable = $__3.wtTable,
+        wtViewport = $__3.wtViewport,
+        totalColumns = $__3.totalColumns;
+    var lastVisibleColumn = wtTable.getLastVisibleColumn();
+    if (leftOverlay.mainTableScrollableElement === window) {
+      var rootElementOffset = offset(wtTable.wtRootElement);
+      var windowWidth = innerWidth(window);
+      var windowScrollLeft = getScrollLeft(window);
+      if (rootElementOffset.left > windowScrollLeft) {
+        var columnsWidth = wtViewport.getRowHeaderWidth();
+        rangeEach(1, totalColumns, (function(column) {
+          columnsWidth += leftOverlay.sumCellSizes(column - 1, column);
+          if (rootElementOffset.left + columnsWidth - windowScrollLeft >= windowWidth) {
+            lastVisibleColumn = column - 2;
+            return false;
+          }
+        }));
+      }
+    }
+    return lastVisibleColumn;
+  },
+  _getVariables: function() {
+    var wot = this.wot;
+    var topOverlay = wot.wtOverlays.topOverlay;
+    var leftOverlay = wot.wtOverlays.leftOverlay;
+    var wtTable = wot.wtTable;
+    var wtViewport = wot.wtViewport;
+    var totalRows = wot.getSetting('totalRows');
+    var totalColumns = wot.getSetting('totalColumns');
+    var fixedRowsTop = wot.getSetting('fixedRowsTop');
+    var fixedRowsBottom = wot.getSetting('fixedRowsBottom');
+    var fixedColumnsLeft = wot.getSetting('fixedColumnsLeft');
+    return {
+      topOverlay: topOverlay,
+      leftOverlay: leftOverlay,
+      wtTable: wtTable,
+      wtViewport: wtViewport,
+      totalRows: totalRows,
+      totalColumns: totalColumns,
+      fixedRowsTop: fixedRowsTop,
+      fixedRowsBottom: fixedRowsBottom,
+      fixedColumnsLeft: fixedColumnsLeft
+    };
+  }
+}, {});
 ;
 window.WalkontableScroll = WalkontableScroll;
 
 //# 
-},{}],18:[function(require,module,exports){
+},{"helpers/dom/element":45,"helpers/number":49}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableSelection: {get: function() {
@@ -2636,6 +2815,9 @@ var WalkontableSettings = function WalkontableSettings(wotInstance, settings) {
     stretchH: 'none',
     currentRowClassName: null,
     currentColumnClassName: null,
+    preventOverflow: function() {
+      return false;
+    },
     data: void 0,
     fixedColumnsLeft: 0,
     fixedRowsTop: 0,
@@ -2845,8 +3027,11 @@ var WalkontableTable = function WalkontableTable(wotInstance, table) {
     if (!this.isWorkingOnClone()) {
       this.holder.parentNode.style.position = 'relative';
       if (trimmingElement === window) {
-        this.holder.style.overflow = 'visible';
-        this.wtRootElement.style.overflow = 'visible';
+        var preventOverflow = this.wot.getSetting('preventOverflow');
+        if (!preventOverflow) {
+          this.holder.style.overflow = 'visible';
+          this.wtRootElement.style.overflow = 'visible';
+        }
       } else {
         this.holder.style.width = getStyle(trimmingElement, 'width');
         this.holder.style.height = getStyle(trimmingElement, 'height');
@@ -3118,7 +3303,8 @@ var $__0 = ($___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__ =
     empty = $__0.empty,
     getScrollbarWidth = $__0.getScrollbarWidth,
     hasClass = $__0.hasClass,
-    innerHeight = $__0.innerHeight;
+    innerHeight = $__0.innerHeight,
+    outerWidth = $__0.outerWidth;
 var WalkontableTableRenderer = function WalkontableTableRenderer(wtTable) {
   this.wtTable = wtTable;
   this.wot = wtTable.instance;
@@ -3178,6 +3364,11 @@ var WalkontableTableRenderer = function WalkontableTableRenderer(wtTable) {
       this.markOversizedRows();
       this.wot.wtViewport.createVisibleCalculators();
       this.wot.wtOverlays.refresh(false);
+      var hiderWidth = outerWidth(this.wtTable.hider);
+      var tableWidth = outerWidth(this.wtTable.TABLE);
+      if (hiderWidth !== 0 && (tableWidth !== hiderWidth)) {
+        this.adjustColumnWidths(columnsToRender);
+      }
       this.wot.wtOverlays.applyToDOM();
       if (workspaceWidth !== this.wot.wtViewport.getWorkspaceWidth()) {
         this.wot.wtViewport.containerWidth = null;
@@ -3560,11 +3751,15 @@ var WalkontableViewport = function WalkontableViewport(wotInstance) {
   },
   getWorkspaceWidth: function() {
     var width;
-    var totalColumns = this.instance.getSetting('totalColumns');
+    var totalColumns = this.wot.getSetting('totalColumns');
     var trimmingContainer = this.instance.wtOverlays.leftOverlay.trimmingContainer;
     var overflow;
-    var stretchSetting = this.instance.getSetting('stretchH');
+    var stretchSetting = this.wot.getSetting('stretchH');
     var docOffsetWidth = document.documentElement.offsetWidth;
+    var preventOverflow = this.wot.getSetting('preventOverflow');
+    if (preventOverflow) {
+      return outerWidth(this.instance.wtTable.wtRootElement);
+    }
     if (Handsontable.freezeOverlays) {
       width = Math.min(docOffsetWidth - this.getWorkspaceOffset().left, docOffsetWidth);
     } else {
@@ -3694,7 +3889,7 @@ var WalkontableViewport = function WalkontableViewport(wotInstance) {
     } else {
       height = this.getViewportHeight();
     }
-    pos = getScrollTop(this.wot.wtOverlays.mainTableScrollableElement) - this.wot.wtOverlays.topOverlay.getTableParentOffset();
+    pos = this.wot.wtOverlays.topOverlay.getScrollPosition() - this.wot.wtOverlays.topOverlay.getTableParentOffset();
     if (pos < 0) {
       pos = 0;
     }
@@ -3843,10 +4038,10 @@ var domHelpers = ($__helpers_47_dom_47_element__ = require("helpers/dom/element"
 var domEventHelpers = ($__helpers_47_dom_47_event__ = require("helpers/dom/event"), $__helpers_47_dom_47_event__ && $__helpers_47_dom_47_event__.__esModule && $__helpers_47_dom_47_event__ || {default: $__helpers_47_dom_47_event__});
 var HELPERS = [arrayHelpers, browserHelpers, dataHelpers, functionHelpers, mixedHelpers, numberHelpers, objectHelpers, settingHelpers, stringHelpers, unicodeHelpers];
 var DOM = [domHelpers, domEventHelpers];
-Handsontable.buildDate = 'Fri Dec 04 2015 13:13:38 GMT+0100 (CET)';
+Handsontable.buildDate = 'Fri Jan 08 2016 13:21:07 GMT+0100 (CET)';
 Handsontable.packageName = 'handsontable-pro';
-Handsontable.version = '1.0.0-beta1';
-var baseVersion = '0.20.2';
+Handsontable.version = '1.0.0-beta2';
+var baseVersion = '0.20.3';
 if (!/^@@/.test(baseVersion)) {
   Handsontable.baseVersion = baseVersion;
 }
@@ -4100,8 +4295,8 @@ Handsontable.Core = function Core(rootElement, userSettings) {
             instance.getSettings().fixedRowsTop -= Math.min(amount, fixedRowsTop - index);
           }
           var fixedRowsBottom = instance.getSettings().fixedRowsBottom;
-          if (fixedRowsBottom && totalRows - fixedRowsBottom <= index + 1) {
-            instance.getSettings().fixedRowsBottom -= Math.min(amount, fixedRowsBottom - index);
+          if (fixedRowsBottom && index >= totalRows - fixedRowsBottom) {
+            instance.getSettings().fixedRowsBottom -= Math.min(amount, fixedRowsBottom);
           }
           grid.adjustRowsAndCols();
           selection.refreshBorders();
@@ -5698,7 +5893,8 @@ DefaultSettings.prototype = {
   correctFormat: false,
   defaultDate: void 0,
   strict: void 0,
-  renderAllRows: void 0
+  renderAllRows: void 0,
+  preventOverflow: false
 };
 Handsontable.DefaultSettings = DefaultSettings;
 
@@ -10885,6 +11081,11 @@ var $AutoColumnSize = AutoColumnSize;
     if (this.enabled) {
       return;
     }
+    var setting = this.hot.getSettings().autoColumnSize;
+    var samplingRatio = setting && setting.hasOwnProperty('samplingRatio') ? this.hot.getSettings().autoColumnSize.samplingRatio : void 0;
+    if (samplingRatio && !isNaN(samplingRatio)) {
+      this.samplesGenerator.customSampleCount = parseInt(samplingRatio, 10);
+    }
     this.addHook('afterLoadData', (function() {
       return $__10.onAfterLoadData();
     }));
@@ -11154,6 +11355,11 @@ var $AutoRowSize = AutoRowSize;
     var $__9 = this;
     if (this.enabled) {
       return;
+    }
+    var setting = this.hot.getSettings().autoRowSize;
+    var samplingRatio = setting && setting.hasOwnProperty('samplingRatio') ? this.hot.getSettings().autoRowSize.samplingRatio : void 0;
+    if (samplingRatio && !isNaN(samplingRatio)) {
+      this.samplesGenerator.customSampleCount = parseInt(samplingRatio, 10);
     }
     this.addHook('afterLoadData', (function() {
       return $__9.onAfterLoadData();
@@ -13437,7 +13643,7 @@ var _predefinedItems = ($__4 = {}, Object.defineProperty($__4, SEPARATOR, {
     },
     disabled: function() {
       var selected = getValidSelection(this);
-      if (!selected) {
+      if (!selected || this.countRows() >= this.getSettings().maxRows) {
         return true;
       }
       var rowCount = this.countRows();
@@ -13460,7 +13666,7 @@ var _predefinedItems = ($__4 = {}, Object.defineProperty($__4, SEPARATOR, {
     },
     disabled: function() {
       var selected = getValidSelection(this);
-      if (!selected) {
+      if (!selected || this.countRows() >= this.getSettings().maxRows) {
         return true;
       }
       var rowCount = this.countRows();
@@ -13958,9 +14164,6 @@ function getValidSelection(hot) {
     return null;
   }
   if (selected[0] < 0) {
-    return null;
-  }
-  if (hot.countRows() >= hot.getSettings().maxRows) {
     return null;
   }
   return selected;
@@ -18385,6 +18588,7 @@ var WalkontableSelection = ($__3rdparty_47_walkontable_47_src_47_selection__ = r
 var Walkontable = ($__3rdparty_47_walkontable_47_src_47_core__ = require("3rdparty/walkontable/src/core"), $__3rdparty_47_walkontable_47_src_47_core__ && $__3rdparty_47_walkontable_47_src_47_core__.__esModule && $__3rdparty_47_walkontable_47_src_47_core__ || {default: $__3rdparty_47_walkontable_47_src_47_core__}).Walkontable;
 Handsontable.TableView = TableView;
 function TableView(instance) {
+  var $__6 = this;
   var that = this;
   this.eventManager = eventManagerObject(instance);
   this.instance = instance;
@@ -18535,6 +18739,9 @@ function TableView(instance) {
     },
     externalRowCalculator: this.instance.getPlugin('autoRowSize') && this.instance.getPlugin('autoRowSize').isEnabled(),
     table: table,
+    preventOverflow: (function() {
+      return $__6.settings.preventOverflow;
+    }),
     stretchH: this.settings.stretchH,
     data: instance.getDataAtCell,
     totalRows: (function() {
@@ -18757,11 +18964,11 @@ TableView.prototype.isTextSelectionAllowed = function(el) {
   return false;
 };
 TableView.prototype.isSelectedOnlyCell = function() {
-  var $__6 = this.instance.getSelected() || [],
-      row = $__6[0],
-      col = $__6[1],
-      rowEnd = $__6[2],
-      colEnd = $__6[3];
+  var $__7 = this.instance.getSelected() || [],
+      row = $__7[0],
+      col = $__7[1],
+      rowEnd = $__7[2],
+      colEnd = $__7[3];
   return row !== void 0 && row === rowEnd && col === colEnd;
 };
 TableView.prototype.isCellEdited = function() {
@@ -19112,9 +19319,20 @@ var stringify = ($___46__46__47_helpers_47_mixed__ = require("helpers/mixed"), $
 var SamplesGenerator = function SamplesGenerator(dataFactory) {
   this.samples = null;
   this.dataFactory = dataFactory;
+  this.customSampleCount = null;
 };
 var $SamplesGenerator = SamplesGenerator;
-($traceurRuntime.createClass)(SamplesGenerator, ($__7 = {}, Object.defineProperty($__7, "generateRowSamples", {
+($traceurRuntime.createClass)(SamplesGenerator, ($__7 = {}, Object.defineProperty($__7, "getSampleCount", {
+  value: function() {
+    if (this.customSampleCount) {
+      return this.customSampleCount;
+    }
+    return $SamplesGenerator.SAMPLE_COUNT;
+  },
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__7, "generateRowSamples", {
   value: function(rowRange, colRange) {
     return this.generateSamples('row', colRange, rowRange);
   },
@@ -19151,6 +19369,7 @@ var $SamplesGenerator = SamplesGenerator;
   value: function(type, range, specifierValue) {
     var $__5 = this;
     var samples = new Map();
+    var sampledValues = [];
     rangeEach(range.from, range.to, (function(index) {
       var $__7;
       var value;
@@ -19167,25 +19386,29 @@ var $SamplesGenerator = SamplesGenerator;
       var len = value.length;
       if (!samples.has(len)) {
         samples.set(len, {
-          needed: $SamplesGenerator.SAMPLE_COUNT,
+          needed: $__5.getSampleCount(),
           strings: []
         });
       }
       var sample = samples.get(len);
       if (sample.needed) {
-        var computedKey = type === 'row' ? 'col' : 'row';
-        sample.strings.push(($__7 = {}, Object.defineProperty($__7, "value", {
-          value: value,
-          configurable: true,
-          enumerable: true,
-          writable: true
-        }), Object.defineProperty($__7, computedKey, {
-          value: index,
-          configurable: true,
-          enumerable: true,
-          writable: true
-        }), $__7));
-        sample.needed--;
+        var duplicate = sampledValues.indexOf(value) > -1;
+        if (!duplicate) {
+          var computedKey = type === 'row' ? 'col' : 'row';
+          sample.strings.push(($__7 = {}, Object.defineProperty($__7, "value", {
+            value: value,
+            configurable: true,
+            enumerable: true,
+            writable: true
+          }), Object.defineProperty($__7, computedKey, {
+            value: index,
+            configurable: true,
+            enumerable: true,
+            writable: true
+          }), $__7));
+          sampledValues.push(value);
+          sample.needed--;
+        }
       }
     }));
     return samples;
@@ -19353,7 +19576,9 @@ var $WalkontableBottomOverlay = WalkontableBottomOverlay;
       }
       headerPosition = finalBottom;
       finalBottom = finalBottom + 'px';
-      setOverlayPosition(overlayRoot, finalLeft, null, finalBottom);
+      overlayRoot.style.top = '';
+      overlayRoot.style.left = finalLeft;
+      overlayRoot.style.bottom = finalBottom;
     } else {
       headerPosition = this.getScrollPosition();
       this.repositionOverlay();
@@ -19577,7 +19802,9 @@ var $WalkontableBottomLeftCornerOverlay = WalkontableBottomLeftCornerOverlay;
       }
       finalBottom = finalBottom + 'px';
       finalLeft = finalLeft + 'px';
-      setOverlayPosition(overlayRoot, finalLeft, null, finalBottom);
+      overlayRoot.style.top = '';
+      overlayRoot.style.left = finalLeft;
+      overlayRoot.style.bottom = finalBottom;
     } else {
       this.repositionOverlay();
     }
@@ -19849,6 +20076,7 @@ var $__handsontable_47_helpers_47_object__,
     $__handsontable_47_eventManager__,
     $__handsontable_47_plugins__,
     $__handsontable_47_helpers_47_dom_47_event__,
+    $__handsontable_47_eventManager__,
     $__handsontable_47_plugins_47__95_base__;
 var objectEach = ($__handsontable_47_helpers_47_object__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).objectEach;
 var arrayEach = ($__handsontable_47_helpers_47_array__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
@@ -19862,6 +20090,7 @@ var $__5 = ($__handsontable_47_plugins__ = require("../../../node_modules/hot-bu
     registerPlugin = $__5.registerPlugin,
     getPlugin = $__5.getPlugin;
 var stopImmediatePropagation = ($__handsontable_47_helpers_47_dom_47_event__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event"), $__handsontable_47_helpers_47_dom_47_event__ && $__handsontable_47_helpers_47_dom_47_event__.__esModule && $__handsontable_47_helpers_47_dom_47_event__ || {default: $__handsontable_47_helpers_47_dom_47_event__}).stopImmediatePropagation;
+var eventManager = ($__handsontable_47_eventManager__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager"), $__handsontable_47_eventManager__ && $__handsontable_47_eventManager__.__esModule && $__handsontable_47_eventManager__ || {default: $__handsontable_47_eventManager__}).eventManager;
 var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
 var CollapsibleColumns = function CollapsibleColumns(hotInstance) {
   $traceurRuntime.superConstructor($CollapsibleColumns).call(this, hotInstance);
@@ -19871,6 +20100,7 @@ var CollapsibleColumns = function CollapsibleColumns(hotInstance) {
   this.nestedHeadersPlugin = null;
   this.collapsedSections = {};
   this.columnHeaderLevelCount = null;
+  this.eventManager = null;
 };
 var $CollapsibleColumns = CollapsibleColumns;
 ($traceurRuntime.createClass)(CollapsibleColumns, {
@@ -19878,7 +20108,7 @@ var $CollapsibleColumns = CollapsibleColumns;
     return !!this.hot.getSettings().collapsibleColumns;
   },
   enablePlugin: function() {
-    var $__8 = this;
+    var $__9 = this;
     if (this.enabled) {
       return;
     }
@@ -19890,17 +20120,18 @@ var $CollapsibleColumns = CollapsibleColumns;
     this.nestedHeadersPlugin = this.hot.getPlugin('nestedHeaders');
     this.checkDependencies();
     this.addHook('afterRender', (function() {
-      return $__8.onAfterRender();
+      return $__9.onAfterRender();
     }));
     this.addHook('afterInit', (function() {
-      return $__8.onAfterInit();
+      return $__9.onAfterInit();
     }));
     this.addHook('afterGetColHeader', (function(col, TH) {
-      return $__8.onAfterGetColHeader(col, TH);
+      return $__9.onAfterGetColHeader(col, TH);
     }));
     this.addHook('beforeOnCellMouseDown', (function(event, coords, TD) {
-      return $__8.onBeforeOnCellMouseDown(event, coords, TD);
+      return $__9.onBeforeOnCellMouseDown(event, coords, TD);
     }));
+    this.eventManager = eventManager(this.hot);
     $traceurRuntime.superGet(this, $CollapsibleColumns.prototype, "enablePlugin").call(this);
   },
   disablePlugin: function() {
@@ -19943,12 +20174,12 @@ var $CollapsibleColumns = CollapsibleColumns;
     }), true);
   },
   parseSettings: function() {
-    var $__8 = this;
+    var $__9 = this;
     objectEach(this.settings, (function(val) {
-      if (!$__8.buttonEnabledList[val.row]) {
-        $__8.buttonEnabledList[val.row] = {};
+      if (!$__9.buttonEnabledList[val.row]) {
+        $__9.buttonEnabledList[val.row] = {};
       }
-      $__8.buttonEnabledList[val.row][val.col] = val.collapsible;
+      $__9.buttonEnabledList[val.row][val.col] = val.collapsible;
     }));
   },
   meetsDependencies: function() {
@@ -20018,16 +20249,16 @@ var $CollapsibleColumns = CollapsibleColumns;
     this.toggleCollapsibleSection(coords, 'collapse');
   },
   toggleAllCollapsibleSections: function(action) {
-    var $__8 = this;
+    var $__9 = this;
     var nestedHeadersColspanArray = this.nestedHeadersPlugin.colspanArray;
     if (this.settings === true) {
       arrayEach(nestedHeadersColspanArray, (function(headerLevel, i) {
         arrayEach(headerLevel, (function(header, j) {
           if (header.colspan > 1) {
-            var row = $__8.nestedHeadersPlugin.levelToRowCoords(i);
+            var row = $__9.nestedHeadersPlugin.levelToRowCoords(i);
             var col = j;
-            $__8.markSectionAs(action === 'collapse' ? 'collapsed' : 'expanded', row, col, true);
-            $__8.toggleCollapsibleSection({
+            $__9.markSectionAs(action === 'collapse' ? 'collapsed' : 'expanded', row, col, true);
+            $__9.toggleCollapsibleSection({
               row: row,
               col: col
             }, action);
@@ -20037,8 +20268,8 @@ var $CollapsibleColumns = CollapsibleColumns;
     } else {
       objectEach(this.buttonEnabledList, (function(headerRow, i) {
         objectEach(headerRow, (function(header, j) {
-          $__8.markSectionAs(action === 'collapse' ? 'collapsed' : 'expanded', i, j, true);
-          $__8.toggleCollapsibleSection({
+          $__9.markSectionAs(action === 'collapse' ? 'collapsed' : 'expanded', i, j, true);
+          $__9.toggleCollapsibleSection({
             row: i,
             col: j
           }, action);
@@ -20053,7 +20284,7 @@ var $CollapsibleColumns = CollapsibleColumns;
     this.toggleAllCollapsibleSections('expand');
   },
   toggleCollapsibleSection: function(coords, action) {
-    var $__8 = this;
+    var $__9 = this;
     if (coords.row) {
       coords.row = parseInt(coords.row, 10);
     }
@@ -20077,12 +20308,12 @@ var $CollapsibleColumns = CollapsibleColumns;
       var colToHide = coords.col + i;
       switch (action) {
         case 'collapse':
-          if (!$__8.hiddenColumnsPlugin.isHidden(colToHide)) {
+          if (!$__9.hiddenColumnsPlugin.isHidden(colToHide)) {
             hiddenColumns.push(colToHide);
           }
           break;
         case 'expand':
-          if ($__8.hiddenColumnsPlugin.isHidden(colToHide)) {
+          if ($__9.hiddenColumnsPlugin.isHidden(colToHide)) {
             hiddenColumns.splice(hiddenColumns.indexOf(colToHide), 1);
           }
           break;
@@ -20105,9 +20336,11 @@ var $CollapsibleColumns = CollapsibleColumns;
           this.collapsedSections[coords.row] = [];
         }
         this.markSectionAs('collapsed', coords.row, coords.col, true);
+        this.eventManager.fireEvent(event.target, 'mouseup');
         this.toggleCollapsibleSection(coords, 'collapse');
       } else if (hasClass(event.target, 'collapsed')) {
         this.markSectionAs('expanded', coords.row, coords.col, true);
+        this.eventManager.fireEvent(event.target, 'mouseup');
         this.toggleCollapsibleSection(coords, 'expand');
       }
       stopImmediatePropagation(event);
@@ -23040,7 +23273,10 @@ var $___95_base__,
     $__handsontable_47_plugins_47_contextMenu_47_menu__,
     $__handsontable_47_helpers_47_object__;
 var BaseUI = ($___95_base__ = require("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseUI;
-var addClass = ($__handsontable_47_helpers_47_dom_47_element__ = require("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).addClass;
+var $__1 = ($__handsontable_47_helpers_47_dom_47_element__ = require("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
+    addClass = $__1.addClass,
+    getWindowScrollTop = $__1.getWindowScrollTop,
+    getWindowScrollLeft = $__1.getWindowScrollLeft;
 var Menu = ($__handsontable_47_plugins_47_contextMenu_47_menu__ = require("../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu"), $__handsontable_47_plugins_47_contextMenu_47_menu__ && $__handsontable_47_plugins_47_contextMenu_47_menu__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_menu__ || {default: $__handsontable_47_plugins_47_contextMenu_47_menu__}).Menu;
 var $__3 = ($__handsontable_47_helpers_47_object__ = require("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
     clone = $__3.clone,
@@ -23104,8 +23340,8 @@ var $SelectUI = SelectUI;
     if (this.menu) {
       this.menu.open();
       this.menu.setPosition({
-        left: rect.left - 5,
-        top: rect.top,
+        left: getWindowScrollLeft() + rect.left - 5,
+        top: getWindowScrollTop() + rect.top,
         width: rect.width,
         height: rect.height
       });
@@ -24707,12 +24943,20 @@ var $NestedHeaders = NestedHeaders;
       var toCoords = wot.selections[1].cellRange ? wot.selections[1].cellRange.to : null;
       var highlightCoords = wot.selections[1].cellRange ? wot.selections[1].cellRange.highlight : null;
       var rowCount = this.hot.countRows();
+      var fromCoordsNestedParent = this.getNestedParent(this.rowCoordsToLevel(coords.row), fromCoords.col);
+      var rightColspan = this.getColspan(coords.row, toCoords.col);
       if (fromCoords === null || toCoords === null || highlightCoords === null) {
         return;
       }
       if (highlightCoords.col === toCoords.col && (toCoords.col !== fromCoords.col)) {
-        this.hot.selection.setRangeStart(new WalkontableCellCoords(0, toCoords.col + this.getColspan(coords.row, toCoords.col) - 1));
+        this.hot.selection.setRangeStart(new WalkontableCellCoords(0, toCoords.col + rightColspan - 1));
         this.hot.selection.setRangeEnd(new WalkontableCellCoords(rowCount - 1, fromCoords.col));
+      } else if (highlightCoords.col === fromCoords.col && (fromCoords.col !== fromCoordsNestedParent) && (toCoords.col !== fromCoords.col)) {
+        var currentLevel = this.rowCoordsToLevel(coords.row);
+        var leftSectionNestedParent = this.getNestedParent(currentLevel, toCoords.col - 1);
+        var leftColspan = this.getColspan(coords.row, leftSectionNestedParent);
+        this.hot.selection.setRangeStart(new WalkontableCellCoords(0, fromCoords.col - leftColspan + 1));
+        this.hot.selection.setRangeEnd(new WalkontableCellCoords(rowCount - 1, toCoords.col + rightColspan - 1));
       } else {
         this.hot.selection.setRangeEnd(new WalkontableCellCoords(rowCount - 1, coords.col + currentColspan - 1));
       }
@@ -25989,6 +26233,7 @@ if (typeof exports !== "undefined") {
 },{}],"moment":[function(require,module,exports){
 module.exports = function() {
   "use strict";
+  ;
   (function(global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() : typeof define === 'function' && define.amd ? define(factory) : global.moment = factory();
   }(this, function() {
@@ -26073,46 +26318,49 @@ module.exports = function() {
       }
       return m;
     }
+    function isUndefined(input) {
+      return input === void 0;
+    }
     var momentProperties = utils_hooks__hooks.momentProperties = [];
     function copyConfig(to, from) {
       var i,
           prop,
           val;
-      if (typeof from._isAMomentObject !== 'undefined') {
+      if (!isUndefined(from._isAMomentObject)) {
         to._isAMomentObject = from._isAMomentObject;
       }
-      if (typeof from._i !== 'undefined') {
+      if (!isUndefined(from._i)) {
         to._i = from._i;
       }
-      if (typeof from._f !== 'undefined') {
+      if (!isUndefined(from._f)) {
         to._f = from._f;
       }
-      if (typeof from._l !== 'undefined') {
+      if (!isUndefined(from._l)) {
         to._l = from._l;
       }
-      if (typeof from._strict !== 'undefined') {
+      if (!isUndefined(from._strict)) {
         to._strict = from._strict;
       }
-      if (typeof from._tzm !== 'undefined') {
+      if (!isUndefined(from._tzm)) {
         to._tzm = from._tzm;
       }
-      if (typeof from._isUTC !== 'undefined') {
+      if (!isUndefined(from._isUTC)) {
         to._isUTC = from._isUTC;
       }
-      if (typeof from._offset !== 'undefined') {
+      if (!isUndefined(from._offset)) {
         to._offset = from._offset;
       }
-      if (typeof from._pf !== 'undefined') {
+      if (!isUndefined(from._pf)) {
         to._pf = getParsingFlags(from);
       }
-      if (typeof from._locale !== 'undefined') {
+      if (!isUndefined(from._locale)) {
         to._locale = from._locale;
       }
       if (momentProperties.length > 0) {
         for (i in momentProperties) {
           prop = momentProperties[i];
           val = from[prop];
-          if (typeof val !== 'undefined') {
+          if (!isUndefined(val)) {
             to[prop] = val;
           }
         }
@@ -26192,7 +26440,7 @@ module.exports = function() {
     }
     function loadLocale(name) {
       var oldLocale = null;
-      if (!locales[name] && typeof module !== 'undefined' && module && module.exports) {
+      if (!locales[name] && !isUndefined(module) && module && module.exports) {
         try {
           oldLocale = globalLocale._abbr;
           require('./locale/' + name);
@@ -26204,7 +26452,7 @@ module.exports = function() {
     function locale_locales__getSetGlobalLocale(key, values) {
       var data;
       if (key) {
-        if (typeof values === 'undefined') {
+        if (isUndefined(values)) {
           data = locale_locales__getLocale(key);
         } else {
           data = defineLocale(key, values);
@@ -26266,6 +26514,9 @@ module.exports = function() {
       }
       return normalizedInput;
     }
+    function isFunction(input) {
+      return input instanceof Function || Object.prototype.toString.call(input) === '[object Function]';
+    }
     function makeGetSet(unit, keepTime) {
       return function(value) {
         if (value != null) {
@@ -26278,10 +26529,12 @@ module.exports = function() {
       };
     }
     function get_set__get(mom, unit) {
-      return mom._d['get' + (mom._isUTC ? 'UTC' : '') + unit]();
+      return mom.isValid() ? mom._d['get' + (mom._isUTC ? 'UTC' : '') + unit]() : NaN;
     }
     function get_set__set(mom, unit, value) {
-      return mom._d['set' + (mom._isUTC ? 'UTC' : '') + unit](value);
+      if (mom.isValid()) {
+        mom._d['set' + (mom._isUTC ? 'UTC' : '') + unit](value);
+      }
     }
     function getSet(units, value) {
       var unit;
@@ -26291,7 +26544,7 @@ module.exports = function() {
         }
       } else {
         units = normalizeUnits(units);
-        if (typeof this[units] === 'function') {
+        if (isFunction(this[units])) {
           return this[units](value);
         }
       }
@@ -26303,7 +26556,7 @@ module.exports = function() {
           sign = number >= 0;
       return (sign ? (forceSign ? '+' : '') : '-') + Math.pow(10, Math.max(0, zerosToFill)).toString().substr(1) + absNumber;
     }
-    var formattingTokens = /(\[[^\[]*\])|(\\)?(Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Q|YYYYYY|YYYYY|YYYY|YY|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g;
+    var formattingTokens = /(\[[^\[]*\])|(\\)?([Hh]mm(ss)?|Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Qo?|YYYYYY|YYYYY|YYYY|YY|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g;
     var localFormattingTokens = /(\[[^\[]*\])|(\\)?(LTS|LT|LL?L?L?|l{1,4})/g;
     var formatFunctions = {};
     var formatTokenFunctions = {};
@@ -26380,18 +26633,18 @@ module.exports = function() {
     var match4 = /\d{4}/;
     var match6 = /[+-]?\d{6}/;
     var match1to2 = /\d\d?/;
+    var match3to4 = /\d\d\d\d?/;
+    var match5to6 = /\d\d\d\d\d\d?/;
     var match1to3 = /\d{1,3}/;
     var match1to4 = /\d{1,4}/;
     var match1to6 = /[+-]?\d{1,6}/;
     var matchUnsigned = /\d+/;
     var matchSigned = /[+-]?\d+/;
     var matchOffset = /Z|[+-]\d\d:?\d\d/gi;
+    var matchShortOffset = /Z|[+-]\d\d(?::?\d\d)?/gi;
     var matchTimestamp = /[+-]?\d+(\.\d{1,3})?/;
-    var matchWord = /[0-9]*['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+|[\u0600-\u06FF\/]+(\s*?[\u0600-\u06FF]+){1,2}/i;
+    var matchWord = /[0-9]*(a[mn]\s?)?['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF\-]+|[\u0600-\u06FF\/]+(\s*?[\u0600-\u06FF]+){1,2}/i;
     var regexes = {};
-    function isFunction(sth) {
-      return typeof sth === 'function' && Object.prototype.toString.call(sth) === '[object Function]';
-    }
     function addRegexToken(token, regex, strictRegex) {
       regexes[token] = isFunction(regex) ? regex : function(isStrict) {
         return (isStrict && strictRegex) ? strictRegex : regex;
@@ -26442,6 +26695,8 @@ module.exports = function() {
     var MINUTE = 4;
     var SECOND = 5;
     var MILLISECOND = 6;
+    var WEEK = 7;
+    var WEEKDAY = 8;
     function daysInMonth(year, month) {
       return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
     }
@@ -26470,13 +26725,14 @@ module.exports = function() {
         getParsingFlags(config).invalidMonth = input;
       }
     });
+    var MONTHS_IN_FORMAT = /D[oD]?(\[[^\[\]]*\]|\s+)+MMMM?/;
     var defaultLocaleMonths = 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_');
-    function localeMonths(m) {
-      return this._months[m.month()];
+    function localeMonths(m, format) {
+      return isArray(this._months) ? this._months[m.month()] : this._months[MONTHS_IN_FORMAT.test(format) ? 'format' : 'standalone'][m.month()];
     }
-    var defaultLocaleMonthsShort = 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_');
-    function localeMonthsShort(m) {
-      return this._monthsShort[m.month()];
+    var defaultLocaleMonthsShort = 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sept_Oct_Nov_Dec'.split('_');
+    function localeMonthsShort(m, format) {
+      return isArray(this._monthsShort) ? this._monthsShort[m.month()] : this._monthsShort[MONTHS_IN_FORMAT.test(format) ? 'format' : 'standalone'][m.month()];
     }
     function localeMonthsParse(monthName, format, strict) {
       var i,
@@ -26508,6 +26764,9 @@ module.exports = function() {
     }
     function setMonth(mom, value) {
       var dayOfMonth;
+      if (!mom.isValid()) {
+        return mom;
+      }
       if (typeof value === 'string') {
         value = mom.localeData().monthsParse(value);
         if (typeof value !== 'number') {
@@ -26538,12 +26797,18 @@ module.exports = function() {
         if (getParsingFlags(m)._overflowDayOfYear && (overflow < YEAR || overflow > DATE)) {
           overflow = DATE;
         }
+        if (getParsingFlags(m)._overflowWeeks && overflow === -1) {
+          overflow = WEEK;
+        }
+        if (getParsingFlags(m)._overflowWeekday && overflow === -1) {
+          overflow = WEEKDAY;
+        }
         getParsingFlags(m).overflow = overflow;
       }
       return m;
     }
     function warn(msg) {
-      if (utils_hooks__hooks.suppressDeprecationWarnings === false && typeof console !== 'undefined' && console.warn) {
+      if (utils_hooks__hooks.suppressDeprecationWarnings === false && !isUndefined(console) && console.warn) {
         console.warn('Deprecation warning: ' + msg);
       }
     }
@@ -26551,7 +26816,7 @@ module.exports = function() {
       var firstTime = true;
       return extend(function() {
         if (firstTime) {
-          warn(msg + '\n' + (new Error()).stack);
+          warn(msg + '\nArguments: ' + Array.prototype.slice.call(arguments).join(', ') + '\n' + (new Error()).stack);
           firstTime = false;
         }
         return fn.apply(this, arguments);
@@ -26565,32 +26830,59 @@ module.exports = function() {
       }
     }
     utils_hooks__hooks.suppressDeprecationWarnings = false;
-    var from_string__isoRegex = /^\s*(?:[+-]\d{6}|\d{4})-(?:(\d\d-\d\d)|(W\d\d$)|(W\d\d-\d)|(\d\d\d))((T| )(\d\d(:\d\d(:\d\d(\.\d+)?)?)?)?([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?$/;
-    var isoDates = [['YYYYYY-MM-DD', /[+-]\d{6}-\d{2}-\d{2}/], ['YYYY-MM-DD', /\d{4}-\d{2}-\d{2}/], ['GGGG-[W]WW-E', /\d{4}-W\d{2}-\d/], ['GGGG-[W]WW', /\d{4}-W\d{2}/], ['YYYY-DDD', /\d{4}-\d{3}/]];
-    var isoTimes = [['HH:mm:ss.SSSS', /(T| )\d\d:\d\d:\d\d\.\d+/], ['HH:mm:ss', /(T| )\d\d:\d\d:\d\d/], ['HH:mm', /(T| )\d\d:\d\d/], ['HH', /(T| )\d\d/]];
+    var extendedIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+    var basicIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+    var tzRegex = /Z|[+-]\d\d(?::?\d\d)?/;
+    var isoDates = [['YYYYYY-MM-DD', /[+-]\d{6}-\d\d-\d\d/], ['YYYY-MM-DD', /\d{4}-\d\d-\d\d/], ['GGGG-[W]WW-E', /\d{4}-W\d\d-\d/], ['GGGG-[W]WW', /\d{4}-W\d\d/, false], ['YYYY-DDD', /\d{4}-\d{3}/], ['YYYY-MM', /\d{4}-\d\d/, false], ['YYYYYYMMDD', /[+-]\d{10}/], ['YYYYMMDD', /\d{8}/], ['GGGG[W]WWE', /\d{4}W\d{3}/], ['GGGG[W]WW', /\d{4}W\d{2}/, false], ['YYYYDDD', /\d{7}/]];
+    var isoTimes = [['HH:mm:ss.SSSS', /\d\d:\d\d:\d\d\.\d+/], ['HH:mm:ss,SSSS', /\d\d:\d\d:\d\d,\d+/], ['HH:mm:ss', /\d\d:\d\d:\d\d/], ['HH:mm', /\d\d:\d\d/], ['HHmmss.SSSS', /\d\d\d\d\d\d\.\d+/], ['HHmmss,SSSS', /\d\d\d\d\d\d,\d+/], ['HHmmss', /\d\d\d\d\d\d/], ['HHmm', /\d\d\d\d/], ['HH', /\d\d/]];
     var aspNetJsonRegex = /^\/?Date\((\-?\d+)/i;
     function configFromISO(config) {
       var i,
           l,
           string = config._i,
-          match = from_string__isoRegex.exec(string);
+          match = extendedIsoRegex.exec(string) || basicIsoRegex.exec(string),
+          allowTime,
+          dateFormat,
+          timeFormat,
+          tzFormat;
       if (match) {
         getParsingFlags(config).iso = true;
         for (i = 0, l = isoDates.length; i < l; i++) {
-          if (isoDates[i][1].exec(string)) {
-            config._f = isoDates[i][0];
+          if (isoDates[i][1].exec(match[1])) {
+            dateFormat = isoDates[i][0];
+            allowTime = isoDates[i][2] !== false;
             break;
           }
         }
-        for (i = 0, l = isoTimes.length; i < l; i++) {
-          if (isoTimes[i][1].exec(string)) {
-            config._f += (match[6] || ' ') + isoTimes[i][0];
-            break;
+        if (dateFormat == null) {
+          config._isValid = false;
+          return;
+        }
+        if (match[3]) {
+          for (i = 0, l = isoTimes.length; i < l; i++) {
+            if (isoTimes[i][1].exec(match[3])) {
+              timeFormat = (match[2] || ' ') + isoTimes[i][0];
+              break;
+            }
+          }
+          if (timeFormat == null) {
+            config._isValid = false;
+            return;
           }
         }
-        if (string.match(matchOffset)) {
-          config._f += 'Z';
+        if (!allowTime && timeFormat != null) {
+          config._isValid = false;
+          return;
         }
+        if (match[4]) {
+          if (tzRegex.exec(match[4])) {
+            tzFormat = 'Z';
+          } else {
+            config._isValid = false;
+            return;
+          }
+        }
+        config._f = dateFormat + (timeFormat || '') + (tzFormat || '');
         configFromStringAndFormat(config);
       } else {
         config._isValid = false;
@@ -26613,14 +26905,14 @@ module.exports = function() {
     });
     function createDate(y, m, d, h, M, s, ms) {
       var date = new Date(y, m, d, h, M, s, ms);
-      if (y < 1970) {
+      if (y < 100 && y >= 0 && isFinite(date.getFullYear())) {
         date.setFullYear(y);
       }
       return date;
     }
     function createUTCDate(y) {
       var date = new Date(Date.UTC.apply(null, arguments));
-      if (y < 1970) {
+      if (y < 100 && y >= 0 && isFinite(date.getUTCFullYear())) {
         date.setUTCFullYear(y);
       }
       return date;
@@ -26657,79 +26949,56 @@ module.exports = function() {
     function getIsLeapYear() {
       return isLeapYear(this.year());
     }
-    addFormatToken('w', ['ww', 2], 'wo', 'week');
-    addFormatToken('W', ['WW', 2], 'Wo', 'isoWeek');
-    addUnitAlias('week', 'w');
-    addUnitAlias('isoWeek', 'W');
-    addRegexToken('w', match1to2);
-    addRegexToken('ww', match1to2, match2);
-    addRegexToken('W', match1to2);
-    addRegexToken('WW', match1to2, match2);
-    addWeekParseToken(['w', 'ww', 'W', 'WW'], function(input, week, config, token) {
-      week[token.substr(0, 1)] = toInt(input);
-    });
-    function weekOfYear(mom, firstDayOfWeek, firstDayOfWeekOfYear) {
-      var end = firstDayOfWeekOfYear - firstDayOfWeek,
-          daysToDayOfWeek = firstDayOfWeekOfYear - mom.day(),
-          adjustedMoment;
-      if (daysToDayOfWeek > end) {
-        daysToDayOfWeek -= 7;
+    function firstWeekOffset(year, dow, doy) {
+      var fwd = 7 + dow - doy,
+          fwdlw = (7 + createUTCDate(year, 0, fwd).getUTCDay() - dow) % 7;
+      return -fwdlw + fwd - 1;
+    }
+    function dayOfYearFromWeeks(year, week, weekday, dow, doy) {
+      var localWeekday = (7 + weekday - dow) % 7,
+          weekOffset = firstWeekOffset(year, dow, doy),
+          dayOfYear = 1 + 7 * (week - 1) + localWeekday + weekOffset,
+          resYear,
+          resDayOfYear;
+      if (dayOfYear <= 0) {
+        resYear = year - 1;
+        resDayOfYear = daysInYear(resYear) + dayOfYear;
+      } else if (dayOfYear > daysInYear(year)) {
+        resYear = year + 1;
+        resDayOfYear = dayOfYear - daysInYear(year);
+      } else {
+        resYear = year;
+        resDayOfYear = dayOfYear;
       }
-      if (daysToDayOfWeek < end - 7) {
-        daysToDayOfWeek += 7;
-      }
-      adjustedMoment = local__createLocal(mom).add(daysToDayOfWeek, 'd');
       return {
-        week: Math.ceil(adjustedMoment.dayOfYear() / 7),
-        year: adjustedMoment.year()
+        year: resYear,
+        dayOfYear: resDayOfYear
       };
     }
-    function localeWeek(mom) {
-      return weekOfYear(mom, this._week.dow, this._week.doy).week;
-    }
-    var defaultLocaleWeek = {
-      dow: 0,
-      doy: 6
-    };
-    function localeFirstDayOfWeek() {
-      return this._week.dow;
-    }
-    function localeFirstDayOfYear() {
-      return this._week.doy;
-    }
-    function getSetWeek(input) {
-      var week = this.localeData().week(this);
-      return input == null ? week : this.add((input - week) * 7, 'd');
-    }
-    function getSetISOWeek(input) {
-      var week = weekOfYear(this, 1, 4).week;
-      return input == null ? week : this.add((input - week) * 7, 'd');
-    }
-    addFormatToken('DDD', ['DDDD', 3], 'DDDo', 'dayOfYear');
-    addUnitAlias('dayOfYear', 'DDD');
-    addRegexToken('DDD', match1to3);
-    addRegexToken('DDDD', match3);
-    addParseToken(['DDD', 'DDDD'], function(input, array, config) {
-      config._dayOfYear = toInt(input);
-    });
-    function dayOfYearFromWeeks(year, week, weekday, firstDayOfWeekOfYear, firstDayOfWeek) {
-      var week1Jan = 6 + firstDayOfWeek - firstDayOfWeekOfYear,
-          janX = createUTCDate(year, 0, 1 + week1Jan),
-          d = janX.getUTCDay(),
-          dayOfYear;
-      if (d < firstDayOfWeek) {
-        d += 7;
+    function weekOfYear(mom, dow, doy) {
+      var weekOffset = firstWeekOffset(mom.year(), dow, doy),
+          week = Math.floor((mom.dayOfYear() - weekOffset - 1) / 7) + 1,
+          resWeek,
+          resYear;
+      if (week < 1) {
+        resYear = mom.year() - 1;
+        resWeek = week + weeksInYear(resYear, dow, doy);
+      } else if (week > weeksInYear(mom.year(), dow, doy)) {
+        resWeek = week - weeksInYear(mom.year(), dow, doy);
+        resYear = mom.year() + 1;
+      } else {
+        resYear = mom.year();
+        resWeek = week;
       }
-      weekday = weekday != null ? 1 * weekday : firstDayOfWeek;
-      dayOfYear = 1 + week1Jan + 7 * (week - 1) - d + weekday;
       return {
-        year: dayOfYear > 0 ? year : year - 1,
-        dayOfYear: dayOfYear > 0 ? dayOfYear : daysInYear(year - 1) + dayOfYear
+        week: resWeek,
+        year: resYear
       };
     }
-    function getSetDayOfYear(input) {
-      var dayOfYear = Math.round((this.clone().startOf('day') - this.clone().startOf('year')) / 864e5) + 1;
-      return input == null ? dayOfYear : this.add((input - dayOfYear), 'd');
+    function weeksInYear(year, dow, doy) {
+      var weekOffset = firstWeekOffset(year, dow, doy),
+          weekOffsetNext = firstWeekOffset(year + 1, dow, doy);
+      return (daysInYear(year) - weekOffset + weekOffsetNext) / 7;
     }
     function defaults(a, b, c) {
       if (a != null) {
@@ -26741,11 +27010,11 @@ module.exports = function() {
       return c;
     }
     function currentDateArray(config) {
-      var now = new Date();
+      var nowValue = new Date(utils_hooks__hooks.now());
       if (config._useUTC) {
-        return [now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()];
+        return [nowValue.getUTCFullYear(), nowValue.getUTCMonth(), nowValue.getUTCDate()];
       }
-      return [now.getFullYear(), now.getMonth(), now.getDate()];
+      return [nowValue.getFullYear(), nowValue.getMonth(), nowValue.getDate()];
     }
     function configFromArray(config) {
       var i,
@@ -26794,7 +27063,8 @@ module.exports = function() {
           weekday,
           dow,
           doy,
-          temp;
+          temp,
+          weekdayOverflow;
       w = config._w;
       if (w.GG != null || w.W != null || w.E != null) {
         dow = 1;
@@ -26802,6 +27072,9 @@ module.exports = function() {
         weekYear = defaults(w.GG, config._a[YEAR], weekOfYear(local__createLocal(), 1, 4).year);
         week = defaults(w.W, 1);
         weekday = defaults(w.E, 1);
+        if (weekday < 1 || weekday > 7) {
+          weekdayOverflow = true;
+        }
       } else {
         dow = config._locale._week.dow;
         doy = config._locale._week.doy;
@@ -26809,18 +27082,27 @@ module.exports = function() {
         week = defaults(w.w, 1);
         if (w.d != null) {
           weekday = w.d;
-          if (weekday < dow) {
-            ++week;
+          if (weekday < 0 || weekday > 6) {
+            weekdayOverflow = true;
           }
         } else if (w.e != null) {
           weekday = w.e + dow;
+          if (w.e < 0 || w.e > 6) {
+            weekdayOverflow = true;
+          }
         } else {
           weekday = dow;
         }
       }
-      temp = dayOfYearFromWeeks(weekYear, week, weekday, doy, dow);
-      config._a[YEAR] = temp.year;
-      config._dayOfYear = temp.dayOfYear;
+      if (week < 1 || week > weeksInYear(weekYear, dow, doy)) {
+        getParsingFlags(config)._overflowWeeks = true;
+      } else if (weekdayOverflow != null) {
+        getParsingFlags(config)._overflowWeekday = true;
+      } else {
+        temp = dayOfYearFromWeeks(weekYear, week, weekday, dow, doy);
+        config._a[YEAR] = temp.year;
+        config._dayOfYear = temp.dayOfYear;
+      }
     }
     utils_hooks__hooks.ISO_8601 = function() {};
     function configFromStringAndFormat(config) {
@@ -26929,7 +27211,9 @@ module.exports = function() {
         return;
       }
       var i = normalizeObjectUnits(config._i);
-      config._a = [i.year, i.month, i.day || i.date, i.hour, i.minute, i.second, i.millisecond];
+      config._a = map([i.year, i.month, i.day || i.date, i.hour, i.minute, i.second, i.millisecond], function(obj) {
+        return obj && parseInt(obj, 10);
+      });
       configFromArray(config);
     }
     function createFromConfig(config) {
@@ -26961,12 +27245,15 @@ module.exports = function() {
       } else {
         configFromInput(config);
       }
+      if (!valid__isValid(config)) {
+        config._d = null;
+      }
       return config;
     }
     function configFromInput(config) {
       var input = config._i;
       if (input === undefined) {
-        config._d = new Date();
+        config._d = new Date(utils_hooks__hooks.now());
       } else if (isDate(input)) {
         config._d = new Date(+input);
       } else if (typeof input === 'string') {
@@ -27003,11 +27290,19 @@ module.exports = function() {
     }
     var prototypeMin = deprecate('moment().min is deprecated, use moment.min instead. https://github.com/moment/moment/issues/1548', function() {
       var other = local__createLocal.apply(null, arguments);
-      return other < this ? this : other;
+      if (this.isValid() && other.isValid()) {
+        return other < this ? this : other;
+      } else {
+        return valid__createInvalid();
+      }
     });
     var prototypeMax = deprecate('moment().max is deprecated, use moment.max instead. https://github.com/moment/moment/issues/1548', function() {
       var other = local__createLocal.apply(null, arguments);
-      return other > this ? this : other;
+      if (this.isValid() && other.isValid()) {
+        return other > this ? this : other;
+      } else {
+        return valid__createInvalid();
+      }
     });
     function pickBy(fn, moments) {
       var res,
@@ -27034,6 +27329,9 @@ module.exports = function() {
       var args = [].slice.call(arguments, 0);
       return pickBy('isAfter', args);
     }
+    var now = Date.now || function() {
+      return +(new Date());
+    };
     function Duration(duration) {
       var normalizedInput = normalizeObjectUnits(duration),
           years = normalizedInput.year || 0,
@@ -27068,15 +27366,15 @@ module.exports = function() {
     }
     offset('Z', ':');
     offset('ZZ', '');
-    addRegexToken('Z', matchOffset);
-    addRegexToken('ZZ', matchOffset);
+    addRegexToken('Z', matchShortOffset);
+    addRegexToken('ZZ', matchShortOffset);
     addParseToken(['Z', 'ZZ'], function(input, array, config) {
       config._useUTC = true;
-      config._tzm = offsetFromString(input);
+      config._tzm = offsetFromString(matchShortOffset, input);
     });
     var chunkOffset = /([\+\-]|\d\d)/gi;
-    function offsetFromString(string) {
-      var matches = ((string || '').match(matchOffset) || []);
+    function offsetFromString(matcher, string) {
+      var matches = ((string || '').match(matcher) || []);
       var chunk = matches[matches.length - 1] || [];
       var parts = (chunk + '').match(chunkOffset) || ['-', 0, 0];
       var minutes = +(parts[1] * 60) + toInt(parts[2]);
@@ -27102,11 +27400,13 @@ module.exports = function() {
     function getSetOffset(input, keepLocalTime) {
       var offset = this._offset || 0,
           localAdjust;
+      if (!this.isValid()) {
+        return input != null ? this : NaN;
+      }
       if (input != null) {
         if (typeof input === 'string') {
-          input = offsetFromString(input);
-        }
-        if (Math.abs(input) < 16) {
+          input = offsetFromString(matchShortOffset, input);
+        } else if (Math.abs(input) < 16) {
           input = input * 60;
         }
         if (!this._isUTC && keepLocalTime) {
@@ -27159,11 +27459,14 @@ module.exports = function() {
       if (this._tzm) {
         this.utcOffset(this._tzm);
       } else if (typeof this._i === 'string') {
-        this.utcOffset(offsetFromString(this._i));
+        this.utcOffset(offsetFromString(matchOffset, this._i));
       }
       return this;
     }
     function hasAlignedHourOffset(input) {
+      if (!this.isValid()) {
+        return false;
+      }
       input = input ? local__createLocal(input).utcOffset() : 0;
       return (this.utcOffset() - input) % 60 === 0;
     }
@@ -27171,7 +27474,7 @@ module.exports = function() {
       return (this.utcOffset() > this.clone().month(0).utcOffset() || this.utcOffset() > this.clone().month(5).utcOffset());
     }
     function isDaylightSavingTimeShifted() {
-      if (typeof this._isDSTShifted !== 'undefined') {
+      if (!isUndefined(this._isDSTShifted)) {
         return this._isDSTShifted;
       }
       var c = {};
@@ -27186,16 +27489,16 @@ module.exports = function() {
       return this._isDSTShifted;
     }
     function isLocal() {
-      return !this._isUTC;
+      return this.isValid() ? !this._isUTC : false;
     }
     function isUtcOffset() {
-      return this._isUTC;
+      return this.isValid() ? this._isUTC : false;
     }
     function isUtc() {
-      return this._isUTC && this._offset === 0;
+      return this.isValid() ? this._isUTC && this._offset === 0 : false;
     }
-    var aspNetRegex = /(\-)?(?:(\d*)\.)?(\d+)\:(\d+)(?:\:(\d+)\.?(\d{3})?)?/;
-    var create__isoRegex = /^(-)?P(?:(?:([0-9,.]*)Y)?(?:([0-9,.]*)M)?(?:([0-9,.]*)D)?(?:T(?:([0-9,.]*)H)?(?:([0-9,.]*)M)?(?:([0-9,.]*)S)?)?|([0-9,.]*)W)$/;
+    var aspNetRegex = /(\-)?(?:(\d*)[. ])?(\d+)\:(\d+)(?:\:(\d+)\.?(\d{3})?)?/;
+    var isoRegex = /^(-)?P(?:(?:([0-9,.]*)Y)?(?:([0-9,.]*)M)?(?:([0-9,.]*)D)?(?:T(?:([0-9,.]*)H)?(?:([0-9,.]*)M)?(?:([0-9,.]*)S)?)?|([0-9,.]*)W)$/;
     function create__createDuration(input, key) {
       var duration = input,
           match = null,
@@ -27225,7 +27528,7 @@ module.exports = function() {
           s: toInt(match[SECOND]) * sign,
           ms: toInt(match[MILLISECOND]) * sign
         };
-      } else if (!!(match = create__isoRegex.exec(input))) {
+      } else if (!!(match = isoRegex.exec(input))) {
         sign = (match[1] === '-') ? -1 : 1;
         duration = {
           y: parseIso(match[2], sign),
@@ -27269,6 +27572,12 @@ module.exports = function() {
     }
     function momentsDifference(base, other) {
       var res;
+      if (!(base.isValid() && other.isValid())) {
+        return {
+          milliseconds: 0,
+          months: 0
+        };
+      }
       other = cloneWithOffset(other, base);
       if (base.isBefore(other)) {
         res = positiveMomentsDifference(base, other);
@@ -27299,6 +27608,9 @@ module.exports = function() {
       var milliseconds = duration._milliseconds,
           days = duration._days,
           months = duration._months;
+      if (!mom.isValid()) {
+        return;
+      }
       updateOffset = updateOffset == null ? true : updateOffset;
       if (milliseconds) {
         mom._d.setTime(+mom._d + milliseconds * isAdding);
@@ -27320,52 +27632,72 @@ module.exports = function() {
           sod = cloneWithOffset(now, this).startOf('day'),
           diff = this.diff(sod, 'days', true),
           format = diff < -6 ? 'sameElse' : diff < -1 ? 'lastWeek' : diff < 0 ? 'lastDay' : diff < 1 ? 'sameDay' : diff < 2 ? 'nextDay' : diff < 7 ? 'nextWeek' : 'sameElse';
-      return this.format(formats && formats[format] || this.localeData().calendar(format, this, local__createLocal(now)));
+      var output = formats && (isFunction(formats[format]) ? formats[format]() : formats[format]);
+      return this.format(output || this.localeData().calendar(format, this, local__createLocal(now)));
     }
     function clone() {
       return new Moment(this);
     }
     function isAfter(input, units) {
-      var inputMs;
-      units = normalizeUnits(typeof units !== 'undefined' ? units : 'millisecond');
+      var localInput = isMoment(input) ? input : local__createLocal(input);
+      if (!(this.isValid() && localInput.isValid())) {
+        return false;
+      }
+      units = normalizeUnits(!isUndefined(units) ? units : 'millisecond');
       if (units === 'millisecond') {
-        input = isMoment(input) ? input : local__createLocal(input);
-        return +this > +input;
+        return +this > +localInput;
       } else {
-        inputMs = isMoment(input) ? +input : +local__createLocal(input);
-        return inputMs < +this.clone().startOf(units);
+        return +localInput < +this.clone().startOf(units);
       }
     }
     function isBefore(input, units) {
-      var inputMs;
-      units = normalizeUnits(typeof units !== 'undefined' ? units : 'millisecond');
+      var localInput = isMoment(input) ? input : local__createLocal(input);
+      if (!(this.isValid() && localInput.isValid())) {
+        return false;
+      }
+      units = normalizeUnits(!isUndefined(units) ? units : 'millisecond');
       if (units === 'millisecond') {
-        input = isMoment(input) ? input : local__createLocal(input);
-        return +this < +input;
+        return +this < +localInput;
       } else {
-        inputMs = isMoment(input) ? +input : +local__createLocal(input);
-        return +this.clone().endOf(units) < inputMs;
+        return +this.clone().endOf(units) < +localInput;
       }
     }
     function isBetween(from, to, units) {
       return this.isAfter(from, units) && this.isBefore(to, units);
     }
     function isSame(input, units) {
-      var inputMs;
+      var localInput = isMoment(input) ? input : local__createLocal(input),
+          inputMs;
+      if (!(this.isValid() && localInput.isValid())) {
+        return false;
+      }
       units = normalizeUnits(units || 'millisecond');
       if (units === 'millisecond') {
-        input = isMoment(input) ? input : local__createLocal(input);
-        return +this === +input;
+        return +this === +localInput;
       } else {
-        inputMs = +local__createLocal(input);
+        inputMs = +localInput;
         return +(this.clone().startOf(units)) <= inputMs && inputMs <= +(this.clone().endOf(units));
       }
     }
+    function isSameOrAfter(input, units) {
+      return this.isSame(input, units) || this.isAfter(input, units);
+    }
+    function isSameOrBefore(input, units) {
+      return this.isSame(input, units) || this.isBefore(input, units);
+    }
     function diff(input, units, asFloat) {
-      var that = cloneWithOffset(input, this),
-          zoneDelta = (that.utcOffset() - this.utcOffset()) * 6e4,
+      var that,
+          zoneDelta,
           delta,
           output;
+      if (!this.isValid()) {
+        return NaN;
+      }
+      that = cloneWithOffset(input, this);
+      if (!that.isValid()) {
+        return NaN;
+      }
+      zoneDelta = (that.utcOffset() - this.utcOffset()) * 6e4;
       units = normalizeUnits(units);
       if (units === 'year' || units === 'month' || units === 'quarter') {
         output = monthDiff(this, that);
@@ -27401,7 +27733,7 @@ module.exports = function() {
     function moment_format__toISOString() {
       var m = this.clone().utc();
       if (0 < m.year() && m.year() <= 9999) {
-        if ('function' === typeof Date.prototype.toISOString) {
+        if (isFunction(Date.prototype.toISOString)) {
           return this.toDate().toISOString();
         } else {
           return formatMoment(m, 'YYYY-MM-DD[T]HH:mm:ss.SSS[Z]');
@@ -27415,25 +27747,27 @@ module.exports = function() {
       return this.localeData().postformat(output);
     }
     function from(time, withoutSuffix) {
-      if (!this.isValid()) {
+      if (this.isValid() && ((isMoment(time) && time.isValid()) || local__createLocal(time).isValid())) {
+        return create__createDuration({
+          to: this,
+          from: time
+        }).locale(this.locale()).humanize(!withoutSuffix);
+      } else {
         return this.localeData().invalidDate();
       }
-      return create__createDuration({
-        to: this,
-        from: time
-      }).locale(this.locale()).humanize(!withoutSuffix);
     }
     function fromNow(withoutSuffix) {
       return this.from(local__createLocal(), withoutSuffix);
     }
     function to(time, withoutSuffix) {
-      if (!this.isValid()) {
+      if (this.isValid() && ((isMoment(time) && time.isValid()) || local__createLocal(time).isValid())) {
+        return create__createDuration({
+          from: this,
+          to: time
+        }).locale(this.locale()).humanize(!withoutSuffix);
+      } else {
         return this.localeData().invalidDate();
       }
-      return create__createDuration({
-        from: this,
-        to: time
-      }).locale(this.locale()).humanize(!withoutSuffix);
     }
     function toNow(withoutSuffix) {
       return this.to(local__createLocal(), withoutSuffix);
@@ -27522,6 +27856,9 @@ module.exports = function() {
         milliseconds: m.milliseconds()
       };
     }
+    function toJSON() {
+      return this.isValid() ? this.toISOString() : 'null';
+    }
     function moment_valid__isValid() {
       return valid__isValid(this);
     }
@@ -27530,6 +27867,15 @@ module.exports = function() {
     }
     function invalidAt() {
       return getParsingFlags(this).overflow;
+    }
+    function creationData() {
+      return {
+        input: this._i,
+        format: this._f,
+        locale: this._locale,
+        isUTC: this._isUTC,
+        strict: this._strict
+      };
     }
     addFormatToken(0, ['gg', 2], 0, function() {
       return this.weekYear() % 100;
@@ -27560,16 +27906,11 @@ module.exports = function() {
     addWeekParseToken(['gg', 'GG'], function(input, week, config, token) {
       week[token] = utils_hooks__hooks.parseTwoDigitYear(input);
     });
-    function weeksInYear(year, dow, doy) {
-      return weekOfYear(local__createLocal([year, 11, 31 + dow - doy]), dow, doy).week;
-    }
     function getSetWeekYear(input) {
-      var year = weekOfYear(this, this.localeData()._week.dow, this.localeData()._week.doy).year;
-      return input == null ? year : this.add((input - year), 'y');
+      return getSetWeekYearHelper.call(this, input, this.week(), this.weekday(), this.localeData()._week.dow, this.localeData()._week.doy);
     }
     function getSetISOWeekYear(input) {
-      var year = weekOfYear(this, 1, 4).year;
-      return input == null ? year : this.add((input - year), 'y');
+      return getSetWeekYearHelper.call(this, input, this.isoWeek(), this.isoWeekday(), 1, 4);
     }
     function getISOWeeksInYear() {
       return weeksInYear(this.year(), 1, 4);
@@ -27578,7 +27919,27 @@ module.exports = function() {
       var weekInfo = this.localeData()._week;
       return weeksInYear(this.year(), weekInfo.dow, weekInfo.doy);
     }
-    addFormatToken('Q', 0, 0, 'quarter');
+    function getSetWeekYearHelper(input, week, weekday, dow, doy) {
+      var weeksTarget;
+      if (input == null) {
+        return weekOfYear(this, dow, doy).year;
+      } else {
+        weeksTarget = weeksInYear(input, dow, doy);
+        if (week > weeksTarget) {
+          week = weeksTarget;
+        }
+        return setWeekAll.call(this, input, week, weekday, dow, doy);
+      }
+    }
+    function setWeekAll(weekYear, week, weekday, dow, doy) {
+      var dayOfYearData = dayOfYearFromWeeks(weekYear, week, weekday, dow, doy),
+          date = createUTCDate(dayOfYearData.year, 0, dayOfYearData.dayOfYear);
+      this.year(date.getUTCFullYear());
+      this.month(date.getUTCMonth());
+      this.date(date.getUTCDate());
+      return this;
+    }
+    addFormatToken('Q', 0, 'Qo', 'quarter');
     addUnitAlias('quarter', 'Q');
     addRegexToken('Q', match1);
     addParseToken('Q', function(input, array) {
@@ -27586,6 +27947,38 @@ module.exports = function() {
     });
     function getSetQuarter(input) {
       return input == null ? Math.ceil((this.month() + 1) / 3) : this.month((input - 1) * 3 + this.month() % 3);
+    }
+    addFormatToken('w', ['ww', 2], 'wo', 'week');
+    addFormatToken('W', ['WW', 2], 'Wo', 'isoWeek');
+    addUnitAlias('week', 'w');
+    addUnitAlias('isoWeek', 'W');
+    addRegexToken('w', match1to2);
+    addRegexToken('ww', match1to2, match2);
+    addRegexToken('W', match1to2);
+    addRegexToken('WW', match1to2, match2);
+    addWeekParseToken(['w', 'ww', 'W', 'WW'], function(input, week, config, token) {
+      week[token.substr(0, 1)] = toInt(input);
+    });
+    function localeWeek(mom) {
+      return weekOfYear(mom, this._week.dow, this._week.doy).week;
+    }
+    var defaultLocaleWeek = {
+      dow: 0,
+      doy: 6
+    };
+    function localeFirstDayOfWeek() {
+      return this._week.dow;
+    }
+    function localeFirstDayOfYear() {
+      return this._week.doy;
+    }
+    function getSetWeek(input) {
+      var week = this.localeData().week(this);
+      return input == null ? week : this.add((input - week) * 7, 'd');
+    }
+    function getSetISOWeek(input) {
+      var week = weekOfYear(this, 1, 4).week;
+      return input == null ? week : this.add((input - week) * 7, 'd');
     }
     addFormatToken('D', ['DD', 2], 'Do', 'date');
     addUnitAlias('date', 'D');
@@ -27620,8 +28013,8 @@ module.exports = function() {
     addRegexToken('dd', matchWord);
     addRegexToken('ddd', matchWord);
     addRegexToken('dddd', matchWord);
-    addWeekParseToken(['dd', 'ddd', 'dddd'], function(input, week, config) {
-      var weekday = config._locale.weekdaysParse(input);
+    addWeekParseToken(['dd', 'ddd', 'dddd'], function(input, week, config, token) {
+      var weekday = config._locale.weekdaysParse(input, token, config._strict);
       if (weekday != null) {
         week.d = weekday;
       } else {
@@ -27645,8 +28038,8 @@ module.exports = function() {
       return null;
     }
     var defaultLocaleWeekdays = 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_');
-    function localeWeekdays(m) {
-      return this._weekdays[m.day()];
+    function localeWeekdays(m, format) {
+      return isArray(this._weekdays) ? this._weekdays[m.day()] : this._weekdays[this._weekdays.isFormat.test(format) ? 'format' : 'standalone'][m.day()];
     }
     var defaultLocaleWeekdaysShort = 'Sun_Mon_Tue_Wed_Thu_Fri_Sat'.split('_');
     function localeWeekdaysShort(m) {
@@ -27656,23 +28049,42 @@ module.exports = function() {
     function localeWeekdaysMin(m) {
       return this._weekdaysMin[m.day()];
     }
-    function localeWeekdaysParse(weekdayName) {
+    function localeWeekdaysParse(weekdayName, format, strict) {
       var i,
           mom,
           regex;
-      this._weekdaysParse = this._weekdaysParse || [];
+      if (!this._weekdaysParse) {
+        this._weekdaysParse = [];
+        this._minWeekdaysParse = [];
+        this._shortWeekdaysParse = [];
+        this._fullWeekdaysParse = [];
+      }
       for (i = 0; i < 7; i++) {
+        mom = local__createLocal([2000, 1]).day(i);
+        if (strict && !this._fullWeekdaysParse[i]) {
+          this._fullWeekdaysParse[i] = new RegExp('^' + this.weekdays(mom, '').replace('.', '\.?') + '$', 'i');
+          this._shortWeekdaysParse[i] = new RegExp('^' + this.weekdaysShort(mom, '').replace('.', '\.?') + '$', 'i');
+          this._minWeekdaysParse[i] = new RegExp('^' + this.weekdaysMin(mom, '').replace('.', '\.?') + '$', 'i');
+        }
         if (!this._weekdaysParse[i]) {
-          mom = local__createLocal([2000, 1]).day(i);
           regex = '^' + this.weekdays(mom, '') + '|^' + this.weekdaysShort(mom, '') + '|^' + this.weekdaysMin(mom, '');
           this._weekdaysParse[i] = new RegExp(regex.replace('.', ''), 'i');
         }
-        if (this._weekdaysParse[i].test(weekdayName)) {
+        if (strict && format === 'dddd' && this._fullWeekdaysParse[i].test(weekdayName)) {
+          return i;
+        } else if (strict && format === 'ddd' && this._shortWeekdaysParse[i].test(weekdayName)) {
+          return i;
+        } else if (strict && format === 'dd' && this._minWeekdaysParse[i].test(weekdayName)) {
+          return i;
+        } else if (!strict && this._weekdaysParse[i].test(weekdayName)) {
           return i;
         }
       }
     }
     function getSetDayOfWeek(input) {
+      if (!this.isValid()) {
+        return input != null ? this : NaN;
+      }
       var day = this._isUTC ? this._d.getUTCDay() : this._d.getDay();
       if (input != null) {
         input = parseWeekday(input, this.localeData());
@@ -27682,15 +28094,45 @@ module.exports = function() {
       }
     }
     function getSetLocaleDayOfWeek(input) {
+      if (!this.isValid()) {
+        return input != null ? this : NaN;
+      }
       var weekday = (this.day() + 7 - this.localeData()._week.dow) % 7;
       return input == null ? weekday : this.add(input - weekday, 'd');
     }
     function getSetISODayOfWeek(input) {
+      if (!this.isValid()) {
+        return input != null ? this : NaN;
+      }
       return input == null ? this.day() || 7 : this.day(this.day() % 7 ? input : input - 7);
     }
-    addFormatToken('H', ['HH', 2], 0, 'hour');
-    addFormatToken('h', ['hh', 2], 0, function() {
+    addFormatToken('DDD', ['DDDD', 3], 'DDDo', 'dayOfYear');
+    addUnitAlias('dayOfYear', 'DDD');
+    addRegexToken('DDD', match1to3);
+    addRegexToken('DDDD', match3);
+    addParseToken(['DDD', 'DDDD'], function(input, array, config) {
+      config._dayOfYear = toInt(input);
+    });
+    function getSetDayOfYear(input) {
+      var dayOfYear = Math.round((this.clone().startOf('day') - this.clone().startOf('year')) / 864e5) + 1;
+      return input == null ? dayOfYear : this.add((input - dayOfYear), 'd');
+    }
+    function hFormat() {
       return this.hours() % 12 || 12;
+    }
+    addFormatToken('H', ['HH', 2], 0, 'hour');
+    addFormatToken('h', ['hh', 2], 0, hFormat);
+    addFormatToken('hmm', 0, 0, function() {
+      return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2);
+    });
+    addFormatToken('hmmss', 0, 0, function() {
+      return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2) + zeroFill(this.seconds(), 2);
+    });
+    addFormatToken('Hmm', 0, 0, function() {
+      return '' + this.hours() + zeroFill(this.minutes(), 2);
+    });
+    addFormatToken('Hmmss', 0, 0, function() {
+      return '' + this.hours() + zeroFill(this.minutes(), 2) + zeroFill(this.seconds(), 2);
     });
     function meridiem(token, lowercase) {
       addFormatToken(token, 0, 0, function() {
@@ -27709,6 +28151,10 @@ module.exports = function() {
     addRegexToken('h', match1to2);
     addRegexToken('HH', match1to2, match2);
     addRegexToken('hh', match1to2, match2);
+    addRegexToken('hmm', match3to4);
+    addRegexToken('hmmss', match5to6);
+    addRegexToken('Hmm', match3to4);
+    addRegexToken('Hmmss', match5to6);
     addParseToken(['H', 'HH'], HOUR);
     addParseToken(['a', 'A'], function(input, array, config) {
       config._isPm = config._locale.isPM(input);
@@ -27717,6 +28163,32 @@ module.exports = function() {
     addParseToken(['h', 'hh'], function(input, array, config) {
       array[HOUR] = toInt(input);
       getParsingFlags(config).bigHour = true;
+    });
+    addParseToken('hmm', function(input, array, config) {
+      var pos = input.length - 2;
+      array[HOUR] = toInt(input.substr(0, pos));
+      array[MINUTE] = toInt(input.substr(pos));
+      getParsingFlags(config).bigHour = true;
+    });
+    addParseToken('hmmss', function(input, array, config) {
+      var pos1 = input.length - 4;
+      var pos2 = input.length - 2;
+      array[HOUR] = toInt(input.substr(0, pos1));
+      array[MINUTE] = toInt(input.substr(pos1, 2));
+      array[SECOND] = toInt(input.substr(pos2));
+      getParsingFlags(config).bigHour = true;
+    });
+    addParseToken('Hmm', function(input, array, config) {
+      var pos = input.length - 2;
+      array[HOUR] = toInt(input.substr(0, pos));
+      array[MINUTE] = toInt(input.substr(pos));
+    });
+    addParseToken('Hmmss', function(input, array, config) {
+      var pos1 = input.length - 4;
+      var pos2 = input.length - 2;
+      array[HOUR] = toInt(input.substr(0, pos1));
+      array[MINUTE] = toInt(input.substr(pos1, 2));
+      array[SECOND] = toInt(input.substr(pos2));
     });
     function localeIsPM(input) {
       return ((input + '').toLowerCase().charAt(0) === 'p');
@@ -27807,6 +28279,8 @@ module.exports = function() {
     momentPrototype__proto.isBefore = isBefore;
     momentPrototype__proto.isBetween = isBetween;
     momentPrototype__proto.isSame = isSame;
+    momentPrototype__proto.isSameOrAfter = isSameOrAfter;
+    momentPrototype__proto.isSameOrBefore = isSameOrBefore;
     momentPrototype__proto.isValid = moment_valid__isValid;
     momentPrototype__proto.lang = lang;
     momentPrototype__proto.locale = locale;
@@ -27821,10 +28295,11 @@ module.exports = function() {
     momentPrototype__proto.toObject = toObject;
     momentPrototype__proto.toDate = toDate;
     momentPrototype__proto.toISOString = moment_format__toISOString;
-    momentPrototype__proto.toJSON = moment_format__toISOString;
+    momentPrototype__proto.toJSON = toJSON;
     momentPrototype__proto.toString = toString;
     momentPrototype__proto.unix = unix;
     momentPrototype__proto.valueOf = to_type__valueOf;
+    momentPrototype__proto.creationData = creationData;
     momentPrototype__proto.year = getSetYear;
     momentPrototype__proto.isLeapYear = getIsLeapYear;
     momentPrototype__proto.weekYear = getSetWeekYear;
@@ -27879,7 +28354,7 @@ module.exports = function() {
     };
     function locale_calendar__calendar(key, mom, now) {
       var output = this._calendar[key];
-      return typeof output === 'function' ? output.call(mom, now) : output;
+      return isFunction(output) ? output.call(mom, now) : output;
     }
     var defaultLongDateFormat = {
       LTS: 'h:mm:ss A',
@@ -27929,18 +28404,18 @@ module.exports = function() {
     };
     function relative__relativeTime(number, withoutSuffix, string, isFuture) {
       var output = this._relativeTime[string];
-      return (typeof output === 'function') ? output(number, withoutSuffix, string, isFuture) : output.replace(/%d/i, number);
+      return (isFunction(output)) ? output(number, withoutSuffix, string, isFuture) : output.replace(/%d/i, number);
     }
     function pastFuture(diff, output) {
       var format = this._relativeTime[diff > 0 ? 'future' : 'past'];
-      return typeof format === 'function' ? format(output) : format.replace(/%s/i, output);
+      return isFunction(format) ? format(output) : format.replace(/%s/i, output);
     }
     function locale_set__set(config) {
       var prop,
           i;
       for (i in config) {
         prop = config[i];
-        if (typeof prop === 'function') {
+        if (isFunction(prop)) {
           this[i] = prop;
         } else {
           this['_' + i] = prop;
@@ -28020,6 +28495,9 @@ module.exports = function() {
       return list(format, index, 'weekdaysMin', 7, 'day');
     }
     locale_locales__getSetGlobalLocale('en', {
+      monthsParse: [/^jan/i, /^feb/i, /^mar/i, /^apr/i, /^may/i, /^jun/i, /^jul/i, /^aug/i, /^sep/i, /^oct/i, /^nov/i, /^dec/i],
+      longMonthsParse: [/^january$/i, /^february$/i, /^march$/i, /^april$/i, /^may$/i, /^june$/i, /^july$/i, /^august$/i, /^september$/i, /^october$/i, /^november$/i, /^december$/i],
+      shortMonthsParse: [/^jan$/i, /^feb$/i, /^mar$/i, /^apr$/i, /^may$/i, /^jun$/i, /^jul$/i, /^aug/i, /^sept?$/i, /^oct$/i, /^nov$/i, /^dec$/i],
       ordinalParse: /\d{1,2}(th|st|nd|rd)/,
       ordinal: function(number) {
         var b = number % 10,
@@ -28185,7 +28663,7 @@ module.exports = function() {
       var days = round(duration.as('d'));
       var months = round(duration.as('M'));
       var years = round(duration.as('y'));
-      var a = seconds < thresholds.s && ['s', seconds] || minutes === 1 && ['m'] || minutes < thresholds.m && ['mm', minutes] || hours === 1 && ['h'] || hours < thresholds.h && ['hh', hours] || days === 1 && ['d'] || days < thresholds.d && ['dd', days] || months === 1 && ['M'] || months < thresholds.M && ['MM', months] || years === 1 && ['y'] || ['yy', years];
+      var a = seconds < thresholds.s && ['s', seconds] || minutes <= 1 && ['m'] || minutes < thresholds.m && ['mm', minutes] || hours <= 1 && ['h'] || hours < thresholds.h && ['hh', hours] || days <= 1 && ['d'] || days < thresholds.d && ['dd', days] || months <= 1 && ['M'] || months < thresholds.M && ['MM', months] || years <= 1 && ['y'] || ['yy', years];
       a[2] = withoutSuffix;
       a[3] = +posNegDuration > 0;
       a[4] = locale;
@@ -28277,11 +28755,12 @@ module.exports = function() {
     addParseToken('x', function(input, array, config) {
       config._d = new Date(toInt(input));
     });
-    utils_hooks__hooks.version = '2.10.6';
+    utils_hooks__hooks.version = '2.11.0';
     setHookCallback(local__createLocal);
     utils_hooks__hooks.fn = momentPrototype;
     utils_hooks__hooks.min = min;
     utils_hooks__hooks.max = max;
+    utils_hooks__hooks.now = now;
     utils_hooks__hooks.utc = create_utc__createUTC;
     utils_hooks__hooks.unix = moment__createUnix;
     utils_hooks__hooks.months = lists__listMonths;
@@ -28300,6 +28779,7 @@ module.exports = function() {
     utils_hooks__hooks.weekdaysShort = lists__listWeekdaysShort;
     utils_hooks__hooks.normalizeUnits = normalizeUnits;
     utils_hooks__hooks.relativeTimeThreshold = duration_humanize__getSetRelativeTimeThreshold;
+    utils_hooks__hooks.prototype = momentPrototype;
     var _moment = utils_hooks__hooks;
     return _moment;
   }));
@@ -28309,12 +28789,12 @@ module.exports = function() {
 //# 
 },{}],"moment":[function(require,module,exports){
 //! moment.js
-//! version : 2.10.6
+//! version : 2.11.0
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
 //! license : MIT
 //! momentjs.com
 
-(function (global, factory) {
+;(function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
     typeof define === 'function' && define.amd ? define(factory) :
     global.moment = factory()
@@ -28431,39 +28911,45 @@ module.exports = function() {
         return m;
     }
 
+    function isUndefined(input) {
+        return input === void 0;
+    }
+
+    // Plugins that add properties should also add the key here (null value),
+    // so we can properly clone ourselves.
     var momentProperties = utils_hooks__hooks.momentProperties = [];
 
     function copyConfig(to, from) {
         var i, prop, val;
 
-        if (typeof from._isAMomentObject !== 'undefined') {
+        if (!isUndefined(from._isAMomentObject)) {
             to._isAMomentObject = from._isAMomentObject;
         }
-        if (typeof from._i !== 'undefined') {
+        if (!isUndefined(from._i)) {
             to._i = from._i;
         }
-        if (typeof from._f !== 'undefined') {
+        if (!isUndefined(from._f)) {
             to._f = from._f;
         }
-        if (typeof from._l !== 'undefined') {
+        if (!isUndefined(from._l)) {
             to._l = from._l;
         }
-        if (typeof from._strict !== 'undefined') {
+        if (!isUndefined(from._strict)) {
             to._strict = from._strict;
         }
-        if (typeof from._tzm !== 'undefined') {
+        if (!isUndefined(from._tzm)) {
             to._tzm = from._tzm;
         }
-        if (typeof from._isUTC !== 'undefined') {
+        if (!isUndefined(from._isUTC)) {
             to._isUTC = from._isUTC;
         }
-        if (typeof from._offset !== 'undefined') {
+        if (!isUndefined(from._offset)) {
             to._offset = from._offset;
         }
-        if (typeof from._pf !== 'undefined') {
+        if (!isUndefined(from._pf)) {
             to._pf = getParsingFlags(from);
         }
-        if (typeof from._locale !== 'undefined') {
+        if (!isUndefined(from._locale)) {
             to._locale = from._locale;
         }
 
@@ -28471,7 +28957,7 @@ module.exports = function() {
             for (i in momentProperties) {
                 prop = momentProperties[i];
                 val = from[prop];
-                if (typeof val !== 'undefined') {
+                if (!isUndefined(val)) {
                     to[prop] = val;
                 }
             }
@@ -28518,6 +29004,7 @@ module.exports = function() {
         return value;
     }
 
+    // compare two arrays, return the number of differences
     function compareArrays(array1, array2, dontConvert) {
         var len = Math.min(array1.length, array2.length),
             lengthDiff = Math.abs(array1.length - array2.length),
@@ -28535,6 +29022,7 @@ module.exports = function() {
     function Locale() {
     }
 
+    // internal storage for locale config files
     var locales = {};
     var globalLocale;
 
@@ -28572,7 +29060,7 @@ module.exports = function() {
     function loadLocale(name) {
         var oldLocale = null;
         // TODO: Find a better way to register and load all the locales in Node
-        if (!locales[name] && typeof module !== 'undefined' &&
+        if (!locales[name] && !isUndefined(module) &&
                 module && module.exports) {
             try {
                 oldLocale = globalLocale._abbr;
@@ -28591,7 +29079,7 @@ module.exports = function() {
     function locale_locales__getSetGlobalLocale (key, values) {
         var data;
         if (key) {
-            if (typeof values === 'undefined') {
+            if (isUndefined(values)) {
                 data = locale_locales__getLocale(key);
             }
             else {
@@ -28676,6 +29164,10 @@ module.exports = function() {
         return normalizedInput;
     }
 
+    function isFunction(input) {
+        return input instanceof Function || Object.prototype.toString.call(input) === '[object Function]';
+    }
+
     function makeGetSet (unit, keepTime) {
         return function (value) {
             if (value != null) {
@@ -28689,11 +29181,14 @@ module.exports = function() {
     }
 
     function get_set__get (mom, unit) {
-        return mom._d['get' + (mom._isUTC ? 'UTC' : '') + unit]();
+        return mom.isValid() ?
+            mom._d['get' + (mom._isUTC ? 'UTC' : '') + unit]() : NaN;
     }
 
     function get_set__set (mom, unit, value) {
-        return mom._d['set' + (mom._isUTC ? 'UTC' : '') + unit](value);
+        if (mom.isValid()) {
+            mom._d['set' + (mom._isUTC ? 'UTC' : '') + unit](value);
+        }
     }
 
     // MOMENTS
@@ -28706,7 +29201,7 @@ module.exports = function() {
             }
         } else {
             units = normalizeUnits(units);
-            if (typeof this[units] === 'function') {
+            if (isFunction(this[units])) {
                 return this[units](value);
             }
         }
@@ -28721,7 +29216,7 @@ module.exports = function() {
             Math.pow(10, Math.max(0, zerosToFill)).toString().substr(1) + absNumber;
     }
 
-    var formattingTokens = /(\[[^\[]*\])|(\\)?(Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Q|YYYYYY|YYYYY|YYYY|YY|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g;
+    var formattingTokens = /(\[[^\[]*\])|(\\)?([Hh]mm(ss)?|Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Qo?|YYYYYY|YYYYY|YYYY|YY|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g;
 
     var localFormattingTokens = /(\[[^\[]*\])|(\\)?(LTS|LT|LL?L?L?|l{1,4})/g;
 
@@ -28817,6 +29312,8 @@ module.exports = function() {
     var match4         = /\d{4}/;         //    0000 - 9999
     var match6         = /[+-]?\d{6}/;    // -999999 - 999999
     var match1to2      = /\d\d?/;         //       0 - 99
+    var match3to4      = /\d\d\d\d?/;     //     999 - 9999
+    var match5to6      = /\d\d\d\d\d\d?/; //   99999 - 999999
     var match1to3      = /\d{1,3}/;       //       0 - 999
     var match1to4      = /\d{1,4}/;       //       0 - 9999
     var match1to6      = /[+-]?\d{1,6}/;  // -999999 - 999999
@@ -28825,20 +29322,16 @@ module.exports = function() {
     var matchSigned    = /[+-]?\d+/;      //    -inf - inf
 
     var matchOffset    = /Z|[+-]\d\d:?\d\d/gi; // +00:00 -00:00 +0000 -0000 or Z
+    var matchShortOffset = /Z|[+-]\d\d(?::?\d\d)?/gi; // +00 -00 +00:00 -00:00 +0000 -0000 or Z
 
     var matchTimestamp = /[+-]?\d+(\.\d{1,3})?/; // 123456789 123456789.123
 
     // any word (or two) characters or numbers including two/three word month in arabic.
-    var matchWord = /[0-9]*['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+|[\u0600-\u06FF\/]+(\s*?[\u0600-\u06FF]+){1,2}/i;
+    // includes scottish gaelic two word and hyphenated months
+    var matchWord = /[0-9]*(a[mn]\s?)?['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF\-]+|[\u0600-\u06FF\/]+(\s*?[\u0600-\u06FF]+){1,2}/i;
+
 
     var regexes = {};
-
-    function isFunction (sth) {
-        // https://github.com/moment/moment/issues/2325
-        return typeof sth === 'function' &&
-            Object.prototype.toString.call(sth) === '[object Function]';
-    }
-
 
     function addRegexToken (token, regex, strictRegex) {
         regexes[token] = isFunction(regex) ? regex : function (isStrict) {
@@ -28898,6 +29391,8 @@ module.exports = function() {
     var MINUTE = 4;
     var SECOND = 5;
     var MILLISECOND = 6;
+    var WEEK = 7;
+    var WEEKDAY = 8;
 
     function daysInMonth(year, month) {
         return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
@@ -28944,14 +29439,17 @@ module.exports = function() {
 
     // LOCALES
 
+    var MONTHS_IN_FORMAT = /D[oD]?(\[[^\[\]]*\]|\s+)+MMMM?/;
     var defaultLocaleMonths = 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_');
-    function localeMonths (m) {
-        return this._months[m.month()];
+    function localeMonths (m, format) {
+        return isArray(this._months) ? this._months[m.month()] :
+            this._months[MONTHS_IN_FORMAT.test(format) ? 'format' : 'standalone'][m.month()];
     }
 
-    var defaultLocaleMonthsShort = 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_');
-    function localeMonthsShort (m) {
-        return this._monthsShort[m.month()];
+    var defaultLocaleMonthsShort = 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sept_Oct_Nov_Dec'.split('_');
+    function localeMonthsShort (m, format) {
+        return isArray(this._monthsShort) ? this._monthsShort[m.month()] :
+            this._monthsShort[MONTHS_IN_FORMAT.test(format) ? 'format' : 'standalone'][m.month()];
     }
 
     function localeMonthsParse (monthName, format, strict) {
@@ -28989,6 +29487,11 @@ module.exports = function() {
 
     function setMonth (mom, value) {
         var dayOfMonth;
+
+        if (!mom.isValid()) {
+            // No op
+            return mom;
+        }
 
         // TODO: Move this out of here!
         if (typeof value === 'string') {
@@ -29035,6 +29538,12 @@ module.exports = function() {
             if (getParsingFlags(m)._overflowDayOfYear && (overflow < YEAR || overflow > DATE)) {
                 overflow = DATE;
             }
+            if (getParsingFlags(m)._overflowWeeks && overflow === -1) {
+                overflow = WEEK;
+            }
+            if (getParsingFlags(m)._overflowWeekday && overflow === -1) {
+                overflow = WEEKDAY;
+            }
 
             getParsingFlags(m).overflow = overflow;
         }
@@ -29043,7 +29552,7 @@ module.exports = function() {
     }
 
     function warn(msg) {
-        if (utils_hooks__hooks.suppressDeprecationWarnings === false && typeof console !== 'undefined' && console.warn) {
+        if (utils_hooks__hooks.suppressDeprecationWarnings === false && !isUndefined(console) && console.warn) {
             console.warn('Deprecation warning: ' + msg);
         }
     }
@@ -29053,7 +29562,7 @@ module.exports = function() {
 
         return extend(function () {
             if (firstTime) {
-                warn(msg + '\n' + (new Error()).stack);
+                warn(msg + '\nArguments: ' + Array.prototype.slice.call(arguments).join(', ') + '\n' + (new Error()).stack);
                 firstTime = false;
             }
             return fn.apply(this, arguments);
@@ -29071,22 +29580,39 @@ module.exports = function() {
 
     utils_hooks__hooks.suppressDeprecationWarnings = false;
 
-    var from_string__isoRegex = /^\s*(?:[+-]\d{6}|\d{4})-(?:(\d\d-\d\d)|(W\d\d$)|(W\d\d-\d)|(\d\d\d))((T| )(\d\d(:\d\d(:\d\d(\.\d+)?)?)?)?([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?$/;
+    // iso 8601 regex
+    // 0000-00-00 0000-W00 or 0000-W00-0 + T + 00 or 00:00 or 00:00:00 or 00:00:00.000 + +00:00 or +0000 or +00)
+    var extendedIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})-(?:\d\d-\d\d|W\d\d-\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?::\d\d(?::\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+    var basicIsoRegex = /^\s*((?:[+-]\d{6}|\d{4})(?:\d\d\d\d|W\d\d\d|W\d\d|\d\d\d|\d\d))(?:(T| )(\d\d(?:\d\d(?:\d\d(?:[.,]\d+)?)?)?)([\+\-]\d\d(?::?\d\d)?|\s*Z)?)?/;
+
+    var tzRegex = /Z|[+-]\d\d(?::?\d\d)?/;
 
     var isoDates = [
-        ['YYYYYY-MM-DD', /[+-]\d{6}-\d{2}-\d{2}/],
-        ['YYYY-MM-DD', /\d{4}-\d{2}-\d{2}/],
-        ['GGGG-[W]WW-E', /\d{4}-W\d{2}-\d/],
-        ['GGGG-[W]WW', /\d{4}-W\d{2}/],
-        ['YYYY-DDD', /\d{4}-\d{3}/]
+        ['YYYYYY-MM-DD', /[+-]\d{6}-\d\d-\d\d/],
+        ['YYYY-MM-DD', /\d{4}-\d\d-\d\d/],
+        ['GGGG-[W]WW-E', /\d{4}-W\d\d-\d/],
+        ['GGGG-[W]WW', /\d{4}-W\d\d/, false],
+        ['YYYY-DDD', /\d{4}-\d{3}/],
+        ['YYYY-MM', /\d{4}-\d\d/, false],
+        ['YYYYYYMMDD', /[+-]\d{10}/],
+        ['YYYYMMDD', /\d{8}/],
+        // YYYYMM is NOT allowed by the standard
+        ['GGGG[W]WWE', /\d{4}W\d{3}/],
+        ['GGGG[W]WW', /\d{4}W\d{2}/, false],
+        ['YYYYDDD', /\d{7}/]
     ];
 
     // iso time formats and regexes
     var isoTimes = [
-        ['HH:mm:ss.SSSS', /(T| )\d\d:\d\d:\d\d\.\d+/],
-        ['HH:mm:ss', /(T| )\d\d:\d\d:\d\d/],
-        ['HH:mm', /(T| )\d\d:\d\d/],
-        ['HH', /(T| )\d\d/]
+        ['HH:mm:ss.SSSS', /\d\d:\d\d:\d\d\.\d+/],
+        ['HH:mm:ss,SSSS', /\d\d:\d\d:\d\d,\d+/],
+        ['HH:mm:ss', /\d\d:\d\d:\d\d/],
+        ['HH:mm', /\d\d:\d\d/],
+        ['HHmmss.SSSS', /\d\d\d\d\d\d\.\d+/],
+        ['HHmmss,SSSS', /\d\d\d\d\d\d,\d+/],
+        ['HHmmss', /\d\d\d\d\d\d/],
+        ['HHmm', /\d\d\d\d/],
+        ['HH', /\d\d/]
     ];
 
     var aspNetJsonRegex = /^\/?Date\((\-?\d+)/i;
@@ -29095,26 +29621,49 @@ module.exports = function() {
     function configFromISO(config) {
         var i, l,
             string = config._i,
-            match = from_string__isoRegex.exec(string);
+            match = extendedIsoRegex.exec(string) || basicIsoRegex.exec(string),
+            allowTime, dateFormat, timeFormat, tzFormat;
 
         if (match) {
             getParsingFlags(config).iso = true;
+
             for (i = 0, l = isoDates.length; i < l; i++) {
-                if (isoDates[i][1].exec(string)) {
-                    config._f = isoDates[i][0];
+                if (isoDates[i][1].exec(match[1])) {
+                    dateFormat = isoDates[i][0];
+                    allowTime = isoDates[i][2] !== false;
                     break;
                 }
             }
-            for (i = 0, l = isoTimes.length; i < l; i++) {
-                if (isoTimes[i][1].exec(string)) {
-                    // match[6] should be 'T' or space
-                    config._f += (match[6] || ' ') + isoTimes[i][0];
-                    break;
+            if (dateFormat == null) {
+                config._isValid = false;
+                return;
+            }
+            if (match[3]) {
+                for (i = 0, l = isoTimes.length; i < l; i++) {
+                    if (isoTimes[i][1].exec(match[3])) {
+                        // match[2] should be 'T' or space
+                        timeFormat = (match[2] || ' ') + isoTimes[i][0];
+                        break;
+                    }
+                }
+                if (timeFormat == null) {
+                    config._isValid = false;
+                    return;
                 }
             }
-            if (string.match(matchOffset)) {
-                config._f += 'Z';
+            if (!allowTime && timeFormat != null) {
+                config._isValid = false;
+                return;
             }
+            if (match[4]) {
+                if (tzRegex.exec(match[4])) {
+                    tzFormat = 'Z';
+                } else {
+                    config._isValid = false;
+                    return;
+                }
+            }
+            config._f = dateFormat + (timeFormat || '') + (tzFormat || '');
             configFromStringAndFormat(config);
         } else {
             config._isValid = false;
@@ -29152,8 +29701,8 @@ module.exports = function() {
         //http://stackoverflow.com/questions/181348/instantiating-a-javascript-object-by-calling-prototype-constructor-apply
         var date = new Date(y, m, d, h, M, s, ms);
 
-        //the date constructor doesn't accept years < 1970
-        if (y < 1970) {
+        //the date constructor remaps years 0-99 to 1900-1999
+        if (y < 100 && y >= 0 && isFinite(date.getFullYear())) {
             date.setFullYear(y);
         }
         return date;
@@ -29161,11 +29710,15 @@ module.exports = function() {
 
     function createUTCDate (y) {
         var date = new Date(Date.UTC.apply(null, arguments));
-        if (y < 1970) {
+
+        //the Date.UTC function remaps years 0-99 to 1900-1999
+        if (y < 100 && y >= 0 && isFinite(date.getUTCFullYear())) {
             date.setUTCFullYear(y);
         }
         return date;
     }
+
+    // FORMATTING
 
     addFormatToken(0, ['YY', 2], 0, function () {
         return this.year() % 100;
@@ -29219,124 +29772,66 @@ module.exports = function() {
         return isLeapYear(this.year());
     }
 
-    addFormatToken('w', ['ww', 2], 'wo', 'week');
-    addFormatToken('W', ['WW', 2], 'Wo', 'isoWeek');
+    // start-of-first-week - start-of-year
+    function firstWeekOffset(year, dow, doy) {
+        var // first-week day -- which january is always in the first week (4 for iso, 1 for other)
+            fwd = 7 + dow - doy,
+            // first-week day local weekday -- which local weekday is fwd
+            fwdlw = (7 + createUTCDate(year, 0, fwd).getUTCDay() - dow) % 7;
 
-    // ALIASES
-
-    addUnitAlias('week', 'w');
-    addUnitAlias('isoWeek', 'W');
-
-    // PARSING
-
-    addRegexToken('w',  match1to2);
-    addRegexToken('ww', match1to2, match2);
-    addRegexToken('W',  match1to2);
-    addRegexToken('WW', match1to2, match2);
-
-    addWeekParseToken(['w', 'ww', 'W', 'WW'], function (input, week, config, token) {
-        week[token.substr(0, 1)] = toInt(input);
-    });
-
-    // HELPERS
-
-    // firstDayOfWeek       0 = sun, 6 = sat
-    //                      the day of the week that starts the week
-    //                      (usually sunday or monday)
-    // firstDayOfWeekOfYear 0 = sun, 6 = sat
-    //                      the first week is the week that contains the first
-    //                      of this day of the week
-    //                      (eg. ISO weeks use thursday (4))
-    function weekOfYear(mom, firstDayOfWeek, firstDayOfWeekOfYear) {
-        var end = firstDayOfWeekOfYear - firstDayOfWeek,
-            daysToDayOfWeek = firstDayOfWeekOfYear - mom.day(),
-            adjustedMoment;
-
-
-        if (daysToDayOfWeek > end) {
-            daysToDayOfWeek -= 7;
-        }
-
-        if (daysToDayOfWeek < end - 7) {
-            daysToDayOfWeek += 7;
-        }
-
-        adjustedMoment = local__createLocal(mom).add(daysToDayOfWeek, 'd');
-        return {
-            week: Math.ceil(adjustedMoment.dayOfYear() / 7),
-            year: adjustedMoment.year()
-        };
+        return -fwdlw + fwd - 1;
     }
-
-    // LOCALES
-
-    function localeWeek (mom) {
-        return weekOfYear(mom, this._week.dow, this._week.doy).week;
-    }
-
-    var defaultLocaleWeek = {
-        dow : 0, // Sunday is the first day of the week.
-        doy : 6  // The week that contains Jan 1st is the first week of the year.
-    };
-
-    function localeFirstDayOfWeek () {
-        return this._week.dow;
-    }
-
-    function localeFirstDayOfYear () {
-        return this._week.doy;
-    }
-
-    // MOMENTS
-
-    function getSetWeek (input) {
-        var week = this.localeData().week(this);
-        return input == null ? week : this.add((input - week) * 7, 'd');
-    }
-
-    function getSetISOWeek (input) {
-        var week = weekOfYear(this, 1, 4).week;
-        return input == null ? week : this.add((input - week) * 7, 'd');
-    }
-
-    addFormatToken('DDD', ['DDDD', 3], 'DDDo', 'dayOfYear');
-
-    // ALIASES
-
-    addUnitAlias('dayOfYear', 'DDD');
-
-    // PARSING
-
-    addRegexToken('DDD',  match1to3);
-    addRegexToken('DDDD', match3);
-    addParseToken(['DDD', 'DDDD'], function (input, array, config) {
-        config._dayOfYear = toInt(input);
-    });
-
-    // HELPERS
 
     //http://en.wikipedia.org/wiki/ISO_week_date#Calculating_a_date_given_the_year.2C_week_number_and_weekday
-    function dayOfYearFromWeeks(year, week, weekday, firstDayOfWeekOfYear, firstDayOfWeek) {
-        var week1Jan = 6 + firstDayOfWeek - firstDayOfWeekOfYear, janX = createUTCDate(year, 0, 1 + week1Jan), d = janX.getUTCDay(), dayOfYear;
-        if (d < firstDayOfWeek) {
-            d += 7;
+    function dayOfYearFromWeeks(year, week, weekday, dow, doy) {
+        var localWeekday = (7 + weekday - dow) % 7,
+            weekOffset = firstWeekOffset(year, dow, doy),
+            dayOfYear = 1 + 7 * (week - 1) + localWeekday + weekOffset,
+            resYear, resDayOfYear;
+
+        if (dayOfYear <= 0) {
+            resYear = year - 1;
+            resDayOfYear = daysInYear(resYear) + dayOfYear;
+        } else if (dayOfYear > daysInYear(year)) {
+            resYear = year + 1;
+            resDayOfYear = dayOfYear - daysInYear(year);
+        } else {
+            resYear = year;
+            resDayOfYear = dayOfYear;
         }
 
-        weekday = weekday != null ? 1 * weekday : firstDayOfWeek;
-
-        dayOfYear = 1 + week1Jan + 7 * (week - 1) - d + weekday;
-
         return {
-            year: dayOfYear > 0 ? year : year - 1,
-            dayOfYear: dayOfYear > 0 ?  dayOfYear : daysInYear(year - 1) + dayOfYear
+            year: resYear,
+            dayOfYear: resDayOfYear
         };
     }
 
-    // MOMENTS
+    function weekOfYear(mom, dow, doy) {
+        var weekOffset = firstWeekOffset(mom.year(), dow, doy),
+            week = Math.floor((mom.dayOfYear() - weekOffset - 1) / 7) + 1,
+            resWeek, resYear;
 
-    function getSetDayOfYear (input) {
-        var dayOfYear = Math.round((this.clone().startOf('day') - this.clone().startOf('year')) / 864e5) + 1;
-        return input == null ? dayOfYear : this.add((input - dayOfYear), 'd');
+        if (week < 1) {
+            resYear = mom.year() - 1;
+            resWeek = week + weeksInYear(resYear, dow, doy);
+        } else if (week > weeksInYear(mom.year(), dow, doy)) {
+            resWeek = week - weeksInYear(mom.year(), dow, doy);
+            resYear = mom.year() + 1;
+        } else {
+            resYear = mom.year();
+            resWeek = week;
+        }
+
+        return {
+            week: resWeek,
+            year: resYear
+        };
+    }
+
+    function weeksInYear(year, dow, doy) {
+        var weekOffset = firstWeekOffset(year, dow, doy),
+            weekOffsetNext = firstWeekOffset(year + 1, dow, doy);
+        return (daysInYear(year) - weekOffset + weekOffsetNext) / 7;
     }
 
     // Pick the first defined of two or three arguments.
@@ -29351,11 +29846,12 @@ module.exports = function() {
     }
 
     function currentDateArray(config) {
-        var now = new Date();
+        // hooks is actually the exported moment object
+        var nowValue = new Date(utils_hooks__hooks.now());
         if (config._useUTC) {
-            return [now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()];
+            return [nowValue.getUTCFullYear(), nowValue.getUTCMonth(), nowValue.getUTCDate()];
         }
-        return [now.getFullYear(), now.getMonth(), now.getDate()];
+        return [nowValue.getFullYear(), nowValue.getMonth(), nowValue.getDate()];
     }
 
     // convert an array to a date.
@@ -29425,7 +29921,7 @@ module.exports = function() {
     }
 
     function dayOfYearFromWeekInfo(config) {
-        var w, weekYear, week, weekday, dow, doy, temp;
+        var w, weekYear, week, weekday, dow, doy, temp, weekdayOverflow;
 
         w = config._w;
         if (w.GG != null || w.W != null || w.E != null) {
@@ -29439,6 +29935,9 @@ module.exports = function() {
             weekYear = defaults(w.GG, config._a[YEAR], weekOfYear(local__createLocal(), 1, 4).year);
             week = defaults(w.W, 1);
             weekday = defaults(w.E, 1);
+            if (weekday < 1 || weekday > 7) {
+                weekdayOverflow = true;
+            }
         } else {
             dow = config._locale._week.dow;
             doy = config._locale._week.doy;
@@ -29449,23 +29948,32 @@ module.exports = function() {
             if (w.d != null) {
                 // weekday -- low day numbers are considered next week
                 weekday = w.d;
-                if (weekday < dow) {
-                    ++week;
+                if (weekday < 0 || weekday > 6) {
+                    weekdayOverflow = true;
                 }
             } else if (w.e != null) {
                 // local weekday -- counting starts from begining of week
                 weekday = w.e + dow;
+                if (w.e < 0 || w.e > 6) {
+                    weekdayOverflow = true;
+                }
             } else {
                 // default to begining of week
                 weekday = dow;
             }
         }
-        temp = dayOfYearFromWeeks(weekYear, week, weekday, doy, dow);
-
-        config._a[YEAR] = temp.year;
-        config._dayOfYear = temp.dayOfYear;
+        if (week < 1 || week > weeksInYear(weekYear, dow, doy)) {
+            getParsingFlags(config)._overflowWeeks = true;
+        } else if (weekdayOverflow != null) {
+            getParsingFlags(config)._overflowWeekday = true;
+        } else {
+            temp = dayOfYearFromWeeks(weekYear, week, weekday, dow, doy);
+            config._a[YEAR] = temp.year;
+            config._dayOfYear = temp.dayOfYear;
+        }
     }
 
+    // constant that refers to the ISO standard
     utils_hooks__hooks.ISO_8601 = function () {};
 
     // date from string and format string
@@ -29558,6 +30066,7 @@ module.exports = function() {
         }
     }
 
+    // date from string and array of format strings
     function configFromStringAndArray(config) {
         var tempConfig,
             bestMoment,
@@ -29608,7 +30117,9 @@ module.exports = function() {
         }
 
         var i = normalizeObjectUnits(config._i);
-        config._a = [i.year, i.month, i.day || i.date, i.hour, i.minute, i.second, i.millisecond];
+        config._a = map([i.year, i.month, i.day || i.date, i.hour, i.minute, i.second, i.millisecond], function (obj) {
+            return obj && parseInt(obj, 10);
+        });
 
         configFromArray(config);
     }
@@ -29650,13 +30161,17 @@ module.exports = function() {
             configFromInput(config);
         }
 
+        if (!valid__isValid(config)) {
+            config._d = null;
+        }
+
         return config;
     }
 
     function configFromInput(config) {
         var input = config._i;
         if (input === undefined) {
-            config._d = new Date();
+            config._d = new Date(utils_hooks__hooks.now());
         } else if (isDate(input)) {
             config._d = new Date(+input);
         } else if (typeof input === 'string') {
@@ -29703,7 +30218,11 @@ module.exports = function() {
          'moment().min is deprecated, use moment.min instead. https://github.com/moment/moment/issues/1548',
          function () {
              var other = local__createLocal.apply(null, arguments);
-             return other < this ? this : other;
+             if (this.isValid() && other.isValid()) {
+                 return other < this ? this : other;
+             } else {
+                 return valid__createInvalid();
+             }
          }
      );
 
@@ -29711,7 +30230,11 @@ module.exports = function() {
         'moment().max is deprecated, use moment.max instead. https://github.com/moment/moment/issues/1548',
         function () {
             var other = local__createLocal.apply(null, arguments);
-            return other > this ? this : other;
+            if (this.isValid() && other.isValid()) {
+                return other > this ? this : other;
+            } else {
+                return valid__createInvalid();
+            }
         }
     );
 
@@ -29749,6 +30272,10 @@ module.exports = function() {
 
         return pickBy('isAfter', args);
     }
+
+    var now = Date.now || function () {
+        return +(new Date());
+    };
 
     function Duration (duration) {
         var normalizedInput = normalizeObjectUnits(duration),
@@ -29789,6 +30316,8 @@ module.exports = function() {
         return obj instanceof Duration;
     }
 
+    // FORMATTING
+
     function offset (token, separator) {
         addFormatToken(token, 0, 0, function () {
             var offset = this.utcOffset();
@@ -29806,11 +30335,11 @@ module.exports = function() {
 
     // PARSING
 
-    addRegexToken('Z',  matchOffset);
-    addRegexToken('ZZ', matchOffset);
+    addRegexToken('Z',  matchShortOffset);
+    addRegexToken('ZZ', matchShortOffset);
     addParseToken(['Z', 'ZZ'], function (input, array, config) {
         config._useUTC = true;
-        config._tzm = offsetFromString(input);
+        config._tzm = offsetFromString(matchShortOffset, input);
     });
 
     // HELPERS
@@ -29820,8 +30349,8 @@ module.exports = function() {
     // '-1530'  > ['-15', '30']
     var chunkOffset = /([\+\-]|\d\d)/gi;
 
-    function offsetFromString(string) {
-        var matches = ((string || '').match(matchOffset) || []);
+    function offsetFromString(matcher, string) {
+        var matches = ((string || '').match(matcher) || []);
         var chunk   = matches[matches.length - 1] || [];
         var parts   = (chunk + '').match(chunkOffset) || ['-', 0, 0];
         var minutes = +(parts[1] * 60) + toInt(parts[2]);
@@ -29871,11 +30400,13 @@ module.exports = function() {
     function getSetOffset (input, keepLocalTime) {
         var offset = this._offset || 0,
             localAdjust;
+        if (!this.isValid()) {
+            return input != null ? this : NaN;
+        }
         if (input != null) {
             if (typeof input === 'string') {
-                input = offsetFromString(input);
-            }
-            if (Math.abs(input) < 16) {
+                input = offsetFromString(matchShortOffset, input);
+            } else if (Math.abs(input) < 16) {
                 input = input * 60;
             }
             if (!this._isUTC && keepLocalTime) {
@@ -29935,12 +30466,15 @@ module.exports = function() {
         if (this._tzm) {
             this.utcOffset(this._tzm);
         } else if (typeof this._i === 'string') {
-            this.utcOffset(offsetFromString(this._i));
+            this.utcOffset(offsetFromString(matchOffset, this._i));
         }
         return this;
     }
 
     function hasAlignedHourOffset (input) {
+        if (!this.isValid()) {
+            return false;
+        }
         input = input ? local__createLocal(input).utcOffset() : 0;
 
         return (this.utcOffset() - input) % 60 === 0;
@@ -29954,7 +30488,7 @@ module.exports = function() {
     }
 
     function isDaylightSavingTimeShifted () {
-        if (typeof this._isDSTShifted !== 'undefined') {
+        if (!isUndefined(this._isDSTShifted)) {
             return this._isDSTShifted;
         }
 
@@ -29975,22 +30509,23 @@ module.exports = function() {
     }
 
     function isLocal () {
-        return !this._isUTC;
+        return this.isValid() ? !this._isUTC : false;
     }
 
     function isUtcOffset () {
-        return this._isUTC;
+        return this.isValid() ? this._isUTC : false;
     }
 
     function isUtc () {
-        return this._isUTC && this._offset === 0;
+        return this.isValid() ? this._isUTC && this._offset === 0 : false;
     }
 
-    var aspNetRegex = /(\-)?(?:(\d*)\.)?(\d+)\:(\d+)(?:\:(\d+)\.?(\d{3})?)?/;
+    // ASP.NET json date format regex
+    var aspNetRegex = /(\-)?(?:(\d*)[. ])?(\d+)\:(\d+)(?:\:(\d+)\.?(\d{3})?)?/;
 
     // from http://docs.closure-library.googlecode.com/git/closure_goog_date_date.js.source.html
     // somewhat more in line with 4.4.3.2 2004 spec, but allows decimal anywhere
-    var create__isoRegex = /^(-)?P(?:(?:([0-9,.]*)Y)?(?:([0-9,.]*)M)?(?:([0-9,.]*)D)?(?:T(?:([0-9,.]*)H)?(?:([0-9,.]*)M)?(?:([0-9,.]*)S)?)?|([0-9,.]*)W)$/;
+    var isoRegex = /^(-)?P(?:(?:([0-9,.]*)Y)?(?:([0-9,.]*)M)?(?:([0-9,.]*)D)?(?:T(?:([0-9,.]*)H)?(?:([0-9,.]*)M)?(?:([0-9,.]*)S)?)?|([0-9,.]*)W)$/;
 
     function create__createDuration (input, key) {
         var duration = input,
@@ -30023,7 +30558,7 @@ module.exports = function() {
                 s  : toInt(match[SECOND])      * sign,
                 ms : toInt(match[MILLISECOND]) * sign
             };
-        } else if (!!(match = create__isoRegex.exec(input))) {
+        } else if (!!(match = isoRegex.exec(input))) {
             sign = (match[1] === '-') ? -1 : 1;
             duration = {
                 y : parseIso(match[2], sign),
@@ -30080,6 +30615,10 @@ module.exports = function() {
 
     function momentsDifference(base, other) {
         var res;
+        if (!(base.isValid() && other.isValid())) {
+            return {milliseconds: 0, months: 0};
+        }
+
         other = cloneWithOffset(other, base);
         if (base.isBefore(other)) {
             res = positiveMomentsDifference(base, other);
@@ -30092,6 +30631,7 @@ module.exports = function() {
         return res;
     }
 
+    // TODO: remove 'name' arg after deprecation is removed
     function createAdder(direction, name) {
         return function (val, period) {
             var dur, tmp;
@@ -30112,6 +30652,12 @@ module.exports = function() {
         var milliseconds = duration._milliseconds,
             days = duration._days,
             months = duration._months;
+
+        if (!mom.isValid()) {
+            // No op
+            return;
+        }
+
         updateOffset = updateOffset == null ? true : updateOffset;
 
         if (milliseconds) {
@@ -30143,7 +30689,10 @@ module.exports = function() {
                 diff < 1 ? 'sameDay' :
                 diff < 2 ? 'nextDay' :
                 diff < 7 ? 'nextWeek' : 'sameElse';
-        return this.format(formats && formats[format] || this.localeData().calendar(format, this, local__createLocal(now)));
+
+        var output = formats && (isFunction(formats[format]) ? formats[format]() : formats[format]);
+
+        return this.format(output || this.localeData().calendar(format, this, local__createLocal(now)));
     }
 
     function clone () {
@@ -30151,26 +30700,28 @@ module.exports = function() {
     }
 
     function isAfter (input, units) {
-        var inputMs;
-        units = normalizeUnits(typeof units !== 'undefined' ? units : 'millisecond');
+        var localInput = isMoment(input) ? input : local__createLocal(input);
+        if (!(this.isValid() && localInput.isValid())) {
+            return false;
+        }
+        units = normalizeUnits(!isUndefined(units) ? units : 'millisecond');
         if (units === 'millisecond') {
-            input = isMoment(input) ? input : local__createLocal(input);
-            return +this > +input;
+            return +this > +localInput;
         } else {
-            inputMs = isMoment(input) ? +input : +local__createLocal(input);
-            return inputMs < +this.clone().startOf(units);
+            return +localInput < +this.clone().startOf(units);
         }
     }
 
     function isBefore (input, units) {
-        var inputMs;
-        units = normalizeUnits(typeof units !== 'undefined' ? units : 'millisecond');
+        var localInput = isMoment(input) ? input : local__createLocal(input);
+        if (!(this.isValid() && localInput.isValid())) {
+            return false;
+        }
+        units = normalizeUnits(!isUndefined(units) ? units : 'millisecond');
         if (units === 'millisecond') {
-            input = isMoment(input) ? input : local__createLocal(input);
-            return +this < +input;
+            return +this < +localInput;
         } else {
-            inputMs = isMoment(input) ? +input : +local__createLocal(input);
-            return +this.clone().endOf(units) < inputMs;
+            return +this.clone().endOf(units) < +localInput;
         }
     }
 
@@ -30179,21 +30730,44 @@ module.exports = function() {
     }
 
     function isSame (input, units) {
-        var inputMs;
+        var localInput = isMoment(input) ? input : local__createLocal(input),
+            inputMs;
+        if (!(this.isValid() && localInput.isValid())) {
+            return false;
+        }
         units = normalizeUnits(units || 'millisecond');
         if (units === 'millisecond') {
-            input = isMoment(input) ? input : local__createLocal(input);
-            return +this === +input;
+            return +this === +localInput;
         } else {
-            inputMs = +local__createLocal(input);
+            inputMs = +localInput;
             return +(this.clone().startOf(units)) <= inputMs && inputMs <= +(this.clone().endOf(units));
         }
     }
 
+    function isSameOrAfter (input, units) {
+        return this.isSame(input, units) || this.isAfter(input,units);
+    }
+
+    function isSameOrBefore (input, units) {
+        return this.isSame(input, units) || this.isBefore(input,units);
+    }
+
     function diff (input, units, asFloat) {
-        var that = cloneWithOffset(input, this),
-            zoneDelta = (that.utcOffset() - this.utcOffset()) * 6e4,
+        var that,
+            zoneDelta,
             delta, output;
+
+        if (!this.isValid()) {
+            return NaN;
+        }
+
+        that = cloneWithOffset(input, this);
+
+        if (!that.isValid()) {
+            return NaN;
+        }
+
+        zoneDelta = (that.utcOffset() - this.utcOffset()) * 6e4;
 
         units = normalizeUnits(units);
 
@@ -30245,7 +30819,7 @@ module.exports = function() {
     function moment_format__toISOString () {
         var m = this.clone().utc();
         if (0 < m.year() && m.year() <= 9999) {
-            if ('function' === typeof Date.prototype.toISOString) {
+            if (isFunction(Date.prototype.toISOString)) {
                 // native implementation is ~50x faster, use it when we can
                 return this.toDate().toISOString();
             } else {
@@ -30262,10 +30836,13 @@ module.exports = function() {
     }
 
     function from (time, withoutSuffix) {
-        if (!this.isValid()) {
+        if (this.isValid() &&
+                ((isMoment(time) && time.isValid()) ||
+                 local__createLocal(time).isValid())) {
+            return create__createDuration({to: this, from: time}).locale(this.locale()).humanize(!withoutSuffix);
+        } else {
             return this.localeData().invalidDate();
         }
-        return create__createDuration({to: this, from: time}).locale(this.locale()).humanize(!withoutSuffix);
     }
 
     function fromNow (withoutSuffix) {
@@ -30273,16 +30850,22 @@ module.exports = function() {
     }
 
     function to (time, withoutSuffix) {
-        if (!this.isValid()) {
+        if (this.isValid() &&
+                ((isMoment(time) && time.isValid()) ||
+                 local__createLocal(time).isValid())) {
+            return create__createDuration({from: this, to: time}).locale(this.locale()).humanize(!withoutSuffix);
+        } else {
             return this.localeData().invalidDate();
         }
-        return create__createDuration({from: this, to: time}).locale(this.locale()).humanize(!withoutSuffix);
     }
 
     function toNow (withoutSuffix) {
         return this.to(local__createLocal(), withoutSuffix);
     }
 
+    // If passed a locale key, it will set the locale for this
+    // instance.  Otherwise, it will return the locale configuration
+    // variables for this instance.
     function locale (key) {
         var newLocaleData;
 
@@ -30393,6 +30976,11 @@ module.exports = function() {
         };
     }
 
+    function toJSON () {
+        // JSON.stringify(new Date(NaN)) === 'null'
+        return this.isValid() ? this.toISOString() : 'null';
+    }
+
     function moment_valid__isValid () {
         return valid__isValid(this);
     }
@@ -30404,6 +30992,18 @@ module.exports = function() {
     function invalidAt () {
         return getParsingFlags(this).overflow;
     }
+
+    function creationData() {
+        return {
+            input: this._i,
+            format: this._f,
+            locale: this._locale,
+            isUTC: this._isUTC,
+            strict: this._strict
+        };
+    }
+
+    // FORMATTING
 
     addFormatToken(0, ['gg', 2], 0, function () {
         return this.weekYear() % 100;
@@ -30446,22 +31046,20 @@ module.exports = function() {
         week[token] = utils_hooks__hooks.parseTwoDigitYear(input);
     });
 
-    // HELPERS
-
-    function weeksInYear(year, dow, doy) {
-        return weekOfYear(local__createLocal([year, 11, 31 + dow - doy]), dow, doy).week;
-    }
-
     // MOMENTS
 
     function getSetWeekYear (input) {
-        var year = weekOfYear(this, this.localeData()._week.dow, this.localeData()._week.doy).year;
-        return input == null ? year : this.add((input - year), 'y');
+        return getSetWeekYearHelper.call(this,
+                input,
+                this.week(),
+                this.weekday(),
+                this.localeData()._week.dow,
+                this.localeData()._week.doy);
     }
 
     function getSetISOWeekYear (input) {
-        var year = weekOfYear(this, 1, 4).year;
-        return input == null ? year : this.add((input - year), 'y');
+        return getSetWeekYearHelper.call(this,
+                input, this.isoWeek(), this.isoWeekday(), 1, 4);
     }
 
     function getISOWeeksInYear () {
@@ -30473,7 +31071,33 @@ module.exports = function() {
         return weeksInYear(this.year(), weekInfo.dow, weekInfo.doy);
     }
 
-    addFormatToken('Q', 0, 0, 'quarter');
+    function getSetWeekYearHelper(input, week, weekday, dow, doy) {
+        var weeksTarget;
+        if (input == null) {
+            return weekOfYear(this, dow, doy).year;
+        } else {
+            weeksTarget = weeksInYear(input, dow, doy);
+            if (week > weeksTarget) {
+                week = weeksTarget;
+            }
+            return setWeekAll.call(this, input, week, weekday, dow, doy);
+        }
+    }
+
+    function setWeekAll(weekYear, week, weekday, dow, doy) {
+        var dayOfYearData = dayOfYearFromWeeks(weekYear, week, weekday, dow, doy),
+            date = createUTCDate(dayOfYearData.year, 0, dayOfYearData.dayOfYear);
+
+        // console.log("got", weekYear, week, weekday, "set", date.toISOString());
+        this.year(date.getUTCFullYear());
+        this.month(date.getUTCMonth());
+        this.date(date.getUTCDate());
+        return this;
+    }
+
+    // FORMATTING
+
+    addFormatToken('Q', 0, 'Qo', 'quarter');
 
     // ALIASES
 
@@ -30491,6 +31115,62 @@ module.exports = function() {
     function getSetQuarter (input) {
         return input == null ? Math.ceil((this.month() + 1) / 3) : this.month((input - 1) * 3 + this.month() % 3);
     }
+
+    // FORMATTING
+
+    addFormatToken('w', ['ww', 2], 'wo', 'week');
+    addFormatToken('W', ['WW', 2], 'Wo', 'isoWeek');
+
+    // ALIASES
+
+    addUnitAlias('week', 'w');
+    addUnitAlias('isoWeek', 'W');
+
+    // PARSING
+
+    addRegexToken('w',  match1to2);
+    addRegexToken('ww', match1to2, match2);
+    addRegexToken('W',  match1to2);
+    addRegexToken('WW', match1to2, match2);
+
+    addWeekParseToken(['w', 'ww', 'W', 'WW'], function (input, week, config, token) {
+        week[token.substr(0, 1)] = toInt(input);
+    });
+
+    // HELPERS
+
+    // LOCALES
+
+    function localeWeek (mom) {
+        return weekOfYear(mom, this._week.dow, this._week.doy).week;
+    }
+
+    var defaultLocaleWeek = {
+        dow : 0, // Sunday is the first day of the week.
+        doy : 6  // The week that contains Jan 1st is the first week of the year.
+    };
+
+    function localeFirstDayOfWeek () {
+        return this._week.dow;
+    }
+
+    function localeFirstDayOfYear () {
+        return this._week.doy;
+    }
+
+    // MOMENTS
+
+    function getSetWeek (input) {
+        var week = this.localeData().week(this);
+        return input == null ? week : this.add((input - week) * 7, 'd');
+    }
+
+    function getSetISOWeek (input) {
+        var week = weekOfYear(this, 1, 4).week;
+        return input == null ? week : this.add((input - week) * 7, 'd');
+    }
+
+    // FORMATTING
 
     addFormatToken('D', ['DD', 2], 'Do', 'date');
 
@@ -30514,6 +31194,8 @@ module.exports = function() {
     // MOMENTS
 
     var getSetDayOfMonth = makeGetSet('Date', true);
+
+    // FORMATTING
 
     addFormatToken('d', 0, 'do', 'day');
 
@@ -30547,8 +31229,8 @@ module.exports = function() {
     addRegexToken('ddd',  matchWord);
     addRegexToken('dddd', matchWord);
 
-    addWeekParseToken(['dd', 'ddd', 'dddd'], function (input, week, config) {
-        var weekday = config._locale.weekdaysParse(input);
+    addWeekParseToken(['dd', 'ddd', 'dddd'], function (input, week, config, token) {
+        var weekday = config._locale.weekdaysParse(input, token, config._strict);
         // if we didn't get a weekday name, mark the date as invalid
         if (weekday != null) {
             week.d = weekday;
@@ -30583,8 +31265,9 @@ module.exports = function() {
     // LOCALES
 
     var defaultLocaleWeekdays = 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_');
-    function localeWeekdays (m) {
-        return this._weekdays[m.day()];
+    function localeWeekdays (m, format) {
+        return isArray(this._weekdays) ? this._weekdays[m.day()] :
+            this._weekdays[this._weekdays.isFormat.test(format) ? 'format' : 'standalone'][m.day()];
     }
 
     var defaultLocaleWeekdaysShort = 'Sun_Mon_Tue_Wed_Thu_Fri_Sat'.split('_');
@@ -30597,20 +31280,37 @@ module.exports = function() {
         return this._weekdaysMin[m.day()];
     }
 
-    function localeWeekdaysParse (weekdayName) {
+    function localeWeekdaysParse (weekdayName, format, strict) {
         var i, mom, regex;
 
-        this._weekdaysParse = this._weekdaysParse || [];
+        if (!this._weekdaysParse) {
+            this._weekdaysParse = [];
+            this._minWeekdaysParse = [];
+            this._shortWeekdaysParse = [];
+            this._fullWeekdaysParse = [];
+        }
 
         for (i = 0; i < 7; i++) {
             // make the regex if we don't have it already
+
+            mom = local__createLocal([2000, 1]).day(i);
+            if (strict && !this._fullWeekdaysParse[i]) {
+                this._fullWeekdaysParse[i] = new RegExp('^' + this.weekdays(mom, '').replace('.', '\.?') + '$', 'i');
+                this._shortWeekdaysParse[i] = new RegExp('^' + this.weekdaysShort(mom, '').replace('.', '\.?') + '$', 'i');
+                this._minWeekdaysParse[i] = new RegExp('^' + this.weekdaysMin(mom, '').replace('.', '\.?') + '$', 'i');
+            }
             if (!this._weekdaysParse[i]) {
-                mom = local__createLocal([2000, 1]).day(i);
                 regex = '^' + this.weekdays(mom, '') + '|^' + this.weekdaysShort(mom, '') + '|^' + this.weekdaysMin(mom, '');
                 this._weekdaysParse[i] = new RegExp(regex.replace('.', ''), 'i');
             }
             // test the regex
-            if (this._weekdaysParse[i].test(weekdayName)) {
+            if (strict && format === 'dddd' && this._fullWeekdaysParse[i].test(weekdayName)) {
+                return i;
+            } else if (strict && format === 'ddd' && this._shortWeekdaysParse[i].test(weekdayName)) {
+                return i;
+            } else if (strict && format === 'dd' && this._minWeekdaysParse[i].test(weekdayName)) {
+                return i;
+            } else if (!strict && this._weekdaysParse[i].test(weekdayName)) {
                 return i;
             }
         }
@@ -30619,6 +31319,9 @@ module.exports = function() {
     // MOMENTS
 
     function getSetDayOfWeek (input) {
+        if (!this.isValid()) {
+            return input != null ? this : NaN;
+        }
         var day = this._isUTC ? this._d.getUTCDay() : this._d.getDay();
         if (input != null) {
             input = parseWeekday(input, this.localeData());
@@ -30629,20 +31332,73 @@ module.exports = function() {
     }
 
     function getSetLocaleDayOfWeek (input) {
+        if (!this.isValid()) {
+            return input != null ? this : NaN;
+        }
         var weekday = (this.day() + 7 - this.localeData()._week.dow) % 7;
         return input == null ? weekday : this.add(input - weekday, 'd');
     }
 
     function getSetISODayOfWeek (input) {
+        if (!this.isValid()) {
+            return input != null ? this : NaN;
+        }
         // behaves the same as moment#day except
         // as a getter, returns 7 instead of 0 (1-7 range instead of 0-6)
         // as a setter, sunday should belong to the previous week.
         return input == null ? this.day() || 7 : this.day(this.day() % 7 ? input : input - 7);
     }
 
-    addFormatToken('H', ['HH', 2], 0, 'hour');
-    addFormatToken('h', ['hh', 2], 0, function () {
+    // FORMATTING
+
+    addFormatToken('DDD', ['DDDD', 3], 'DDDo', 'dayOfYear');
+
+    // ALIASES
+
+    addUnitAlias('dayOfYear', 'DDD');
+
+    // PARSING
+
+    addRegexToken('DDD',  match1to3);
+    addRegexToken('DDDD', match3);
+    addParseToken(['DDD', 'DDDD'], function (input, array, config) {
+        config._dayOfYear = toInt(input);
+    });
+
+    // HELPERS
+
+    // MOMENTS
+
+    function getSetDayOfYear (input) {
+        var dayOfYear = Math.round((this.clone().startOf('day') - this.clone().startOf('year')) / 864e5) + 1;
+        return input == null ? dayOfYear : this.add((input - dayOfYear), 'd');
+    }
+
+    // FORMATTING
+
+    function hFormat() {
         return this.hours() % 12 || 12;
+    }
+
+    addFormatToken('H', ['HH', 2], 0, 'hour');
+    addFormatToken('h', ['hh', 2], 0, hFormat);
+
+    addFormatToken('hmm', 0, 0, function () {
+        return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2);
+    });
+
+    addFormatToken('hmmss', 0, 0, function () {
+        return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2) +
+            zeroFill(this.seconds(), 2);
+    });
+
+    addFormatToken('Hmm', 0, 0, function () {
+        return '' + this.hours() + zeroFill(this.minutes(), 2);
+    });
+
+    addFormatToken('Hmmss', 0, 0, function () {
+        return '' + this.hours() + zeroFill(this.minutes(), 2) +
+            zeroFill(this.seconds(), 2);
     });
 
     function meridiem (token, lowercase) {
@@ -30671,6 +31427,11 @@ module.exports = function() {
     addRegexToken('HH', match1to2, match2);
     addRegexToken('hh', match1to2, match2);
 
+    addRegexToken('hmm', match3to4);
+    addRegexToken('hmmss', match5to6);
+    addRegexToken('Hmm', match3to4);
+    addRegexToken('Hmmss', match5to6);
+
     addParseToken(['H', 'HH'], HOUR);
     addParseToken(['a', 'A'], function (input, array, config) {
         config._isPm = config._locale.isPM(input);
@@ -30679,6 +31440,32 @@ module.exports = function() {
     addParseToken(['h', 'hh'], function (input, array, config) {
         array[HOUR] = toInt(input);
         getParsingFlags(config).bigHour = true;
+    });
+    addParseToken('hmm', function (input, array, config) {
+        var pos = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos));
+        array[MINUTE] = toInt(input.substr(pos));
+        getParsingFlags(config).bigHour = true;
+    });
+    addParseToken('hmmss', function (input, array, config) {
+        var pos1 = input.length - 4;
+        var pos2 = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos1));
+        array[MINUTE] = toInt(input.substr(pos1, 2));
+        array[SECOND] = toInt(input.substr(pos2));
+        getParsingFlags(config).bigHour = true;
+    });
+    addParseToken('Hmm', function (input, array, config) {
+        var pos = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos));
+        array[MINUTE] = toInt(input.substr(pos));
+    });
+    addParseToken('Hmmss', function (input, array, config) {
+        var pos1 = input.length - 4;
+        var pos2 = input.length - 2;
+        array[HOUR] = toInt(input.substr(0, pos1));
+        array[MINUTE] = toInt(input.substr(pos1, 2));
+        array[SECOND] = toInt(input.substr(pos2));
     });
 
     // LOCALES
@@ -30707,6 +31494,8 @@ module.exports = function() {
     // this rule.
     var getSetHour = makeGetSet('Hours', true);
 
+    // FORMATTING
+
     addFormatToken('m', ['mm', 2], 0, 'minute');
 
     // ALIASES
@@ -30723,6 +31512,8 @@ module.exports = function() {
 
     var getSetMinute = makeGetSet('Minutes', false);
 
+    // FORMATTING
+
     addFormatToken('s', ['ss', 2], 0, 'second');
 
     // ALIASES
@@ -30738,6 +31529,8 @@ module.exports = function() {
     // MOMENTS
 
     var getSetSecond = makeGetSet('Seconds', false);
+
+    // FORMATTING
 
     addFormatToken('S', 0, 0, function () {
         return ~~(this.millisecond() / 100);
@@ -30794,6 +31587,8 @@ module.exports = function() {
 
     var getSetMillisecond = makeGetSet('Milliseconds', false);
 
+    // FORMATTING
+
     addFormatToken('z',  0, 0, 'zoneAbbr');
     addFormatToken('zz', 0, 0, 'zoneName');
 
@@ -30809,40 +31604,43 @@ module.exports = function() {
 
     var momentPrototype__proto = Moment.prototype;
 
-    momentPrototype__proto.add          = add_subtract__add;
-    momentPrototype__proto.calendar     = moment_calendar__calendar;
-    momentPrototype__proto.clone        = clone;
-    momentPrototype__proto.diff         = diff;
-    momentPrototype__proto.endOf        = endOf;
-    momentPrototype__proto.format       = format;
-    momentPrototype__proto.from         = from;
-    momentPrototype__proto.fromNow      = fromNow;
-    momentPrototype__proto.to           = to;
-    momentPrototype__proto.toNow        = toNow;
-    momentPrototype__proto.get          = getSet;
-    momentPrototype__proto.invalidAt    = invalidAt;
-    momentPrototype__proto.isAfter      = isAfter;
-    momentPrototype__proto.isBefore     = isBefore;
-    momentPrototype__proto.isBetween    = isBetween;
-    momentPrototype__proto.isSame       = isSame;
-    momentPrototype__proto.isValid      = moment_valid__isValid;
-    momentPrototype__proto.lang         = lang;
-    momentPrototype__proto.locale       = locale;
-    momentPrototype__proto.localeData   = localeData;
-    momentPrototype__proto.max          = prototypeMax;
-    momentPrototype__proto.min          = prototypeMin;
-    momentPrototype__proto.parsingFlags = parsingFlags;
-    momentPrototype__proto.set          = getSet;
-    momentPrototype__proto.startOf      = startOf;
-    momentPrototype__proto.subtract     = add_subtract__subtract;
-    momentPrototype__proto.toArray      = toArray;
-    momentPrototype__proto.toObject     = toObject;
-    momentPrototype__proto.toDate       = toDate;
-    momentPrototype__proto.toISOString  = moment_format__toISOString;
-    momentPrototype__proto.toJSON       = moment_format__toISOString;
-    momentPrototype__proto.toString     = toString;
-    momentPrototype__proto.unix         = unix;
-    momentPrototype__proto.valueOf      = to_type__valueOf;
+    momentPrototype__proto.add               = add_subtract__add;
+    momentPrototype__proto.calendar          = moment_calendar__calendar;
+    momentPrototype__proto.clone             = clone;
+    momentPrototype__proto.diff              = diff;
+    momentPrototype__proto.endOf             = endOf;
+    momentPrototype__proto.format            = format;
+    momentPrototype__proto.from              = from;
+    momentPrototype__proto.fromNow           = fromNow;
+    momentPrototype__proto.to                = to;
+    momentPrototype__proto.toNow             = toNow;
+    momentPrototype__proto.get               = getSet;
+    momentPrototype__proto.invalidAt         = invalidAt;
+    momentPrototype__proto.isAfter           = isAfter;
+    momentPrototype__proto.isBefore          = isBefore;
+    momentPrototype__proto.isBetween         = isBetween;
+    momentPrototype__proto.isSame            = isSame;
+    momentPrototype__proto.isSameOrAfter     = isSameOrAfter;
+    momentPrototype__proto.isSameOrBefore    = isSameOrBefore;
+    momentPrototype__proto.isValid           = moment_valid__isValid;
+    momentPrototype__proto.lang              = lang;
+    momentPrototype__proto.locale            = locale;
+    momentPrototype__proto.localeData        = localeData;
+    momentPrototype__proto.max               = prototypeMax;
+    momentPrototype__proto.min               = prototypeMin;
+    momentPrototype__proto.parsingFlags      = parsingFlags;
+    momentPrototype__proto.set               = getSet;
+    momentPrototype__proto.startOf           = startOf;
+    momentPrototype__proto.subtract          = add_subtract__subtract;
+    momentPrototype__proto.toArray           = toArray;
+    momentPrototype__proto.toObject          = toObject;
+    momentPrototype__proto.toDate            = toDate;
+    momentPrototype__proto.toISOString       = moment_format__toISOString;
+    momentPrototype__proto.toJSON            = toJSON;
+    momentPrototype__proto.toString          = toString;
+    momentPrototype__proto.unix              = unix;
+    momentPrototype__proto.valueOf           = to_type__valueOf;
+    momentPrototype__proto.creationData      = creationData;
 
     // Year
     momentPrototype__proto.year       = getSetYear;
@@ -30928,7 +31726,7 @@ module.exports = function() {
 
     function locale_calendar__calendar (key, mom, now) {
         var output = this._calendar[key];
-        return typeof output === 'function' ? output.call(mom, now) : output;
+        return isFunction(output) ? output.call(mom, now) : output;
     }
 
     var defaultLongDateFormat = {
@@ -30990,21 +31788,21 @@ module.exports = function() {
 
     function relative__relativeTime (number, withoutSuffix, string, isFuture) {
         var output = this._relativeTime[string];
-        return (typeof output === 'function') ?
+        return (isFunction(output)) ?
             output(number, withoutSuffix, string, isFuture) :
             output.replace(/%d/i, number);
     }
 
     function pastFuture (diff, output) {
         var format = this._relativeTime[diff > 0 ? 'future' : 'past'];
-        return typeof format === 'function' ? format(output) : format.replace(/%s/i, output);
+        return isFunction(format) ? format(output) : format.replace(/%s/i, output);
     }
 
     function locale_set__set (config) {
         var prop, i;
         for (i in config) {
             prop = config[i];
-            if (typeof prop === 'function') {
+            if (isFunction(prop)) {
                 this[i] = prop;
             } else {
                 this['_' + i] = prop;
@@ -31107,6 +31905,9 @@ module.exports = function() {
     }
 
     locale_locales__getSetGlobalLocale('en', {
+        monthsParse : [/^jan/i, /^feb/i, /^mar/i, /^apr/i, /^may/i, /^jun/i, /^jul/i, /^aug/i, /^sep/i, /^oct/i, /^nov/i, /^dec/i],
+        longMonthsParse : [/^january$/i, /^february$/i, /^march$/i, /^april$/i, /^may$/i, /^june$/i, /^july$/i, /^august$/i, /^september$/i, /^october$/i, /^november$/i, /^december$/i],
+        shortMonthsParse : [/^jan$/i, /^feb$/i, /^mar$/i, /^apr$/i, /^may$/i, /^jun$/i, /^jul$/i, /^aug/i, /^sept?$/i, /^oct$/i, /^nov$/i, /^dec$/i],
         ordinalParse: /\d{1,2}(th|st|nd|rd)/,
         ordinal : function (number) {
             var b = number % 10,
@@ -31326,15 +32127,15 @@ module.exports = function() {
         var years    = round(duration.as('y'));
 
         var a = seconds < thresholds.s && ['s', seconds]  ||
-                minutes === 1          && ['m']           ||
+                minutes <= 1           && ['m']           ||
                 minutes < thresholds.m && ['mm', minutes] ||
-                hours   === 1          && ['h']           ||
+                hours   <= 1           && ['h']           ||
                 hours   < thresholds.h && ['hh', hours]   ||
-                days    === 1          && ['d']           ||
+                days    <= 1           && ['d']           ||
                 days    < thresholds.d && ['dd', days]    ||
-                months  === 1          && ['M']           ||
+                months  <= 1           && ['M']           ||
                 months  < thresholds.M && ['MM', months]  ||
-                years   === 1          && ['y']           || ['yy', years];
+                years   <= 1           && ['y']           || ['yy', years];
 
         a[2] = withoutSuffix;
         a[3] = +posNegDuration > 0;
@@ -31455,6 +32256,8 @@ module.exports = function() {
 
     // Side effect imports
 
+    // FORMATTING
+
     addFormatToken('X', 0, 0, 'unix');
     addFormatToken('x', 0, 0, 'valueOf');
 
@@ -31472,13 +32275,14 @@ module.exports = function() {
     // Side effect imports
 
 
-    utils_hooks__hooks.version = '2.10.6';
+    utils_hooks__hooks.version = '2.11.0';
 
     setHookCallback(local__createLocal);
 
     utils_hooks__hooks.fn                    = momentPrototype;
     utils_hooks__hooks.min                   = min;
     utils_hooks__hooks.max                   = max;
+    utils_hooks__hooks.now                   = now;
     utils_hooks__hooks.utc                   = create_utc__createUTC;
     utils_hooks__hooks.unix                  = moment__createUnix;
     utils_hooks__hooks.months                = lists__listMonths;
@@ -31497,6 +32301,7 @@ module.exports = function() {
     utils_hooks__hooks.weekdaysShort         = lists__listWeekdaysShort;
     utils_hooks__hooks.normalizeUnits        = normalizeUnits;
     utils_hooks__hooks.relativeTimeThreshold = duration_humanize__getSetRelativeTimeThreshold;
+    utils_hooks__hooks.prototype             = momentPrototype;
 
     var _moment = utils_hooks__hooks;
 

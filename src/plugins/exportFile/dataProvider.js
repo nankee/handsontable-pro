@@ -6,7 +6,8 @@ import {rangeEach} from 'handsontable/helpers/number';
 // jshint ignore: start
 
 /**
- * @plugin DataProvider
+ * @plugin ExportFile
+ * @private
  */
 class DataProvider {
   constructor(hotInstance) {

@@ -6,9 +6,6 @@ import {objectEach} from 'handsontable/helpers/object';
  *
  * @plugin GanttChart
  */
-/**
- * Class covering the date-related calculations.
- */
 class DateCalculator {
   constructor(year) {
     /**

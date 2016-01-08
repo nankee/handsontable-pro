@@ -8,6 +8,7 @@ const CHAR_LINE_FEED = String.fromCharCode(10);
 
 /**
  * @plugin ExportFile
+ * @private
  */
 class Csv extends BaseType {
   /**

@@ -6,6 +6,7 @@ import {typeFactory, EXPORT_TYPES} from './typeFactory';
 
 /**
  * @plugin ExportFile
+ * @pro
  *
  * @example
  *
