@@ -145,28 +145,28 @@ describe('NestedHeaders', function() {
       function generateComplexSetup(rows, cols, obj) {
         var data = [];
 
-        for(var i = 0; i < rows; i++) {
-          for(var j = 0; j < cols; j++) {
-            if(!data[i]) {
+        for (var i = 0; i < rows; i++) {
+          for (var j = 0; j < cols; j++) {
+            if (!data[i]) {
               data[i] = [];
             }
 
-            if(!obj) {
+            if (!obj) {
               data[i][j] = i + '_' + j;
               continue;
             }
 
-            if(i === 0 && j%2 !== 0) {
+            if (i === 0 && j % 2 !== 0) {
               data[i][j] = {
                 label: i + '_' + j,
                 colspan: 8
               };
-            } else if(i === 1 && (j%3 === 1 || j%3 === 2)) {
+            } else if (i === 1 && (j % 3 === 1 || j % 3 === 2)) {
               data[i][j] = {
                 label: i + '_' + j,
                 colspan: 4
               };
-            } else if(i === 2 && (j%5 === 1 || j%5 === 2 || j%5 === 3 || j%5 === 4)) {
+            } else if (i === 2 && (j % 5 === 1 || j % 5 === 2 || j % 5 === 3 || j % 5 === 4)) {
               data[i][j] = {
                 label: i + '_' + j,
                 colspan: 2
@@ -244,6 +244,70 @@ describe('NestedHeaders', function() {
       expect(levels[3][3].getAttribute('colspan')).toEqual(null);
     });
 
+  });
+
+  describe('Selection:', function() {
+    it('should select every column under the extended header', function() {
+      var hot = handsontable({
+        data: Handsontable.helper.createSpreadsheetData(10, 10),
+        colHeaders: true,
+        nestedHeaders: [
+          ['A', {label: 'B', colspan: 8}, 'C'],
+          ['D', {label: 'E', colspan: 4}, {label: 'F', colspan: 4}, 'G'],
+          ['H', {label: 'I', colspan: 2}, {label: 'J', colspan: 2}, {label: 'K', colspan: 2}, {label: 'L', colspan: 2}, 'M'],
+          ['N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W']
+        ]
+      });
+
+      this.$container.find('.ht_clone_top thead tr:eq(2) th:eq(1)').simulate('mousedown');
+      this.$container.find('.ht_clone_top thead tr:eq(2) th:eq(1)').simulate('mouseup');
+
+      expect(hot.getSelected()).toEqual([0, 1, hot.countRows() - 1, 2]);
+
+      this.$container.find('.ht_clone_top thead tr:eq(1) th:eq(1)').simulate('mousedown');
+      this.$container.find('.ht_clone_top thead tr:eq(1) th:eq(1)').simulate('mouseup');
+
+      expect(hot.getSelected()).toEqual([0, 1, hot.countRows() - 1, 4]);
+
+      this.$container.find('.ht_clone_top thead tr:eq(0) th:eq(1)').simulate('mousedown');
+      this.$container.find('.ht_clone_top thead tr:eq(0) th:eq(1)').simulate('mouseup');
+
+      expect(hot.getSelected()).toEqual([0, 1, hot.countRows() - 1, 8]);
+    });
+
+    it('should select every column under the extended headers, when changing the selection by dragging the cursor', function() {
+      var hot = handsontable({
+        data: Handsontable.helper.createSpreadsheetData(10, 10),
+        colHeaders: true,
+        nestedHeaders: [
+          ['A', {label: 'B', colspan: 8}, 'C'],
+          ['D', {label: 'E', colspan: 4}, {label: 'F', colspan: 4}, 'G'],
+          ['H', {label: 'I', colspan: 2}, {label: 'J', colspan: 2}, {label: 'K', colspan: 2}, {label: 'L', colspan: 2}, 'M'],
+          ['N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W']
+        ]
+      });
+
+      this.$container.find('.ht_clone_top thead tr:eq(2) th:eq(3)').simulate('mousedown');
+      this.$container.find('.ht_clone_top thead tr:eq(2) th:eq(5)').simulate('mouseover');
+      this.$container.find('.ht_clone_top thead tr:eq(2) th:eq(5)').simulate('mouseup');
+
+      expect(hot.getSelected()).toEqual([0, 3, hot.countRows() - 1, 6]);
+
+      this.$container.find('.ht_clone_top thead tr:eq(2) th:eq(3)').simulate('mousedown');
+      this.$container.find('.ht_clone_top thead tr:eq(2) th:eq(1)').simulate('mouseover');
+      this.$container.find('.ht_clone_top thead tr:eq(2) th:eq(1)').simulate('mouseup');
+
+      expect(hot.getSelected()).toEqual([0, 4, hot.countRows() - 1, 1]);
+
+      this.$container.find('.ht_clone_top thead tr:eq(2) th:eq(3)').simulate('mousedown');
+      this.$container.find('.ht_clone_top thead tr:eq(2) th:eq(1)').simulate('mouseover');
+      this.$container.find('.ht_clone_top thead tr:eq(2) th:eq(3)').simulate('mouseover');
+      this.$container.find('.ht_clone_top thead tr:eq(2) th:eq(5)').simulate('mouseover');
+      this.$container.find('.ht_clone_top thead tr:eq(2) th:eq(5)').simulate('mouseup');
+
+      expect(hot.getSelected()).toEqual([0, 3, hot.countRows() - 1, 6]);
+
+    });
   });
 
 });
