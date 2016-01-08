@@ -1,7 +1,7 @@
 {
   "name": "handsontable-pro",
   "description": "Spreadsheet-like data grid editor that provides copy/paste functionality compatible with Excel/Google Docs",
-  "version": "1.0.0-beta1",
+  "version": "1.0.0-beta2",
   "main": ["./dist/handsontable.full.js", "./dist/handsontable.full.css"],
   "homepage": "http://handsontable.com/",
   "repository": {
