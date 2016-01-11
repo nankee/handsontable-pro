@@ -290,7 +290,7 @@ class ColumnSummary extends BasePlugin {
       }
 
       arrayEach(this.endpoints, (value, j) => {
-        if (changes[key][1] === value.sourceColumn && needToRefresh.indexOf(j) === -1) {
+        if (this.hot.propToCol(changes[key][1]) === value.sourceColumn && needToRefresh.indexOf(j) === -1) {
           needToRefresh.push(j);
         }
       });
