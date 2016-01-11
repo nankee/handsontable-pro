@@ -4038,9 +4038,9 @@ var domHelpers = ($__helpers_47_dom_47_element__ = require("helpers/dom/element"
 var domEventHelpers = ($__helpers_47_dom_47_event__ = require("helpers/dom/event"), $__helpers_47_dom_47_event__ && $__helpers_47_dom_47_event__.__esModule && $__helpers_47_dom_47_event__ || {default: $__helpers_47_dom_47_event__});
 var HELPERS = [arrayHelpers, browserHelpers, dataHelpers, functionHelpers, mixedHelpers, numberHelpers, objectHelpers, settingHelpers, stringHelpers, unicodeHelpers];
 var DOM = [domHelpers, domEventHelpers];
-Handsontable.buildDate = 'Fri Jan 08 2016 13:21:07 GMT+0100 (CET)';
+Handsontable.buildDate = 'Mon Jan 11 2016 13:09:15 GMT+0100 (CET)';
 Handsontable.packageName = 'handsontable-pro';
-Handsontable.version = '1.0.0-beta2';
+Handsontable.version = '1.0.0-beta3';
 var baseVersion = '0.20.3';
 if (!/^@@/.test(baseVersion)) {
   Handsontable.baseVersion = baseVersion;
@@ -20570,7 +20570,7 @@ var $ColumnSummary = ColumnSummary;
         return;
       }
       arrayEach($__4.endpoints, (function(value, j) {
-        if (changes[key][1] === value.sourceColumn && needToRefresh.indexOf(j) === -1) {
+        if ($__4.hot.propToCol(changes[key][1]) === value.sourceColumn && needToRefresh.indexOf(j) === -1) {
           needToRefresh.push(j);
         }
       }));
@@ -20885,7 +20885,10 @@ var $DropdownMenu = DropdownMenu;
     }
   },
   onAfterGetColHeader: function(col, TH) {
-    if (col < 0) {
+    var headerRow = TH.parentNode;
+    var headerRowList = headerRow.parentNode.childNodes;
+    var level = Array.prototype.indexOf.call(headerRowList, headerRow);
+    if (col < 0 || level !== headerRowList.length - 1) {
       return;
     }
     var existingButton = TH.querySelector('.' + BUTTON_CLASS_NAME);
