@@ -244,10 +244,15 @@ class DropdownMenu extends BasePlugin {
    * @param {HTMLTableCellElement} TH
    */
   onAfterGetColHeader(col, TH) {
-    // Corner
-    if (col < 0) {
+    // Corner or a higher-level header
+    let headerRow = TH.parentNode;
+    let headerRowList = headerRow.parentNode.childNodes;
+    let level = Array.prototype.indexOf.call(headerRowList, headerRow);
+
+    if (col < 0 || level !== headerRowList.length - 1) {
       return;
     }
+
     const existingButton = TH.querySelector('.' + BUTTON_CLASS_NAME);
 
     // Plugin enabled and buttons already exists, return.
