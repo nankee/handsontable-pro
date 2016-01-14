@@ -160,7 +160,8 @@ module.exports = function(grunt) {
         ],
         options: {
           specs: [
-            'src/plugins/*/test/**/*.spec.js'
+            'src/plugins/*/test/**/*.spec.js',
+            'src/3rdparty/walkontable/test/jasmine/spec/**/*.spec.js',
           ],
           styles: [
             nodeHandsontablePath + 'test/jasmine/css/SpecRunner.css',
