@@ -62,6 +62,194 @@ describe('Filters UI', function() {
     var rect = document.querySelector('.htFiltersConditionsMenu.handsontable table').getBoundingClientRect();
 
     expect(rect.top).toBeGreaterThan(500);
+    hot.rootElement.style.marginTop = '';
+  });
+
+  it('should appear specified conditional options menu for text cell types', function() {
+    var hot = handsontable({
+      data: getDataForFilters(),
+      columns: getColumnsForFilters(),
+      filters: true,
+      dropdownMenu: true,
+      width: 500,
+      height: 300
+    });
+
+    dropdownMenu(1);
+    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+
+    var menuItems = $(conditionMenuRootElement()).find('.htCore tr').map(function(){
+      return this.textContent;
+    }).toArray();
+
+    expect(menuItems).toEqual([
+      'None',
+      '',
+      'Is empty',
+      'Is not empty',
+      '',
+      'Is equal to',
+      'Is not equal to',
+      '',
+      'Begins with',
+      'Ends with',
+      '',
+      'Contains',
+      'Does not contain',
+    ]);
+  });
+
+  it('should appear specified conditional options menu for numeric cell types', function() {
+    var hot = handsontable({
+      data: getDataForFilters(),
+      columns: getColumnsForFilters(),
+      filters: true,
+      dropdownMenu: true,
+      width: 500,
+      height: 300
+    });
+
+    dropdownMenu(5);
+    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+
+    var menuItems = $(conditionMenuRootElement()).find('.htCore tr').map(function(){
+      return this.textContent;
+    }).toArray();
+
+    expect(menuItems).toEqual([
+      'None',
+      '',
+      'Is empty',
+      'Is not empty',
+      '',
+      'Is equal to',
+      'Is not equal to',
+      '',
+      'Greater than',
+      'Greater than or equal to',
+      'Less than',
+      'Less than or equal to',
+      'Is between',
+      'Is not between'
+    ]);
+  });
+
+  it('should appear specified conditional options menu for date cell types', function() {
+    var hot = handsontable({
+      data: getDataForFilters(),
+      columns: getColumnsForFilters(),
+      filters: true,
+      dropdownMenu: true,
+      width: 500,
+      height: 300
+    });
+
+    dropdownMenu(3);
+    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+
+    var menuItems = $(conditionMenuRootElement()).find('.htCore tr').map(function(){
+      return this.textContent;
+    }).toArray();
+
+    expect(menuItems).toEqual([
+      'None',
+      '',
+      'Is empty',
+      'Is not empty',
+      '',
+      'Is equal to',
+      'Is not equal to',
+      '',
+      'Before',
+      'After',
+      'Is between',
+      '',
+      'Tomorrow',
+      'Today',
+      'Yesterday',
+    ]);
+  });
+
+  it('should appear general conditional options menu for mixed cell types', function() {
+    var hot = handsontable({
+      data: getDataForFilters(),
+      columns: getColumnsForFilters(),
+      filters: true,
+      dropdownMenu: true,
+      width: 500,
+      height: 300,
+      cells: function(row, col) {
+        if (col === 3 && row === 2) {
+          this.type = 'text';
+        }
+      }
+    });
+
+    dropdownMenu(3);
+    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+
+    var menuItems = $(conditionMenuRootElement()).find('.htCore tr').map(function(){
+      return this.textContent;
+    }).toArray();
+
+    expect(menuItems).toEqual([
+      'None',
+      '',
+      'Is empty',
+      'Is not empty',
+      '',
+      'Is equal to',
+      'Is not equal to',
+      '',
+      'Begins with',
+      'Ends with',
+      '',
+      'Contains',
+      'Does not contain',
+    ]);
+  });
+
+  it('should appear specified conditional options menu depends on cell types when table has all filtered rows', function() {
+    var hot = handsontable({
+      data: getDataForFilters(),
+      columns: getColumnsForFilters(),
+      filters: true,
+      dropdownMenu: true,
+      width: 500,
+      height: 300
+    });
+
+    dropdownMenu(3);
+    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+
+    // is empty
+    $(conditionMenuRootElement().querySelector('tbody :nth-child(3) td')).simulate('mousedown');
+    $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK')).simulate('click');
+
+    dropdownMenu(3);
+    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+
+    var menuItems = $(conditionMenuRootElement()).find('.htCore tr').map(function(){
+      return this.textContent;
+    }).toArray();
+
+    expect(menuItems).toEqual([
+      'None',
+      '',
+      'Is empty',
+      'Is not empty',
+      '',
+      'Is equal to',
+      'Is not equal to',
+      '',
+      'Before',
+      'After',
+      'Is between',
+      '',
+      'Tomorrow',
+      'Today',
+      'Yesterday',
+    ]);
   });
 
   it('should disappear conditional options menu after outside the table click', function() {
