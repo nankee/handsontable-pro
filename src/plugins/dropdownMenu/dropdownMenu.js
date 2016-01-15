@@ -168,6 +168,10 @@ class DropdownMenu extends BasePlugin {
       return;
     }
     this.menu.open();
+
+    if (event.width) {
+      this.menu.setOffset('left', event.width);
+    }
     this.menu.setPosition(event);
 
     // ContextMenu is not detected HotTableEnv correctly because is injected outside hot-table
