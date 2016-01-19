@@ -101,6 +101,14 @@ module.exports = function(grunt) {
     },
 
     jasmine: {
+      options: {
+        page: {
+          viewportSize: {
+            width: 1200,
+            height: 1000
+          }
+        },
+      },
       free: {
         src: [
           'dist/handsontable.min.js',

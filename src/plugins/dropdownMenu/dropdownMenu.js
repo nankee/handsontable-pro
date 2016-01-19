@@ -168,6 +168,10 @@ class DropdownMenu extends BasePlugin {
       return;
     }
     this.menu.open();
+
+    if (event.width) {
+      this.menu.setOffset('left', event.width);
+    }
     this.menu.setPosition(event);
 
     // ContextMenu is not detected HotTableEnv correctly because is injected outside hot-table
@@ -228,10 +232,10 @@ class DropdownMenu extends BasePlugin {
       let rect = event.target.getBoundingClientRect();
 
       this.open({
-        left: rect.left + getWindowScrollLeft(),
-        top: rect.top + event.target.offsetHeight + getWindowScrollTop() + 3,
+        left: rect.left,
+        top: rect.top + event.target.offsetHeight + 3,
         width: rect.width,
-        height: rect.height
+        height: rect.height,
       });
     }
   }
