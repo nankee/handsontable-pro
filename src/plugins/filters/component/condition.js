@@ -122,7 +122,8 @@ class ConditionComponent extends BaseComponent {
    * Reset elements to their initial state.
    */
   reset() {
-    let columnType = this.hot.getDataType.apply(this.hot, this.hot.getSelected() || []);
+    let lastSelectedColumn = this.hot.getPlugin('filters').getSelectedColumn();
+    let columnType = this.hot.getDataType.apply(this.hot, this.hot.getSelected() || [0, lastSelectedColumn]);
     let items = getOptionsList(columnType);
 
     arrayEach(this.getInputElements(), (element) => element.hide());
