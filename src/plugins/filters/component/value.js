@@ -7,8 +7,8 @@ import {MultipleSelectUI} from './../ui/multipleSelect';
 import {FORMULA_BY_VALUE, FORMULA_NONE} from './../constants';
 
 /**
+ * @plugin Filters
  * @class ValueComponent
- * @private
  */
 class ValueComponent extends BaseComponent {
   constructor(hotInstance) {

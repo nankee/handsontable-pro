@@ -8,8 +8,8 @@ import {InputUI} from './../ui/input';
 import {SelectUI} from './../ui/select';
 
 /**
+ * @plugin Filters
  * @class ConditionComponent
- * @private
  */
 class ConditionComponent extends BaseComponent {
   constructor(hotInstance) {
