@@ -101,8 +101,8 @@ class SelectUI extends BaseUI {
     if (this.menu) {
       this.menu.open();
       this.menu.setPosition({
-        left: getWindowScrollLeft() + rect.left - 5,
-        top: getWindowScrollTop() + rect.top,
+        left: rect.left - 5,
+        top: rect.top,
         width: rect.width,
         height: rect.height
       });

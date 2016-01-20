@@ -9,7 +9,7 @@ import {SelectUI} from './../ui/select';
 
 /**
  * @class ConditionComponent
- * @private
+ * @plugin Filters
  */
 class ConditionComponent extends BaseComponent {
   constructor(hotInstance) {
@@ -24,6 +24,8 @@ class ConditionComponent extends BaseComponent {
 
   /**
    * Register all necessary hooks.
+   *
+   * @private
    */
   registerHooks() {
     this.getSelectElement().addLocalHook('select', (command) => this.onConditionSelect(command));
@@ -93,6 +95,8 @@ class ConditionComponent extends BaseComponent {
   }
 
   /**
+   * Get menu object descriptor.
+   *
    * @returns {Object}
    */
   getMenuItemDescriptor() {
@@ -122,7 +126,8 @@ class ConditionComponent extends BaseComponent {
    * Reset elements to their initial state.
    */
   reset() {
-    let columnType = this.hot.getDataType.apply(this.hot, this.hot.getSelected() || []);
+    let lastSelectedColumn = this.hot.getPlugin('filters').getSelectedColumn();
+    let columnType = this.hot.getDataType.apply(this.hot, this.hot.getSelected() || [0, lastSelectedColumn]);
     let items = getOptionsList(columnType);
 
     arrayEach(this.getInputElements(), (element) => element.hide());

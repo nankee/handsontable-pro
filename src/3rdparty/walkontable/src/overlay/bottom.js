@@ -122,7 +122,9 @@ class WalkontableBottomOverlay extends WalkontableOverlay {
     let defaultRowHeight = this.wot.wtSettings.settings.defaultRowHeight;
 
     while (from < to) {
-      sum += this.wot.wtTable.getRowHeight(from) || defaultRowHeight;
+      let height = this.wot.wtTable.getRowHeight(from);
+
+      sum += height === void 0 ? defaultRowHeight : height;
       from++;
     }
 
@@ -131,12 +133,17 @@ class WalkontableBottomOverlay extends WalkontableOverlay {
 
   /**
    * Adjust overlay root element, childs and master table element sizes (width, height).
+   *
+   * @param {Boolean} [force=false]
    */
-  adjustElementsSize() {
-    if (this.needFullRender) {
+  adjustElementsSize(force = false) {
+    if (this.needFullRender || force) {
       this.adjustRootElementSize();
       this.adjustRootChildrenSize();
-      this.areElementSizesAdjusted = true;
+
+      if (!force) {
+        this.areElementSizesAdjusted = true;
+      }
     }
   }
 
@@ -157,40 +164,6 @@ class WalkontableBottomOverlay extends WalkontableOverlay {
 
     tableHeight = outerHeight(this.clone.wtTable.TABLE);
     overlayRootStyle.height = (tableHeight === 0 ? tableHeight : tableHeight) + 'px';
-  }
-
-  markOversizedFixedBottomRows() {
-    let rowCount;
-    let sourceRowIndex;
-    let previousRowHeight;
-    let currentTr;
-    let rowHeader;
-    let rowInnerHeight = 0;
-    let totalRows = this.wot.getSetting('totalRows');
-
-    if (this.wot.getSetting('fixedRowsBottom')) {
-      // mark oversized rows within the fixed bottom rows
-      rowCount = this.wot.wtOverlays.bottomOverlay.clone.wtTable.TBODY.childNodes.length;
-
-      while (rowCount) {
-        rowCount--;
-        sourceRowIndex = totalRows - rowCount - 1;
-        previousRowHeight = this.wot.wtTable.getRowHeight(sourceRowIndex);
-        currentTr = this.getTrForRow(sourceRowIndex);
-        rowHeader = currentTr.querySelector('th');
-
-        if (rowHeader) {
-          rowInnerHeight = innerHeight(rowHeader);
-        } else {
-          rowInnerHeight = innerHeight(currentTr) - 1;
-        }
-
-        if ((!previousRowHeight && this.wot.wtSettings.settings.defaultRowHeight < rowInnerHeight ||
-          previousRowHeight < rowInnerHeight)) {
-          this.wot.wtViewport.oversizedRows[sourceRowIndex] = rowInnerHeight;
-        }
-      }
-    }
   }
 
   /**
@@ -232,17 +205,6 @@ class WalkontableBottomOverlay extends WalkontableOverlay {
     if (this.needFullRender) {
       this.syncOverlayOffset();
     }
-  }
-
-  /**
-   * Return a TR element for a provided source row index
-   * @param souceRowIndex
-   * @returns {HTMLElement}
-   */
-  getTrForRow(souceRowIndex) {
-    let totalRows = this.wot.getSetting('totalRows');
-
-    return this.clone.wtTable.TBODY.childNodes[this.clone.wtTable.TBODY.childNodes.length - (totalRows - souceRowIndex)];
   }
 
   /**

@@ -75,7 +75,7 @@ class DataFilter {
     let result = [];
 
     arrayEach(needles, (needleRow) => {
-      let row = needleRow.meta.physicalRow;
+      let row = needleRow.meta.visualRow;
 
       if (data[row] !== void 0) {
         result[row] = data[row];

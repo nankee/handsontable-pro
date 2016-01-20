@@ -101,6 +101,14 @@ module.exports = function(grunt) {
     },
 
     jasmine: {
+      options: {
+        page: {
+          viewportSize: {
+            width: 1200,
+            height: 1000
+          }
+        },
+      },
       free: {
         src: [
           'dist/handsontable.min.js',
@@ -160,7 +168,8 @@ module.exports = function(grunt) {
         ],
         options: {
           specs: [
-            'src/plugins/*/test/**/*.spec.js'
+            'src/plugins/*/test/**/*.spec.js',
+            'src/3rdparty/walkontable/test/jasmine/spec/**/*.spec.js',
           ],
           styles: [
             nodeHandsontablePath + 'test/jasmine/css/SpecRunner.css',

@@ -6,7 +6,7 @@ import {SelectUI} from './../ui/select';
 
 /**
  * @class ActionBarComponent
- * @private
+ * @plugin Filters
  */
 class ActionBarComponent extends BaseComponent {
   static get BUTTON_OK() {
@@ -34,6 +34,8 @@ class ActionBarComponent extends BaseComponent {
 
   /**
    * Register all necessary hooks.
+   *
+   * @private
    */
   registerHooks() {
     arrayEach(this.elements, (element) => {
@@ -42,6 +44,8 @@ class ActionBarComponent extends BaseComponent {
   }
 
   /**
+   * Get menu object descriptor.
+   *
    * @returns {Object}
    */
   getMenuItemDescriptor() {
@@ -78,6 +82,7 @@ class ActionBarComponent extends BaseComponent {
   /**
    * On button click listener.
    *
+   * @private
    * @param {Event} event DOM event
    * @param {InputUI} button InputUI object.
    */

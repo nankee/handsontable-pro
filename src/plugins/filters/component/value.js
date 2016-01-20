@@ -8,7 +8,7 @@ import {FORMULA_BY_VALUE, FORMULA_NONE} from './../constants';
 
 /**
  * @class ValueComponent
- * @private
+ * @plugin Filters
  */
 class ValueComponent extends BaseComponent {
   constructor(hotInstance) {

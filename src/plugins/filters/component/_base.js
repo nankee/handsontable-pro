@@ -4,8 +4,8 @@ import {localHooks} from 'handsontable/mixins/localHooks';
 import {stateSaver} from 'handsontable/mixins/stateSaver';
 
 /**
+ * @plugin Filters
  * @class BaseComponent
- * @private
  */
 class BaseComponent {
   constructor(hotInstance) {

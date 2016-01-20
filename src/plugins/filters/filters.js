@@ -35,7 +35,7 @@ class Filters extends BasePlugin {
      */
     this.trimRowsPlugin = null;
     /**
-     * Instance of {@link DropdowmMenu}.
+     * Instance of {@link DropdownMenu}.
      *
      * @type {DropdownMenu}
      */
@@ -227,7 +227,7 @@ class Filters extends BasePlugin {
       let trimmedRows = [];
 
       this.trimRowsPlugin.trimmedRows.length = 0;
-      filteredRows = arrayMap(dataFilter.filter(), (rowData) => rowData.meta.physicalRow);
+      filteredRows = arrayMap(dataFilter.filter(), (rowData) => rowData.meta.visualRow);
 
       rangeEach(this.hot.countSourceRows() - 1, (row) => {
         if (filteredRows.indexOf(row) === -1) {
@@ -278,10 +278,10 @@ class Filters extends BasePlugin {
     let data = [];
 
     arrayEach(this.hot.getSourceDataAtCol(column), (value, rowIndex) => {
-      let {row, col, physicalCol, physicalRow, type, instance, dateFormat} = this.hot.getCellMeta(rowIndex, column);
+      let {row, col, visualCol, visualRow, type, instance, dateFormat} = this.hot.getCellMeta(rowIndex, column);
 
       data.push({
-        meta: {row, col, physicalCol, physicalRow, type, instance, dateFormat},
+        meta: {row, col, visualCol, visualRow, type, instance, dateFormat},
         value,
       });
     });
