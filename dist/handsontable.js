@@ -388,13 +388,7 @@ var WalkontableBorder = function WalkontableBorder(wotInstance, settings) {
         trimmingContainer,
         cornerOverlappingContainer,
         ilen;
-    if (WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_TOP) || WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_TOP_LEFT_CORNER)) {
-      ilen = this.wot.getSetting('fixedRowsTop');
-    } else if (WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_BOTTOM) || WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER)) {
-      ilen = this.wot.getSetting('fixedRowsBottom');
-    } else {
-      ilen = this.wot.wtTable.getRenderedRowsCount();
-    }
+    ilen = this.wot.wtTable.getRenderedRowsCount();
     for (var i = 0; i < ilen; i++) {
       var s = this.wot.wtTable.rowFilter.renderedToSource(i);
       if (s >= corners[0] && s <= corners[2]) {
@@ -1184,7 +1178,7 @@ var Walkontable = function Walkontable(settings) {
       }
     } else if (coords.col < fixedColumns) {
       return this.wtOverlays.leftOverlay.clone.wtTable.getCell(coords);
-    } else if (coords.row > totalRows - fixedRowsBottom) {
+    } else if (coords.row < totalRows && coords.row > totalRows - fixedRowsBottom) {
       if (this.wtOverlays.bottomOverlay.clone) {
         return this.wtOverlays.bottomOverlay.clone.wtTable.getCell(coords);
       }
@@ -1213,6 +1207,12 @@ var Walkontable = function Walkontable(settings) {
   },
   getOverlayName: function() {
     return this.cloneOverlay ? this.cloneOverlay.type : 'master';
+  },
+  isOverlayName: function(name) {
+    if (this.cloneOverlay) {
+      return this.cloneOverlay.type === name;
+    }
+    return false;
   },
   exportSettingsAsClassNames: function() {
     var $__14 = this;
@@ -2275,6 +2275,10 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
     var deltaY = event.wheelDeltaY || (-1) * event.deltaY;
     var deltaX = event.wheelDeltaX || (-1) * event.deltaX;
     var parentHolder;
+    if (event.deltaMode === 1) {
+      deltaY = deltaY * 120;
+      deltaX = deltaX * 120;
+    }
     while (tempElem != document && tempElem != null) {
       if (tempElem.className.indexOf('wtHolder') > -1) {
         parentHolder = tempElem;
@@ -2333,11 +2337,11 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
         this.horizontalScrolling = true;
         this.overlayScrollPositions.master.left = tempScrollValue;
         scrollValueChanged = true;
-        if (topOverlay) {
+        if (topOverlay && topOverlay.scrollLeft !== tempScrollValue) {
           topOverlay.scrollLeft = tempScrollValue;
           delegatedScroll = (masterHorizontal !== window);
         }
-        if (bottomOverlay) {
+        if (bottomOverlay && bottomOverlay.scrollLeft !== tempScrollValue) {
           bottomOverlay.scrollLeft = tempScrollValue;
           delegatedScroll = (masterHorizontal !== window);
         }
@@ -2347,7 +2351,7 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
         this.verticalScrolling = true;
         this.overlayScrollPositions.master.top = tempScrollValue;
         scrollValueChanged = true;
-        if (leftOverlay) {
+        if (leftOverlay && leftOverlay.scrollTop !== tempScrollValue) {
           leftOverlay.scrollTop = tempScrollValue;
           delegatedScroll = (masterVertical !== window);
         }
@@ -2358,7 +2362,9 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
         this.horizontalScrolling = true;
         this.overlayScrollPositions.bottom.left = tempScrollValue;
         scrollValueChanged = true;
-        masterHorizontal.scrollLeft = tempScrollValue;
+        if (masterHorizontal.scrollLeft !== tempScrollValue) {
+          masterHorizontal.scrollLeft = tempScrollValue;
+        }
       }
       if (fakeScrollValue !== null) {
         scrollValueChanged = true;
@@ -2370,7 +2376,9 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
         this.horizontalScrolling = true;
         this.overlayScrollPositions.top.left = tempScrollValue;
         scrollValueChanged = true;
-        masterHorizontal.scrollLeft = tempScrollValue;
+        if (masterHorizontal.scrollLeft !== tempScrollValue) {
+          masterHorizontal.scrollLeft = tempScrollValue;
+        }
       }
       if (fakeScrollValue !== null) {
         scrollValueChanged = true;
@@ -2382,7 +2390,9 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
         this.verticalScrolling = true;
         this.overlayScrollPositions.left.top = tempScrollValue;
         scrollValueChanged = true;
-        masterVertical.scrollTop = tempScrollValue;
+        if (masterVertical.scrollTop !== tempScrollValue) {
+          masterVertical.scrollTop = tempScrollValue;
+        }
       }
       if (fakeScrollValue !== null) {
         scrollValueChanged = true;
@@ -3065,7 +3075,7 @@ var WalkontableTable = function WalkontableTable(wotInstance, table) {
       if (WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_DEBUG) || WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_TOP) || WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_TOP_LEFT_CORNER)) {
         startRow = 0;
       } else if (WalkontableOverlay.isOverlayTypeOf(this.instance.cloneOverlay, WalkontableOverlay.CLONE_BOTTOM) || WalkontableOverlay.isOverlayTypeOf(this.instance.cloneOverlay, WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER)) {
-        startRow = totalRows - this.wot.getSetting('fixedRowsBottom');
+        startRow = Math.max(totalRows - this.wot.getSetting('fixedRowsBottom'), 0);
       } else {
         startRow = this.wot.wtViewport.rowsRenderCalculator.startRow;
       }
@@ -3217,23 +3227,26 @@ var WalkontableTable = function WalkontableTable(wotInstance, table) {
     return this.getLastVisibleColumn() === this.getLastRenderedColumn();
   },
   getRenderedColumnsCount: function() {
-    if (WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_DEBUG)) {
-      return this.wot.getSetting('totalColumns');
-    } else if (WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_LEFT) || WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_TOP_LEFT_CORNER) || WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER)) {
-      return this.wot.getSetting('fixedColumnsLeft');
-    } else {
-      return this.wot.wtViewport.columnsRenderCalculator.count;
+    var columnsCount = this.wot.wtViewport.columnsRenderCalculator.count;
+    var totalColumns = this.wot.getSetting('totalColumns');
+    if (this.wot.isOverlayName(WalkontableOverlay.CLONE_DEBUG)) {
+      columnsCount = totalColumns;
+    } else if (this.wot.isOverlayName(WalkontableOverlay.CLONE_LEFT) || this.wot.isOverlayName(WalkontableOverlay.CLONE_TOP_LEFT_CORNER) || this.wot.isOverlayName(WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER)) {
+      return Math.min(this.wot.getSetting('fixedColumnsLeft'), totalColumns);
     }
+    return columnsCount;
   },
   getRenderedRowsCount: function() {
-    if (WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_DEBUG)) {
-      return this.wot.getSetting('totalRows');
-    } else if (WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_TOP) || WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_TOP_LEFT_CORNER)) {
-      return this.wot.getSetting('fixedRowsTop');
-    } else if (WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_BOTTOM) || WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER)) {
-      return this.instance.getSetting('fixedRowsBottom');
+    var rowsCount = this.wot.wtViewport.rowsRenderCalculator.count;
+    var totalRows = this.wot.getSetting('totalRows');
+    if (this.wot.isOverlayName(WalkontableOverlay.CLONE_DEBUG)) {
+      rowsCount = totalRows;
+    } else if (this.wot.isOverlayName(WalkontableOverlay.CLONE_TOP) || this.wot.isOverlayName(WalkontableOverlay.CLONE_TOP_LEFT_CORNER)) {
+      rowsCount = Math.min(this.wot.getSetting('fixedRowsTop'), totalRows);
+    } else if (this.wot.isOverlayName(WalkontableOverlay.CLONE_BOTTOM) || this.wot.isOverlayName(WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER)) {
+      rowsCount = Math.min(this.wot.getSetting('fixedRowsBottom'), totalRows);
     }
-    return this.wot.wtViewport.rowsRenderCalculator.count;
+    return rowsCount;
   },
   getVisibleRowsCount: function() {
     return this.wot.wtViewport.rowsVisibleCalculator.count;
@@ -3360,8 +3373,10 @@ var WalkontableTableRenderer = function WalkontableTableRenderer(wtTable) {
       this.adjustAvailableNodes();
     }
     this.removeRedundantRows(rowsToRender);
-    if (!this.wtTable.isWorkingOnClone()) {
+    if (!this.wtTable.isWorkingOnClone() || this.wot.isOverlayName(WalkontableOverlay.CLONE_BOTTOM)) {
       this.markOversizedRows();
+    }
+    if (!this.wtTable.isWorkingOnClone()) {
       this.wot.wtViewport.createVisibleCalculators();
       this.wot.wtOverlays.refresh(false);
       var hiderWidth = outerWidth(this.wtTable.hider);
@@ -3381,10 +3396,8 @@ var WalkontableTableRenderer = function WalkontableTableRenderer(wtTable) {
         }
       }
       this.wot.getSetting('onDraw', true);
-    } else if (WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_BOTTOM)) {
-      var masterOverlay = this.wot.cloneOverlay.instance;
-      this.wot.cloneOverlay.markOversizedFixedBottomRows();
-      masterOverlay.wtOverlays.adjustElementsSize();
+    } else if (this.wot.isOverlayName(WalkontableOverlay.CLONE_BOTTOM)) {
+      this.wot.cloneSource.wtOverlays.adjustElementsSize();
     }
   },
   removeRedundantRows: function(renderedRowsCount) {
@@ -3410,7 +3423,7 @@ var WalkontableTableRenderer = function WalkontableTableRenderer(wtTable) {
       this.renderRowHeaders(sourceRowIndex, TR);
       this.adjustColumns(TR, columnsToRender + this.rowHeaderCount);
       lastTD = this.renderCells(sourceRowIndex, TR, columnsToRender);
-      if (!isWorkingOnClone || WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_BOTTOM)) {
+      if (!isWorkingOnClone || this.wot.isOverlayName(WalkontableOverlay.CLONE_BOTTOM)) {
         this.resetOversizedRow(sourceRowIndex);
       }
       if (TR.firstChild) {
@@ -4038,10 +4051,10 @@ var domHelpers = ($__helpers_47_dom_47_element__ = require("helpers/dom/element"
 var domEventHelpers = ($__helpers_47_dom_47_event__ = require("helpers/dom/event"), $__helpers_47_dom_47_event__ && $__helpers_47_dom_47_event__.__esModule && $__helpers_47_dom_47_event__ || {default: $__helpers_47_dom_47_event__});
 var HELPERS = [arrayHelpers, browserHelpers, dataHelpers, functionHelpers, mixedHelpers, numberHelpers, objectHelpers, settingHelpers, stringHelpers, unicodeHelpers];
 var DOM = [domHelpers, domEventHelpers];
-Handsontable.buildDate = 'Mon Jan 11 2016 13:09:15 GMT+0100 (CET)';
+Handsontable.buildDate = 'Wed Jan 20 2016 15:41:38 GMT+0100 (CET)';
 Handsontable.packageName = 'handsontable-pro';
-Handsontable.version = '1.0.0-beta3';
-var baseVersion = '0.20.3';
+Handsontable.version = '1.0.0';
+var baseVersion = '0.21.0';
 if (!/^@@/.test(baseVersion)) {
   Handsontable.baseVersion = baseVersion;
 }
@@ -4930,8 +4943,8 @@ Handsontable.Core = function Core(rootElement, userSettings) {
   this.validateCell = function(value, cellProperties, callback, source) {
     var validator = instance.getCellValidator(cellProperties);
     function done(valid) {
-      var col = cellProperties.physicalCol,
-          row = cellProperties.physicalRow,
+      var col = cellProperties.visualCol,
+          row = cellProperties.visualRow,
           td = instance.getCell(row, col, true);
       if (td) {
         instance.view.wt.wtSettings.settings.cellRenderer(row, col, td);
@@ -4946,13 +4959,13 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       })(validator);
     }
     if (typeof validator == 'function') {
-      value = Handsontable.hooks.run(instance, 'beforeValidate', value, cellProperties.row, cellProperties.prop, source);
+      value = Handsontable.hooks.run(instance, 'beforeValidate', value, cellProperties.visualRow, cellProperties.prop, source);
       instance._registerTimeout(setTimeout(function() {
         validator.call(cellProperties, value, function(valid) {
-          valid = Handsontable.hooks.run(instance, 'afterValidate', valid, value, cellProperties.row, cellProperties.prop, source);
+          valid = Handsontable.hooks.run(instance, 'afterValidate', valid, value, cellProperties.visualRow, cellProperties.prop, source);
           cellProperties.valid = valid;
           done(valid);
-          Handsontable.hooks.run(instance, 'postAfterValidate', valid, value, cellProperties.row, cellProperties.prop, source);
+          Handsontable.hooks.run(instance, 'postAfterValidate', valid, value, cellProperties.visualRow, cellProperties.prop, source);
         });
       }, 0));
     } else {
@@ -5360,8 +5373,8 @@ Handsontable.Core = function Core(rootElement, userSettings) {
   this.getCellMeta = function(row, col) {
     var prop = datamap.colToProp(col),
         cellProperties;
-    var physicalRow = row;
-    var physicalCol = col;
+    var visualRow = row;
+    var visualCol = col;
     row = translateRowIndex(row);
     col = translateColIndex(col);
     if (!priv.columnSettings[col]) {
@@ -5376,8 +5389,8 @@ Handsontable.Core = function Core(rootElement, userSettings) {
     cellProperties = priv.cellSettings[row][col];
     cellProperties.row = row;
     cellProperties.col = col;
-    cellProperties.physicalRow = physicalRow;
-    cellProperties.physicalCol = physicalCol;
+    cellProperties.visualRow = visualRow;
+    cellProperties.visualCol = visualCol;
     cellProperties.prop = prop;
     cellProperties.instance = instance;
     Handsontable.hooks.run(instance, 'beforeGetCellMeta', row, col, cellProperties);
@@ -5410,7 +5423,9 @@ Handsontable.Core = function Core(rootElement, userSettings) {
   this.getCellValidator = cellMethodLookupFactory('validator');
   this.validateCells = function(callback) {
     var waitingForValidator = new ValidatorsQueue();
-    waitingForValidator.onQueueEmpty = callback;
+    if (callback) {
+      waitingForValidator.onQueueEmpty = callback;
+    }
     var i = instance.countRows() - 1;
     while (i >= 0) {
       var j = instance.countCols() - 1;
@@ -5894,7 +5909,18 @@ DefaultSettings.prototype = {
   defaultDate: void 0,
   strict: void 0,
   renderAllRows: void 0,
-  preventOverflow: false
+  preventOverflow: false,
+  bindRowsWithHeaders: void 0,
+  collapsibleColumns: void 0,
+  columnSummary: void 0,
+  dropdownMenu: void 0,
+  filters: void 0,
+  ganttChart: void 0,
+  headerTooltips: void 0,
+  hiddenColumns: void 0,
+  hiddenRows: void 0,
+  nestedHeaders: void 0,
+  trimRows: void 0
 };
 Handsontable.DefaultSettings = DefaultSettings;
 
@@ -9803,6 +9829,10 @@ Object.defineProperties(exports, {
     }},
   __esModule: {value: true}
 });
+var $__element__;
+var $__0 = ($__element__ = require("element"), $__element__ && $__element__.__esModule && $__element__ || {default: $__element__}),
+    getWindowScrollTop = $__0.getWindowScrollTop,
+    getWindowScrollLeft = $__0.getWindowScrollLeft;
 function stopImmediatePropagation(event) {
   event.isImmediatePropagationEnabled = false;
   event.cancelBubble = true;
@@ -9821,21 +9851,17 @@ function pageX(event) {
   if (event.pageX) {
     return event.pageX;
   }
-  var scrollLeft = getWindowScrollLeft();
-  var cursorX = event.clientX + scrollLeft;
-  return cursorX;
+  return event.clientX + getWindowScrollLeft();
 }
 function pageY(event) {
   if (event.pageY) {
     return event.pageY;
   }
-  var scrollTop = getWindowScrollTop();
-  var cursorY = event.clientY + scrollTop;
-  return cursorY;
+  return event.clientY + getWindowScrollTop();
 }
 
 //# 
-},{}],47:[function(require,module,exports){
+},{"element":45}],47:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   proxy: {get: function() {
@@ -9847,11 +9873,14 @@ Object.defineProperties(exports, {
   throttleAfterHits: {get: function() {
       return throttleAfterHits;
     }},
+  debounce: {get: function() {
+      return debounce;
+    }},
   __esModule: {value: true}
 });
-function proxy(fun, context) {
+function proxy(func, context) {
   return function() {
-    return fun.apply(context, arguments);
+    return func.apply(context, arguments);
   };
 }
 function throttle(func) {
@@ -9905,6 +9934,24 @@ function throttleAfterHits(func) {
   }
   _throttleAfterHits.clearHits = _clearHits;
   return _throttleAfterHits;
+}
+function debounce(func) {
+  var wait = arguments[1] !== (void 0) ? arguments[1] : 200;
+  var needCall = false;
+  var lastTimer = null;
+  var result;
+  function _debounce() {
+    var $__0 = this;
+    var args = arguments;
+    if (lastTimer) {
+      clearTimeout(lastTimer);
+    }
+    lastTimer = setTimeout((function() {
+      result = func.apply($__0, args);
+    }), wait);
+    return result;
+  }
+  return _debounce;
 }
 
 //# 
@@ -11547,6 +11594,14 @@ var $AutoRowSize = AutoRowSize;
       from: this.getFirstVisibleRow(),
       to: this.getLastVisibleRow()
     }, void 0, force);
+    var fixedRowsBottom = this.hot.getSettings().fixedRowsBottom;
+    if (fixedRowsBottom) {
+      var totalRows = this.hot.countRows() - 1;
+      this.calculateRowsHeight({
+        from: totalRows - fixedRowsBottom,
+        to: totalRows
+      });
+    }
     if (this.isNeedRecalculate() && !this.inProgress) {
       this.calculateAllRowsHeight();
     }
@@ -12119,10 +12174,9 @@ var $ColumnSorting = ColumnSorting;
         sortFunction;
     this.hot.sortingEnabled = false;
     this.hot.sortIndex.length = 0;
-    var colOffset = this.hot.colOffset();
     for (var i = 0,
         ilen = this.hot.countRows() - this.hot.getSettings().minSpareRows; i < ilen; i++) {
-      this.hot.sortIndex.push([i, this.hot.getDataAtCell(i, this.hot.sortColumn + colOffset)]);
+      this.hot.sortIndex.push([i, this.hot.getDataAtCell(i, this.hot.sortColumn)]);
     }
     colMeta = this.hot.getCellMeta(0, this.hot.sortColumn);
     this.sortIndicators[this.hot.sortColumn] = colMeta.sortIndicator;
@@ -12134,8 +12188,8 @@ var $ColumnSorting = ColumnSorting;
         sortFunction = this.defaultSort;
     }
     this.hot.sortIndex.sort(sortFunction(this.hot.sortOrder));
-    for (var i = this.hot.sortIndex.length; i < this.hot.countRows(); i++) {
-      this.hot.sortIndex.push([i, this.hot.getDataAtCell(i, this.hot.sortColumn + colOffset)]);
+    for (var i$__7 = this.hot.sortIndex.length; i$__7 < this.hot.countRows(); i$__7++) {
+      this.hot.sortIndex.push([i$__7, this.hot.getDataAtCell(i$__7, this.hot.sortColumn)]);
     }
     this.hot.sortingEnabled = true;
   },
@@ -12699,6 +12753,7 @@ var $___46__46__47__95_base__,
     $___46__46__47__46__46__47_helpers_47_object__,
     $___46__46__47__46__46__47_plugins__,
     $___46__46__47__46__46__47_helpers_47_dom_47_event__,
+    $___46__46__47__46__46__47_helpers_47_dom_47_element__,
     $__predefinedItems__;
 var BasePlugin = ($___46__46__47__95_base__ = require("_base"), $___46__46__47__95_base__ && $___46__46__47__95_base__.__esModule && $___46__46__47__95_base__ || {default: $___46__46__47__95_base__}).default;
 var arrayEach = ($___46__46__47__46__46__47_helpers_47_array__ = require("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}).arrayEach;
@@ -12711,20 +12766,26 @@ var $__7 = ($___46__46__47__46__46__47_helpers_47_object__ = require("helpers/ob
     objectEach = $__7.objectEach,
     mixin = $__7.mixin;
 var registerPlugin = ($___46__46__47__46__46__47_plugins__ = require("plugins"), $___46__46__47__46__46__47_plugins__ && $___46__46__47__46__46__47_plugins__.__esModule && $___46__46__47__46__46__47_plugins__ || {default: $___46__46__47__46__46__47_plugins__}).registerPlugin;
-var stopPropagation = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = require("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}).stopPropagation;
-var $__10 = ($__predefinedItems__ = require("predefinedItems"), $__predefinedItems__ && $__predefinedItems__.__esModule && $__predefinedItems__ || {default: $__predefinedItems__}),
-    ROW_ABOVE = $__10.ROW_ABOVE,
-    ROW_BELOW = $__10.ROW_BELOW,
-    COLUMN_LEFT = $__10.COLUMN_LEFT,
-    COLUMN_RIGHT = $__10.COLUMN_RIGHT,
-    REMOVE_ROW = $__10.REMOVE_ROW,
-    REMOVE_COLUMN = $__10.REMOVE_COLUMN,
-    UNDO = $__10.UNDO,
-    REDO = $__10.REDO,
-    READ_ONLY = $__10.READ_ONLY,
-    ALIGNMENT = $__10.ALIGNMENT,
-    SEPARATOR = $__10.SEPARATOR,
-    predefinedItems = $__10.predefinedItems;
+var $__9 = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = require("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}),
+    stopPropagation = $__9.stopPropagation,
+    pageX = $__9.pageX,
+    pageY = $__9.pageY;
+var $__10 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = require("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}),
+    getWindowScrollLeft = $__10.getWindowScrollLeft,
+    getWindowScrollTop = $__10.getWindowScrollTop;
+var $__11 = ($__predefinedItems__ = require("predefinedItems"), $__predefinedItems__ && $__predefinedItems__.__esModule && $__predefinedItems__ || {default: $__predefinedItems__}),
+    ROW_ABOVE = $__11.ROW_ABOVE,
+    ROW_BELOW = $__11.ROW_BELOW,
+    COLUMN_LEFT = $__11.COLUMN_LEFT,
+    COLUMN_RIGHT = $__11.COLUMN_RIGHT,
+    REMOVE_ROW = $__11.REMOVE_ROW,
+    REMOVE_COLUMN = $__11.REMOVE_COLUMN,
+    UNDO = $__11.UNDO,
+    REDO = $__11.REDO,
+    READ_ONLY = $__11.READ_ONLY,
+    ALIGNMENT = $__11.ALIGNMENT,
+    SEPARATOR = $__11.SEPARATOR,
+    predefinedItems = $__11.predefinedItems;
 var ContextMenu = function ContextMenu(hotInstance) {
   $traceurRuntime.superConstructor($ContextMenu).call(this, hotInstance);
   this.eventManager = new EventManager(this);
@@ -12738,7 +12799,7 @@ var $ContextMenu = ContextMenu;
     return this.hot.getSettings().contextMenu;
   },
   enablePlugin: function() {
-    var $__11 = this;
+    var $__12 = this;
     if (this.enabled) {
       return;
     }
@@ -12751,28 +12812,28 @@ var $ContextMenu = ContextMenu;
     }
     $traceurRuntime.superGet(this, $ContextMenu.prototype, "enablePlugin").call(this);
     this.callOnPluginsReady((function() {
-      $__11.hot.runHooks('afterContextMenuDefaultOptions', predefinedItems);
-      $__11.itemsFactory.setPredefinedItems(predefinedItems.items);
-      var menuItems = $__11.itemsFactory.getVisibleItems(settings);
-      $__11.menu = new Menu($__11.hot, {
+      $__12.hot.runHooks('afterContextMenuDefaultOptions', predefinedItems);
+      $__12.itemsFactory.setPredefinedItems(predefinedItems.items);
+      var menuItems = $__12.itemsFactory.getVisibleItems(settings);
+      $__12.menu = new Menu($__12.hot, {
         className: 'htContextMenu',
         keepInViewport: true
       });
-      $__11.menu.setMenuItems(menuItems);
-      $__11.menu.addLocalHook('afterOpen', (function() {
-        return $__11.onMenuAfterOpen();
+      $__12.menu.setMenuItems(menuItems);
+      $__12.menu.addLocalHook('afterOpen', (function() {
+        return $__12.onMenuAfterOpen();
       }));
-      $__11.menu.addLocalHook('afterClose', (function() {
-        return $__11.onMenuAfterClose();
+      $__12.menu.addLocalHook('afterClose', (function() {
+        return $__12.onMenuAfterClose();
       }));
-      $__11.menu.addLocalHook('executeCommand', (function() {
+      $__12.menu.addLocalHook('executeCommand', (function() {
         for (var params = [],
-            $__13 = 0; $__13 < arguments.length; $__13++)
-          params[$__13] = arguments[$__13];
-        return $__11.executeCommand.apply($__11, params);
+            $__14 = 0; $__14 < arguments.length; $__14++)
+          params[$__14] = arguments[$__14];
+        return $__12.executeCommand.apply($__12, params);
       }));
       arrayEach(menuItems, (function(command) {
-        return $__11.commandExecutor.registerCommand(command.key, command);
+        return $__12.commandExecutor.registerCommand(command.key, command);
       }));
     }));
   },
@@ -12785,9 +12846,9 @@ var $ContextMenu = ContextMenu;
     $traceurRuntime.superGet(this, $ContextMenu.prototype, "disablePlugin").call(this);
   },
   registerEvents: function() {
-    var $__11 = this;
+    var $__12 = this;
     this.eventManager.addEventListener(this.hot.rootElement, 'contextmenu', (function(event) {
-      return $__11.onContextMenu(event);
+      return $__12.onContextMenu(event);
     }));
   },
   open: function(event) {
@@ -12795,7 +12856,10 @@ var $ContextMenu = ContextMenu;
       return;
     }
     this.menu.open();
-    this.menu.setPosition(event);
+    this.menu.setPosition({
+      top: parseInt(pageY(event), 10) - getWindowScrollTop(),
+      left: parseInt(pageX(event), 10) - getWindowScrollLeft()
+    });
     this.menu.hotMenu.isHotTableEnv = this.hot.isHotTableEnv;
     Handsontable.eventManager.isHotTableEnv = this.hot.isHotTableEnv;
   },
@@ -12807,8 +12871,8 @@ var $ContextMenu = ContextMenu;
   },
   executeCommand: function() {
     for (var params = [],
-        $__13 = 0; $__13 < arguments.length; $__13++)
-      params[$__13] = arguments[$__13];
+        $__14 = 0; $__14 < arguments.length; $__14++)
+      params[$__14] = arguments[$__14];
     this.commandExecutor.execute.apply(this.commandExecutor, params);
   },
   onContextMenu: function(event) {
@@ -12883,32 +12947,32 @@ var Cursor = function Cursor(object) {
       topRelative;
   var left,
       leftRelative;
-  var scrollTop,
-      scrollLeft;
   var cellHeight,
       cellWidth;
   this.type = this.getSourceType(object);
   if (this.type === 'literal') {
     top = parseInt(object.top, 10);
     left = parseInt(object.left, 10);
-    cellHeight = object.height;
-    cellWidth = object.width;
+    cellHeight = object.height || 0;
+    cellWidth = object.width || 0;
+    topRelative = top;
+    leftRelative = left;
+    top = top + windowScrollTop;
+    left = left + windowScrollLeft;
   } else if (this.type === 'event') {
     top = parseInt(pageY(object), 10);
     left = parseInt(pageX(object), 10);
     cellHeight = object.target.clientHeight;
     cellWidth = object.target.clientWidth;
+    topRelative = top - windowScrollTop;
+    leftRelative = left - windowScrollLeft;
   }
-  topRelative = top - windowScrollTop;
-  leftRelative = left - windowScrollLeft;
-  scrollTop = windowScrollTop;
-  scrollLeft = windowScrollLeft;
   this.top = top;
   this.topRelative = topRelative;
   this.left = left;
   this.leftRelative = leftRelative;
-  this.scrollTop = scrollTop;
-  this.scrollLeft = scrollLeft;
+  this.scrollTop = windowScrollTop;
+  this.scrollLeft = windowScrollLeft;
   this.cellHeight = cellHeight;
   this.cellWidth = cellWidth;
 };
@@ -13072,6 +13136,7 @@ var $___46__46__47__46__46__47_helpers_47_dom_47_element__,
     $__cursor__,
     $___46__46__47__46__46__47_eventManager__,
     $___46__46__47__46__46__47_helpers_47_object__,
+    $___46__46__47__46__46__47_helpers_47_function__,
     $__utils__,
     $___46__46__47__46__46__47_helpers_47_unicode__,
     $___46__46__47__46__46__47_mixins_47_localHooks__,
@@ -13096,22 +13161,23 @@ var $__4 = ($___46__46__47__46__46__47_helpers_47_object__ = require("helpers/ob
     isObject = $__4.isObject,
     objectEach = $__4.objectEach,
     mixin = $__4.mixin;
-var $__5 = ($__utils__ = require("utils"), $__utils__ && $__utils__.__esModule && $__utils__ || {default: $__utils__}),
-    isSeparator = $__5.isSeparator,
-    isDisabled = $__5.isDisabled,
-    isSelectionDisabled = $__5.isSelectionDisabled,
-    hasSubMenu = $__5.hasSubMenu,
-    normalizeSelection = $__5.normalizeSelection;
+var debounce = ($___46__46__47__46__46__47_helpers_47_function__ = require("helpers/function"), $___46__46__47__46__46__47_helpers_47_function__ && $___46__46__47__46__46__47_helpers_47_function__.__esModule && $___46__46__47__46__46__47_helpers_47_function__ || {default: $___46__46__47__46__46__47_helpers_47_function__}).debounce;
+var $__6 = ($__utils__ = require("utils"), $__utils__ && $__utils__.__esModule && $__utils__ || {default: $__utils__}),
+    isSeparator = $__6.isSeparator,
+    isDisabled = $__6.isDisabled,
+    isSelectionDisabled = $__6.isSelectionDisabled,
+    hasSubMenu = $__6.hasSubMenu,
+    normalizeSelection = $__6.normalizeSelection;
 var KEY_CODES = ($___46__46__47__46__46__47_helpers_47_unicode__ = require("helpers/unicode"), $___46__46__47__46__46__47_helpers_47_unicode__ && $___46__46__47__46__46__47_helpers_47_unicode__.__esModule && $___46__46__47__46__46__47_helpers_47_unicode__ || {default: $___46__46__47__46__46__47_helpers_47_unicode__}).KEY_CODES;
 var localHooks = ($___46__46__47__46__46__47_mixins_47_localHooks__ = require("mixins/localHooks"), $___46__46__47__46__46__47_mixins_47_localHooks__ && $___46__46__47__46__46__47_mixins_47_localHooks__.__esModule && $___46__46__47__46__46__47_mixins_47_localHooks__ || {default: $___46__46__47__46__46__47_mixins_47_localHooks__}).localHooks;
-var $__8 = ($__predefinedItems__ = require("predefinedItems"), $__predefinedItems__ && $__predefinedItems__.__esModule && $__predefinedItems__ || {default: $__predefinedItems__}),
-    SEPARATOR = $__8.SEPARATOR,
-    predefinedItems = $__8.predefinedItems;
-var $__9 = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = require("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}),
-    stopPropagation = $__9.stopPropagation,
-    stopImmediatePropagation = $__9.stopImmediatePropagation,
-    pageX = $__9.pageX,
-    pageY = $__9.pageY;
+var $__9 = ($__predefinedItems__ = require("predefinedItems"), $__predefinedItems__ && $__predefinedItems__.__esModule && $__predefinedItems__ || {default: $__predefinedItems__}),
+    SEPARATOR = $__9.SEPARATOR,
+    predefinedItems = $__9.predefinedItems;
+var $__10 = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = require("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}),
+    stopPropagation = $__10.stopPropagation,
+    stopImmediatePropagation = $__10.stopImmediatePropagation,
+    pageX = $__10.pageX,
+    pageY = $__10.pageY;
 var Menu = function Menu(hotInstance) {
   var options = arguments[1] !== (void 0) ? arguments[1] : {
     parent: null,
@@ -13128,27 +13194,40 @@ var Menu = function Menu(hotInstance) {
   this.parentMenu = this.options.parent || null;
   this.menuItems = null;
   this.origOutsideClickDeselects = null;
+  this.offset = {
+    above: 0,
+    below: 0,
+    left: 0,
+    right: 0
+  };
   this._afterScrollCallback = null;
   this.registerEvents();
 };
 var $Menu = Menu;
 ($traceurRuntime.createClass)(Menu, {
   registerEvents: function() {
-    var $__10 = this;
+    var $__11 = this;
     this.eventManager.addEventListener(document.documentElement, 'mousedown', (function(event) {
-      return $__10.onDocumentMouseDown(event);
+      return $__11.onDocumentMouseDown(event);
     }));
   },
   setMenuItems: function(menuItems) {
     this.menuItems = menuItems;
   },
+  setOffset: function(area) {
+    var offset = arguments[1] !== (void 0) ? arguments[1] : 0;
+    this.offset[area] = offset;
+  },
   isSubMenu: function() {
     return this.parentMenu !== null;
   },
   open: function() {
-    var $__10 = this;
+    var $__11 = this;
     this.container.removeAttribute('style');
     this.container.style.display = 'block';
+    var delayedOpenSubMenu = debounce((function(row) {
+      return $__11.openSubMenu(row);
+    }), 300);
     var settings = {
       data: this.menuItems,
       colHeaders: false,
@@ -13159,23 +13238,30 @@ var $Menu = Menu;
       columns: [{
         data: 'name',
         renderer: (function(hot, TD, row, col, prop, value) {
-          return $__10.menuItemRenderer(hot, TD, row, col, prop, value);
+          return $__11.menuItemRenderer(hot, TD, row, col, prop, value);
         })
       }],
       renderAllRows: true,
       fragmentSelection: 'cell',
       beforeKeyDown: (function(event) {
-        return $__10.onBeforeKeyDown(event);
+        return $__11.onBeforeKeyDown(event);
       }),
       afterOnCellMouseOver: (function(event, coords, TD) {
-        return $__10.openSubMenu(coords.row);
+        if (!TD.textContent) {
+          return;
+        }
+        if ($__11.isAllSubMenusClosed()) {
+          delayedOpenSubMenu(coords.row);
+        } else {
+          $__11.openSubMenu(coords.row);
+        }
       })
     };
     this.origOutsideClickDeselects = this.hot.getSettings().outsideClickDeselects;
     this.hot.getSettings().outsideClickDeselects = false;
     this.hotMenu = new Handsontable.Core(this.container, settings);
     this.hotMenu.addHook('afterInit', (function() {
-      return $__10.onAfterInit();
+      return $__11.onAfterInit();
     }));
     this.hotMenu.init();
     this.hotMenu.listen();
@@ -13200,6 +13286,9 @@ var $Menu = Menu;
     }
   },
   openSubMenu: function(row) {
+    if (!this.hotMenu) {
+      return;
+    }
     var cell = this.hotMenu.getCell(row, 0);
     this.closeAllSubMenus();
     if (!cell || !hasSubMenu(cell)) {
@@ -13209,7 +13298,8 @@ var $Menu = Menu;
     var subMenu = new $Menu(this.hot, {
       parent: this,
       name: dataItem.name,
-      className: this.options.className
+      className: this.options.className,
+      keepInViewport: true
     });
     subMenu.setMenuItems(dataItem.submenu.items);
     subMenu.open();
@@ -13226,9 +13316,9 @@ var $Menu = Menu;
     }
   },
   closeAllSubMenus: function() {
-    var $__10 = this;
+    var $__11 = this;
     arrayEach(this.hotMenu.getData(), (function(value, row) {
-      return $__10.closeSubMenu(row);
+      return $__11.closeSubMenu(row);
     }));
   },
   isAllSubMenusClosed: function() {
@@ -13281,30 +13371,31 @@ var $Menu = Menu;
     }
   },
   setPositionAboveCursor: function(cursor) {
-    var top = cursor.top - this.container.offsetHeight;
+    var top = this.offset.above + cursor.top - this.container.offsetHeight;
     if (this.isSubMenu()) {
-      top = window.scrollY + cursor.top + cursor.cellHeight - this.container.offsetHeight + 3;
+      top = cursor.top + cursor.cellHeight - this.container.offsetHeight + 3;
     }
     this.container.style.top = top + 'px';
   },
   setPositionBelowCursor: function(cursor) {
-    var top = cursor.top - 1;
+    var top = this.offset.below + cursor.top;
     if (this.isSubMenu()) {
-      top = cursor.top + window.scrollY - 1;
+      top = cursor.top - 1;
     }
     this.container.style.top = top + 'px';
   },
   setPositionOnRightOfCursor: function(cursor) {
     var left;
     if (this.isSubMenu()) {
-      left = window.scrollX + 1 + cursor.left + cursor.cellWidth;
+      left = 1 + cursor.left + cursor.cellWidth;
     } else {
-      left = 1 + cursor.left;
+      left = this.offset.right + 1 + cursor.left;
     }
     this.container.style.left = left + 'px';
   },
   setPositionOnLeftOfCursor: function(cursor) {
-    this.container.style.left = (cursor.left - this.container.offsetWidth + getScrollbarWidth() + 4) + 'px';
+    var left = this.offset.left + cursor.left - this.container.offsetWidth + getScrollbarWidth() + 4;
+    this.container.style.left = left + 'px';
   },
   selectFirstCell: function() {
     var cell = this.hotMenu.getCell(0, 0);
@@ -13348,7 +13439,7 @@ var $Menu = Menu;
     }
   },
   menuItemRenderer: function(hot, TD, row, col, prop, value) {
-    var $__10 = this;
+    var $__11 = this;
     var item = hot.getSourceDataAtRow(row);
     var wrapper = document.createElement('div');
     var isSubMenu = (function(item) {
@@ -13358,10 +13449,10 @@ var $Menu = Menu;
       return new RegExp(SEPARATOR, 'i').test(item.name);
     });
     var itemIsDisabled = (function(item) {
-      return item.disabled === true || (typeof item.disabled == 'function' && item.disabled.call($__10.hot) === true);
+      return item.disabled === true || (typeof item.disabled == 'function' && item.disabled.call($__11.hot) === true);
     });
     var itemIsHidden = (function(item) {
-      return typeof item.hidden == 'function' && item.hidden.call($__10.hot) === true;
+      return typeof item.hidden == 'function' && item.hidden.call($__11.hot) === true;
     });
     var itemIsSelectionDisabled = (function(item) {
       return item.disableSelection;
@@ -13540,7 +13631,7 @@ mixin(Menu, localHooks);
 ;
 
 //# 
-},{"cursor":69,"eventManager":41,"helpers/array":42,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/object":50,"helpers/unicode":53,"mixins/localHooks":55,"predefinedItems":72,"utils":73}],72:[function(require,module,exports){
+},{"cursor":69,"eventManager":41,"helpers/array":42,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/function":47,"helpers/object":50,"helpers/unicode":53,"mixins/localHooks":55,"predefinedItems":72,"utils":73}],72:[function(require,module,exports){
 "use strict";
 var $__4;
 Object.defineProperties(exports, {
@@ -18064,6 +18155,9 @@ var $__1 = ($___46__46__47_renderers__ = require("renderers"), $___46__46__47_re
     registerRenderer = $__1.registerRenderer;
 function htmlRenderer(instance, TD, row, col, prop, value, cellProperties) {
   getRenderer('base').apply(this, arguments);
+  if (value === null || value === void 0) {
+    value = '';
+  }
   fastInnerHTML(TD, value);
 }
 ;
@@ -19197,7 +19291,7 @@ var GhostTable = function GhostTable(hotInstance) {
         var renderer = $__5.hot.getCellRenderer(cellProperties);
         var td = d.createElement('td');
         var tr = d.createElement('tr');
-        renderer($__5.hot, td, row, column, $__5.hot.colToProp(row), string.value, cellProperties);
+        renderer($__5.hot, td, row, column, $__5.hot.colToProp(column), string.value, cellProperties);
         tr.appendChild(td);
         fragment.appendChild(tr);
       }));
@@ -19599,16 +19693,20 @@ var $WalkontableBottomOverlay = WalkontableBottomOverlay;
     var sum = 0;
     var defaultRowHeight = this.wot.wtSettings.settings.defaultRowHeight;
     while (from < to) {
-      sum += this.wot.wtTable.getRowHeight(from) || defaultRowHeight;
+      var height = this.wot.wtTable.getRowHeight(from);
+      sum += height === void 0 ? defaultRowHeight : height;
       from++;
     }
     return sum;
   },
   adjustElementsSize: function() {
-    if (this.needFullRender) {
+    var force = arguments[0] !== (void 0) ? arguments[0] : false;
+    if (this.needFullRender || force) {
       this.adjustRootElementSize();
       this.adjustRootChildrenSize();
-      this.areElementSizesAdjusted = true;
+      if (!force) {
+        this.areElementSizesAdjusted = true;
+      }
     }
   },
   adjustRootElementSize: function() {
@@ -19623,33 +19721,6 @@ var $WalkontableBottomOverlay = WalkontableBottomOverlay;
     this.clone.wtTable.holder.style.width = overlayRootStyle.width;
     tableHeight = outerHeight(this.clone.wtTable.TABLE);
     overlayRootStyle.height = (tableHeight === 0 ? tableHeight : tableHeight) + 'px';
-  },
-  markOversizedFixedBottomRows: function() {
-    var rowCount;
-    var sourceRowIndex;
-    var previousRowHeight;
-    var currentTr;
-    var rowHeader;
-    var rowInnerHeight = 0;
-    var totalRows = this.wot.getSetting('totalRows');
-    if (this.wot.getSetting('fixedRowsBottom')) {
-      rowCount = this.wot.wtOverlays.bottomOverlay.clone.wtTable.TBODY.childNodes.length;
-      while (rowCount) {
-        rowCount--;
-        sourceRowIndex = totalRows - rowCount - 1;
-        previousRowHeight = this.wot.wtTable.getRowHeight(sourceRowIndex);
-        currentTr = this.getTrForRow(sourceRowIndex);
-        rowHeader = currentTr.querySelector('th');
-        if (rowHeader) {
-          rowInnerHeight = innerHeight(rowHeader);
-        } else {
-          rowInnerHeight = innerHeight(currentTr) - 1;
-        }
-        if ((!previousRowHeight && this.wot.wtSettings.settings.defaultRowHeight < rowInnerHeight || previousRowHeight < rowInnerHeight)) {
-          this.wot.wtViewport.oversizedRows[sourceRowIndex] = rowInnerHeight;
-        }
-      }
-    }
   },
   adjustRootChildrenSize: function() {
     var scrollbarWidth = getScrollbarWidth();
@@ -19676,10 +19747,6 @@ var $WalkontableBottomOverlay = WalkontableBottomOverlay;
     if (this.needFullRender) {
       this.syncOverlayOffset();
     }
-  },
-  getTrForRow: function(souceRowIndex) {
-    var totalRows = this.wot.getSetting('totalRows');
-    return this.clone.wtTable.TBODY.childNodes[this.clone.wtTable.TBODY.childNodes.length - (totalRows - souceRowIndex)];
   },
   syncOverlayOffset: function() {
     if (typeof this.wot.wtViewport.columnsRenderCalculator.startPosition === 'number') {
@@ -20856,6 +20923,9 @@ var $DropdownMenu = DropdownMenu;
       return;
     }
     this.menu.open();
+    if (event.width) {
+      this.menu.setOffset('left', event.width);
+    }
     this.menu.setPosition(event);
     this.menu.hotMenu.isHotTableEnv = this.hot.isHotTableEnv;
     Handsontable.eventManager.isHotTableEnv = this.hot.isHotTableEnv;
@@ -20877,8 +20947,8 @@ var $DropdownMenu = DropdownMenu;
     if (hasClass(event.target, BUTTON_CLASS_NAME) && !this.menu.isOpened()) {
       var rect = event.target.getBoundingClientRect();
       this.open({
-        left: rect.left + getWindowScrollLeft(),
-        top: rect.top + event.target.offsetHeight + getWindowScrollTop() + 3,
+        left: rect.left,
+        top: rect.top + event.target.offsetHeight + 3,
         width: rect.width,
         height: rect.height
       });
@@ -21538,7 +21608,8 @@ var $ConditionComponent = ConditionComponent;
     };
   },
   reset: function() {
-    var columnType = this.hot.getDataType.apply(this.hot, this.hot.getSelected() || []);
+    var lastSelectedColumn = this.hot.getPlugin('filters').getSelectedColumn();
+    var columnType = this.hot.getDataType.apply(this.hot, this.hot.getSelected() || [0, lastSelectedColumn]);
     var items = getOptionsList(columnType);
     arrayEach(this.getInputElements(), (function(element) {
       return element.hide();
@@ -22068,7 +22139,7 @@ var DataFilter = function DataFilter(formulaCollection) {
   _getIntersectData: function(data, needles) {
     var result = [];
     arrayEach(needles, (function(needleRow) {
-      var row = needleRow.meta.physicalRow;
+      var row = needleRow.meta.visualRow;
       if (data[row] !== void 0) {
         result[row] = data[row];
       }
@@ -22233,7 +22304,7 @@ var $Filters = Filters;
       var trimmedRows = [];
       this.trimRowsPlugin.trimmedRows.length = 0;
       filteredRows = arrayMap(dataFilter.filter(), (function(rowData) {
-        return rowData.meta.physicalRow;
+        return rowData.meta.visualRow;
       }));
       rangeEach(this.hot.countSourceRows() - 1, (function(row) {
         if (filteredRows.indexOf(row) === -1) {
@@ -22269,8 +22340,8 @@ var $Filters = Filters;
       var $__14 = $__12.hot.getCellMeta(rowIndex, column),
           row = $__14.row,
           col = $__14.col,
-          physicalCol = $__14.physicalCol,
-          physicalRow = $__14.physicalRow,
+          visualCol = $__14.visualCol,
+          visualRow = $__14.visualRow,
           type = $__14.type,
           instance = $__14.instance,
           dateFormat = $__14.dateFormat;
@@ -22278,8 +22349,8 @@ var $Filters = Filters;
         meta: {
           row: row,
           col: col,
-          physicalCol: physicalCol,
-          physicalRow: physicalRow,
+          visualCol: visualCol,
+          visualRow: visualRow,
           type: type,
           instance: instance,
           dateFormat: dateFormat
@@ -23343,8 +23414,8 @@ var $SelectUI = SelectUI;
     if (this.menu) {
       this.menu.open();
       this.menu.setPosition({
-        left: getWindowScrollLeft() + rect.left - 5,
-        top: getWindowScrollTop() + rect.top,
+        left: rect.left - 5,
+        top: rect.top,
         width: rect.width,
         height: rect.height
       });

@@ -388,13 +388,7 @@ var WalkontableBorder = function WalkontableBorder(wotInstance, settings) {
         trimmingContainer,
         cornerOverlappingContainer,
         ilen;
-    if (WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_TOP) || WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_TOP_LEFT_CORNER)) {
-      ilen = this.wot.getSetting('fixedRowsTop');
-    } else if (WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_BOTTOM) || WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER)) {
-      ilen = this.wot.getSetting('fixedRowsBottom');
-    } else {
-      ilen = this.wot.wtTable.getRenderedRowsCount();
-    }
+    ilen = this.wot.wtTable.getRenderedRowsCount();
     for (var i = 0; i < ilen; i++) {
       var s = this.wot.wtTable.rowFilter.renderedToSource(i);
       if (s >= corners[0] && s <= corners[2]) {
@@ -1184,7 +1178,7 @@ var Walkontable = function Walkontable(settings) {
       }
     } else if (coords.col < fixedColumns) {
       return this.wtOverlays.leftOverlay.clone.wtTable.getCell(coords);
-    } else if (coords.row > totalRows - fixedRowsBottom) {
+    } else if (coords.row < totalRows && coords.row > totalRows - fixedRowsBottom) {
       if (this.wtOverlays.bottomOverlay.clone) {
         return this.wtOverlays.bottomOverlay.clone.wtTable.getCell(coords);
       }
@@ -1213,6 +1207,12 @@ var Walkontable = function Walkontable(settings) {
   },
   getOverlayName: function() {
     return this.cloneOverlay ? this.cloneOverlay.type : 'master';
+  },
+  isOverlayName: function(name) {
+    if (this.cloneOverlay) {
+      return this.cloneOverlay.type === name;
+    }
+    return false;
   },
   exportSettingsAsClassNames: function() {
     var $__14 = this;
@@ -2275,6 +2275,10 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
     var deltaY = event.wheelDeltaY || (-1) * event.deltaY;
     var deltaX = event.wheelDeltaX || (-1) * event.deltaX;
     var parentHolder;
+    if (event.deltaMode === 1) {
+      deltaY = deltaY * 120;
+      deltaX = deltaX * 120;
+    }
     while (tempElem != document && tempElem != null) {
       if (tempElem.className.indexOf('wtHolder') > -1) {
         parentHolder = tempElem;
@@ -2333,11 +2337,11 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
         this.horizontalScrolling = true;
         this.overlayScrollPositions.master.left = tempScrollValue;
         scrollValueChanged = true;
-        if (topOverlay) {
+        if (topOverlay && topOverlay.scrollLeft !== tempScrollValue) {
           topOverlay.scrollLeft = tempScrollValue;
           delegatedScroll = (masterHorizontal !== window);
         }
-        if (bottomOverlay) {
+        if (bottomOverlay && bottomOverlay.scrollLeft !== tempScrollValue) {
           bottomOverlay.scrollLeft = tempScrollValue;
           delegatedScroll = (masterHorizontal !== window);
         }
@@ -2347,7 +2351,7 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
         this.verticalScrolling = true;
         this.overlayScrollPositions.master.top = tempScrollValue;
         scrollValueChanged = true;
-        if (leftOverlay) {
+        if (leftOverlay && leftOverlay.scrollTop !== tempScrollValue) {
           leftOverlay.scrollTop = tempScrollValue;
           delegatedScroll = (masterVertical !== window);
         }
@@ -2358,7 +2362,9 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
         this.horizontalScrolling = true;
         this.overlayScrollPositions.bottom.left = tempScrollValue;
         scrollValueChanged = true;
-        masterHorizontal.scrollLeft = tempScrollValue;
+        if (masterHorizontal.scrollLeft !== tempScrollValue) {
+          masterHorizontal.scrollLeft = tempScrollValue;
+        }
       }
       if (fakeScrollValue !== null) {
         scrollValueChanged = true;
@@ -2370,7 +2376,9 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
         this.horizontalScrolling = true;
         this.overlayScrollPositions.top.left = tempScrollValue;
         scrollValueChanged = true;
-        masterHorizontal.scrollLeft = tempScrollValue;
+        if (masterHorizontal.scrollLeft !== tempScrollValue) {
+          masterHorizontal.scrollLeft = tempScrollValue;
+        }
       }
       if (fakeScrollValue !== null) {
         scrollValueChanged = true;
@@ -2382,7 +2390,9 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
         this.verticalScrolling = true;
         this.overlayScrollPositions.left.top = tempScrollValue;
         scrollValueChanged = true;
-        masterVertical.scrollTop = tempScrollValue;
+        if (masterVertical.scrollTop !== tempScrollValue) {
+          masterVertical.scrollTop = tempScrollValue;
+        }
       }
       if (fakeScrollValue !== null) {
         scrollValueChanged = true;
@@ -3065,7 +3075,7 @@ var WalkontableTable = function WalkontableTable(wotInstance, table) {
       if (WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_DEBUG) || WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_TOP) || WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_TOP_LEFT_CORNER)) {
         startRow = 0;
       } else if (WalkontableOverlay.isOverlayTypeOf(this.instance.cloneOverlay, WalkontableOverlay.CLONE_BOTTOM) || WalkontableOverlay.isOverlayTypeOf(this.instance.cloneOverlay, WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER)) {
-        startRow = totalRows - this.wot.getSetting('fixedRowsBottom');
+        startRow = Math.max(totalRows - this.wot.getSetting('fixedRowsBottom'), 0);
       } else {
         startRow = this.wot.wtViewport.rowsRenderCalculator.startRow;
       }
@@ -3217,23 +3227,26 @@ var WalkontableTable = function WalkontableTable(wotInstance, table) {
     return this.getLastVisibleColumn() === this.getLastRenderedColumn();
   },
   getRenderedColumnsCount: function() {
-    if (WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_DEBUG)) {
-      return this.wot.getSetting('totalColumns');
-    } else if (WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_LEFT) || WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_TOP_LEFT_CORNER) || WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER)) {
-      return this.wot.getSetting('fixedColumnsLeft');
-    } else {
-      return this.wot.wtViewport.columnsRenderCalculator.count;
+    var columnsCount = this.wot.wtViewport.columnsRenderCalculator.count;
+    var totalColumns = this.wot.getSetting('totalColumns');
+    if (this.wot.isOverlayName(WalkontableOverlay.CLONE_DEBUG)) {
+      columnsCount = totalColumns;
+    } else if (this.wot.isOverlayName(WalkontableOverlay.CLONE_LEFT) || this.wot.isOverlayName(WalkontableOverlay.CLONE_TOP_LEFT_CORNER) || this.wot.isOverlayName(WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER)) {
+      return Math.min(this.wot.getSetting('fixedColumnsLeft'), totalColumns);
     }
+    return columnsCount;
   },
   getRenderedRowsCount: function() {
-    if (WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_DEBUG)) {
-      return this.wot.getSetting('totalRows');
-    } else if (WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_TOP) || WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_TOP_LEFT_CORNER)) {
-      return this.wot.getSetting('fixedRowsTop');
-    } else if (WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_BOTTOM) || WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER)) {
-      return this.instance.getSetting('fixedRowsBottom');
+    var rowsCount = this.wot.wtViewport.rowsRenderCalculator.count;
+    var totalRows = this.wot.getSetting('totalRows');
+    if (this.wot.isOverlayName(WalkontableOverlay.CLONE_DEBUG)) {
+      rowsCount = totalRows;
+    } else if (this.wot.isOverlayName(WalkontableOverlay.CLONE_TOP) || this.wot.isOverlayName(WalkontableOverlay.CLONE_TOP_LEFT_CORNER)) {
+      rowsCount = Math.min(this.wot.getSetting('fixedRowsTop'), totalRows);
+    } else if (this.wot.isOverlayName(WalkontableOverlay.CLONE_BOTTOM) || this.wot.isOverlayName(WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER)) {
+      rowsCount = Math.min(this.wot.getSetting('fixedRowsBottom'), totalRows);
     }
-    return this.wot.wtViewport.rowsRenderCalculator.count;
+    return rowsCount;
   },
   getVisibleRowsCount: function() {
     return this.wot.wtViewport.rowsVisibleCalculator.count;
@@ -3360,8 +3373,10 @@ var WalkontableTableRenderer = function WalkontableTableRenderer(wtTable) {
       this.adjustAvailableNodes();
     }
     this.removeRedundantRows(rowsToRender);
-    if (!this.wtTable.isWorkingOnClone()) {
+    if (!this.wtTable.isWorkingOnClone() || this.wot.isOverlayName(WalkontableOverlay.CLONE_BOTTOM)) {
       this.markOversizedRows();
+    }
+    if (!this.wtTable.isWorkingOnClone()) {
       this.wot.wtViewport.createVisibleCalculators();
       this.wot.wtOverlays.refresh(false);
       var hiderWidth = outerWidth(this.wtTable.hider);
@@ -3381,10 +3396,8 @@ var WalkontableTableRenderer = function WalkontableTableRenderer(wtTable) {
         }
       }
       this.wot.getSetting('onDraw', true);
-    } else if (WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_BOTTOM)) {
-      var masterOverlay = this.wot.cloneOverlay.instance;
-      this.wot.cloneOverlay.markOversizedFixedBottomRows();
-      masterOverlay.wtOverlays.adjustElementsSize();
+    } else if (this.wot.isOverlayName(WalkontableOverlay.CLONE_BOTTOM)) {
+      this.wot.cloneSource.wtOverlays.adjustElementsSize();
     }
   },
   removeRedundantRows: function(renderedRowsCount) {
@@ -3410,7 +3423,7 @@ var WalkontableTableRenderer = function WalkontableTableRenderer(wtTable) {
       this.renderRowHeaders(sourceRowIndex, TR);
       this.adjustColumns(TR, columnsToRender + this.rowHeaderCount);
       lastTD = this.renderCells(sourceRowIndex, TR, columnsToRender);
-      if (!isWorkingOnClone || WalkontableOverlay.isOverlayTypeOf(this.wot.cloneOverlay, WalkontableOverlay.CLONE_BOTTOM)) {
+      if (!isWorkingOnClone || this.wot.isOverlayName(WalkontableOverlay.CLONE_BOTTOM)) {
         this.resetOversizedRow(sourceRowIndex);
       }
       if (TR.firstChild) {
@@ -4038,10 +4051,10 @@ var domHelpers = ($__helpers_47_dom_47_element__ = require("helpers/dom/element"
 var domEventHelpers = ($__helpers_47_dom_47_event__ = require("helpers/dom/event"), $__helpers_47_dom_47_event__ && $__helpers_47_dom_47_event__.__esModule && $__helpers_47_dom_47_event__ || {default: $__helpers_47_dom_47_event__});
 var HELPERS = [arrayHelpers, browserHelpers, dataHelpers, functionHelpers, mixedHelpers, numberHelpers, objectHelpers, settingHelpers, stringHelpers, unicodeHelpers];
 var DOM = [domHelpers, domEventHelpers];
-Handsontable.buildDate = 'Mon Jan 11 2016 13:09:15 GMT+0100 (CET)';
+Handsontable.buildDate = 'Wed Jan 20 2016 15:41:38 GMT+0100 (CET)';
 Handsontable.packageName = 'handsontable-pro';
-Handsontable.version = '1.0.0-beta3';
-var baseVersion = '0.20.3';
+Handsontable.version = '1.0.0';
+var baseVersion = '0.21.0';
 if (!/^@@/.test(baseVersion)) {
   Handsontable.baseVersion = baseVersion;
 }
@@ -4930,8 +4943,8 @@ Handsontable.Core = function Core(rootElement, userSettings) {
   this.validateCell = function(value, cellProperties, callback, source) {
     var validator = instance.getCellValidator(cellProperties);
     function done(valid) {
-      var col = cellProperties.physicalCol,
-          row = cellProperties.physicalRow,
+      var col = cellProperties.visualCol,
+          row = cellProperties.visualRow,
           td = instance.getCell(row, col, true);
       if (td) {
         instance.view.wt.wtSettings.settings.cellRenderer(row, col, td);
@@ -4946,13 +4959,13 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       })(validator);
     }
     if (typeof validator == 'function') {
-      value = Handsontable.hooks.run(instance, 'beforeValidate', value, cellProperties.row, cellProperties.prop, source);
+      value = Handsontable.hooks.run(instance, 'beforeValidate', value, cellProperties.visualRow, cellProperties.prop, source);
       instance._registerTimeout(setTimeout(function() {
         validator.call(cellProperties, value, function(valid) {
-          valid = Handsontable.hooks.run(instance, 'afterValidate', valid, value, cellProperties.row, cellProperties.prop, source);
+          valid = Handsontable.hooks.run(instance, 'afterValidate', valid, value, cellProperties.visualRow, cellProperties.prop, source);
           cellProperties.valid = valid;
           done(valid);
-          Handsontable.hooks.run(instance, 'postAfterValidate', valid, value, cellProperties.row, cellProperties.prop, source);
+          Handsontable.hooks.run(instance, 'postAfterValidate', valid, value, cellProperties.visualRow, cellProperties.prop, source);
         });
       }, 0));
     } else {
@@ -5360,8 +5373,8 @@ Handsontable.Core = function Core(rootElement, userSettings) {
   this.getCellMeta = function(row, col) {
     var prop = datamap.colToProp(col),
         cellProperties;
-    var physicalRow = row;
-    var physicalCol = col;
+    var visualRow = row;
+    var visualCol = col;
     row = translateRowIndex(row);
     col = translateColIndex(col);
     if (!priv.columnSettings[col]) {
@@ -5376,8 +5389,8 @@ Handsontable.Core = function Core(rootElement, userSettings) {
     cellProperties = priv.cellSettings[row][col];
     cellProperties.row = row;
     cellProperties.col = col;
-    cellProperties.physicalRow = physicalRow;
-    cellProperties.physicalCol = physicalCol;
+    cellProperties.visualRow = visualRow;
+    cellProperties.visualCol = visualCol;
     cellProperties.prop = prop;
     cellProperties.instance = instance;
     Handsontable.hooks.run(instance, 'beforeGetCellMeta', row, col, cellProperties);
@@ -5410,7 +5423,9 @@ Handsontable.Core = function Core(rootElement, userSettings) {
   this.getCellValidator = cellMethodLookupFactory('validator');
   this.validateCells = function(callback) {
     var waitingForValidator = new ValidatorsQueue();
-    waitingForValidator.onQueueEmpty = callback;
+    if (callback) {
+      waitingForValidator.onQueueEmpty = callback;
+    }
     var i = instance.countRows() - 1;
     while (i >= 0) {
       var j = instance.countCols() - 1;
@@ -5894,7 +5909,18 @@ DefaultSettings.prototype = {
   defaultDate: void 0,
   strict: void 0,
   renderAllRows: void 0,
-  preventOverflow: false
+  preventOverflow: false,
+  bindRowsWithHeaders: void 0,
+  collapsibleColumns: void 0,
+  columnSummary: void 0,
+  dropdownMenu: void 0,
+  filters: void 0,
+  ganttChart: void 0,
+  headerTooltips: void 0,
+  hiddenColumns: void 0,
+  hiddenRows: void 0,
+  nestedHeaders: void 0,
+  trimRows: void 0
 };
 Handsontable.DefaultSettings = DefaultSettings;
 
@@ -9803,6 +9829,10 @@ Object.defineProperties(exports, {
     }},
   __esModule: {value: true}
 });
+var $__element__;
+var $__0 = ($__element__ = require("element"), $__element__ && $__element__.__esModule && $__element__ || {default: $__element__}),
+    getWindowScrollTop = $__0.getWindowScrollTop,
+    getWindowScrollLeft = $__0.getWindowScrollLeft;
 function stopImmediatePropagation(event) {
   event.isImmediatePropagationEnabled = false;
   event.cancelBubble = true;
@@ -9821,21 +9851,17 @@ function pageX(event) {
   if (event.pageX) {
     return event.pageX;
   }
-  var scrollLeft = getWindowScrollLeft();
-  var cursorX = event.clientX + scrollLeft;
-  return cursorX;
+  return event.clientX + getWindowScrollLeft();
 }
 function pageY(event) {
   if (event.pageY) {
     return event.pageY;
   }
-  var scrollTop = getWindowScrollTop();
-  var cursorY = event.clientY + scrollTop;
-  return cursorY;
+  return event.clientY + getWindowScrollTop();
 }
 
 //# 
-},{}],47:[function(require,module,exports){
+},{"element":45}],47:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   proxy: {get: function() {
@@ -9847,11 +9873,14 @@ Object.defineProperties(exports, {
   throttleAfterHits: {get: function() {
       return throttleAfterHits;
     }},
+  debounce: {get: function() {
+      return debounce;
+    }},
   __esModule: {value: true}
 });
-function proxy(fun, context) {
+function proxy(func, context) {
   return function() {
-    return fun.apply(context, arguments);
+    return func.apply(context, arguments);
   };
 }
 function throttle(func) {
@@ -9905,6 +9934,24 @@ function throttleAfterHits(func) {
   }
   _throttleAfterHits.clearHits = _clearHits;
   return _throttleAfterHits;
+}
+function debounce(func) {
+  var wait = arguments[1] !== (void 0) ? arguments[1] : 200;
+  var needCall = false;
+  var lastTimer = null;
+  var result;
+  function _debounce() {
+    var $__0 = this;
+    var args = arguments;
+    if (lastTimer) {
+      clearTimeout(lastTimer);
+    }
+    lastTimer = setTimeout((function() {
+      result = func.apply($__0, args);
+    }), wait);
+    return result;
+  }
+  return _debounce;
 }
 
 //# 
@@ -11547,6 +11594,14 @@ var $AutoRowSize = AutoRowSize;
       from: this.getFirstVisibleRow(),
       to: this.getLastVisibleRow()
     }, void 0, force);
+    var fixedRowsBottom = this.hot.getSettings().fixedRowsBottom;
+    if (fixedRowsBottom) {
+      var totalRows = this.hot.countRows() - 1;
+      this.calculateRowsHeight({
+        from: totalRows - fixedRowsBottom,
+        to: totalRows
+      });
+    }
     if (this.isNeedRecalculate() && !this.inProgress) {
       this.calculateAllRowsHeight();
     }
@@ -12119,10 +12174,9 @@ var $ColumnSorting = ColumnSorting;
         sortFunction;
     this.hot.sortingEnabled = false;
     this.hot.sortIndex.length = 0;
-    var colOffset = this.hot.colOffset();
     for (var i = 0,
         ilen = this.hot.countRows() - this.hot.getSettings().minSpareRows; i < ilen; i++) {
-      this.hot.sortIndex.push([i, this.hot.getDataAtCell(i, this.hot.sortColumn + colOffset)]);
+      this.hot.sortIndex.push([i, this.hot.getDataAtCell(i, this.hot.sortColumn)]);
     }
     colMeta = this.hot.getCellMeta(0, this.hot.sortColumn);
     this.sortIndicators[this.hot.sortColumn] = colMeta.sortIndicator;
@@ -12134,8 +12188,8 @@ var $ColumnSorting = ColumnSorting;
         sortFunction = this.defaultSort;
     }
     this.hot.sortIndex.sort(sortFunction(this.hot.sortOrder));
-    for (var i = this.hot.sortIndex.length; i < this.hot.countRows(); i++) {
-      this.hot.sortIndex.push([i, this.hot.getDataAtCell(i, this.hot.sortColumn + colOffset)]);
+    for (var i$__7 = this.hot.sortIndex.length; i$__7 < this.hot.countRows(); i$__7++) {
+      this.hot.sortIndex.push([i$__7, this.hot.getDataAtCell(i$__7, this.hot.sortColumn)]);
     }
     this.hot.sortingEnabled = true;
   },
@@ -12699,6 +12753,7 @@ var $___46__46__47__95_base__,
     $___46__46__47__46__46__47_helpers_47_object__,
     $___46__46__47__46__46__47_plugins__,
     $___46__46__47__46__46__47_helpers_47_dom_47_event__,
+    $___46__46__47__46__46__47_helpers_47_dom_47_element__,
     $__predefinedItems__;
 var BasePlugin = ($___46__46__47__95_base__ = require("_base"), $___46__46__47__95_base__ && $___46__46__47__95_base__.__esModule && $___46__46__47__95_base__ || {default: $___46__46__47__95_base__}).default;
 var arrayEach = ($___46__46__47__46__46__47_helpers_47_array__ = require("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}).arrayEach;
@@ -12711,20 +12766,26 @@ var $__7 = ($___46__46__47__46__46__47_helpers_47_object__ = require("helpers/ob
     objectEach = $__7.objectEach,
     mixin = $__7.mixin;
 var registerPlugin = ($___46__46__47__46__46__47_plugins__ = require("plugins"), $___46__46__47__46__46__47_plugins__ && $___46__46__47__46__46__47_plugins__.__esModule && $___46__46__47__46__46__47_plugins__ || {default: $___46__46__47__46__46__47_plugins__}).registerPlugin;
-var stopPropagation = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = require("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}).stopPropagation;
-var $__10 = ($__predefinedItems__ = require("predefinedItems"), $__predefinedItems__ && $__predefinedItems__.__esModule && $__predefinedItems__ || {default: $__predefinedItems__}),
-    ROW_ABOVE = $__10.ROW_ABOVE,
-    ROW_BELOW = $__10.ROW_BELOW,
-    COLUMN_LEFT = $__10.COLUMN_LEFT,
-    COLUMN_RIGHT = $__10.COLUMN_RIGHT,
-    REMOVE_ROW = $__10.REMOVE_ROW,
-    REMOVE_COLUMN = $__10.REMOVE_COLUMN,
-    UNDO = $__10.UNDO,
-    REDO = $__10.REDO,
-    READ_ONLY = $__10.READ_ONLY,
-    ALIGNMENT = $__10.ALIGNMENT,
-    SEPARATOR = $__10.SEPARATOR,
-    predefinedItems = $__10.predefinedItems;
+var $__9 = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = require("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}),
+    stopPropagation = $__9.stopPropagation,
+    pageX = $__9.pageX,
+    pageY = $__9.pageY;
+var $__10 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = require("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}),
+    getWindowScrollLeft = $__10.getWindowScrollLeft,
+    getWindowScrollTop = $__10.getWindowScrollTop;
+var $__11 = ($__predefinedItems__ = require("predefinedItems"), $__predefinedItems__ && $__predefinedItems__.__esModule && $__predefinedItems__ || {default: $__predefinedItems__}),
+    ROW_ABOVE = $__11.ROW_ABOVE,
+    ROW_BELOW = $__11.ROW_BELOW,
+    COLUMN_LEFT = $__11.COLUMN_LEFT,
+    COLUMN_RIGHT = $__11.COLUMN_RIGHT,
+    REMOVE_ROW = $__11.REMOVE_ROW,
+    REMOVE_COLUMN = $__11.REMOVE_COLUMN,
+    UNDO = $__11.UNDO,
+    REDO = $__11.REDO,
+    READ_ONLY = $__11.READ_ONLY,
+    ALIGNMENT = $__11.ALIGNMENT,
+    SEPARATOR = $__11.SEPARATOR,
+    predefinedItems = $__11.predefinedItems;
 var ContextMenu = function ContextMenu(hotInstance) {
   $traceurRuntime.superConstructor($ContextMenu).call(this, hotInstance);
   this.eventManager = new EventManager(this);
@@ -12738,7 +12799,7 @@ var $ContextMenu = ContextMenu;
     return this.hot.getSettings().contextMenu;
   },
   enablePlugin: function() {
-    var $__11 = this;
+    var $__12 = this;
     if (this.enabled) {
       return;
     }
@@ -12751,28 +12812,28 @@ var $ContextMenu = ContextMenu;
     }
     $traceurRuntime.superGet(this, $ContextMenu.prototype, "enablePlugin").call(this);
     this.callOnPluginsReady((function() {
-      $__11.hot.runHooks('afterContextMenuDefaultOptions', predefinedItems);
-      $__11.itemsFactory.setPredefinedItems(predefinedItems.items);
-      var menuItems = $__11.itemsFactory.getVisibleItems(settings);
-      $__11.menu = new Menu($__11.hot, {
+      $__12.hot.runHooks('afterContextMenuDefaultOptions', predefinedItems);
+      $__12.itemsFactory.setPredefinedItems(predefinedItems.items);
+      var menuItems = $__12.itemsFactory.getVisibleItems(settings);
+      $__12.menu = new Menu($__12.hot, {
         className: 'htContextMenu',
         keepInViewport: true
       });
-      $__11.menu.setMenuItems(menuItems);
-      $__11.menu.addLocalHook('afterOpen', (function() {
-        return $__11.onMenuAfterOpen();
+      $__12.menu.setMenuItems(menuItems);
+      $__12.menu.addLocalHook('afterOpen', (function() {
+        return $__12.onMenuAfterOpen();
       }));
-      $__11.menu.addLocalHook('afterClose', (function() {
-        return $__11.onMenuAfterClose();
+      $__12.menu.addLocalHook('afterClose', (function() {
+        return $__12.onMenuAfterClose();
       }));
-      $__11.menu.addLocalHook('executeCommand', (function() {
+      $__12.menu.addLocalHook('executeCommand', (function() {
         for (var params = [],
-            $__13 = 0; $__13 < arguments.length; $__13++)
-          params[$__13] = arguments[$__13];
-        return $__11.executeCommand.apply($__11, params);
+            $__14 = 0; $__14 < arguments.length; $__14++)
+          params[$__14] = arguments[$__14];
+        return $__12.executeCommand.apply($__12, params);
       }));
       arrayEach(menuItems, (function(command) {
-        return $__11.commandExecutor.registerCommand(command.key, command);
+        return $__12.commandExecutor.registerCommand(command.key, command);
       }));
     }));
   },
@@ -12785,9 +12846,9 @@ var $ContextMenu = ContextMenu;
     $traceurRuntime.superGet(this, $ContextMenu.prototype, "disablePlugin").call(this);
   },
   registerEvents: function() {
-    var $__11 = this;
+    var $__12 = this;
     this.eventManager.addEventListener(this.hot.rootElement, 'contextmenu', (function(event) {
-      return $__11.onContextMenu(event);
+      return $__12.onContextMenu(event);
     }));
   },
   open: function(event) {
@@ -12795,7 +12856,10 @@ var $ContextMenu = ContextMenu;
       return;
     }
     this.menu.open();
-    this.menu.setPosition(event);
+    this.menu.setPosition({
+      top: parseInt(pageY(event), 10) - getWindowScrollTop(),
+      left: parseInt(pageX(event), 10) - getWindowScrollLeft()
+    });
     this.menu.hotMenu.isHotTableEnv = this.hot.isHotTableEnv;
     Handsontable.eventManager.isHotTableEnv = this.hot.isHotTableEnv;
   },
@@ -12807,8 +12871,8 @@ var $ContextMenu = ContextMenu;
   },
   executeCommand: function() {
     for (var params = [],
-        $__13 = 0; $__13 < arguments.length; $__13++)
-      params[$__13] = arguments[$__13];
+        $__14 = 0; $__14 < arguments.length; $__14++)
+      params[$__14] = arguments[$__14];
     this.commandExecutor.execute.apply(this.commandExecutor, params);
   },
   onContextMenu: function(event) {
@@ -12883,32 +12947,32 @@ var Cursor = function Cursor(object) {
       topRelative;
   var left,
       leftRelative;
-  var scrollTop,
-      scrollLeft;
   var cellHeight,
       cellWidth;
   this.type = this.getSourceType(object);
   if (this.type === 'literal') {
     top = parseInt(object.top, 10);
     left = parseInt(object.left, 10);
-    cellHeight = object.height;
-    cellWidth = object.width;
+    cellHeight = object.height || 0;
+    cellWidth = object.width || 0;
+    topRelative = top;
+    leftRelative = left;
+    top = top + windowScrollTop;
+    left = left + windowScrollLeft;
   } else if (this.type === 'event') {
     top = parseInt(pageY(object), 10);
     left = parseInt(pageX(object), 10);
     cellHeight = object.target.clientHeight;
     cellWidth = object.target.clientWidth;
+    topRelative = top - windowScrollTop;
+    leftRelative = left - windowScrollLeft;
   }
-  topRelative = top - windowScrollTop;
-  leftRelative = left - windowScrollLeft;
-  scrollTop = windowScrollTop;
-  scrollLeft = windowScrollLeft;
   this.top = top;
   this.topRelative = topRelative;
   this.left = left;
   this.leftRelative = leftRelative;
-  this.scrollTop = scrollTop;
-  this.scrollLeft = scrollLeft;
+  this.scrollTop = windowScrollTop;
+  this.scrollLeft = windowScrollLeft;
   this.cellHeight = cellHeight;
   this.cellWidth = cellWidth;
 };
@@ -13072,6 +13136,7 @@ var $___46__46__47__46__46__47_helpers_47_dom_47_element__,
     $__cursor__,
     $___46__46__47__46__46__47_eventManager__,
     $___46__46__47__46__46__47_helpers_47_object__,
+    $___46__46__47__46__46__47_helpers_47_function__,
     $__utils__,
     $___46__46__47__46__46__47_helpers_47_unicode__,
     $___46__46__47__46__46__47_mixins_47_localHooks__,
@@ -13096,22 +13161,23 @@ var $__4 = ($___46__46__47__46__46__47_helpers_47_object__ = require("helpers/ob
     isObject = $__4.isObject,
     objectEach = $__4.objectEach,
     mixin = $__4.mixin;
-var $__5 = ($__utils__ = require("utils"), $__utils__ && $__utils__.__esModule && $__utils__ || {default: $__utils__}),
-    isSeparator = $__5.isSeparator,
-    isDisabled = $__5.isDisabled,
-    isSelectionDisabled = $__5.isSelectionDisabled,
-    hasSubMenu = $__5.hasSubMenu,
-    normalizeSelection = $__5.normalizeSelection;
+var debounce = ($___46__46__47__46__46__47_helpers_47_function__ = require("helpers/function"), $___46__46__47__46__46__47_helpers_47_function__ && $___46__46__47__46__46__47_helpers_47_function__.__esModule && $___46__46__47__46__46__47_helpers_47_function__ || {default: $___46__46__47__46__46__47_helpers_47_function__}).debounce;
+var $__6 = ($__utils__ = require("utils"), $__utils__ && $__utils__.__esModule && $__utils__ || {default: $__utils__}),
+    isSeparator = $__6.isSeparator,
+    isDisabled = $__6.isDisabled,
+    isSelectionDisabled = $__6.isSelectionDisabled,
+    hasSubMenu = $__6.hasSubMenu,
+    normalizeSelection = $__6.normalizeSelection;
 var KEY_CODES = ($___46__46__47__46__46__47_helpers_47_unicode__ = require("helpers/unicode"), $___46__46__47__46__46__47_helpers_47_unicode__ && $___46__46__47__46__46__47_helpers_47_unicode__.__esModule && $___46__46__47__46__46__47_helpers_47_unicode__ || {default: $___46__46__47__46__46__47_helpers_47_unicode__}).KEY_CODES;
 var localHooks = ($___46__46__47__46__46__47_mixins_47_localHooks__ = require("mixins/localHooks"), $___46__46__47__46__46__47_mixins_47_localHooks__ && $___46__46__47__46__46__47_mixins_47_localHooks__.__esModule && $___46__46__47__46__46__47_mixins_47_localHooks__ || {default: $___46__46__47__46__46__47_mixins_47_localHooks__}).localHooks;
-var $__8 = ($__predefinedItems__ = require("predefinedItems"), $__predefinedItems__ && $__predefinedItems__.__esModule && $__predefinedItems__ || {default: $__predefinedItems__}),
-    SEPARATOR = $__8.SEPARATOR,
-    predefinedItems = $__8.predefinedItems;
-var $__9 = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = require("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}),
-    stopPropagation = $__9.stopPropagation,
-    stopImmediatePropagation = $__9.stopImmediatePropagation,
-    pageX = $__9.pageX,
-    pageY = $__9.pageY;
+var $__9 = ($__predefinedItems__ = require("predefinedItems"), $__predefinedItems__ && $__predefinedItems__.__esModule && $__predefinedItems__ || {default: $__predefinedItems__}),
+    SEPARATOR = $__9.SEPARATOR,
+    predefinedItems = $__9.predefinedItems;
+var $__10 = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = require("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}),
+    stopPropagation = $__10.stopPropagation,
+    stopImmediatePropagation = $__10.stopImmediatePropagation,
+    pageX = $__10.pageX,
+    pageY = $__10.pageY;
 var Menu = function Menu(hotInstance) {
   var options = arguments[1] !== (void 0) ? arguments[1] : {
     parent: null,
@@ -13128,27 +13194,40 @@ var Menu = function Menu(hotInstance) {
   this.parentMenu = this.options.parent || null;
   this.menuItems = null;
   this.origOutsideClickDeselects = null;
+  this.offset = {
+    above: 0,
+    below: 0,
+    left: 0,
+    right: 0
+  };
   this._afterScrollCallback = null;
   this.registerEvents();
 };
 var $Menu = Menu;
 ($traceurRuntime.createClass)(Menu, {
   registerEvents: function() {
-    var $__10 = this;
+    var $__11 = this;
     this.eventManager.addEventListener(document.documentElement, 'mousedown', (function(event) {
-      return $__10.onDocumentMouseDown(event);
+      return $__11.onDocumentMouseDown(event);
     }));
   },
   setMenuItems: function(menuItems) {
     this.menuItems = menuItems;
   },
+  setOffset: function(area) {
+    var offset = arguments[1] !== (void 0) ? arguments[1] : 0;
+    this.offset[area] = offset;
+  },
   isSubMenu: function() {
     return this.parentMenu !== null;
   },
   open: function() {
-    var $__10 = this;
+    var $__11 = this;
     this.container.removeAttribute('style');
     this.container.style.display = 'block';
+    var delayedOpenSubMenu = debounce((function(row) {
+      return $__11.openSubMenu(row);
+    }), 300);
     var settings = {
       data: this.menuItems,
       colHeaders: false,
@@ -13159,23 +13238,30 @@ var $Menu = Menu;
       columns: [{
         data: 'name',
         renderer: (function(hot, TD, row, col, prop, value) {
-          return $__10.menuItemRenderer(hot, TD, row, col, prop, value);
+          return $__11.menuItemRenderer(hot, TD, row, col, prop, value);
         })
       }],
       renderAllRows: true,
       fragmentSelection: 'cell',
       beforeKeyDown: (function(event) {
-        return $__10.onBeforeKeyDown(event);
+        return $__11.onBeforeKeyDown(event);
       }),
       afterOnCellMouseOver: (function(event, coords, TD) {
-        return $__10.openSubMenu(coords.row);
+        if (!TD.textContent) {
+          return;
+        }
+        if ($__11.isAllSubMenusClosed()) {
+          delayedOpenSubMenu(coords.row);
+        } else {
+          $__11.openSubMenu(coords.row);
+        }
       })
     };
     this.origOutsideClickDeselects = this.hot.getSettings().outsideClickDeselects;
     this.hot.getSettings().outsideClickDeselects = false;
     this.hotMenu = new Handsontable.Core(this.container, settings);
     this.hotMenu.addHook('afterInit', (function() {
-      return $__10.onAfterInit();
+      return $__11.onAfterInit();
     }));
     this.hotMenu.init();
     this.hotMenu.listen();
@@ -13200,6 +13286,9 @@ var $Menu = Menu;
     }
   },
   openSubMenu: function(row) {
+    if (!this.hotMenu) {
+      return;
+    }
     var cell = this.hotMenu.getCell(row, 0);
     this.closeAllSubMenus();
     if (!cell || !hasSubMenu(cell)) {
@@ -13209,7 +13298,8 @@ var $Menu = Menu;
     var subMenu = new $Menu(this.hot, {
       parent: this,
       name: dataItem.name,
-      className: this.options.className
+      className: this.options.className,
+      keepInViewport: true
     });
     subMenu.setMenuItems(dataItem.submenu.items);
     subMenu.open();
@@ -13226,9 +13316,9 @@ var $Menu = Menu;
     }
   },
   closeAllSubMenus: function() {
-    var $__10 = this;
+    var $__11 = this;
     arrayEach(this.hotMenu.getData(), (function(value, row) {
-      return $__10.closeSubMenu(row);
+      return $__11.closeSubMenu(row);
     }));
   },
   isAllSubMenusClosed: function() {
@@ -13281,30 +13371,31 @@ var $Menu = Menu;
     }
   },
   setPositionAboveCursor: function(cursor) {
-    var top = cursor.top - this.container.offsetHeight;
+    var top = this.offset.above + cursor.top - this.container.offsetHeight;
     if (this.isSubMenu()) {
-      top = window.scrollY + cursor.top + cursor.cellHeight - this.container.offsetHeight + 3;
+      top = cursor.top + cursor.cellHeight - this.container.offsetHeight + 3;
     }
     this.container.style.top = top + 'px';
   },
   setPositionBelowCursor: function(cursor) {
-    var top = cursor.top - 1;
+    var top = this.offset.below + cursor.top;
     if (this.isSubMenu()) {
-      top = cursor.top + window.scrollY - 1;
+      top = cursor.top - 1;
     }
     this.container.style.top = top + 'px';
   },
   setPositionOnRightOfCursor: function(cursor) {
     var left;
     if (this.isSubMenu()) {
-      left = window.scrollX + 1 + cursor.left + cursor.cellWidth;
+      left = 1 + cursor.left + cursor.cellWidth;
     } else {
-      left = 1 + cursor.left;
+      left = this.offset.right + 1 + cursor.left;
     }
     this.container.style.left = left + 'px';
   },
   setPositionOnLeftOfCursor: function(cursor) {
-    this.container.style.left = (cursor.left - this.container.offsetWidth + getScrollbarWidth() + 4) + 'px';
+    var left = this.offset.left + cursor.left - this.container.offsetWidth + getScrollbarWidth() + 4;
+    this.container.style.left = left + 'px';
   },
   selectFirstCell: function() {
     var cell = this.hotMenu.getCell(0, 0);
@@ -13348,7 +13439,7 @@ var $Menu = Menu;
     }
   },
   menuItemRenderer: function(hot, TD, row, col, prop, value) {
-    var $__10 = this;
+    var $__11 = this;
     var item = hot.getSourceDataAtRow(row);
     var wrapper = document.createElement('div');
     var isSubMenu = (function(item) {
@@ -13358,10 +13449,10 @@ var $Menu = Menu;
       return new RegExp(SEPARATOR, 'i').test(item.name);
     });
     var itemIsDisabled = (function(item) {
-      return item.disabled === true || (typeof item.disabled == 'function' && item.disabled.call($__10.hot) === true);
+      return item.disabled === true || (typeof item.disabled == 'function' && item.disabled.call($__11.hot) === true);
     });
     var itemIsHidden = (function(item) {
-      return typeof item.hidden == 'function' && item.hidden.call($__10.hot) === true;
+      return typeof item.hidden == 'function' && item.hidden.call($__11.hot) === true;
     });
     var itemIsSelectionDisabled = (function(item) {
       return item.disableSelection;
@@ -13540,7 +13631,7 @@ mixin(Menu, localHooks);
 ;
 
 //# 
-},{"cursor":69,"eventManager":41,"helpers/array":42,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/object":50,"helpers/unicode":53,"mixins/localHooks":55,"predefinedItems":72,"utils":73}],72:[function(require,module,exports){
+},{"cursor":69,"eventManager":41,"helpers/array":42,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/function":47,"helpers/object":50,"helpers/unicode":53,"mixins/localHooks":55,"predefinedItems":72,"utils":73}],72:[function(require,module,exports){
 "use strict";
 var $__4;
 Object.defineProperties(exports, {
@@ -18064,6 +18155,9 @@ var $__1 = ($___46__46__47_renderers__ = require("renderers"), $___46__46__47_re
     registerRenderer = $__1.registerRenderer;
 function htmlRenderer(instance, TD, row, col, prop, value, cellProperties) {
   getRenderer('base').apply(this, arguments);
+  if (value === null || value === void 0) {
+    value = '';
+  }
   fastInnerHTML(TD, value);
 }
 ;
@@ -19197,7 +19291,7 @@ var GhostTable = function GhostTable(hotInstance) {
         var renderer = $__5.hot.getCellRenderer(cellProperties);
         var td = d.createElement('td');
         var tr = d.createElement('tr');
-        renderer($__5.hot, td, row, column, $__5.hot.colToProp(row), string.value, cellProperties);
+        renderer($__5.hot, td, row, column, $__5.hot.colToProp(column), string.value, cellProperties);
         tr.appendChild(td);
         fragment.appendChild(tr);
       }));
@@ -19599,16 +19693,20 @@ var $WalkontableBottomOverlay = WalkontableBottomOverlay;
     var sum = 0;
     var defaultRowHeight = this.wot.wtSettings.settings.defaultRowHeight;
     while (from < to) {
-      sum += this.wot.wtTable.getRowHeight(from) || defaultRowHeight;
+      var height = this.wot.wtTable.getRowHeight(from);
+      sum += height === void 0 ? defaultRowHeight : height;
       from++;
     }
     return sum;
   },
   adjustElementsSize: function() {
-    if (this.needFullRender) {
+    var force = arguments[0] !== (void 0) ? arguments[0] : false;
+    if (this.needFullRender || force) {
       this.adjustRootElementSize();
       this.adjustRootChildrenSize();
-      this.areElementSizesAdjusted = true;
+      if (!force) {
+        this.areElementSizesAdjusted = true;
+      }
     }
   },
   adjustRootElementSize: function() {
@@ -19623,33 +19721,6 @@ var $WalkontableBottomOverlay = WalkontableBottomOverlay;
     this.clone.wtTable.holder.style.width = overlayRootStyle.width;
     tableHeight = outerHeight(this.clone.wtTable.TABLE);
     overlayRootStyle.height = (tableHeight === 0 ? tableHeight : tableHeight) + 'px';
-  },
-  markOversizedFixedBottomRows: function() {
-    var rowCount;
-    var sourceRowIndex;
-    var previousRowHeight;
-    var currentTr;
-    var rowHeader;
-    var rowInnerHeight = 0;
-    var totalRows = this.wot.getSetting('totalRows');
-    if (this.wot.getSetting('fixedRowsBottom')) {
-      rowCount = this.wot.wtOverlays.bottomOverlay.clone.wtTable.TBODY.childNodes.length;
-      while (rowCount) {
-        rowCount--;
-        sourceRowIndex = totalRows - rowCount - 1;
-        previousRowHeight = this.wot.wtTable.getRowHeight(sourceRowIndex);
-        currentTr = this.getTrForRow(sourceRowIndex);
-        rowHeader = currentTr.querySelector('th');
-        if (rowHeader) {
-          rowInnerHeight = innerHeight(rowHeader);
-        } else {
-          rowInnerHeight = innerHeight(currentTr) - 1;
-        }
-        if ((!previousRowHeight && this.wot.wtSettings.settings.defaultRowHeight < rowInnerHeight || previousRowHeight < rowInnerHeight)) {
-          this.wot.wtViewport.oversizedRows[sourceRowIndex] = rowInnerHeight;
-        }
-      }
-    }
   },
   adjustRootChildrenSize: function() {
     var scrollbarWidth = getScrollbarWidth();
@@ -19676,10 +19747,6 @@ var $WalkontableBottomOverlay = WalkontableBottomOverlay;
     if (this.needFullRender) {
       this.syncOverlayOffset();
     }
-  },
-  getTrForRow: function(souceRowIndex) {
-    var totalRows = this.wot.getSetting('totalRows');
-    return this.clone.wtTable.TBODY.childNodes[this.clone.wtTable.TBODY.childNodes.length - (totalRows - souceRowIndex)];
   },
   syncOverlayOffset: function() {
     if (typeof this.wot.wtViewport.columnsRenderCalculator.startPosition === 'number') {
@@ -20856,6 +20923,9 @@ var $DropdownMenu = DropdownMenu;
       return;
     }
     this.menu.open();
+    if (event.width) {
+      this.menu.setOffset('left', event.width);
+    }
     this.menu.setPosition(event);
     this.menu.hotMenu.isHotTableEnv = this.hot.isHotTableEnv;
     Handsontable.eventManager.isHotTableEnv = this.hot.isHotTableEnv;
@@ -20877,8 +20947,8 @@ var $DropdownMenu = DropdownMenu;
     if (hasClass(event.target, BUTTON_CLASS_NAME) && !this.menu.isOpened()) {
       var rect = event.target.getBoundingClientRect();
       this.open({
-        left: rect.left + getWindowScrollLeft(),
-        top: rect.top + event.target.offsetHeight + getWindowScrollTop() + 3,
+        left: rect.left,
+        top: rect.top + event.target.offsetHeight + 3,
         width: rect.width,
         height: rect.height
       });
@@ -21538,7 +21608,8 @@ var $ConditionComponent = ConditionComponent;
     };
   },
   reset: function() {
-    var columnType = this.hot.getDataType.apply(this.hot, this.hot.getSelected() || []);
+    var lastSelectedColumn = this.hot.getPlugin('filters').getSelectedColumn();
+    var columnType = this.hot.getDataType.apply(this.hot, this.hot.getSelected() || [0, lastSelectedColumn]);
     var items = getOptionsList(columnType);
     arrayEach(this.getInputElements(), (function(element) {
       return element.hide();
@@ -22068,7 +22139,7 @@ var DataFilter = function DataFilter(formulaCollection) {
   _getIntersectData: function(data, needles) {
     var result = [];
     arrayEach(needles, (function(needleRow) {
-      var row = needleRow.meta.physicalRow;
+      var row = needleRow.meta.visualRow;
       if (data[row] !== void 0) {
         result[row] = data[row];
       }
@@ -22233,7 +22304,7 @@ var $Filters = Filters;
       var trimmedRows = [];
       this.trimRowsPlugin.trimmedRows.length = 0;
       filteredRows = arrayMap(dataFilter.filter(), (function(rowData) {
-        return rowData.meta.physicalRow;
+        return rowData.meta.visualRow;
       }));
       rangeEach(this.hot.countSourceRows() - 1, (function(row) {
         if (filteredRows.indexOf(row) === -1) {
@@ -22269,8 +22340,8 @@ var $Filters = Filters;
       var $__14 = $__12.hot.getCellMeta(rowIndex, column),
           row = $__14.row,
           col = $__14.col,
-          physicalCol = $__14.physicalCol,
-          physicalRow = $__14.physicalRow,
+          visualCol = $__14.visualCol,
+          visualRow = $__14.visualRow,
           type = $__14.type,
           instance = $__14.instance,
           dateFormat = $__14.dateFormat;
@@ -22278,8 +22349,8 @@ var $Filters = Filters;
         meta: {
           row: row,
           col: col,
-          physicalCol: physicalCol,
-          physicalRow: physicalRow,
+          visualCol: visualCol,
+          visualRow: visualRow,
           type: type,
           instance: instance,
           dateFormat: dateFormat
@@ -23343,8 +23414,8 @@ var $SelectUI = SelectUI;
     if (this.menu) {
       this.menu.open();
       this.menu.setPosition({
-        left: getWindowScrollLeft() + rect.left - 5,
-        top: getWindowScrollTop() + rect.top,
+        left: rect.left - 5,
+        top: rect.top,
         width: rect.width,
         height: rect.height
       });
@@ -34799,6 +34870,1916 @@ module.exports = function() {
 }));
 
 },{"moment":"moment"}],"zeroclipboard":[function(require,module,exports){
+"use strict";
+(function(window, undefined) {
+  "use strict";
+  var _window = window,
+      _document = _window.document,
+      _navigator = _window.navigator,
+      _setTimeout = _window.setTimeout,
+      _clearTimeout = _window.clearTimeout,
+      _setInterval = _window.setInterval,
+      _clearInterval = _window.clearInterval,
+      _getComputedStyle = _window.getComputedStyle,
+      _encodeURIComponent = _window.encodeURIComponent,
+      _ActiveXObject = _window.ActiveXObject,
+      _Error = _window.Error,
+      _parseInt = _window.Number.parseInt || _window.parseInt,
+      _parseFloat = _window.Number.parseFloat || _window.parseFloat,
+      _isNaN = _window.Number.isNaN || _window.isNaN,
+      _now = _window.Date.now,
+      _keys = _window.Object.keys,
+      _defineProperty = _window.Object.defineProperty,
+      _hasOwn = _window.Object.prototype.hasOwnProperty,
+      _slice = _window.Array.prototype.slice,
+      _unwrap = function() {
+        var unwrapper = function(el) {
+          return el;
+        };
+        if (typeof _window.wrap === "function" && typeof _window.unwrap === "function") {
+          try {
+            var div = _document.createElement("div");
+            var unwrappedDiv = _window.unwrap(div);
+            if (div.nodeType === 1 && unwrappedDiv && unwrappedDiv.nodeType === 1) {
+              unwrapper = _window.unwrap;
+            }
+          } catch (e) {}
+        }
+        return unwrapper;
+      }();
+  var _args = function(argumentsObj) {
+    return _slice.call(argumentsObj, 0);
+  };
+  var _extend = function() {
+    var i,
+        len,
+        arg,
+        prop,
+        src,
+        copy,
+        args = _args(arguments),
+        target = args[0] || {};
+    for (i = 1, len = args.length; i < len; i++) {
+      if ((arg = args[i]) != null) {
+        for (prop in arg) {
+          if (_hasOwn.call(arg, prop)) {
+            src = target[prop];
+            copy = arg[prop];
+            if (target !== copy && copy !== undefined) {
+              target[prop] = copy;
+            }
+          }
+        }
+      }
+    }
+    return target;
+  };
+  var _deepCopy = function(source) {
+    var copy,
+        i,
+        len,
+        prop;
+    if (typeof source !== "object" || source == null || typeof source.nodeType === "number") {
+      copy = source;
+    } else if (typeof source.length === "number") {
+      copy = [];
+      for (i = 0, len = source.length; i < len; i++) {
+        if (_hasOwn.call(source, i)) {
+          copy[i] = _deepCopy(source[i]);
+        }
+      }
+    } else {
+      copy = {};
+      for (prop in source) {
+        if (_hasOwn.call(source, prop)) {
+          copy[prop] = _deepCopy(source[prop]);
+        }
+      }
+    }
+    return copy;
+  };
+  var _pick = function(obj, keys) {
+    var newObj = {};
+    for (var i = 0,
+        len = keys.length; i < len; i++) {
+      if (keys[i] in obj) {
+        newObj[keys[i]] = obj[keys[i]];
+      }
+    }
+    return newObj;
+  };
+  var _omit = function(obj, keys) {
+    var newObj = {};
+    for (var prop in obj) {
+      if (keys.indexOf(prop) === -1) {
+        newObj[prop] = obj[prop];
+      }
+    }
+    return newObj;
+  };
+  var _deleteOwnProperties = function(obj) {
+    if (obj) {
+      for (var prop in obj) {
+        if (_hasOwn.call(obj, prop)) {
+          delete obj[prop];
+        }
+      }
+    }
+    return obj;
+  };
+  var _containedBy = function(el, ancestorEl) {
+    if (el && el.nodeType === 1 && el.ownerDocument && ancestorEl && (ancestorEl.nodeType === 1 && ancestorEl.ownerDocument && ancestorEl.ownerDocument === el.ownerDocument || ancestorEl.nodeType === 9 && !ancestorEl.ownerDocument && ancestorEl === el.ownerDocument)) {
+      do {
+        if (el === ancestorEl) {
+          return true;
+        }
+        el = el.parentNode;
+      } while (el);
+    }
+    return false;
+  };
+  var _getDirPathOfUrl = function(url) {
+    var dir;
+    if (typeof url === "string" && url) {
+      dir = url.split("#")[0].split("?")[0];
+      dir = url.slice(0, url.lastIndexOf("/") + 1);
+    }
+    return dir;
+  };
+  var _getCurrentScriptUrlFromErrorStack = function(stack) {
+    var url,
+        matches;
+    if (typeof stack === "string" && stack) {
+      matches = stack.match(/^(?:|[^:@]*@|.+\)@(?=http[s]?|file)|.+?\s+(?: at |@)(?:[^:\(]+ )*[\(]?)((?:http[s]?|file):\/\/[\/]?.+?\/[^:\)]*?)(?::\d+)(?::\d+)?/);
+      if (matches && matches[1]) {
+        url = matches[1];
+      } else {
+        matches = stack.match(/\)@((?:http[s]?|file):\/\/[\/]?.+?\/[^:\)]*?)(?::\d+)(?::\d+)?/);
+        if (matches && matches[1]) {
+          url = matches[1];
+        }
+      }
+    }
+    return url;
+  };
+  var _getCurrentScriptUrlFromError = function() {
+    var url,
+        err;
+    try {
+      throw new _Error();
+    } catch (e) {
+      err = e;
+    }
+    if (err) {
+      url = err.sourceURL || err.fileName || _getCurrentScriptUrlFromErrorStack(err.stack);
+    }
+    return url;
+  };
+  var _getCurrentScriptUrl = function() {
+    var jsPath,
+        scripts,
+        i;
+    if (_document.currentScript && (jsPath = _document.currentScript.src)) {
+      return jsPath;
+    }
+    scripts = _document.getElementsByTagName("script");
+    if (scripts.length === 1) {
+      return scripts[0].src || undefined;
+    }
+    if ("readyState" in scripts[0]) {
+      for (i = scripts.length; i--; ) {
+        if (scripts[i].readyState === "interactive" && (jsPath = scripts[i].src)) {
+          return jsPath;
+        }
+      }
+    }
+    if (_document.readyState === "loading" && (jsPath = scripts[scripts.length - 1].src)) {
+      return jsPath;
+    }
+    if (jsPath = _getCurrentScriptUrlFromError()) {
+      return jsPath;
+    }
+    return undefined;
+  };
+  var _getUnanimousScriptParentDir = function() {
+    var i,
+        jsDir,
+        jsPath,
+        scripts = _document.getElementsByTagName("script");
+    for (i = scripts.length; i--; ) {
+      if (!(jsPath = scripts[i].src)) {
+        jsDir = null;
+        break;
+      }
+      jsPath = _getDirPathOfUrl(jsPath);
+      if (jsDir == null) {
+        jsDir = jsPath;
+      } else if (jsDir !== jsPath) {
+        jsDir = null;
+        break;
+      }
+    }
+    return jsDir || undefined;
+  };
+  var _getDefaultSwfPath = function() {
+    var jsDir = _getDirPathOfUrl(_getCurrentScriptUrl()) || _getUnanimousScriptParentDir() || "";
+    return jsDir + "ZeroClipboard.swf";
+  };
+  var _pageIsFramed = function() {
+    return window.opener == null && (!!window.top && window != window.top || !!window.parent && window != window.parent);
+  }();
+  var _flashState = {
+    bridge: null,
+    version: "0.0.0",
+    pluginType: "unknown",
+    disabled: null,
+    outdated: null,
+    sandboxed: null,
+    unavailable: null,
+    degraded: null,
+    deactivated: null,
+    overdue: null,
+    ready: null
+  };
+  var _minimumFlashVersion = "11.0.0";
+  var _zcSwfVersion;
+  var _handlers = {};
+  var _currentElement;
+  var _copyTarget;
+  var _clipData = {};
+  var _clipDataFormatMap = null;
+  var _flashCheckTimeout = 0;
+  var _swfFallbackCheckInterval = 0;
+  var _eventMessages = {
+    ready: "Flash communication is established",
+    error: {
+      "flash-disabled": "Flash is disabled or not installed. May also be attempting to run Flash in a sandboxed iframe, which is impossible.",
+      "flash-outdated": "Flash is too outdated to support ZeroClipboard",
+      "flash-sandboxed": "Attempting to run Flash in a sandboxed iframe, which is impossible",
+      "flash-unavailable": "Flash is unable to communicate bidirectionally with JavaScript",
+      "flash-degraded": "Flash is unable to preserve data fidelity when communicating with JavaScript",
+      "flash-deactivated": "Flash is too outdated for your browser and/or is configured as click-to-activate.\nThis may also mean that the ZeroClipboard SWF object could not be loaded, so please check your `swfPath` configuration and/or network connectivity.\nMay also be attempting to run Flash in a sandboxed iframe, which is impossible.",
+      "flash-overdue": "Flash communication was established but NOT within the acceptable time limit",
+      "version-mismatch": "ZeroClipboard JS version number does not match ZeroClipboard SWF version number",
+      "clipboard-error": "At least one error was thrown while ZeroClipboard was attempting to inject your data into the clipboard",
+      "config-mismatch": "ZeroClipboard configuration does not match Flash's reality",
+      "swf-not-found": "The ZeroClipboard SWF object could not be loaded, so please check your `swfPath` configuration and/or network connectivity"
+    }
+  };
+  var _errorsThatOnlyOccurAfterFlashLoads = ["flash-unavailable", "flash-degraded", "flash-overdue", "version-mismatch", "config-mismatch", "clipboard-error"];
+  var _flashStateErrorNames = ["flash-disabled", "flash-outdated", "flash-sandboxed", "flash-unavailable", "flash-degraded", "flash-deactivated", "flash-overdue"];
+  var _flashStateErrorNameMatchingRegex = new RegExp("^flash-(" + _flashStateErrorNames.map(function(errorName) {
+    return errorName.replace(/^flash-/, "");
+  }).join("|") + ")$");
+  var _flashStateEnabledErrorNameMatchingRegex = new RegExp("^flash-(" + _flashStateErrorNames.slice(1).map(function(errorName) {
+    return errorName.replace(/^flash-/, "");
+  }).join("|") + ")$");
+  var _globalConfig = {
+    swfPath: _getDefaultSwfPath(),
+    trustedDomains: window.location.host ? [window.location.host] : [],
+    cacheBust: true,
+    forceEnhancedClipboard: false,
+    flashLoadTimeout: 3e4,
+    autoActivate: true,
+    bubbleEvents: true,
+    containerId: "global-zeroclipboard-html-bridge",
+    containerClass: "global-zeroclipboard-container",
+    swfObjectId: "global-zeroclipboard-flash-bridge",
+    hoverClass: "zeroclipboard-is-hover",
+    activeClass: "zeroclipboard-is-active",
+    forceHandCursor: false,
+    title: null,
+    zIndex: 999999999
+  };
+  var _config = function(options) {
+    if (typeof options === "object" && options !== null) {
+      for (var prop in options) {
+        if (_hasOwn.call(options, prop)) {
+          if (/^(?:forceHandCursor|title|zIndex|bubbleEvents)$/.test(prop)) {
+            _globalConfig[prop] = options[prop];
+          } else if (_flashState.bridge == null) {
+            if (prop === "containerId" || prop === "swfObjectId") {
+              if (_isValidHtml4Id(options[prop])) {
+                _globalConfig[prop] = options[prop];
+              } else {
+                throw new Error("The specified `" + prop + "` value is not valid as an HTML4 Element ID");
+              }
+            } else {
+              _globalConfig[prop] = options[prop];
+            }
+          }
+        }
+      }
+    }
+    if (typeof options === "string" && options) {
+      if (_hasOwn.call(_globalConfig, options)) {
+        return _globalConfig[options];
+      }
+      return;
+    }
+    return _deepCopy(_globalConfig);
+  };
+  var _state = function() {
+    _detectSandbox();
+    return {
+      browser: _pick(_navigator, ["userAgent", "platform", "appName"]),
+      flash: _omit(_flashState, ["bridge"]),
+      zeroclipboard: {
+        version: ZeroClipboard.version,
+        config: ZeroClipboard.config()
+      }
+    };
+  };
+  var _isFlashUnusable = function() {
+    return !!(_flashState.disabled || _flashState.outdated || _flashState.sandboxed || _flashState.unavailable || _flashState.degraded || _flashState.deactivated);
+  };
+  var _on = function(eventType, listener) {
+    var i,
+        len,
+        events,
+        added = {};
+    if (typeof eventType === "string" && eventType) {
+      events = eventType.toLowerCase().split(/\s+/);
+    } else if (typeof eventType === "object" && eventType && typeof listener === "undefined") {
+      for (i in eventType) {
+        if (_hasOwn.call(eventType, i) && typeof i === "string" && i && typeof eventType[i] === "function") {
+          ZeroClipboard.on(i, eventType[i]);
+        }
+      }
+    }
+    if (events && events.length) {
+      for (i = 0, len = events.length; i < len; i++) {
+        eventType = events[i].replace(/^on/, "");
+        added[eventType] = true;
+        if (!_handlers[eventType]) {
+          _handlers[eventType] = [];
+        }
+        _handlers[eventType].push(listener);
+      }
+      if (added.ready && _flashState.ready) {
+        ZeroClipboard.emit({type: "ready"});
+      }
+      if (added.error) {
+        for (i = 0, len = _flashStateErrorNames.length; i < len; i++) {
+          if (_flashState[_flashStateErrorNames[i].replace(/^flash-/, "")] === true) {
+            ZeroClipboard.emit({
+              type: "error",
+              name: _flashStateErrorNames[i]
+            });
+            break;
+          }
+        }
+        if (_zcSwfVersion !== undefined && ZeroClipboard.version !== _zcSwfVersion) {
+          ZeroClipboard.emit({
+            type: "error",
+            name: "version-mismatch",
+            jsVersion: ZeroClipboard.version,
+            swfVersion: _zcSwfVersion
+          });
+        }
+      }
+    }
+    return ZeroClipboard;
+  };
+  var _off = function(eventType, listener) {
+    var i,
+        len,
+        foundIndex,
+        events,
+        perEventHandlers;
+    if (arguments.length === 0) {
+      events = _keys(_handlers);
+    } else if (typeof eventType === "string" && eventType) {
+      events = eventType.split(/\s+/);
+    } else if (typeof eventType === "object" && eventType && typeof listener === "undefined") {
+      for (i in eventType) {
+        if (_hasOwn.call(eventType, i) && typeof i === "string" && i && typeof eventType[i] === "function") {
+          ZeroClipboard.off(i, eventType[i]);
+        }
+      }
+    }
+    if (events && events.length) {
+      for (i = 0, len = events.length; i < len; i++) {
+        eventType = events[i].toLowerCase().replace(/^on/, "");
+        perEventHandlers = _handlers[eventType];
+        if (perEventHandlers && perEventHandlers.length) {
+          if (listener) {
+            foundIndex = perEventHandlers.indexOf(listener);
+            while (foundIndex !== -1) {
+              perEventHandlers.splice(foundIndex, 1);
+              foundIndex = perEventHandlers.indexOf(listener, foundIndex);
+            }
+          } else {
+            perEventHandlers.length = 0;
+          }
+        }
+      }
+    }
+    return ZeroClipboard;
+  };
+  var _listeners = function(eventType) {
+    var copy;
+    if (typeof eventType === "string" && eventType) {
+      copy = _deepCopy(_handlers[eventType]) || null;
+    } else {
+      copy = _deepCopy(_handlers);
+    }
+    return copy;
+  };
+  var _emit = function(event) {
+    var eventCopy,
+        returnVal,
+        tmp;
+    event = _createEvent(event);
+    if (!event) {
+      return;
+    }
+    if (_preprocessEvent(event)) {
+      return;
+    }
+    if (event.type === "ready" && _flashState.overdue === true) {
+      return ZeroClipboard.emit({
+        type: "error",
+        name: "flash-overdue"
+      });
+    }
+    eventCopy = _extend({}, event);
+    _dispatchCallbacks.call(this, eventCopy);
+    if (event.type === "copy") {
+      tmp = _mapClipDataToFlash(_clipData);
+      returnVal = tmp.data;
+      _clipDataFormatMap = tmp.formatMap;
+    }
+    return returnVal;
+  };
+  var _create = function() {
+    var previousState = _flashState.sandboxed;
+    _detectSandbox();
+    if (typeof _flashState.ready !== "boolean") {
+      _flashState.ready = false;
+    }
+    if (_flashState.sandboxed !== previousState && _flashState.sandboxed === true) {
+      _flashState.ready = false;
+      ZeroClipboard.emit({
+        type: "error",
+        name: "flash-sandboxed"
+      });
+    } else if (!ZeroClipboard.isFlashUnusable() && _flashState.bridge === null) {
+      var maxWait = _globalConfig.flashLoadTimeout;
+      if (typeof maxWait === "number" && maxWait >= 0) {
+        _flashCheckTimeout = _setTimeout(function() {
+          if (typeof _flashState.deactivated !== "boolean") {
+            _flashState.deactivated = true;
+          }
+          if (_flashState.deactivated === true) {
+            ZeroClipboard.emit({
+              type: "error",
+              name: "flash-deactivated"
+            });
+          }
+        }, maxWait);
+      }
+      _flashState.overdue = false;
+      _embedSwf();
+    }
+  };
+  var _destroy = function() {
+    ZeroClipboard.clearData();
+    ZeroClipboard.blur();
+    ZeroClipboard.emit("destroy");
+    _unembedSwf();
+    ZeroClipboard.off();
+  };
+  var _setData = function(format, data) {
+    var dataObj;
+    if (typeof format === "object" && format && typeof data === "undefined") {
+      dataObj = format;
+      ZeroClipboard.clearData();
+    } else if (typeof format === "string" && format) {
+      dataObj = {};
+      dataObj[format] = data;
+    } else {
+      return;
+    }
+    for (var dataFormat in dataObj) {
+      if (typeof dataFormat === "string" && dataFormat && _hasOwn.call(dataObj, dataFormat) && typeof dataObj[dataFormat] === "string" && dataObj[dataFormat]) {
+        _clipData[dataFormat] = dataObj[dataFormat];
+      }
+    }
+  };
+  var _clearData = function(format) {
+    if (typeof format === "undefined") {
+      _deleteOwnProperties(_clipData);
+      _clipDataFormatMap = null;
+    } else if (typeof format === "string" && _hasOwn.call(_clipData, format)) {
+      delete _clipData[format];
+    }
+  };
+  var _getData = function(format) {
+    if (typeof format === "undefined") {
+      return _deepCopy(_clipData);
+    } else if (typeof format === "string" && _hasOwn.call(_clipData, format)) {
+      return _clipData[format];
+    }
+  };
+  var _focus = function(element) {
+    if (!(element && element.nodeType === 1)) {
+      return;
+    }
+    if (_currentElement) {
+      _removeClass(_currentElement, _globalConfig.activeClass);
+      if (_currentElement !== element) {
+        _removeClass(_currentElement, _globalConfig.hoverClass);
+      }
+    }
+    _currentElement = element;
+    _addClass(element, _globalConfig.hoverClass);
+    var newTitle = element.getAttribute("title") || _globalConfig.title;
+    if (typeof newTitle === "string" && newTitle) {
+      var htmlBridge = _getHtmlBridge(_flashState.bridge);
+      if (htmlBridge) {
+        htmlBridge.setAttribute("title", newTitle);
+      }
+    }
+    var useHandCursor = _globalConfig.forceHandCursor === true || _getStyle(element, "cursor") === "pointer";
+    _setHandCursor(useHandCursor);
+    _reposition();
+  };
+  var _blur = function() {
+    var htmlBridge = _getHtmlBridge(_flashState.bridge);
+    if (htmlBridge) {
+      htmlBridge.removeAttribute("title");
+      htmlBridge.style.left = "0px";
+      htmlBridge.style.top = "-9999px";
+      htmlBridge.style.width = "1px";
+      htmlBridge.style.height = "1px";
+    }
+    if (_currentElement) {
+      _removeClass(_currentElement, _globalConfig.hoverClass);
+      _removeClass(_currentElement, _globalConfig.activeClass);
+      _currentElement = null;
+    }
+  };
+  var _activeElement = function() {
+    return _currentElement || null;
+  };
+  var _isValidHtml4Id = function(id) {
+    return typeof id === "string" && id && /^[A-Za-z][A-Za-z0-9_:\-\.]*$/.test(id);
+  };
+  var _createEvent = function(event) {
+    var eventType;
+    if (typeof event === "string" && event) {
+      eventType = event;
+      event = {};
+    } else if (typeof event === "object" && event && typeof event.type === "string" && event.type) {
+      eventType = event.type;
+    }
+    if (!eventType) {
+      return;
+    }
+    eventType = eventType.toLowerCase();
+    if (!event.target && (/^(copy|aftercopy|_click)$/.test(eventType) || eventType === "error" && event.name === "clipboard-error")) {
+      event.target = _copyTarget;
+    }
+    _extend(event, {
+      type: eventType,
+      target: event.target || _currentElement || null,
+      relatedTarget: event.relatedTarget || null,
+      currentTarget: _flashState && _flashState.bridge || null,
+      timeStamp: event.timeStamp || _now() || null
+    });
+    var msg = _eventMessages[event.type];
+    if (event.type === "error" && event.name && msg) {
+      msg = msg[event.name];
+    }
+    if (msg) {
+      event.message = msg;
+    }
+    if (event.type === "ready") {
+      _extend(event, {
+        target: null,
+        version: _flashState.version
+      });
+    }
+    if (event.type === "error") {
+      if (_flashStateErrorNameMatchingRegex.test(event.name)) {
+        _extend(event, {
+          target: null,
+          minimumVersion: _minimumFlashVersion
+        });
+      }
+      if (_flashStateEnabledErrorNameMatchingRegex.test(event.name)) {
+        _extend(event, {version: _flashState.version});
+      }
+    }
+    if (event.type === "copy") {
+      event.clipboardData = {
+        setData: ZeroClipboard.setData,
+        clearData: ZeroClipboard.clearData
+      };
+    }
+    if (event.type === "aftercopy") {
+      event = _mapClipResultsFromFlash(event, _clipDataFormatMap);
+    }
+    if (event.target && !event.relatedTarget) {
+      event.relatedTarget = _getRelatedTarget(event.target);
+    }
+    return _addMouseData(event);
+  };
+  var _getRelatedTarget = function(targetEl) {
+    var relatedTargetId = targetEl && targetEl.getAttribute && targetEl.getAttribute("data-clipboard-target");
+    return relatedTargetId ? _document.getElementById(relatedTargetId) : null;
+  };
+  var _addMouseData = function(event) {
+    if (event && /^_(?:click|mouse(?:over|out|down|up|move))$/.test(event.type)) {
+      var srcElement = event.target;
+      var fromElement = event.type === "_mouseover" && event.relatedTarget ? event.relatedTarget : undefined;
+      var toElement = event.type === "_mouseout" && event.relatedTarget ? event.relatedTarget : undefined;
+      var pos = _getElementPosition(srcElement);
+      var screenLeft = _window.screenLeft || _window.screenX || 0;
+      var screenTop = _window.screenTop || _window.screenY || 0;
+      var scrollLeft = _document.body.scrollLeft + _document.documentElement.scrollLeft;
+      var scrollTop = _document.body.scrollTop + _document.documentElement.scrollTop;
+      var pageX = pos.left + (typeof event._stageX === "number" ? event._stageX : 0);
+      var pageY = pos.top + (typeof event._stageY === "number" ? event._stageY : 0);
+      var clientX = pageX - scrollLeft;
+      var clientY = pageY - scrollTop;
+      var screenX = screenLeft + clientX;
+      var screenY = screenTop + clientY;
+      var moveX = typeof event.movementX === "number" ? event.movementX : 0;
+      var moveY = typeof event.movementY === "number" ? event.movementY : 0;
+      delete event._stageX;
+      delete event._stageY;
+      _extend(event, {
+        srcElement: srcElement,
+        fromElement: fromElement,
+        toElement: toElement,
+        screenX: screenX,
+        screenY: screenY,
+        pageX: pageX,
+        pageY: pageY,
+        clientX: clientX,
+        clientY: clientY,
+        x: clientX,
+        y: clientY,
+        movementX: moveX,
+        movementY: moveY,
+        offsetX: 0,
+        offsetY: 0,
+        layerX: 0,
+        layerY: 0
+      });
+    }
+    return event;
+  };
+  var _shouldPerformAsync = function(event) {
+    var eventType = event && typeof event.type === "string" && event.type || "";
+    return !/^(?:(?:before)?copy|destroy)$/.test(eventType);
+  };
+  var _dispatchCallback = function(func, context, args, async) {
+    if (async) {
+      _setTimeout(function() {
+        func.apply(context, args);
+      }, 0);
+    } else {
+      func.apply(context, args);
+    }
+  };
+  var _dispatchCallbacks = function(event) {
+    if (!(typeof event === "object" && event && event.type)) {
+      return;
+    }
+    var async = _shouldPerformAsync(event);
+    var wildcardTypeHandlers = _handlers["*"] || [];
+    var specificTypeHandlers = _handlers[event.type] || [];
+    var handlers = wildcardTypeHandlers.concat(specificTypeHandlers);
+    if (handlers && handlers.length) {
+      var i,
+          len,
+          func,
+          context,
+          eventCopy,
+          originalContext = this;
+      for (i = 0, len = handlers.length; i < len; i++) {
+        func = handlers[i];
+        context = originalContext;
+        if (typeof func === "string" && typeof _window[func] === "function") {
+          func = _window[func];
+        }
+        if (typeof func === "object" && func && typeof func.handleEvent === "function") {
+          context = func;
+          func = func.handleEvent;
+        }
+        if (typeof func === "function") {
+          eventCopy = _extend({}, event);
+          _dispatchCallback(func, context, [eventCopy], async);
+        }
+      }
+    }
+    return this;
+  };
+  var _getSandboxStatusFromErrorEvent = function(event) {
+    var isSandboxed = null;
+    if (_pageIsFramed === false || event && event.type === "error" && event.name && _errorsThatOnlyOccurAfterFlashLoads.indexOf(event.name) !== -1) {
+      isSandboxed = false;
+    }
+    return isSandboxed;
+  };
+  var _preprocessEvent = function(event) {
+    var element = event.target || _currentElement || null;
+    var sourceIsSwf = event._source === "swf";
+    delete event._source;
+    switch (event.type) {
+      case "error":
+        var isSandboxed = event.name === "flash-sandboxed" || _getSandboxStatusFromErrorEvent(event);
+        if (typeof isSandboxed === "boolean") {
+          _flashState.sandboxed = isSandboxed;
+        }
+        if (_flashStateErrorNames.indexOf(event.name) !== -1) {
+          _extend(_flashState, {
+            disabled: event.name === "flash-disabled",
+            outdated: event.name === "flash-outdated",
+            unavailable: event.name === "flash-unavailable",
+            degraded: event.name === "flash-degraded",
+            deactivated: event.name === "flash-deactivated",
+            overdue: event.name === "flash-overdue",
+            ready: false
+          });
+        } else if (event.name === "version-mismatch") {
+          _zcSwfVersion = event.swfVersion;
+          _extend(_flashState, {
+            disabled: false,
+            outdated: false,
+            unavailable: false,
+            degraded: false,
+            deactivated: false,
+            overdue: false,
+            ready: false
+          });
+        }
+        _clearTimeoutsAndPolling();
+        break;
+      case "ready":
+        _zcSwfVersion = event.swfVersion;
+        var wasDeactivated = _flashState.deactivated === true;
+        _extend(_flashState, {
+          disabled: false,
+          outdated: false,
+          sandboxed: false,
+          unavailable: false,
+          degraded: false,
+          deactivated: false,
+          overdue: wasDeactivated,
+          ready: !wasDeactivated
+        });
+        _clearTimeoutsAndPolling();
+        break;
+      case "beforecopy":
+        _copyTarget = element;
+        break;
+      case "copy":
+        var textContent,
+            htmlContent,
+            targetEl = event.relatedTarget;
+        if (!(_clipData["text/html"] || _clipData["text/plain"]) && targetEl && (htmlContent = targetEl.value || targetEl.outerHTML || targetEl.innerHTML) && (textContent = targetEl.value || targetEl.textContent || targetEl.innerText)) {
+          event.clipboardData.clearData();
+          event.clipboardData.setData("text/plain", textContent);
+          if (htmlContent !== textContent) {
+            event.clipboardData.setData("text/html", htmlContent);
+          }
+        } else if (!_clipData["text/plain"] && event.target && (textContent = event.target.getAttribute("data-clipboard-text"))) {
+          event.clipboardData.clearData();
+          event.clipboardData.setData("text/plain", textContent);
+        }
+        break;
+      case "aftercopy":
+        _queueEmitClipboardErrors(event);
+        ZeroClipboard.clearData();
+        if (element && element !== _safeActiveElement() && element.focus) {
+          element.focus();
+        }
+        break;
+      case "_mouseover":
+        ZeroClipboard.focus(element);
+        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
+          if (element && element !== event.relatedTarget && !_containedBy(event.relatedTarget, element)) {
+            _fireMouseEvent(_extend({}, event, {
+              type: "mouseenter",
+              bubbles: false,
+              cancelable: false
+            }));
+          }
+          _fireMouseEvent(_extend({}, event, {type: "mouseover"}));
+        }
+        break;
+      case "_mouseout":
+        ZeroClipboard.blur();
+        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
+          if (element && element !== event.relatedTarget && !_containedBy(event.relatedTarget, element)) {
+            _fireMouseEvent(_extend({}, event, {
+              type: "mouseleave",
+              bubbles: false,
+              cancelable: false
+            }));
+          }
+          _fireMouseEvent(_extend({}, event, {type: "mouseout"}));
+        }
+        break;
+      case "_mousedown":
+        _addClass(element, _globalConfig.activeClass);
+        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
+          _fireMouseEvent(_extend({}, event, {type: event.type.slice(1)}));
+        }
+        break;
+      case "_mouseup":
+        _removeClass(element, _globalConfig.activeClass);
+        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
+          _fireMouseEvent(_extend({}, event, {type: event.type.slice(1)}));
+        }
+        break;
+      case "_click":
+        _copyTarget = null;
+        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
+          _fireMouseEvent(_extend({}, event, {type: event.type.slice(1)}));
+        }
+        break;
+      case "_mousemove":
+        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
+          _fireMouseEvent(_extend({}, event, {type: event.type.slice(1)}));
+        }
+        break;
+    }
+    if (/^_(?:click|mouse(?:over|out|down|up|move))$/.test(event.type)) {
+      return true;
+    }
+  };
+  var _queueEmitClipboardErrors = function(aftercopyEvent) {
+    if (aftercopyEvent.errors && aftercopyEvent.errors.length > 0) {
+      var errorEvent = _deepCopy(aftercopyEvent);
+      _extend(errorEvent, {
+        type: "error",
+        name: "clipboard-error"
+      });
+      delete errorEvent.success;
+      _setTimeout(function() {
+        ZeroClipboard.emit(errorEvent);
+      }, 0);
+    }
+  };
+  var _fireMouseEvent = function(event) {
+    if (!(event && typeof event.type === "string" && event)) {
+      return;
+    }
+    var e,
+        target = event.target || null,
+        doc = target && target.ownerDocument || _document,
+        defaults = {
+          view: doc.defaultView || _window,
+          canBubble: true,
+          cancelable: true,
+          detail: event.type === "click" ? 1 : 0,
+          button: typeof event.which === "number" ? event.which - 1 : typeof event.button === "number" ? event.button : doc.createEvent ? 0 : 1
+        },
+        args = _extend(defaults, event);
+    if (!target) {
+      return;
+    }
+    if (doc.createEvent && target.dispatchEvent) {
+      args = [args.type, args.canBubble, args.cancelable, args.view, args.detail, args.screenX, args.screenY, args.clientX, args.clientY, args.ctrlKey, args.altKey, args.shiftKey, args.metaKey, args.button, args.relatedTarget];
+      e = doc.createEvent("MouseEvents");
+      if (e.initMouseEvent) {
+        e.initMouseEvent.apply(e, args);
+        e._source = "js";
+        target.dispatchEvent(e);
+      }
+    }
+  };
+  var _watchForSwfFallbackContent = function() {
+    var maxWait = _globalConfig.flashLoadTimeout;
+    if (typeof maxWait === "number" && maxWait >= 0) {
+      var pollWait = Math.min(1e3, maxWait / 10);
+      var fallbackContentId = _globalConfig.swfObjectId + "_fallbackContent";
+      _swfFallbackCheckInterval = _setInterval(function() {
+        var el = _document.getElementById(fallbackContentId);
+        if (_isElementVisible(el)) {
+          _clearTimeoutsAndPolling();
+          _flashState.deactivated = null;
+          ZeroClipboard.emit({
+            type: "error",
+            name: "swf-not-found"
+          });
+        }
+      }, pollWait);
+    }
+  };
+  var _createHtmlBridge = function() {
+    var container = _document.createElement("div");
+    container.id = _globalConfig.containerId;
+    container.className = _globalConfig.containerClass;
+    container.style.position = "absolute";
+    container.style.left = "0px";
+    container.style.top = "-9999px";
+    container.style.width = "1px";
+    container.style.height = "1px";
+    container.style.zIndex = "" + _getSafeZIndex(_globalConfig.zIndex);
+    return container;
+  };
+  var _getHtmlBridge = function(flashBridge) {
+    var htmlBridge = flashBridge && flashBridge.parentNode;
+    while (htmlBridge && htmlBridge.nodeName === "OBJECT" && htmlBridge.parentNode) {
+      htmlBridge = htmlBridge.parentNode;
+    }
+    return htmlBridge || null;
+  };
+  var _embedSwf = function() {
+    var len,
+        flashBridge = _flashState.bridge,
+        container = _getHtmlBridge(flashBridge);
+    if (!flashBridge) {
+      var allowScriptAccess = _determineScriptAccess(_window.location.host, _globalConfig);
+      var allowNetworking = allowScriptAccess === "never" ? "none" : "all";
+      var flashvars = _vars(_extend({jsVersion: ZeroClipboard.version}, _globalConfig));
+      var swfUrl = _globalConfig.swfPath + _cacheBust(_globalConfig.swfPath, _globalConfig);
+      container = _createHtmlBridge();
+      var divToBeReplaced = _document.createElement("div");
+      container.appendChild(divToBeReplaced);
+      _document.body.appendChild(container);
+      var tmpDiv = _document.createElement("div");
+      var usingActiveX = _flashState.pluginType === "activex";
+      tmpDiv.innerHTML = '<object id="' + _globalConfig.swfObjectId + '" name="' + _globalConfig.swfObjectId + '" ' + 'width="100%" height="100%" ' + (usingActiveX ? 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"' : 'type="application/x-shockwave-flash" data="' + swfUrl + '"') + ">" + (usingActiveX ? '<param name="movie" value="' + swfUrl + '"/>' : "") + '<param name="allowScriptAccess" value="' + allowScriptAccess + '"/>' + '<param name="allowNetworking" value="' + allowNetworking + '"/>' + '<param name="menu" value="false"/>' + '<param name="wmode" value="transparent"/>' + '<param name="flashvars" value="' + flashvars + '"/>' + '<div id="' + _globalConfig.swfObjectId + '_fallbackContent">&nbsp;</div>' + "</object>";
+      flashBridge = tmpDiv.firstChild;
+      tmpDiv = null;
+      _unwrap(flashBridge).ZeroClipboard = ZeroClipboard;
+      container.replaceChild(flashBridge, divToBeReplaced);
+      _watchForSwfFallbackContent();
+    }
+    if (!flashBridge) {
+      flashBridge = _document[_globalConfig.swfObjectId];
+      if (flashBridge && (len = flashBridge.length)) {
+        flashBridge = flashBridge[len - 1];
+      }
+      if (!flashBridge && container) {
+        flashBridge = container.firstChild;
+      }
+    }
+    _flashState.bridge = flashBridge || null;
+    return flashBridge;
+  };
+  var _unembedSwf = function() {
+    var flashBridge = _flashState.bridge;
+    if (flashBridge) {
+      var htmlBridge = _getHtmlBridge(flashBridge);
+      if (htmlBridge) {
+        if (_flashState.pluginType === "activex" && "readyState" in flashBridge) {
+          flashBridge.style.display = "none";
+          (function removeSwfFromIE() {
+            if (flashBridge.readyState === 4) {
+              for (var prop in flashBridge) {
+                if (typeof flashBridge[prop] === "function") {
+                  flashBridge[prop] = null;
+                }
+              }
+              if (flashBridge.parentNode) {
+                flashBridge.parentNode.removeChild(flashBridge);
+              }
+              if (htmlBridge.parentNode) {
+                htmlBridge.parentNode.removeChild(htmlBridge);
+              }
+            } else {
+              _setTimeout(removeSwfFromIE, 10);
+            }
+          })();
+        } else {
+          if (flashBridge.parentNode) {
+            flashBridge.parentNode.removeChild(flashBridge);
+          }
+          if (htmlBridge.parentNode) {
+            htmlBridge.parentNode.removeChild(htmlBridge);
+          }
+        }
+      }
+      _clearTimeoutsAndPolling();
+      _flashState.ready = null;
+      _flashState.bridge = null;
+      _flashState.deactivated = null;
+      _zcSwfVersion = undefined;
+    }
+  };
+  var _mapClipDataToFlash = function(clipData) {
+    var newClipData = {},
+        formatMap = {};
+    if (!(typeof clipData === "object" && clipData)) {
+      return;
+    }
+    for (var dataFormat in clipData) {
+      if (dataFormat && _hasOwn.call(clipData, dataFormat) && typeof clipData[dataFormat] === "string" && clipData[dataFormat]) {
+        switch (dataFormat.toLowerCase()) {
+          case "text/plain":
+          case "text":
+          case "air:text":
+          case "flash:text":
+            newClipData.text = clipData[dataFormat];
+            formatMap.text = dataFormat;
+            break;
+          case "text/html":
+          case "html":
+          case "air:html":
+          case "flash:html":
+            newClipData.html = clipData[dataFormat];
+            formatMap.html = dataFormat;
+            break;
+          case "application/rtf":
+          case "text/rtf":
+          case "rtf":
+          case "richtext":
+          case "air:rtf":
+          case "flash:rtf":
+            newClipData.rtf = clipData[dataFormat];
+            formatMap.rtf = dataFormat;
+            break;
+          default:
+            break;
+        }
+      }
+    }
+    return {
+      data: newClipData,
+      formatMap: formatMap
+    };
+  };
+  var _mapClipResultsFromFlash = function(clipResults, formatMap) {
+    if (!(typeof clipResults === "object" && clipResults && typeof formatMap === "object" && formatMap)) {
+      return clipResults;
+    }
+    var newResults = {};
+    for (var prop in clipResults) {
+      if (_hasOwn.call(clipResults, prop)) {
+        if (prop === "errors") {
+          newResults[prop] = clipResults[prop] ? clipResults[prop].slice() : [];
+          for (var i = 0,
+              len = newResults[prop].length; i < len; i++) {
+            newResults[prop][i].format = formatMap[newResults[prop][i].format];
+          }
+        } else if (prop !== "success" && prop !== "data") {
+          newResults[prop] = clipResults[prop];
+        } else {
+          newResults[prop] = {};
+          var tmpHash = clipResults[prop];
+          for (var dataFormat in tmpHash) {
+            if (dataFormat && _hasOwn.call(tmpHash, dataFormat) && _hasOwn.call(formatMap, dataFormat)) {
+              newResults[prop][formatMap[dataFormat]] = tmpHash[dataFormat];
+            }
+          }
+        }
+      }
+    }
+    return newResults;
+  };
+  var _cacheBust = function(path, options) {
+    var cacheBust = options == null || options && options.cacheBust === true;
+    if (cacheBust) {
+      return (path.indexOf("?") === -1 ? "?" : "&") + "noCache=" + _now();
+    } else {
+      return "";
+    }
+  };
+  var _vars = function(options) {
+    var i,
+        len,
+        domain,
+        domains,
+        str = "",
+        trustedOriginsExpanded = [];
+    if (options.trustedDomains) {
+      if (typeof options.trustedDomains === "string") {
+        domains = [options.trustedDomains];
+      } else if (typeof options.trustedDomains === "object" && "length" in options.trustedDomains) {
+        domains = options.trustedDomains;
+      }
+    }
+    if (domains && domains.length) {
+      for (i = 0, len = domains.length; i < len; i++) {
+        if (_hasOwn.call(domains, i) && domains[i] && typeof domains[i] === "string") {
+          domain = _extractDomain(domains[i]);
+          if (!domain) {
+            continue;
+          }
+          if (domain === "*") {
+            trustedOriginsExpanded.length = 0;
+            trustedOriginsExpanded.push(domain);
+            break;
+          }
+          trustedOriginsExpanded.push.apply(trustedOriginsExpanded, [domain, "//" + domain, _window.location.protocol + "//" + domain]);
+        }
+      }
+    }
+    if (trustedOriginsExpanded.length) {
+      str += "trustedOrigins=" + _encodeURIComponent(trustedOriginsExpanded.join(","));
+    }
+    if (options.forceEnhancedClipboard === true) {
+      str += (str ? "&" : "") + "forceEnhancedClipboard=true";
+    }
+    if (typeof options.swfObjectId === "string" && options.swfObjectId) {
+      str += (str ? "&" : "") + "swfObjectId=" + _encodeURIComponent(options.swfObjectId);
+    }
+    if (typeof options.jsVersion === "string" && options.jsVersion) {
+      str += (str ? "&" : "") + "jsVersion=" + _encodeURIComponent(options.jsVersion);
+    }
+    return str;
+  };
+  var _extractDomain = function(originOrUrl) {
+    if (originOrUrl == null || originOrUrl === "") {
+      return null;
+    }
+    originOrUrl = originOrUrl.replace(/^\s+|\s+$/g, "");
+    if (originOrUrl === "") {
+      return null;
+    }
+    var protocolIndex = originOrUrl.indexOf("//");
+    originOrUrl = protocolIndex === -1 ? originOrUrl : originOrUrl.slice(protocolIndex + 2);
+    var pathIndex = originOrUrl.indexOf("/");
+    originOrUrl = pathIndex === -1 ? originOrUrl : protocolIndex === -1 || pathIndex === 0 ? null : originOrUrl.slice(0, pathIndex);
+    if (originOrUrl && originOrUrl.slice(-4).toLowerCase() === ".swf") {
+      return null;
+    }
+    return originOrUrl || null;
+  };
+  var _determineScriptAccess = function() {
+    var _extractAllDomains = function(origins) {
+      var i,
+          len,
+          tmp,
+          resultsArray = [];
+      if (typeof origins === "string") {
+        origins = [origins];
+      }
+      if (!(typeof origins === "object" && origins && typeof origins.length === "number")) {
+        return resultsArray;
+      }
+      for (i = 0, len = origins.length; i < len; i++) {
+        if (_hasOwn.call(origins, i) && (tmp = _extractDomain(origins[i]))) {
+          if (tmp === "*") {
+            resultsArray.length = 0;
+            resultsArray.push("*");
+            break;
+          }
+          if (resultsArray.indexOf(tmp) === -1) {
+            resultsArray.push(tmp);
+          }
+        }
+      }
+      return resultsArray;
+    };
+    return function(currentDomain, configOptions) {
+      var swfDomain = _extractDomain(configOptions.swfPath);
+      if (swfDomain === null) {
+        swfDomain = currentDomain;
+      }
+      var trustedDomains = _extractAllDomains(configOptions.trustedDomains);
+      var len = trustedDomains.length;
+      if (len > 0) {
+        if (len === 1 && trustedDomains[0] === "*") {
+          return "always";
+        }
+        if (trustedDomains.indexOf(currentDomain) !== -1) {
+          if (len === 1 && currentDomain === swfDomain) {
+            return "sameDomain";
+          }
+          return "always";
+        }
+      }
+      return "never";
+    };
+  }();
+  var _safeActiveElement = function() {
+    try {
+      return _document.activeElement;
+    } catch (err) {
+      return null;
+    }
+  };
+  var _addClass = function(element, value) {
+    var c,
+        cl,
+        className,
+        classNames = [];
+    if (typeof value === "string" && value) {
+      classNames = value.split(/\s+/);
+    }
+    if (element && element.nodeType === 1 && classNames.length > 0) {
+      if (element.classList) {
+        for (c = 0, cl = classNames.length; c < cl; c++) {
+          element.classList.add(classNames[c]);
+        }
+      } else if (element.hasOwnProperty("className")) {
+        className = " " + element.className + " ";
+        for (c = 0, cl = classNames.length; c < cl; c++) {
+          if (className.indexOf(" " + classNames[c] + " ") === -1) {
+            className += classNames[c] + " ";
+          }
+        }
+        element.className = className.replace(/^\s+|\s+$/g, "");
+      }
+    }
+    return element;
+  };
+  var _removeClass = function(element, value) {
+    var c,
+        cl,
+        className,
+        classNames = [];
+    if (typeof value === "string" && value) {
+      classNames = value.split(/\s+/);
+    }
+    if (element && element.nodeType === 1 && classNames.length > 0) {
+      if (element.classList && element.classList.length > 0) {
+        for (c = 0, cl = classNames.length; c < cl; c++) {
+          element.classList.remove(classNames[c]);
+        }
+      } else if (element.className) {
+        className = (" " + element.className + " ").replace(/[\r\n\t]/g, " ");
+        for (c = 0, cl = classNames.length; c < cl; c++) {
+          className = className.replace(" " + classNames[c] + " ", " ");
+        }
+        element.className = className.replace(/^\s+|\s+$/g, "");
+      }
+    }
+    return element;
+  };
+  var _getStyle = function(el, prop) {
+    var value = _getComputedStyle(el, null).getPropertyValue(prop);
+    if (prop === "cursor") {
+      if (!value || value === "auto") {
+        if (el.nodeName === "A") {
+          return "pointer";
+        }
+      }
+    }
+    return value;
+  };
+  var _getElementPosition = function(el) {
+    var pos = {
+      left: 0,
+      top: 0,
+      width: 0,
+      height: 0
+    };
+    if (el.getBoundingClientRect) {
+      var elRect = el.getBoundingClientRect();
+      var pageXOffset = _window.pageXOffset;
+      var pageYOffset = _window.pageYOffset;
+      var leftBorderWidth = _document.documentElement.clientLeft || 0;
+      var topBorderWidth = _document.documentElement.clientTop || 0;
+      var leftBodyOffset = 0;
+      var topBodyOffset = 0;
+      if (_getStyle(_document.body, "position") === "relative") {
+        var bodyRect = _document.body.getBoundingClientRect();
+        var htmlRect = _document.documentElement.getBoundingClientRect();
+        leftBodyOffset = bodyRect.left - htmlRect.left || 0;
+        topBodyOffset = bodyRect.top - htmlRect.top || 0;
+      }
+      pos.left = elRect.left + pageXOffset - leftBorderWidth - leftBodyOffset;
+      pos.top = elRect.top + pageYOffset - topBorderWidth - topBodyOffset;
+      pos.width = "width" in elRect ? elRect.width : elRect.right - elRect.left;
+      pos.height = "height" in elRect ? elRect.height : elRect.bottom - elRect.top;
+    }
+    return pos;
+  };
+  var _isElementVisible = function(el) {
+    if (!el) {
+      return false;
+    }
+    var styles = _getComputedStyle(el, null);
+    var hasCssHeight = _parseFloat(styles.height) > 0;
+    var hasCssWidth = _parseFloat(styles.width) > 0;
+    var hasCssTop = _parseFloat(styles.top) >= 0;
+    var hasCssLeft = _parseFloat(styles.left) >= 0;
+    var cssKnows = hasCssHeight && hasCssWidth && hasCssTop && hasCssLeft;
+    var rect = cssKnows ? null : _getElementPosition(el);
+    var isVisible = styles.display !== "none" && styles.visibility !== "collapse" && (cssKnows || !!rect && (hasCssHeight || rect.height > 0) && (hasCssWidth || rect.width > 0) && (hasCssTop || rect.top >= 0) && (hasCssLeft || rect.left >= 0));
+    return isVisible;
+  };
+  var _clearTimeoutsAndPolling = function() {
+    _clearTimeout(_flashCheckTimeout);
+    _flashCheckTimeout = 0;
+    _clearInterval(_swfFallbackCheckInterval);
+    _swfFallbackCheckInterval = 0;
+  };
+  var _reposition = function() {
+    var htmlBridge;
+    if (_currentElement && (htmlBridge = _getHtmlBridge(_flashState.bridge))) {
+      var pos = _getElementPosition(_currentElement);
+      _extend(htmlBridge.style, {
+        width: pos.width + "px",
+        height: pos.height + "px",
+        top: pos.top + "px",
+        left: pos.left + "px",
+        zIndex: "" + _getSafeZIndex(_globalConfig.zIndex)
+      });
+    }
+  };
+  var _setHandCursor = function(enabled) {
+    if (_flashState.ready === true) {
+      if (_flashState.bridge && typeof _flashState.bridge.setHandCursor === "function") {
+        _flashState.bridge.setHandCursor(enabled);
+      } else {
+        _flashState.ready = false;
+      }
+    }
+  };
+  var _getSafeZIndex = function(val) {
+    if (/^(?:auto|inherit)$/.test(val)) {
+      return val;
+    }
+    var zIndex;
+    if (typeof val === "number" && !_isNaN(val)) {
+      zIndex = val;
+    } else if (typeof val === "string") {
+      zIndex = _getSafeZIndex(_parseInt(val, 10));
+    }
+    return typeof zIndex === "number" ? zIndex : "auto";
+  };
+  var _detectSandbox = function(doNotReassessFlashSupport) {
+    var effectiveScriptOrigin,
+        frame,
+        frameError,
+        previousState = _flashState.sandboxed,
+        isSandboxed = null;
+    doNotReassessFlashSupport = doNotReassessFlashSupport === true;
+    if (_pageIsFramed === false) {
+      isSandboxed = false;
+    } else {
+      try {
+        frame = window.frameElement || null;
+      } catch (e) {
+        frameError = {
+          name: e.name,
+          message: e.message
+        };
+      }
+      if (frame && frame.nodeType === 1 && frame.nodeName === "IFRAME") {
+        try {
+          isSandboxed = frame.hasAttribute("sandbox");
+        } catch (e) {
+          isSandboxed = null;
+        }
+      } else {
+        try {
+          effectiveScriptOrigin = document.domain || null;
+        } catch (e) {
+          effectiveScriptOrigin = null;
+        }
+        if (effectiveScriptOrigin === null || frameError && frameError.name === "SecurityError" && /(^|[\s\(\[@])sandbox(es|ed|ing|[\s\.,!\)\]@]|$)/.test(frameError.message.toLowerCase())) {
+          isSandboxed = true;
+        }
+      }
+    }
+    _flashState.sandboxed = isSandboxed;
+    if (previousState !== isSandboxed && !doNotReassessFlashSupport) {
+      _detectFlashSupport(_ActiveXObject);
+    }
+    return isSandboxed;
+  };
+  var _detectFlashSupport = function(ActiveXObject) {
+    var plugin,
+        ax,
+        mimeType,
+        hasFlash = false,
+        isActiveX = false,
+        isPPAPI = false,
+        flashVersion = "";
+    function parseFlashVersion(desc) {
+      var matches = desc.match(/[\d]+/g);
+      matches.length = 3;
+      return matches.join(".");
+    }
+    function isPepperFlash(flashPlayerFileName) {
+      return !!flashPlayerFileName && (flashPlayerFileName = flashPlayerFileName.toLowerCase()) && (/^(pepflashplayer\.dll|libpepflashplayer\.so|pepperflashplayer\.plugin)$/.test(flashPlayerFileName) || flashPlayerFileName.slice(-13) === "chrome.plugin");
+    }
+    function inspectPlugin(plugin) {
+      if (plugin) {
+        hasFlash = true;
+        if (plugin.version) {
+          flashVersion = parseFlashVersion(plugin.version);
+        }
+        if (!flashVersion && plugin.description) {
+          flashVersion = parseFlashVersion(plugin.description);
+        }
+        if (plugin.filename) {
+          isPPAPI = isPepperFlash(plugin.filename);
+        }
+      }
+    }
+    if (_navigator.plugins && _navigator.plugins.length) {
+      plugin = _navigator.plugins["Shockwave Flash"];
+      inspectPlugin(plugin);
+      if (_navigator.plugins["Shockwave Flash 2.0"]) {
+        hasFlash = true;
+        flashVersion = "2.0.0.11";
+      }
+    } else if (_navigator.mimeTypes && _navigator.mimeTypes.length) {
+      mimeType = _navigator.mimeTypes["application/x-shockwave-flash"];
+      plugin = mimeType && mimeType.enabledPlugin;
+      inspectPlugin(plugin);
+    } else if (typeof ActiveXObject !== "undefined") {
+      isActiveX = true;
+      try {
+        ax = new ActiveXObject("ShockwaveFlash.ShockwaveFlash.7");
+        hasFlash = true;
+        flashVersion = parseFlashVersion(ax.GetVariable("$version"));
+      } catch (e1) {
+        try {
+          ax = new ActiveXObject("ShockwaveFlash.ShockwaveFlash.6");
+          hasFlash = true;
+          flashVersion = "6.0.21";
+        } catch (e2) {
+          try {
+            ax = new ActiveXObject("ShockwaveFlash.ShockwaveFlash");
+            hasFlash = true;
+            flashVersion = parseFlashVersion(ax.GetVariable("$version"));
+          } catch (e3) {
+            isActiveX = false;
+          }
+        }
+      }
+    }
+    _flashState.disabled = hasFlash !== true;
+    _flashState.outdated = flashVersion && _parseFloat(flashVersion) < _parseFloat(_minimumFlashVersion);
+    _flashState.version = flashVersion || "0.0.0";
+    _flashState.pluginType = isPPAPI ? "pepper" : isActiveX ? "activex" : hasFlash ? "netscape" : "unknown";
+  };
+  _detectFlashSupport(_ActiveXObject);
+  _detectSandbox(true);
+  var ZeroClipboard = function() {
+    if (!(this instanceof ZeroClipboard)) {
+      return new ZeroClipboard();
+    }
+    if (typeof ZeroClipboard._createClient === "function") {
+      ZeroClipboard._createClient.apply(this, _args(arguments));
+    }
+  };
+  _defineProperty(ZeroClipboard, "version", {
+    value: "2.2.0",
+    writable: false,
+    configurable: true,
+    enumerable: true
+  });
+  ZeroClipboard.config = function() {
+    return _config.apply(this, _args(arguments));
+  };
+  ZeroClipboard.state = function() {
+    return _state.apply(this, _args(arguments));
+  };
+  ZeroClipboard.isFlashUnusable = function() {
+    return _isFlashUnusable.apply(this, _args(arguments));
+  };
+  ZeroClipboard.on = function() {
+    return _on.apply(this, _args(arguments));
+  };
+  ZeroClipboard.off = function() {
+    return _off.apply(this, _args(arguments));
+  };
+  ZeroClipboard.handlers = function() {
+    return _listeners.apply(this, _args(arguments));
+  };
+  ZeroClipboard.emit = function() {
+    return _emit.apply(this, _args(arguments));
+  };
+  ZeroClipboard.create = function() {
+    return _create.apply(this, _args(arguments));
+  };
+  ZeroClipboard.destroy = function() {
+    return _destroy.apply(this, _args(arguments));
+  };
+  ZeroClipboard.setData = function() {
+    return _setData.apply(this, _args(arguments));
+  };
+  ZeroClipboard.clearData = function() {
+    return _clearData.apply(this, _args(arguments));
+  };
+  ZeroClipboard.getData = function() {
+    return _getData.apply(this, _args(arguments));
+  };
+  ZeroClipboard.focus = ZeroClipboard.activate = function() {
+    return _focus.apply(this, _args(arguments));
+  };
+  ZeroClipboard.blur = ZeroClipboard.deactivate = function() {
+    return _blur.apply(this, _args(arguments));
+  };
+  ZeroClipboard.activeElement = function() {
+    return _activeElement.apply(this, _args(arguments));
+  };
+  var _clientIdCounter = 0;
+  var _clientMeta = {};
+  var _elementIdCounter = 0;
+  var _elementMeta = {};
+  var _mouseHandlers = {};
+  _extend(_globalConfig, {autoActivate: true});
+  var _clientConstructor = function(elements) {
+    var client = this;
+    client.id = "" + _clientIdCounter++;
+    _clientMeta[client.id] = {
+      instance: client,
+      elements: [],
+      handlers: {}
+    };
+    if (elements) {
+      client.clip(elements);
+    }
+    ZeroClipboard.on("*", function(event) {
+      return client.emit(event);
+    });
+    ZeroClipboard.on("destroy", function() {
+      client.destroy();
+    });
+    ZeroClipboard.create();
+  };
+  var _clientOn = function(eventType, listener) {
+    var i,
+        len,
+        events,
+        added = {},
+        meta = _clientMeta[this.id],
+        handlers = meta && meta.handlers;
+    if (!meta) {
+      throw new Error("Attempted to add new listener(s) to a destroyed ZeroClipboard client instance");
+    }
+    if (typeof eventType === "string" && eventType) {
+      events = eventType.toLowerCase().split(/\s+/);
+    } else if (typeof eventType === "object" && eventType && typeof listener === "undefined") {
+      for (i in eventType) {
+        if (_hasOwn.call(eventType, i) && typeof i === "string" && i && typeof eventType[i] === "function") {
+          this.on(i, eventType[i]);
+        }
+      }
+    }
+    if (events && events.length) {
+      for (i = 0, len = events.length; i < len; i++) {
+        eventType = events[i].replace(/^on/, "");
+        added[eventType] = true;
+        if (!handlers[eventType]) {
+          handlers[eventType] = [];
+        }
+        handlers[eventType].push(listener);
+      }
+      if (added.ready && _flashState.ready) {
+        this.emit({
+          type: "ready",
+          client: this
+        });
+      }
+      if (added.error) {
+        for (i = 0, len = _flashStateErrorNames.length; i < len; i++) {
+          if (_flashState[_flashStateErrorNames[i].replace(/^flash-/, "")]) {
+            this.emit({
+              type: "error",
+              name: _flashStateErrorNames[i],
+              client: this
+            });
+            break;
+          }
+        }
+        if (_zcSwfVersion !== undefined && ZeroClipboard.version !== _zcSwfVersion) {
+          this.emit({
+            type: "error",
+            name: "version-mismatch",
+            jsVersion: ZeroClipboard.version,
+            swfVersion: _zcSwfVersion
+          });
+        }
+      }
+    }
+    return this;
+  };
+  var _clientOff = function(eventType, listener) {
+    var i,
+        len,
+        foundIndex,
+        events,
+        perEventHandlers,
+        meta = _clientMeta[this.id],
+        handlers = meta && meta.handlers;
+    if (!handlers) {
+      return this;
+    }
+    if (arguments.length === 0) {
+      events = _keys(handlers);
+    } else if (typeof eventType === "string" && eventType) {
+      events = eventType.split(/\s+/);
+    } else if (typeof eventType === "object" && eventType && typeof listener === "undefined") {
+      for (i in eventType) {
+        if (_hasOwn.call(eventType, i) && typeof i === "string" && i && typeof eventType[i] === "function") {
+          this.off(i, eventType[i]);
+        }
+      }
+    }
+    if (events && events.length) {
+      for (i = 0, len = events.length; i < len; i++) {
+        eventType = events[i].toLowerCase().replace(/^on/, "");
+        perEventHandlers = handlers[eventType];
+        if (perEventHandlers && perEventHandlers.length) {
+          if (listener) {
+            foundIndex = perEventHandlers.indexOf(listener);
+            while (foundIndex !== -1) {
+              perEventHandlers.splice(foundIndex, 1);
+              foundIndex = perEventHandlers.indexOf(listener, foundIndex);
+            }
+          } else {
+            perEventHandlers.length = 0;
+          }
+        }
+      }
+    }
+    return this;
+  };
+  var _clientListeners = function(eventType) {
+    var copy = null,
+        handlers = _clientMeta[this.id] && _clientMeta[this.id].handlers;
+    if (handlers) {
+      if (typeof eventType === "string" && eventType) {
+        copy = handlers[eventType] ? handlers[eventType].slice(0) : [];
+      } else {
+        copy = _deepCopy(handlers);
+      }
+    }
+    return copy;
+  };
+  var _clientEmit = function(event) {
+    if (_clientShouldEmit.call(this, event)) {
+      if (typeof event === "object" && event && typeof event.type === "string" && event.type) {
+        event = _extend({}, event);
+      }
+      var eventCopy = _extend({}, _createEvent(event), {client: this});
+      _clientDispatchCallbacks.call(this, eventCopy);
+    }
+    return this;
+  };
+  var _clientClip = function(elements) {
+    if (!_clientMeta[this.id]) {
+      throw new Error("Attempted to clip element(s) to a destroyed ZeroClipboard client instance");
+    }
+    elements = _prepClip(elements);
+    for (var i = 0; i < elements.length; i++) {
+      if (_hasOwn.call(elements, i) && elements[i] && elements[i].nodeType === 1) {
+        if (!elements[i].zcClippingId) {
+          elements[i].zcClippingId = "zcClippingId_" + _elementIdCounter++;
+          _elementMeta[elements[i].zcClippingId] = [this.id];
+          if (_globalConfig.autoActivate === true) {
+            _addMouseHandlers(elements[i]);
+          }
+        } else if (_elementMeta[elements[i].zcClippingId].indexOf(this.id) === -1) {
+          _elementMeta[elements[i].zcClippingId].push(this.id);
+        }
+        var clippedElements = _clientMeta[this.id] && _clientMeta[this.id].elements;
+        if (clippedElements.indexOf(elements[i]) === -1) {
+          clippedElements.push(elements[i]);
+        }
+      }
+    }
+    return this;
+  };
+  var _clientUnclip = function(elements) {
+    var meta = _clientMeta[this.id];
+    if (!meta) {
+      return this;
+    }
+    var clippedElements = meta.elements;
+    var arrayIndex;
+    if (typeof elements === "undefined") {
+      elements = clippedElements.slice(0);
+    } else {
+      elements = _prepClip(elements);
+    }
+    for (var i = elements.length; i--; ) {
+      if (_hasOwn.call(elements, i) && elements[i] && elements[i].nodeType === 1) {
+        arrayIndex = 0;
+        while ((arrayIndex = clippedElements.indexOf(elements[i], arrayIndex)) !== -1) {
+          clippedElements.splice(arrayIndex, 1);
+        }
+        var clientIds = _elementMeta[elements[i].zcClippingId];
+        if (clientIds) {
+          arrayIndex = 0;
+          while ((arrayIndex = clientIds.indexOf(this.id, arrayIndex)) !== -1) {
+            clientIds.splice(arrayIndex, 1);
+          }
+          if (clientIds.length === 0) {
+            if (_globalConfig.autoActivate === true) {
+              _removeMouseHandlers(elements[i]);
+            }
+            delete elements[i].zcClippingId;
+          }
+        }
+      }
+    }
+    return this;
+  };
+  var _clientElements = function() {
+    var meta = _clientMeta[this.id];
+    return meta && meta.elements ? meta.elements.slice(0) : [];
+  };
+  var _clientDestroy = function() {
+    if (!_clientMeta[this.id]) {
+      return;
+    }
+    this.unclip();
+    this.off();
+    delete _clientMeta[this.id];
+  };
+  var _clientShouldEmit = function(event) {
+    if (!(event && event.type)) {
+      return false;
+    }
+    if (event.client && event.client !== this) {
+      return false;
+    }
+    var meta = _clientMeta[this.id];
+    var clippedEls = meta && meta.elements;
+    var hasClippedEls = !!clippedEls && clippedEls.length > 0;
+    var goodTarget = !event.target || hasClippedEls && clippedEls.indexOf(event.target) !== -1;
+    var goodRelTarget = event.relatedTarget && hasClippedEls && clippedEls.indexOf(event.relatedTarget) !== -1;
+    var goodClient = event.client && event.client === this;
+    if (!meta || !(goodTarget || goodRelTarget || goodClient)) {
+      return false;
+    }
+    return true;
+  };
+  var _clientDispatchCallbacks = function(event) {
+    var meta = _clientMeta[this.id];
+    if (!(typeof event === "object" && event && event.type && meta)) {
+      return;
+    }
+    var async = _shouldPerformAsync(event);
+    var wildcardTypeHandlers = meta && meta.handlers["*"] || [];
+    var specificTypeHandlers = meta && meta.handlers[event.type] || [];
+    var handlers = wildcardTypeHandlers.concat(specificTypeHandlers);
+    if (handlers && handlers.length) {
+      var i,
+          len,
+          func,
+          context,
+          eventCopy,
+          originalContext = this;
+      for (i = 0, len = handlers.length; i < len; i++) {
+        func = handlers[i];
+        context = originalContext;
+        if (typeof func === "string" && typeof _window[func] === "function") {
+          func = _window[func];
+        }
+        if (typeof func === "object" && func && typeof func.handleEvent === "function") {
+          context = func;
+          func = func.handleEvent;
+        }
+        if (typeof func === "function") {
+          eventCopy = _extend({}, event);
+          _dispatchCallback(func, context, [eventCopy], async);
+        }
+      }
+    }
+  };
+  var _prepClip = function(elements) {
+    if (typeof elements === "string") {
+      elements = [];
+    }
+    return typeof elements.length !== "number" ? [elements] : elements;
+  };
+  var _addMouseHandlers = function(element) {
+    if (!(element && element.nodeType === 1)) {
+      return;
+    }
+    var _suppressMouseEvents = function(event) {
+      if (!(event || (event = _window.event))) {
+        return;
+      }
+      if (event._source !== "js") {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+      }
+      delete event._source;
+    };
+    var _elementMouseOver = function(event) {
+      if (!(event || (event = _window.event))) {
+        return;
+      }
+      _suppressMouseEvents(event);
+      ZeroClipboard.focus(element);
+    };
+    element.addEventListener("mouseover", _elementMouseOver, false);
+    element.addEventListener("mouseout", _suppressMouseEvents, false);
+    element.addEventListener("mouseenter", _suppressMouseEvents, false);
+    element.addEventListener("mouseleave", _suppressMouseEvents, false);
+    element.addEventListener("mousemove", _suppressMouseEvents, false);
+    _mouseHandlers[element.zcClippingId] = {
+      mouseover: _elementMouseOver,
+      mouseout: _suppressMouseEvents,
+      mouseenter: _suppressMouseEvents,
+      mouseleave: _suppressMouseEvents,
+      mousemove: _suppressMouseEvents
+    };
+  };
+  var _removeMouseHandlers = function(element) {
+    if (!(element && element.nodeType === 1)) {
+      return;
+    }
+    var mouseHandlers = _mouseHandlers[element.zcClippingId];
+    if (!(typeof mouseHandlers === "object" && mouseHandlers)) {
+      return;
+    }
+    var key,
+        val,
+        mouseEvents = ["move", "leave", "enter", "out", "over"];
+    for (var i = 0,
+        len = mouseEvents.length; i < len; i++) {
+      key = "mouse" + mouseEvents[i];
+      val = mouseHandlers[key];
+      if (typeof val === "function") {
+        element.removeEventListener(key, val, false);
+      }
+    }
+    delete _mouseHandlers[element.zcClippingId];
+  };
+  ZeroClipboard._createClient = function() {
+    _clientConstructor.apply(this, _args(arguments));
+  };
+  ZeroClipboard.prototype.on = function() {
+    return _clientOn.apply(this, _args(arguments));
+  };
+  ZeroClipboard.prototype.off = function() {
+    return _clientOff.apply(this, _args(arguments));
+  };
+  ZeroClipboard.prototype.handlers = function() {
+    return _clientListeners.apply(this, _args(arguments));
+  };
+  ZeroClipboard.prototype.emit = function() {
+    return _clientEmit.apply(this, _args(arguments));
+  };
+  ZeroClipboard.prototype.clip = function() {
+    return _clientClip.apply(this, _args(arguments));
+  };
+  ZeroClipboard.prototype.unclip = function() {
+    return _clientUnclip.apply(this, _args(arguments));
+  };
+  ZeroClipboard.prototype.elements = function() {
+    return _clientElements.apply(this, _args(arguments));
+  };
+  ZeroClipboard.prototype.destroy = function() {
+    return _clientDestroy.apply(this, _args(arguments));
+  };
+  ZeroClipboard.prototype.setText = function(text) {
+    if (!_clientMeta[this.id]) {
+      throw new Error("Attempted to set pending clipboard data from a destroyed ZeroClipboard client instance");
+    }
+    ZeroClipboard.setData("text/plain", text);
+    return this;
+  };
+  ZeroClipboard.prototype.setHtml = function(html) {
+    if (!_clientMeta[this.id]) {
+      throw new Error("Attempted to set pending clipboard data from a destroyed ZeroClipboard client instance");
+    }
+    ZeroClipboard.setData("text/html", html);
+    return this;
+  };
+  ZeroClipboard.prototype.setRichText = function(richText) {
+    if (!_clientMeta[this.id]) {
+      throw new Error("Attempted to set pending clipboard data from a destroyed ZeroClipboard client instance");
+    }
+    ZeroClipboard.setData("application/rtf", richText);
+    return this;
+  };
+  ZeroClipboard.prototype.setData = function() {
+    if (!_clientMeta[this.id]) {
+      throw new Error("Attempted to set pending clipboard data from a destroyed ZeroClipboard client instance");
+    }
+    ZeroClipboard.setData.apply(this, _args(arguments));
+    return this;
+  };
+  ZeroClipboard.prototype.clearData = function() {
+    if (!_clientMeta[this.id]) {
+      throw new Error("Attempted to clear pending clipboard data from a destroyed ZeroClipboard client instance");
+    }
+    ZeroClipboard.clearData.apply(this, _args(arguments));
+    return this;
+  };
+  ZeroClipboard.prototype.getData = function() {
+    if (!_clientMeta[this.id]) {
+      throw new Error("Attempted to get pending clipboard data from a destroyed ZeroClipboard client instance");
+    }
+    return ZeroClipboard.getData.apply(this, _args(arguments));
+  };
+  if (typeof define === "function" && define.amd) {
+    define(function() {
+      return ZeroClipboard;
+    });
+  } else if (typeof module === "object" && module && typeof module.exports === "object" && module.exports) {
+    module.exports = ZeroClipboard;
+  } else {
+    window.ZeroClipboard = ZeroClipboard;
+  }
+})(function() {
+  return this || window;
+}());
+
+//# 
+},{}],"zeroclipboard":[function(require,module,exports){
 /*!
  * ZeroClipboard
  * The ZeroClipboard library provides an easy way to copy text to the clipboard using an invisible Adobe Flash movie and a JavaScript interface.
@@ -37380,1915 +39361,5 @@ module.exports = function() {
 })(function() {
   return this || window;
 }());
-},{}],"zeroclipboard":[function(require,module,exports){
-"use strict";
-(function(window, undefined) {
-  "use strict";
-  var _window = window,
-      _document = _window.document,
-      _navigator = _window.navigator,
-      _setTimeout = _window.setTimeout,
-      _clearTimeout = _window.clearTimeout,
-      _setInterval = _window.setInterval,
-      _clearInterval = _window.clearInterval,
-      _getComputedStyle = _window.getComputedStyle,
-      _encodeURIComponent = _window.encodeURIComponent,
-      _ActiveXObject = _window.ActiveXObject,
-      _Error = _window.Error,
-      _parseInt = _window.Number.parseInt || _window.parseInt,
-      _parseFloat = _window.Number.parseFloat || _window.parseFloat,
-      _isNaN = _window.Number.isNaN || _window.isNaN,
-      _now = _window.Date.now,
-      _keys = _window.Object.keys,
-      _defineProperty = _window.Object.defineProperty,
-      _hasOwn = _window.Object.prototype.hasOwnProperty,
-      _slice = _window.Array.prototype.slice,
-      _unwrap = function() {
-        var unwrapper = function(el) {
-          return el;
-        };
-        if (typeof _window.wrap === "function" && typeof _window.unwrap === "function") {
-          try {
-            var div = _document.createElement("div");
-            var unwrappedDiv = _window.unwrap(div);
-            if (div.nodeType === 1 && unwrappedDiv && unwrappedDiv.nodeType === 1) {
-              unwrapper = _window.unwrap;
-            }
-          } catch (e) {}
-        }
-        return unwrapper;
-      }();
-  var _args = function(argumentsObj) {
-    return _slice.call(argumentsObj, 0);
-  };
-  var _extend = function() {
-    var i,
-        len,
-        arg,
-        prop,
-        src,
-        copy,
-        args = _args(arguments),
-        target = args[0] || {};
-    for (i = 1, len = args.length; i < len; i++) {
-      if ((arg = args[i]) != null) {
-        for (prop in arg) {
-          if (_hasOwn.call(arg, prop)) {
-            src = target[prop];
-            copy = arg[prop];
-            if (target !== copy && copy !== undefined) {
-              target[prop] = copy;
-            }
-          }
-        }
-      }
-    }
-    return target;
-  };
-  var _deepCopy = function(source) {
-    var copy,
-        i,
-        len,
-        prop;
-    if (typeof source !== "object" || source == null || typeof source.nodeType === "number") {
-      copy = source;
-    } else if (typeof source.length === "number") {
-      copy = [];
-      for (i = 0, len = source.length; i < len; i++) {
-        if (_hasOwn.call(source, i)) {
-          copy[i] = _deepCopy(source[i]);
-        }
-      }
-    } else {
-      copy = {};
-      for (prop in source) {
-        if (_hasOwn.call(source, prop)) {
-          copy[prop] = _deepCopy(source[prop]);
-        }
-      }
-    }
-    return copy;
-  };
-  var _pick = function(obj, keys) {
-    var newObj = {};
-    for (var i = 0,
-        len = keys.length; i < len; i++) {
-      if (keys[i] in obj) {
-        newObj[keys[i]] = obj[keys[i]];
-      }
-    }
-    return newObj;
-  };
-  var _omit = function(obj, keys) {
-    var newObj = {};
-    for (var prop in obj) {
-      if (keys.indexOf(prop) === -1) {
-        newObj[prop] = obj[prop];
-      }
-    }
-    return newObj;
-  };
-  var _deleteOwnProperties = function(obj) {
-    if (obj) {
-      for (var prop in obj) {
-        if (_hasOwn.call(obj, prop)) {
-          delete obj[prop];
-        }
-      }
-    }
-    return obj;
-  };
-  var _containedBy = function(el, ancestorEl) {
-    if (el && el.nodeType === 1 && el.ownerDocument && ancestorEl && (ancestorEl.nodeType === 1 && ancestorEl.ownerDocument && ancestorEl.ownerDocument === el.ownerDocument || ancestorEl.nodeType === 9 && !ancestorEl.ownerDocument && ancestorEl === el.ownerDocument)) {
-      do {
-        if (el === ancestorEl) {
-          return true;
-        }
-        el = el.parentNode;
-      } while (el);
-    }
-    return false;
-  };
-  var _getDirPathOfUrl = function(url) {
-    var dir;
-    if (typeof url === "string" && url) {
-      dir = url.split("#")[0].split("?")[0];
-      dir = url.slice(0, url.lastIndexOf("/") + 1);
-    }
-    return dir;
-  };
-  var _getCurrentScriptUrlFromErrorStack = function(stack) {
-    var url,
-        matches;
-    if (typeof stack === "string" && stack) {
-      matches = stack.match(/^(?:|[^:@]*@|.+\)@(?=http[s]?|file)|.+?\s+(?: at |@)(?:[^:\(]+ )*[\(]?)((?:http[s]?|file):\/\/[\/]?.+?\/[^:\)]*?)(?::\d+)(?::\d+)?/);
-      if (matches && matches[1]) {
-        url = matches[1];
-      } else {
-        matches = stack.match(/\)@((?:http[s]?|file):\/\/[\/]?.+?\/[^:\)]*?)(?::\d+)(?::\d+)?/);
-        if (matches && matches[1]) {
-          url = matches[1];
-        }
-      }
-    }
-    return url;
-  };
-  var _getCurrentScriptUrlFromError = function() {
-    var url,
-        err;
-    try {
-      throw new _Error();
-    } catch (e) {
-      err = e;
-    }
-    if (err) {
-      url = err.sourceURL || err.fileName || _getCurrentScriptUrlFromErrorStack(err.stack);
-    }
-    return url;
-  };
-  var _getCurrentScriptUrl = function() {
-    var jsPath,
-        scripts,
-        i;
-    if (_document.currentScript && (jsPath = _document.currentScript.src)) {
-      return jsPath;
-    }
-    scripts = _document.getElementsByTagName("script");
-    if (scripts.length === 1) {
-      return scripts[0].src || undefined;
-    }
-    if ("readyState" in scripts[0]) {
-      for (i = scripts.length; i--; ) {
-        if (scripts[i].readyState === "interactive" && (jsPath = scripts[i].src)) {
-          return jsPath;
-        }
-      }
-    }
-    if (_document.readyState === "loading" && (jsPath = scripts[scripts.length - 1].src)) {
-      return jsPath;
-    }
-    if (jsPath = _getCurrentScriptUrlFromError()) {
-      return jsPath;
-    }
-    return undefined;
-  };
-  var _getUnanimousScriptParentDir = function() {
-    var i,
-        jsDir,
-        jsPath,
-        scripts = _document.getElementsByTagName("script");
-    for (i = scripts.length; i--; ) {
-      if (!(jsPath = scripts[i].src)) {
-        jsDir = null;
-        break;
-      }
-      jsPath = _getDirPathOfUrl(jsPath);
-      if (jsDir == null) {
-        jsDir = jsPath;
-      } else if (jsDir !== jsPath) {
-        jsDir = null;
-        break;
-      }
-    }
-    return jsDir || undefined;
-  };
-  var _getDefaultSwfPath = function() {
-    var jsDir = _getDirPathOfUrl(_getCurrentScriptUrl()) || _getUnanimousScriptParentDir() || "";
-    return jsDir + "ZeroClipboard.swf";
-  };
-  var _pageIsFramed = function() {
-    return window.opener == null && (!!window.top && window != window.top || !!window.parent && window != window.parent);
-  }();
-  var _flashState = {
-    bridge: null,
-    version: "0.0.0",
-    pluginType: "unknown",
-    disabled: null,
-    outdated: null,
-    sandboxed: null,
-    unavailable: null,
-    degraded: null,
-    deactivated: null,
-    overdue: null,
-    ready: null
-  };
-  var _minimumFlashVersion = "11.0.0";
-  var _zcSwfVersion;
-  var _handlers = {};
-  var _currentElement;
-  var _copyTarget;
-  var _clipData = {};
-  var _clipDataFormatMap = null;
-  var _flashCheckTimeout = 0;
-  var _swfFallbackCheckInterval = 0;
-  var _eventMessages = {
-    ready: "Flash communication is established",
-    error: {
-      "flash-disabled": "Flash is disabled or not installed. May also be attempting to run Flash in a sandboxed iframe, which is impossible.",
-      "flash-outdated": "Flash is too outdated to support ZeroClipboard",
-      "flash-sandboxed": "Attempting to run Flash in a sandboxed iframe, which is impossible",
-      "flash-unavailable": "Flash is unable to communicate bidirectionally with JavaScript",
-      "flash-degraded": "Flash is unable to preserve data fidelity when communicating with JavaScript",
-      "flash-deactivated": "Flash is too outdated for your browser and/or is configured as click-to-activate.\nThis may also mean that the ZeroClipboard SWF object could not be loaded, so please check your `swfPath` configuration and/or network connectivity.\nMay also be attempting to run Flash in a sandboxed iframe, which is impossible.",
-      "flash-overdue": "Flash communication was established but NOT within the acceptable time limit",
-      "version-mismatch": "ZeroClipboard JS version number does not match ZeroClipboard SWF version number",
-      "clipboard-error": "At least one error was thrown while ZeroClipboard was attempting to inject your data into the clipboard",
-      "config-mismatch": "ZeroClipboard configuration does not match Flash's reality",
-      "swf-not-found": "The ZeroClipboard SWF object could not be loaded, so please check your `swfPath` configuration and/or network connectivity"
-    }
-  };
-  var _errorsThatOnlyOccurAfterFlashLoads = ["flash-unavailable", "flash-degraded", "flash-overdue", "version-mismatch", "config-mismatch", "clipboard-error"];
-  var _flashStateErrorNames = ["flash-disabled", "flash-outdated", "flash-sandboxed", "flash-unavailable", "flash-degraded", "flash-deactivated", "flash-overdue"];
-  var _flashStateErrorNameMatchingRegex = new RegExp("^flash-(" + _flashStateErrorNames.map(function(errorName) {
-    return errorName.replace(/^flash-/, "");
-  }).join("|") + ")$");
-  var _flashStateEnabledErrorNameMatchingRegex = new RegExp("^flash-(" + _flashStateErrorNames.slice(1).map(function(errorName) {
-    return errorName.replace(/^flash-/, "");
-  }).join("|") + ")$");
-  var _globalConfig = {
-    swfPath: _getDefaultSwfPath(),
-    trustedDomains: window.location.host ? [window.location.host] : [],
-    cacheBust: true,
-    forceEnhancedClipboard: false,
-    flashLoadTimeout: 3e4,
-    autoActivate: true,
-    bubbleEvents: true,
-    containerId: "global-zeroclipboard-html-bridge",
-    containerClass: "global-zeroclipboard-container",
-    swfObjectId: "global-zeroclipboard-flash-bridge",
-    hoverClass: "zeroclipboard-is-hover",
-    activeClass: "zeroclipboard-is-active",
-    forceHandCursor: false,
-    title: null,
-    zIndex: 999999999
-  };
-  var _config = function(options) {
-    if (typeof options === "object" && options !== null) {
-      for (var prop in options) {
-        if (_hasOwn.call(options, prop)) {
-          if (/^(?:forceHandCursor|title|zIndex|bubbleEvents)$/.test(prop)) {
-            _globalConfig[prop] = options[prop];
-          } else if (_flashState.bridge == null) {
-            if (prop === "containerId" || prop === "swfObjectId") {
-              if (_isValidHtml4Id(options[prop])) {
-                _globalConfig[prop] = options[prop];
-              } else {
-                throw new Error("The specified `" + prop + "` value is not valid as an HTML4 Element ID");
-              }
-            } else {
-              _globalConfig[prop] = options[prop];
-            }
-          }
-        }
-      }
-    }
-    if (typeof options === "string" && options) {
-      if (_hasOwn.call(_globalConfig, options)) {
-        return _globalConfig[options];
-      }
-      return;
-    }
-    return _deepCopy(_globalConfig);
-  };
-  var _state = function() {
-    _detectSandbox();
-    return {
-      browser: _pick(_navigator, ["userAgent", "platform", "appName"]),
-      flash: _omit(_flashState, ["bridge"]),
-      zeroclipboard: {
-        version: ZeroClipboard.version,
-        config: ZeroClipboard.config()
-      }
-    };
-  };
-  var _isFlashUnusable = function() {
-    return !!(_flashState.disabled || _flashState.outdated || _flashState.sandboxed || _flashState.unavailable || _flashState.degraded || _flashState.deactivated);
-  };
-  var _on = function(eventType, listener) {
-    var i,
-        len,
-        events,
-        added = {};
-    if (typeof eventType === "string" && eventType) {
-      events = eventType.toLowerCase().split(/\s+/);
-    } else if (typeof eventType === "object" && eventType && typeof listener === "undefined") {
-      for (i in eventType) {
-        if (_hasOwn.call(eventType, i) && typeof i === "string" && i && typeof eventType[i] === "function") {
-          ZeroClipboard.on(i, eventType[i]);
-        }
-      }
-    }
-    if (events && events.length) {
-      for (i = 0, len = events.length; i < len; i++) {
-        eventType = events[i].replace(/^on/, "");
-        added[eventType] = true;
-        if (!_handlers[eventType]) {
-          _handlers[eventType] = [];
-        }
-        _handlers[eventType].push(listener);
-      }
-      if (added.ready && _flashState.ready) {
-        ZeroClipboard.emit({type: "ready"});
-      }
-      if (added.error) {
-        for (i = 0, len = _flashStateErrorNames.length; i < len; i++) {
-          if (_flashState[_flashStateErrorNames[i].replace(/^flash-/, "")] === true) {
-            ZeroClipboard.emit({
-              type: "error",
-              name: _flashStateErrorNames[i]
-            });
-            break;
-          }
-        }
-        if (_zcSwfVersion !== undefined && ZeroClipboard.version !== _zcSwfVersion) {
-          ZeroClipboard.emit({
-            type: "error",
-            name: "version-mismatch",
-            jsVersion: ZeroClipboard.version,
-            swfVersion: _zcSwfVersion
-          });
-        }
-      }
-    }
-    return ZeroClipboard;
-  };
-  var _off = function(eventType, listener) {
-    var i,
-        len,
-        foundIndex,
-        events,
-        perEventHandlers;
-    if (arguments.length === 0) {
-      events = _keys(_handlers);
-    } else if (typeof eventType === "string" && eventType) {
-      events = eventType.split(/\s+/);
-    } else if (typeof eventType === "object" && eventType && typeof listener === "undefined") {
-      for (i in eventType) {
-        if (_hasOwn.call(eventType, i) && typeof i === "string" && i && typeof eventType[i] === "function") {
-          ZeroClipboard.off(i, eventType[i]);
-        }
-      }
-    }
-    if (events && events.length) {
-      for (i = 0, len = events.length; i < len; i++) {
-        eventType = events[i].toLowerCase().replace(/^on/, "");
-        perEventHandlers = _handlers[eventType];
-        if (perEventHandlers && perEventHandlers.length) {
-          if (listener) {
-            foundIndex = perEventHandlers.indexOf(listener);
-            while (foundIndex !== -1) {
-              perEventHandlers.splice(foundIndex, 1);
-              foundIndex = perEventHandlers.indexOf(listener, foundIndex);
-            }
-          } else {
-            perEventHandlers.length = 0;
-          }
-        }
-      }
-    }
-    return ZeroClipboard;
-  };
-  var _listeners = function(eventType) {
-    var copy;
-    if (typeof eventType === "string" && eventType) {
-      copy = _deepCopy(_handlers[eventType]) || null;
-    } else {
-      copy = _deepCopy(_handlers);
-    }
-    return copy;
-  };
-  var _emit = function(event) {
-    var eventCopy,
-        returnVal,
-        tmp;
-    event = _createEvent(event);
-    if (!event) {
-      return;
-    }
-    if (_preprocessEvent(event)) {
-      return;
-    }
-    if (event.type === "ready" && _flashState.overdue === true) {
-      return ZeroClipboard.emit({
-        type: "error",
-        name: "flash-overdue"
-      });
-    }
-    eventCopy = _extend({}, event);
-    _dispatchCallbacks.call(this, eventCopy);
-    if (event.type === "copy") {
-      tmp = _mapClipDataToFlash(_clipData);
-      returnVal = tmp.data;
-      _clipDataFormatMap = tmp.formatMap;
-    }
-    return returnVal;
-  };
-  var _create = function() {
-    var previousState = _flashState.sandboxed;
-    _detectSandbox();
-    if (typeof _flashState.ready !== "boolean") {
-      _flashState.ready = false;
-    }
-    if (_flashState.sandboxed !== previousState && _flashState.sandboxed === true) {
-      _flashState.ready = false;
-      ZeroClipboard.emit({
-        type: "error",
-        name: "flash-sandboxed"
-      });
-    } else if (!ZeroClipboard.isFlashUnusable() && _flashState.bridge === null) {
-      var maxWait = _globalConfig.flashLoadTimeout;
-      if (typeof maxWait === "number" && maxWait >= 0) {
-        _flashCheckTimeout = _setTimeout(function() {
-          if (typeof _flashState.deactivated !== "boolean") {
-            _flashState.deactivated = true;
-          }
-          if (_flashState.deactivated === true) {
-            ZeroClipboard.emit({
-              type: "error",
-              name: "flash-deactivated"
-            });
-          }
-        }, maxWait);
-      }
-      _flashState.overdue = false;
-      _embedSwf();
-    }
-  };
-  var _destroy = function() {
-    ZeroClipboard.clearData();
-    ZeroClipboard.blur();
-    ZeroClipboard.emit("destroy");
-    _unembedSwf();
-    ZeroClipboard.off();
-  };
-  var _setData = function(format, data) {
-    var dataObj;
-    if (typeof format === "object" && format && typeof data === "undefined") {
-      dataObj = format;
-      ZeroClipboard.clearData();
-    } else if (typeof format === "string" && format) {
-      dataObj = {};
-      dataObj[format] = data;
-    } else {
-      return;
-    }
-    for (var dataFormat in dataObj) {
-      if (typeof dataFormat === "string" && dataFormat && _hasOwn.call(dataObj, dataFormat) && typeof dataObj[dataFormat] === "string" && dataObj[dataFormat]) {
-        _clipData[dataFormat] = dataObj[dataFormat];
-      }
-    }
-  };
-  var _clearData = function(format) {
-    if (typeof format === "undefined") {
-      _deleteOwnProperties(_clipData);
-      _clipDataFormatMap = null;
-    } else if (typeof format === "string" && _hasOwn.call(_clipData, format)) {
-      delete _clipData[format];
-    }
-  };
-  var _getData = function(format) {
-    if (typeof format === "undefined") {
-      return _deepCopy(_clipData);
-    } else if (typeof format === "string" && _hasOwn.call(_clipData, format)) {
-      return _clipData[format];
-    }
-  };
-  var _focus = function(element) {
-    if (!(element && element.nodeType === 1)) {
-      return;
-    }
-    if (_currentElement) {
-      _removeClass(_currentElement, _globalConfig.activeClass);
-      if (_currentElement !== element) {
-        _removeClass(_currentElement, _globalConfig.hoverClass);
-      }
-    }
-    _currentElement = element;
-    _addClass(element, _globalConfig.hoverClass);
-    var newTitle = element.getAttribute("title") || _globalConfig.title;
-    if (typeof newTitle === "string" && newTitle) {
-      var htmlBridge = _getHtmlBridge(_flashState.bridge);
-      if (htmlBridge) {
-        htmlBridge.setAttribute("title", newTitle);
-      }
-    }
-    var useHandCursor = _globalConfig.forceHandCursor === true || _getStyle(element, "cursor") === "pointer";
-    _setHandCursor(useHandCursor);
-    _reposition();
-  };
-  var _blur = function() {
-    var htmlBridge = _getHtmlBridge(_flashState.bridge);
-    if (htmlBridge) {
-      htmlBridge.removeAttribute("title");
-      htmlBridge.style.left = "0px";
-      htmlBridge.style.top = "-9999px";
-      htmlBridge.style.width = "1px";
-      htmlBridge.style.height = "1px";
-    }
-    if (_currentElement) {
-      _removeClass(_currentElement, _globalConfig.hoverClass);
-      _removeClass(_currentElement, _globalConfig.activeClass);
-      _currentElement = null;
-    }
-  };
-  var _activeElement = function() {
-    return _currentElement || null;
-  };
-  var _isValidHtml4Id = function(id) {
-    return typeof id === "string" && id && /^[A-Za-z][A-Za-z0-9_:\-\.]*$/.test(id);
-  };
-  var _createEvent = function(event) {
-    var eventType;
-    if (typeof event === "string" && event) {
-      eventType = event;
-      event = {};
-    } else if (typeof event === "object" && event && typeof event.type === "string" && event.type) {
-      eventType = event.type;
-    }
-    if (!eventType) {
-      return;
-    }
-    eventType = eventType.toLowerCase();
-    if (!event.target && (/^(copy|aftercopy|_click)$/.test(eventType) || eventType === "error" && event.name === "clipboard-error")) {
-      event.target = _copyTarget;
-    }
-    _extend(event, {
-      type: eventType,
-      target: event.target || _currentElement || null,
-      relatedTarget: event.relatedTarget || null,
-      currentTarget: _flashState && _flashState.bridge || null,
-      timeStamp: event.timeStamp || _now() || null
-    });
-    var msg = _eventMessages[event.type];
-    if (event.type === "error" && event.name && msg) {
-      msg = msg[event.name];
-    }
-    if (msg) {
-      event.message = msg;
-    }
-    if (event.type === "ready") {
-      _extend(event, {
-        target: null,
-        version: _flashState.version
-      });
-    }
-    if (event.type === "error") {
-      if (_flashStateErrorNameMatchingRegex.test(event.name)) {
-        _extend(event, {
-          target: null,
-          minimumVersion: _minimumFlashVersion
-        });
-      }
-      if (_flashStateEnabledErrorNameMatchingRegex.test(event.name)) {
-        _extend(event, {version: _flashState.version});
-      }
-    }
-    if (event.type === "copy") {
-      event.clipboardData = {
-        setData: ZeroClipboard.setData,
-        clearData: ZeroClipboard.clearData
-      };
-    }
-    if (event.type === "aftercopy") {
-      event = _mapClipResultsFromFlash(event, _clipDataFormatMap);
-    }
-    if (event.target && !event.relatedTarget) {
-      event.relatedTarget = _getRelatedTarget(event.target);
-    }
-    return _addMouseData(event);
-  };
-  var _getRelatedTarget = function(targetEl) {
-    var relatedTargetId = targetEl && targetEl.getAttribute && targetEl.getAttribute("data-clipboard-target");
-    return relatedTargetId ? _document.getElementById(relatedTargetId) : null;
-  };
-  var _addMouseData = function(event) {
-    if (event && /^_(?:click|mouse(?:over|out|down|up|move))$/.test(event.type)) {
-      var srcElement = event.target;
-      var fromElement = event.type === "_mouseover" && event.relatedTarget ? event.relatedTarget : undefined;
-      var toElement = event.type === "_mouseout" && event.relatedTarget ? event.relatedTarget : undefined;
-      var pos = _getElementPosition(srcElement);
-      var screenLeft = _window.screenLeft || _window.screenX || 0;
-      var screenTop = _window.screenTop || _window.screenY || 0;
-      var scrollLeft = _document.body.scrollLeft + _document.documentElement.scrollLeft;
-      var scrollTop = _document.body.scrollTop + _document.documentElement.scrollTop;
-      var pageX = pos.left + (typeof event._stageX === "number" ? event._stageX : 0);
-      var pageY = pos.top + (typeof event._stageY === "number" ? event._stageY : 0);
-      var clientX = pageX - scrollLeft;
-      var clientY = pageY - scrollTop;
-      var screenX = screenLeft + clientX;
-      var screenY = screenTop + clientY;
-      var moveX = typeof event.movementX === "number" ? event.movementX : 0;
-      var moveY = typeof event.movementY === "number" ? event.movementY : 0;
-      delete event._stageX;
-      delete event._stageY;
-      _extend(event, {
-        srcElement: srcElement,
-        fromElement: fromElement,
-        toElement: toElement,
-        screenX: screenX,
-        screenY: screenY,
-        pageX: pageX,
-        pageY: pageY,
-        clientX: clientX,
-        clientY: clientY,
-        x: clientX,
-        y: clientY,
-        movementX: moveX,
-        movementY: moveY,
-        offsetX: 0,
-        offsetY: 0,
-        layerX: 0,
-        layerY: 0
-      });
-    }
-    return event;
-  };
-  var _shouldPerformAsync = function(event) {
-    var eventType = event && typeof event.type === "string" && event.type || "";
-    return !/^(?:(?:before)?copy|destroy)$/.test(eventType);
-  };
-  var _dispatchCallback = function(func, context, args, async) {
-    if (async) {
-      _setTimeout(function() {
-        func.apply(context, args);
-      }, 0);
-    } else {
-      func.apply(context, args);
-    }
-  };
-  var _dispatchCallbacks = function(event) {
-    if (!(typeof event === "object" && event && event.type)) {
-      return;
-    }
-    var async = _shouldPerformAsync(event);
-    var wildcardTypeHandlers = _handlers["*"] || [];
-    var specificTypeHandlers = _handlers[event.type] || [];
-    var handlers = wildcardTypeHandlers.concat(specificTypeHandlers);
-    if (handlers && handlers.length) {
-      var i,
-          len,
-          func,
-          context,
-          eventCopy,
-          originalContext = this;
-      for (i = 0, len = handlers.length; i < len; i++) {
-        func = handlers[i];
-        context = originalContext;
-        if (typeof func === "string" && typeof _window[func] === "function") {
-          func = _window[func];
-        }
-        if (typeof func === "object" && func && typeof func.handleEvent === "function") {
-          context = func;
-          func = func.handleEvent;
-        }
-        if (typeof func === "function") {
-          eventCopy = _extend({}, event);
-          _dispatchCallback(func, context, [eventCopy], async);
-        }
-      }
-    }
-    return this;
-  };
-  var _getSandboxStatusFromErrorEvent = function(event) {
-    var isSandboxed = null;
-    if (_pageIsFramed === false || event && event.type === "error" && event.name && _errorsThatOnlyOccurAfterFlashLoads.indexOf(event.name) !== -1) {
-      isSandboxed = false;
-    }
-    return isSandboxed;
-  };
-  var _preprocessEvent = function(event) {
-    var element = event.target || _currentElement || null;
-    var sourceIsSwf = event._source === "swf";
-    delete event._source;
-    switch (event.type) {
-      case "error":
-        var isSandboxed = event.name === "flash-sandboxed" || _getSandboxStatusFromErrorEvent(event);
-        if (typeof isSandboxed === "boolean") {
-          _flashState.sandboxed = isSandboxed;
-        }
-        if (_flashStateErrorNames.indexOf(event.name) !== -1) {
-          _extend(_flashState, {
-            disabled: event.name === "flash-disabled",
-            outdated: event.name === "flash-outdated",
-            unavailable: event.name === "flash-unavailable",
-            degraded: event.name === "flash-degraded",
-            deactivated: event.name === "flash-deactivated",
-            overdue: event.name === "flash-overdue",
-            ready: false
-          });
-        } else if (event.name === "version-mismatch") {
-          _zcSwfVersion = event.swfVersion;
-          _extend(_flashState, {
-            disabled: false,
-            outdated: false,
-            unavailable: false,
-            degraded: false,
-            deactivated: false,
-            overdue: false,
-            ready: false
-          });
-        }
-        _clearTimeoutsAndPolling();
-        break;
-      case "ready":
-        _zcSwfVersion = event.swfVersion;
-        var wasDeactivated = _flashState.deactivated === true;
-        _extend(_flashState, {
-          disabled: false,
-          outdated: false,
-          sandboxed: false,
-          unavailable: false,
-          degraded: false,
-          deactivated: false,
-          overdue: wasDeactivated,
-          ready: !wasDeactivated
-        });
-        _clearTimeoutsAndPolling();
-        break;
-      case "beforecopy":
-        _copyTarget = element;
-        break;
-      case "copy":
-        var textContent,
-            htmlContent,
-            targetEl = event.relatedTarget;
-        if (!(_clipData["text/html"] || _clipData["text/plain"]) && targetEl && (htmlContent = targetEl.value || targetEl.outerHTML || targetEl.innerHTML) && (textContent = targetEl.value || targetEl.textContent || targetEl.innerText)) {
-          event.clipboardData.clearData();
-          event.clipboardData.setData("text/plain", textContent);
-          if (htmlContent !== textContent) {
-            event.clipboardData.setData("text/html", htmlContent);
-          }
-        } else if (!_clipData["text/plain"] && event.target && (textContent = event.target.getAttribute("data-clipboard-text"))) {
-          event.clipboardData.clearData();
-          event.clipboardData.setData("text/plain", textContent);
-        }
-        break;
-      case "aftercopy":
-        _queueEmitClipboardErrors(event);
-        ZeroClipboard.clearData();
-        if (element && element !== _safeActiveElement() && element.focus) {
-          element.focus();
-        }
-        break;
-      case "_mouseover":
-        ZeroClipboard.focus(element);
-        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
-          if (element && element !== event.relatedTarget && !_containedBy(event.relatedTarget, element)) {
-            _fireMouseEvent(_extend({}, event, {
-              type: "mouseenter",
-              bubbles: false,
-              cancelable: false
-            }));
-          }
-          _fireMouseEvent(_extend({}, event, {type: "mouseover"}));
-        }
-        break;
-      case "_mouseout":
-        ZeroClipboard.blur();
-        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
-          if (element && element !== event.relatedTarget && !_containedBy(event.relatedTarget, element)) {
-            _fireMouseEvent(_extend({}, event, {
-              type: "mouseleave",
-              bubbles: false,
-              cancelable: false
-            }));
-          }
-          _fireMouseEvent(_extend({}, event, {type: "mouseout"}));
-        }
-        break;
-      case "_mousedown":
-        _addClass(element, _globalConfig.activeClass);
-        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
-          _fireMouseEvent(_extend({}, event, {type: event.type.slice(1)}));
-        }
-        break;
-      case "_mouseup":
-        _removeClass(element, _globalConfig.activeClass);
-        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
-          _fireMouseEvent(_extend({}, event, {type: event.type.slice(1)}));
-        }
-        break;
-      case "_click":
-        _copyTarget = null;
-        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
-          _fireMouseEvent(_extend({}, event, {type: event.type.slice(1)}));
-        }
-        break;
-      case "_mousemove":
-        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
-          _fireMouseEvent(_extend({}, event, {type: event.type.slice(1)}));
-        }
-        break;
-    }
-    if (/^_(?:click|mouse(?:over|out|down|up|move))$/.test(event.type)) {
-      return true;
-    }
-  };
-  var _queueEmitClipboardErrors = function(aftercopyEvent) {
-    if (aftercopyEvent.errors && aftercopyEvent.errors.length > 0) {
-      var errorEvent = _deepCopy(aftercopyEvent);
-      _extend(errorEvent, {
-        type: "error",
-        name: "clipboard-error"
-      });
-      delete errorEvent.success;
-      _setTimeout(function() {
-        ZeroClipboard.emit(errorEvent);
-      }, 0);
-    }
-  };
-  var _fireMouseEvent = function(event) {
-    if (!(event && typeof event.type === "string" && event)) {
-      return;
-    }
-    var e,
-        target = event.target || null,
-        doc = target && target.ownerDocument || _document,
-        defaults = {
-          view: doc.defaultView || _window,
-          canBubble: true,
-          cancelable: true,
-          detail: event.type === "click" ? 1 : 0,
-          button: typeof event.which === "number" ? event.which - 1 : typeof event.button === "number" ? event.button : doc.createEvent ? 0 : 1
-        },
-        args = _extend(defaults, event);
-    if (!target) {
-      return;
-    }
-    if (doc.createEvent && target.dispatchEvent) {
-      args = [args.type, args.canBubble, args.cancelable, args.view, args.detail, args.screenX, args.screenY, args.clientX, args.clientY, args.ctrlKey, args.altKey, args.shiftKey, args.metaKey, args.button, args.relatedTarget];
-      e = doc.createEvent("MouseEvents");
-      if (e.initMouseEvent) {
-        e.initMouseEvent.apply(e, args);
-        e._source = "js";
-        target.dispatchEvent(e);
-      }
-    }
-  };
-  var _watchForSwfFallbackContent = function() {
-    var maxWait = _globalConfig.flashLoadTimeout;
-    if (typeof maxWait === "number" && maxWait >= 0) {
-      var pollWait = Math.min(1e3, maxWait / 10);
-      var fallbackContentId = _globalConfig.swfObjectId + "_fallbackContent";
-      _swfFallbackCheckInterval = _setInterval(function() {
-        var el = _document.getElementById(fallbackContentId);
-        if (_isElementVisible(el)) {
-          _clearTimeoutsAndPolling();
-          _flashState.deactivated = null;
-          ZeroClipboard.emit({
-            type: "error",
-            name: "swf-not-found"
-          });
-        }
-      }, pollWait);
-    }
-  };
-  var _createHtmlBridge = function() {
-    var container = _document.createElement("div");
-    container.id = _globalConfig.containerId;
-    container.className = _globalConfig.containerClass;
-    container.style.position = "absolute";
-    container.style.left = "0px";
-    container.style.top = "-9999px";
-    container.style.width = "1px";
-    container.style.height = "1px";
-    container.style.zIndex = "" + _getSafeZIndex(_globalConfig.zIndex);
-    return container;
-  };
-  var _getHtmlBridge = function(flashBridge) {
-    var htmlBridge = flashBridge && flashBridge.parentNode;
-    while (htmlBridge && htmlBridge.nodeName === "OBJECT" && htmlBridge.parentNode) {
-      htmlBridge = htmlBridge.parentNode;
-    }
-    return htmlBridge || null;
-  };
-  var _embedSwf = function() {
-    var len,
-        flashBridge = _flashState.bridge,
-        container = _getHtmlBridge(flashBridge);
-    if (!flashBridge) {
-      var allowScriptAccess = _determineScriptAccess(_window.location.host, _globalConfig);
-      var allowNetworking = allowScriptAccess === "never" ? "none" : "all";
-      var flashvars = _vars(_extend({jsVersion: ZeroClipboard.version}, _globalConfig));
-      var swfUrl = _globalConfig.swfPath + _cacheBust(_globalConfig.swfPath, _globalConfig);
-      container = _createHtmlBridge();
-      var divToBeReplaced = _document.createElement("div");
-      container.appendChild(divToBeReplaced);
-      _document.body.appendChild(container);
-      var tmpDiv = _document.createElement("div");
-      var usingActiveX = _flashState.pluginType === "activex";
-      tmpDiv.innerHTML = '<object id="' + _globalConfig.swfObjectId + '" name="' + _globalConfig.swfObjectId + '" ' + 'width="100%" height="100%" ' + (usingActiveX ? 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"' : 'type="application/x-shockwave-flash" data="' + swfUrl + '"') + ">" + (usingActiveX ? '<param name="movie" value="' + swfUrl + '"/>' : "") + '<param name="allowScriptAccess" value="' + allowScriptAccess + '"/>' + '<param name="allowNetworking" value="' + allowNetworking + '"/>' + '<param name="menu" value="false"/>' + '<param name="wmode" value="transparent"/>' + '<param name="flashvars" value="' + flashvars + '"/>' + '<div id="' + _globalConfig.swfObjectId + '_fallbackContent">&nbsp;</div>' + "</object>";
-      flashBridge = tmpDiv.firstChild;
-      tmpDiv = null;
-      _unwrap(flashBridge).ZeroClipboard = ZeroClipboard;
-      container.replaceChild(flashBridge, divToBeReplaced);
-      _watchForSwfFallbackContent();
-    }
-    if (!flashBridge) {
-      flashBridge = _document[_globalConfig.swfObjectId];
-      if (flashBridge && (len = flashBridge.length)) {
-        flashBridge = flashBridge[len - 1];
-      }
-      if (!flashBridge && container) {
-        flashBridge = container.firstChild;
-      }
-    }
-    _flashState.bridge = flashBridge || null;
-    return flashBridge;
-  };
-  var _unembedSwf = function() {
-    var flashBridge = _flashState.bridge;
-    if (flashBridge) {
-      var htmlBridge = _getHtmlBridge(flashBridge);
-      if (htmlBridge) {
-        if (_flashState.pluginType === "activex" && "readyState" in flashBridge) {
-          flashBridge.style.display = "none";
-          (function removeSwfFromIE() {
-            if (flashBridge.readyState === 4) {
-              for (var prop in flashBridge) {
-                if (typeof flashBridge[prop] === "function") {
-                  flashBridge[prop] = null;
-                }
-              }
-              if (flashBridge.parentNode) {
-                flashBridge.parentNode.removeChild(flashBridge);
-              }
-              if (htmlBridge.parentNode) {
-                htmlBridge.parentNode.removeChild(htmlBridge);
-              }
-            } else {
-              _setTimeout(removeSwfFromIE, 10);
-            }
-          })();
-        } else {
-          if (flashBridge.parentNode) {
-            flashBridge.parentNode.removeChild(flashBridge);
-          }
-          if (htmlBridge.parentNode) {
-            htmlBridge.parentNode.removeChild(htmlBridge);
-          }
-        }
-      }
-      _clearTimeoutsAndPolling();
-      _flashState.ready = null;
-      _flashState.bridge = null;
-      _flashState.deactivated = null;
-      _zcSwfVersion = undefined;
-    }
-  };
-  var _mapClipDataToFlash = function(clipData) {
-    var newClipData = {},
-        formatMap = {};
-    if (!(typeof clipData === "object" && clipData)) {
-      return;
-    }
-    for (var dataFormat in clipData) {
-      if (dataFormat && _hasOwn.call(clipData, dataFormat) && typeof clipData[dataFormat] === "string" && clipData[dataFormat]) {
-        switch (dataFormat.toLowerCase()) {
-          case "text/plain":
-          case "text":
-          case "air:text":
-          case "flash:text":
-            newClipData.text = clipData[dataFormat];
-            formatMap.text = dataFormat;
-            break;
-          case "text/html":
-          case "html":
-          case "air:html":
-          case "flash:html":
-            newClipData.html = clipData[dataFormat];
-            formatMap.html = dataFormat;
-            break;
-          case "application/rtf":
-          case "text/rtf":
-          case "rtf":
-          case "richtext":
-          case "air:rtf":
-          case "flash:rtf":
-            newClipData.rtf = clipData[dataFormat];
-            formatMap.rtf = dataFormat;
-            break;
-          default:
-            break;
-        }
-      }
-    }
-    return {
-      data: newClipData,
-      formatMap: formatMap
-    };
-  };
-  var _mapClipResultsFromFlash = function(clipResults, formatMap) {
-    if (!(typeof clipResults === "object" && clipResults && typeof formatMap === "object" && formatMap)) {
-      return clipResults;
-    }
-    var newResults = {};
-    for (var prop in clipResults) {
-      if (_hasOwn.call(clipResults, prop)) {
-        if (prop === "errors") {
-          newResults[prop] = clipResults[prop] ? clipResults[prop].slice() : [];
-          for (var i = 0,
-              len = newResults[prop].length; i < len; i++) {
-            newResults[prop][i].format = formatMap[newResults[prop][i].format];
-          }
-        } else if (prop !== "success" && prop !== "data") {
-          newResults[prop] = clipResults[prop];
-        } else {
-          newResults[prop] = {};
-          var tmpHash = clipResults[prop];
-          for (var dataFormat in tmpHash) {
-            if (dataFormat && _hasOwn.call(tmpHash, dataFormat) && _hasOwn.call(formatMap, dataFormat)) {
-              newResults[prop][formatMap[dataFormat]] = tmpHash[dataFormat];
-            }
-          }
-        }
-      }
-    }
-    return newResults;
-  };
-  var _cacheBust = function(path, options) {
-    var cacheBust = options == null || options && options.cacheBust === true;
-    if (cacheBust) {
-      return (path.indexOf("?") === -1 ? "?" : "&") + "noCache=" + _now();
-    } else {
-      return "";
-    }
-  };
-  var _vars = function(options) {
-    var i,
-        len,
-        domain,
-        domains,
-        str = "",
-        trustedOriginsExpanded = [];
-    if (options.trustedDomains) {
-      if (typeof options.trustedDomains === "string") {
-        domains = [options.trustedDomains];
-      } else if (typeof options.trustedDomains === "object" && "length" in options.trustedDomains) {
-        domains = options.trustedDomains;
-      }
-    }
-    if (domains && domains.length) {
-      for (i = 0, len = domains.length; i < len; i++) {
-        if (_hasOwn.call(domains, i) && domains[i] && typeof domains[i] === "string") {
-          domain = _extractDomain(domains[i]);
-          if (!domain) {
-            continue;
-          }
-          if (domain === "*") {
-            trustedOriginsExpanded.length = 0;
-            trustedOriginsExpanded.push(domain);
-            break;
-          }
-          trustedOriginsExpanded.push.apply(trustedOriginsExpanded, [domain, "//" + domain, _window.location.protocol + "//" + domain]);
-        }
-      }
-    }
-    if (trustedOriginsExpanded.length) {
-      str += "trustedOrigins=" + _encodeURIComponent(trustedOriginsExpanded.join(","));
-    }
-    if (options.forceEnhancedClipboard === true) {
-      str += (str ? "&" : "") + "forceEnhancedClipboard=true";
-    }
-    if (typeof options.swfObjectId === "string" && options.swfObjectId) {
-      str += (str ? "&" : "") + "swfObjectId=" + _encodeURIComponent(options.swfObjectId);
-    }
-    if (typeof options.jsVersion === "string" && options.jsVersion) {
-      str += (str ? "&" : "") + "jsVersion=" + _encodeURIComponent(options.jsVersion);
-    }
-    return str;
-  };
-  var _extractDomain = function(originOrUrl) {
-    if (originOrUrl == null || originOrUrl === "") {
-      return null;
-    }
-    originOrUrl = originOrUrl.replace(/^\s+|\s+$/g, "");
-    if (originOrUrl === "") {
-      return null;
-    }
-    var protocolIndex = originOrUrl.indexOf("//");
-    originOrUrl = protocolIndex === -1 ? originOrUrl : originOrUrl.slice(protocolIndex + 2);
-    var pathIndex = originOrUrl.indexOf("/");
-    originOrUrl = pathIndex === -1 ? originOrUrl : protocolIndex === -1 || pathIndex === 0 ? null : originOrUrl.slice(0, pathIndex);
-    if (originOrUrl && originOrUrl.slice(-4).toLowerCase() === ".swf") {
-      return null;
-    }
-    return originOrUrl || null;
-  };
-  var _determineScriptAccess = function() {
-    var _extractAllDomains = function(origins) {
-      var i,
-          len,
-          tmp,
-          resultsArray = [];
-      if (typeof origins === "string") {
-        origins = [origins];
-      }
-      if (!(typeof origins === "object" && origins && typeof origins.length === "number")) {
-        return resultsArray;
-      }
-      for (i = 0, len = origins.length; i < len; i++) {
-        if (_hasOwn.call(origins, i) && (tmp = _extractDomain(origins[i]))) {
-          if (tmp === "*") {
-            resultsArray.length = 0;
-            resultsArray.push("*");
-            break;
-          }
-          if (resultsArray.indexOf(tmp) === -1) {
-            resultsArray.push(tmp);
-          }
-        }
-      }
-      return resultsArray;
-    };
-    return function(currentDomain, configOptions) {
-      var swfDomain = _extractDomain(configOptions.swfPath);
-      if (swfDomain === null) {
-        swfDomain = currentDomain;
-      }
-      var trustedDomains = _extractAllDomains(configOptions.trustedDomains);
-      var len = trustedDomains.length;
-      if (len > 0) {
-        if (len === 1 && trustedDomains[0] === "*") {
-          return "always";
-        }
-        if (trustedDomains.indexOf(currentDomain) !== -1) {
-          if (len === 1 && currentDomain === swfDomain) {
-            return "sameDomain";
-          }
-          return "always";
-        }
-      }
-      return "never";
-    };
-  }();
-  var _safeActiveElement = function() {
-    try {
-      return _document.activeElement;
-    } catch (err) {
-      return null;
-    }
-  };
-  var _addClass = function(element, value) {
-    var c,
-        cl,
-        className,
-        classNames = [];
-    if (typeof value === "string" && value) {
-      classNames = value.split(/\s+/);
-    }
-    if (element && element.nodeType === 1 && classNames.length > 0) {
-      if (element.classList) {
-        for (c = 0, cl = classNames.length; c < cl; c++) {
-          element.classList.add(classNames[c]);
-        }
-      } else if (element.hasOwnProperty("className")) {
-        className = " " + element.className + " ";
-        for (c = 0, cl = classNames.length; c < cl; c++) {
-          if (className.indexOf(" " + classNames[c] + " ") === -1) {
-            className += classNames[c] + " ";
-          }
-        }
-        element.className = className.replace(/^\s+|\s+$/g, "");
-      }
-    }
-    return element;
-  };
-  var _removeClass = function(element, value) {
-    var c,
-        cl,
-        className,
-        classNames = [];
-    if (typeof value === "string" && value) {
-      classNames = value.split(/\s+/);
-    }
-    if (element && element.nodeType === 1 && classNames.length > 0) {
-      if (element.classList && element.classList.length > 0) {
-        for (c = 0, cl = classNames.length; c < cl; c++) {
-          element.classList.remove(classNames[c]);
-        }
-      } else if (element.className) {
-        className = (" " + element.className + " ").replace(/[\r\n\t]/g, " ");
-        for (c = 0, cl = classNames.length; c < cl; c++) {
-          className = className.replace(" " + classNames[c] + " ", " ");
-        }
-        element.className = className.replace(/^\s+|\s+$/g, "");
-      }
-    }
-    return element;
-  };
-  var _getStyle = function(el, prop) {
-    var value = _getComputedStyle(el, null).getPropertyValue(prop);
-    if (prop === "cursor") {
-      if (!value || value === "auto") {
-        if (el.nodeName === "A") {
-          return "pointer";
-        }
-      }
-    }
-    return value;
-  };
-  var _getElementPosition = function(el) {
-    var pos = {
-      left: 0,
-      top: 0,
-      width: 0,
-      height: 0
-    };
-    if (el.getBoundingClientRect) {
-      var elRect = el.getBoundingClientRect();
-      var pageXOffset = _window.pageXOffset;
-      var pageYOffset = _window.pageYOffset;
-      var leftBorderWidth = _document.documentElement.clientLeft || 0;
-      var topBorderWidth = _document.documentElement.clientTop || 0;
-      var leftBodyOffset = 0;
-      var topBodyOffset = 0;
-      if (_getStyle(_document.body, "position") === "relative") {
-        var bodyRect = _document.body.getBoundingClientRect();
-        var htmlRect = _document.documentElement.getBoundingClientRect();
-        leftBodyOffset = bodyRect.left - htmlRect.left || 0;
-        topBodyOffset = bodyRect.top - htmlRect.top || 0;
-      }
-      pos.left = elRect.left + pageXOffset - leftBorderWidth - leftBodyOffset;
-      pos.top = elRect.top + pageYOffset - topBorderWidth - topBodyOffset;
-      pos.width = "width" in elRect ? elRect.width : elRect.right - elRect.left;
-      pos.height = "height" in elRect ? elRect.height : elRect.bottom - elRect.top;
-    }
-    return pos;
-  };
-  var _isElementVisible = function(el) {
-    if (!el) {
-      return false;
-    }
-    var styles = _getComputedStyle(el, null);
-    var hasCssHeight = _parseFloat(styles.height) > 0;
-    var hasCssWidth = _parseFloat(styles.width) > 0;
-    var hasCssTop = _parseFloat(styles.top) >= 0;
-    var hasCssLeft = _parseFloat(styles.left) >= 0;
-    var cssKnows = hasCssHeight && hasCssWidth && hasCssTop && hasCssLeft;
-    var rect = cssKnows ? null : _getElementPosition(el);
-    var isVisible = styles.display !== "none" && styles.visibility !== "collapse" && (cssKnows || !!rect && (hasCssHeight || rect.height > 0) && (hasCssWidth || rect.width > 0) && (hasCssTop || rect.top >= 0) && (hasCssLeft || rect.left >= 0));
-    return isVisible;
-  };
-  var _clearTimeoutsAndPolling = function() {
-    _clearTimeout(_flashCheckTimeout);
-    _flashCheckTimeout = 0;
-    _clearInterval(_swfFallbackCheckInterval);
-    _swfFallbackCheckInterval = 0;
-  };
-  var _reposition = function() {
-    var htmlBridge;
-    if (_currentElement && (htmlBridge = _getHtmlBridge(_flashState.bridge))) {
-      var pos = _getElementPosition(_currentElement);
-      _extend(htmlBridge.style, {
-        width: pos.width + "px",
-        height: pos.height + "px",
-        top: pos.top + "px",
-        left: pos.left + "px",
-        zIndex: "" + _getSafeZIndex(_globalConfig.zIndex)
-      });
-    }
-  };
-  var _setHandCursor = function(enabled) {
-    if (_flashState.ready === true) {
-      if (_flashState.bridge && typeof _flashState.bridge.setHandCursor === "function") {
-        _flashState.bridge.setHandCursor(enabled);
-      } else {
-        _flashState.ready = false;
-      }
-    }
-  };
-  var _getSafeZIndex = function(val) {
-    if (/^(?:auto|inherit)$/.test(val)) {
-      return val;
-    }
-    var zIndex;
-    if (typeof val === "number" && !_isNaN(val)) {
-      zIndex = val;
-    } else if (typeof val === "string") {
-      zIndex = _getSafeZIndex(_parseInt(val, 10));
-    }
-    return typeof zIndex === "number" ? zIndex : "auto";
-  };
-  var _detectSandbox = function(doNotReassessFlashSupport) {
-    var effectiveScriptOrigin,
-        frame,
-        frameError,
-        previousState = _flashState.sandboxed,
-        isSandboxed = null;
-    doNotReassessFlashSupport = doNotReassessFlashSupport === true;
-    if (_pageIsFramed === false) {
-      isSandboxed = false;
-    } else {
-      try {
-        frame = window.frameElement || null;
-      } catch (e) {
-        frameError = {
-          name: e.name,
-          message: e.message
-        };
-      }
-      if (frame && frame.nodeType === 1 && frame.nodeName === "IFRAME") {
-        try {
-          isSandboxed = frame.hasAttribute("sandbox");
-        } catch (e) {
-          isSandboxed = null;
-        }
-      } else {
-        try {
-          effectiveScriptOrigin = document.domain || null;
-        } catch (e) {
-          effectiveScriptOrigin = null;
-        }
-        if (effectiveScriptOrigin === null || frameError && frameError.name === "SecurityError" && /(^|[\s\(\[@])sandbox(es|ed|ing|[\s\.,!\)\]@]|$)/.test(frameError.message.toLowerCase())) {
-          isSandboxed = true;
-        }
-      }
-    }
-    _flashState.sandboxed = isSandboxed;
-    if (previousState !== isSandboxed && !doNotReassessFlashSupport) {
-      _detectFlashSupport(_ActiveXObject);
-    }
-    return isSandboxed;
-  };
-  var _detectFlashSupport = function(ActiveXObject) {
-    var plugin,
-        ax,
-        mimeType,
-        hasFlash = false,
-        isActiveX = false,
-        isPPAPI = false,
-        flashVersion = "";
-    function parseFlashVersion(desc) {
-      var matches = desc.match(/[\d]+/g);
-      matches.length = 3;
-      return matches.join(".");
-    }
-    function isPepperFlash(flashPlayerFileName) {
-      return !!flashPlayerFileName && (flashPlayerFileName = flashPlayerFileName.toLowerCase()) && (/^(pepflashplayer\.dll|libpepflashplayer\.so|pepperflashplayer\.plugin)$/.test(flashPlayerFileName) || flashPlayerFileName.slice(-13) === "chrome.plugin");
-    }
-    function inspectPlugin(plugin) {
-      if (plugin) {
-        hasFlash = true;
-        if (plugin.version) {
-          flashVersion = parseFlashVersion(plugin.version);
-        }
-        if (!flashVersion && plugin.description) {
-          flashVersion = parseFlashVersion(plugin.description);
-        }
-        if (plugin.filename) {
-          isPPAPI = isPepperFlash(plugin.filename);
-        }
-      }
-    }
-    if (_navigator.plugins && _navigator.plugins.length) {
-      plugin = _navigator.plugins["Shockwave Flash"];
-      inspectPlugin(plugin);
-      if (_navigator.plugins["Shockwave Flash 2.0"]) {
-        hasFlash = true;
-        flashVersion = "2.0.0.11";
-      }
-    } else if (_navigator.mimeTypes && _navigator.mimeTypes.length) {
-      mimeType = _navigator.mimeTypes["application/x-shockwave-flash"];
-      plugin = mimeType && mimeType.enabledPlugin;
-      inspectPlugin(plugin);
-    } else if (typeof ActiveXObject !== "undefined") {
-      isActiveX = true;
-      try {
-        ax = new ActiveXObject("ShockwaveFlash.ShockwaveFlash.7");
-        hasFlash = true;
-        flashVersion = parseFlashVersion(ax.GetVariable("$version"));
-      } catch (e1) {
-        try {
-          ax = new ActiveXObject("ShockwaveFlash.ShockwaveFlash.6");
-          hasFlash = true;
-          flashVersion = "6.0.21";
-        } catch (e2) {
-          try {
-            ax = new ActiveXObject("ShockwaveFlash.ShockwaveFlash");
-            hasFlash = true;
-            flashVersion = parseFlashVersion(ax.GetVariable("$version"));
-          } catch (e3) {
-            isActiveX = false;
-          }
-        }
-      }
-    }
-    _flashState.disabled = hasFlash !== true;
-    _flashState.outdated = flashVersion && _parseFloat(flashVersion) < _parseFloat(_minimumFlashVersion);
-    _flashState.version = flashVersion || "0.0.0";
-    _flashState.pluginType = isPPAPI ? "pepper" : isActiveX ? "activex" : hasFlash ? "netscape" : "unknown";
-  };
-  _detectFlashSupport(_ActiveXObject);
-  _detectSandbox(true);
-  var ZeroClipboard = function() {
-    if (!(this instanceof ZeroClipboard)) {
-      return new ZeroClipboard();
-    }
-    if (typeof ZeroClipboard._createClient === "function") {
-      ZeroClipboard._createClient.apply(this, _args(arguments));
-    }
-  };
-  _defineProperty(ZeroClipboard, "version", {
-    value: "2.2.0",
-    writable: false,
-    configurable: true,
-    enumerable: true
-  });
-  ZeroClipboard.config = function() {
-    return _config.apply(this, _args(arguments));
-  };
-  ZeroClipboard.state = function() {
-    return _state.apply(this, _args(arguments));
-  };
-  ZeroClipboard.isFlashUnusable = function() {
-    return _isFlashUnusable.apply(this, _args(arguments));
-  };
-  ZeroClipboard.on = function() {
-    return _on.apply(this, _args(arguments));
-  };
-  ZeroClipboard.off = function() {
-    return _off.apply(this, _args(arguments));
-  };
-  ZeroClipboard.handlers = function() {
-    return _listeners.apply(this, _args(arguments));
-  };
-  ZeroClipboard.emit = function() {
-    return _emit.apply(this, _args(arguments));
-  };
-  ZeroClipboard.create = function() {
-    return _create.apply(this, _args(arguments));
-  };
-  ZeroClipboard.destroy = function() {
-    return _destroy.apply(this, _args(arguments));
-  };
-  ZeroClipboard.setData = function() {
-    return _setData.apply(this, _args(arguments));
-  };
-  ZeroClipboard.clearData = function() {
-    return _clearData.apply(this, _args(arguments));
-  };
-  ZeroClipboard.getData = function() {
-    return _getData.apply(this, _args(arguments));
-  };
-  ZeroClipboard.focus = ZeroClipboard.activate = function() {
-    return _focus.apply(this, _args(arguments));
-  };
-  ZeroClipboard.blur = ZeroClipboard.deactivate = function() {
-    return _blur.apply(this, _args(arguments));
-  };
-  ZeroClipboard.activeElement = function() {
-    return _activeElement.apply(this, _args(arguments));
-  };
-  var _clientIdCounter = 0;
-  var _clientMeta = {};
-  var _elementIdCounter = 0;
-  var _elementMeta = {};
-  var _mouseHandlers = {};
-  _extend(_globalConfig, {autoActivate: true});
-  var _clientConstructor = function(elements) {
-    var client = this;
-    client.id = "" + _clientIdCounter++;
-    _clientMeta[client.id] = {
-      instance: client,
-      elements: [],
-      handlers: {}
-    };
-    if (elements) {
-      client.clip(elements);
-    }
-    ZeroClipboard.on("*", function(event) {
-      return client.emit(event);
-    });
-    ZeroClipboard.on("destroy", function() {
-      client.destroy();
-    });
-    ZeroClipboard.create();
-  };
-  var _clientOn = function(eventType, listener) {
-    var i,
-        len,
-        events,
-        added = {},
-        meta = _clientMeta[this.id],
-        handlers = meta && meta.handlers;
-    if (!meta) {
-      throw new Error("Attempted to add new listener(s) to a destroyed ZeroClipboard client instance");
-    }
-    if (typeof eventType === "string" && eventType) {
-      events = eventType.toLowerCase().split(/\s+/);
-    } else if (typeof eventType === "object" && eventType && typeof listener === "undefined") {
-      for (i in eventType) {
-        if (_hasOwn.call(eventType, i) && typeof i === "string" && i && typeof eventType[i] === "function") {
-          this.on(i, eventType[i]);
-        }
-      }
-    }
-    if (events && events.length) {
-      for (i = 0, len = events.length; i < len; i++) {
-        eventType = events[i].replace(/^on/, "");
-        added[eventType] = true;
-        if (!handlers[eventType]) {
-          handlers[eventType] = [];
-        }
-        handlers[eventType].push(listener);
-      }
-      if (added.ready && _flashState.ready) {
-        this.emit({
-          type: "ready",
-          client: this
-        });
-      }
-      if (added.error) {
-        for (i = 0, len = _flashStateErrorNames.length; i < len; i++) {
-          if (_flashState[_flashStateErrorNames[i].replace(/^flash-/, "")]) {
-            this.emit({
-              type: "error",
-              name: _flashStateErrorNames[i],
-              client: this
-            });
-            break;
-          }
-        }
-        if (_zcSwfVersion !== undefined && ZeroClipboard.version !== _zcSwfVersion) {
-          this.emit({
-            type: "error",
-            name: "version-mismatch",
-            jsVersion: ZeroClipboard.version,
-            swfVersion: _zcSwfVersion
-          });
-        }
-      }
-    }
-    return this;
-  };
-  var _clientOff = function(eventType, listener) {
-    var i,
-        len,
-        foundIndex,
-        events,
-        perEventHandlers,
-        meta = _clientMeta[this.id],
-        handlers = meta && meta.handlers;
-    if (!handlers) {
-      return this;
-    }
-    if (arguments.length === 0) {
-      events = _keys(handlers);
-    } else if (typeof eventType === "string" && eventType) {
-      events = eventType.split(/\s+/);
-    } else if (typeof eventType === "object" && eventType && typeof listener === "undefined") {
-      for (i in eventType) {
-        if (_hasOwn.call(eventType, i) && typeof i === "string" && i && typeof eventType[i] === "function") {
-          this.off(i, eventType[i]);
-        }
-      }
-    }
-    if (events && events.length) {
-      for (i = 0, len = events.length; i < len; i++) {
-        eventType = events[i].toLowerCase().replace(/^on/, "");
-        perEventHandlers = handlers[eventType];
-        if (perEventHandlers && perEventHandlers.length) {
-          if (listener) {
-            foundIndex = perEventHandlers.indexOf(listener);
-            while (foundIndex !== -1) {
-              perEventHandlers.splice(foundIndex, 1);
-              foundIndex = perEventHandlers.indexOf(listener, foundIndex);
-            }
-          } else {
-            perEventHandlers.length = 0;
-          }
-        }
-      }
-    }
-    return this;
-  };
-  var _clientListeners = function(eventType) {
-    var copy = null,
-        handlers = _clientMeta[this.id] && _clientMeta[this.id].handlers;
-    if (handlers) {
-      if (typeof eventType === "string" && eventType) {
-        copy = handlers[eventType] ? handlers[eventType].slice(0) : [];
-      } else {
-        copy = _deepCopy(handlers);
-      }
-    }
-    return copy;
-  };
-  var _clientEmit = function(event) {
-    if (_clientShouldEmit.call(this, event)) {
-      if (typeof event === "object" && event && typeof event.type === "string" && event.type) {
-        event = _extend({}, event);
-      }
-      var eventCopy = _extend({}, _createEvent(event), {client: this});
-      _clientDispatchCallbacks.call(this, eventCopy);
-    }
-    return this;
-  };
-  var _clientClip = function(elements) {
-    if (!_clientMeta[this.id]) {
-      throw new Error("Attempted to clip element(s) to a destroyed ZeroClipboard client instance");
-    }
-    elements = _prepClip(elements);
-    for (var i = 0; i < elements.length; i++) {
-      if (_hasOwn.call(elements, i) && elements[i] && elements[i].nodeType === 1) {
-        if (!elements[i].zcClippingId) {
-          elements[i].zcClippingId = "zcClippingId_" + _elementIdCounter++;
-          _elementMeta[elements[i].zcClippingId] = [this.id];
-          if (_globalConfig.autoActivate === true) {
-            _addMouseHandlers(elements[i]);
-          }
-        } else if (_elementMeta[elements[i].zcClippingId].indexOf(this.id) === -1) {
-          _elementMeta[elements[i].zcClippingId].push(this.id);
-        }
-        var clippedElements = _clientMeta[this.id] && _clientMeta[this.id].elements;
-        if (clippedElements.indexOf(elements[i]) === -1) {
-          clippedElements.push(elements[i]);
-        }
-      }
-    }
-    return this;
-  };
-  var _clientUnclip = function(elements) {
-    var meta = _clientMeta[this.id];
-    if (!meta) {
-      return this;
-    }
-    var clippedElements = meta.elements;
-    var arrayIndex;
-    if (typeof elements === "undefined") {
-      elements = clippedElements.slice(0);
-    } else {
-      elements = _prepClip(elements);
-    }
-    for (var i = elements.length; i--; ) {
-      if (_hasOwn.call(elements, i) && elements[i] && elements[i].nodeType === 1) {
-        arrayIndex = 0;
-        while ((arrayIndex = clippedElements.indexOf(elements[i], arrayIndex)) !== -1) {
-          clippedElements.splice(arrayIndex, 1);
-        }
-        var clientIds = _elementMeta[elements[i].zcClippingId];
-        if (clientIds) {
-          arrayIndex = 0;
-          while ((arrayIndex = clientIds.indexOf(this.id, arrayIndex)) !== -1) {
-            clientIds.splice(arrayIndex, 1);
-          }
-          if (clientIds.length === 0) {
-            if (_globalConfig.autoActivate === true) {
-              _removeMouseHandlers(elements[i]);
-            }
-            delete elements[i].zcClippingId;
-          }
-        }
-      }
-    }
-    return this;
-  };
-  var _clientElements = function() {
-    var meta = _clientMeta[this.id];
-    return meta && meta.elements ? meta.elements.slice(0) : [];
-  };
-  var _clientDestroy = function() {
-    if (!_clientMeta[this.id]) {
-      return;
-    }
-    this.unclip();
-    this.off();
-    delete _clientMeta[this.id];
-  };
-  var _clientShouldEmit = function(event) {
-    if (!(event && event.type)) {
-      return false;
-    }
-    if (event.client && event.client !== this) {
-      return false;
-    }
-    var meta = _clientMeta[this.id];
-    var clippedEls = meta && meta.elements;
-    var hasClippedEls = !!clippedEls && clippedEls.length > 0;
-    var goodTarget = !event.target || hasClippedEls && clippedEls.indexOf(event.target) !== -1;
-    var goodRelTarget = event.relatedTarget && hasClippedEls && clippedEls.indexOf(event.relatedTarget) !== -1;
-    var goodClient = event.client && event.client === this;
-    if (!meta || !(goodTarget || goodRelTarget || goodClient)) {
-      return false;
-    }
-    return true;
-  };
-  var _clientDispatchCallbacks = function(event) {
-    var meta = _clientMeta[this.id];
-    if (!(typeof event === "object" && event && event.type && meta)) {
-      return;
-    }
-    var async = _shouldPerformAsync(event);
-    var wildcardTypeHandlers = meta && meta.handlers["*"] || [];
-    var specificTypeHandlers = meta && meta.handlers[event.type] || [];
-    var handlers = wildcardTypeHandlers.concat(specificTypeHandlers);
-    if (handlers && handlers.length) {
-      var i,
-          len,
-          func,
-          context,
-          eventCopy,
-          originalContext = this;
-      for (i = 0, len = handlers.length; i < len; i++) {
-        func = handlers[i];
-        context = originalContext;
-        if (typeof func === "string" && typeof _window[func] === "function") {
-          func = _window[func];
-        }
-        if (typeof func === "object" && func && typeof func.handleEvent === "function") {
-          context = func;
-          func = func.handleEvent;
-        }
-        if (typeof func === "function") {
-          eventCopy = _extend({}, event);
-          _dispatchCallback(func, context, [eventCopy], async);
-        }
-      }
-    }
-  };
-  var _prepClip = function(elements) {
-    if (typeof elements === "string") {
-      elements = [];
-    }
-    return typeof elements.length !== "number" ? [elements] : elements;
-  };
-  var _addMouseHandlers = function(element) {
-    if (!(element && element.nodeType === 1)) {
-      return;
-    }
-    var _suppressMouseEvents = function(event) {
-      if (!(event || (event = _window.event))) {
-        return;
-      }
-      if (event._source !== "js") {
-        event.stopImmediatePropagation();
-        event.preventDefault();
-      }
-      delete event._source;
-    };
-    var _elementMouseOver = function(event) {
-      if (!(event || (event = _window.event))) {
-        return;
-      }
-      _suppressMouseEvents(event);
-      ZeroClipboard.focus(element);
-    };
-    element.addEventListener("mouseover", _elementMouseOver, false);
-    element.addEventListener("mouseout", _suppressMouseEvents, false);
-    element.addEventListener("mouseenter", _suppressMouseEvents, false);
-    element.addEventListener("mouseleave", _suppressMouseEvents, false);
-    element.addEventListener("mousemove", _suppressMouseEvents, false);
-    _mouseHandlers[element.zcClippingId] = {
-      mouseover: _elementMouseOver,
-      mouseout: _suppressMouseEvents,
-      mouseenter: _suppressMouseEvents,
-      mouseleave: _suppressMouseEvents,
-      mousemove: _suppressMouseEvents
-    };
-  };
-  var _removeMouseHandlers = function(element) {
-    if (!(element && element.nodeType === 1)) {
-      return;
-    }
-    var mouseHandlers = _mouseHandlers[element.zcClippingId];
-    if (!(typeof mouseHandlers === "object" && mouseHandlers)) {
-      return;
-    }
-    var key,
-        val,
-        mouseEvents = ["move", "leave", "enter", "out", "over"];
-    for (var i = 0,
-        len = mouseEvents.length; i < len; i++) {
-      key = "mouse" + mouseEvents[i];
-      val = mouseHandlers[key];
-      if (typeof val === "function") {
-        element.removeEventListener(key, val, false);
-      }
-    }
-    delete _mouseHandlers[element.zcClippingId];
-  };
-  ZeroClipboard._createClient = function() {
-    _clientConstructor.apply(this, _args(arguments));
-  };
-  ZeroClipboard.prototype.on = function() {
-    return _clientOn.apply(this, _args(arguments));
-  };
-  ZeroClipboard.prototype.off = function() {
-    return _clientOff.apply(this, _args(arguments));
-  };
-  ZeroClipboard.prototype.handlers = function() {
-    return _clientListeners.apply(this, _args(arguments));
-  };
-  ZeroClipboard.prototype.emit = function() {
-    return _clientEmit.apply(this, _args(arguments));
-  };
-  ZeroClipboard.prototype.clip = function() {
-    return _clientClip.apply(this, _args(arguments));
-  };
-  ZeroClipboard.prototype.unclip = function() {
-    return _clientUnclip.apply(this, _args(arguments));
-  };
-  ZeroClipboard.prototype.elements = function() {
-    return _clientElements.apply(this, _args(arguments));
-  };
-  ZeroClipboard.prototype.destroy = function() {
-    return _clientDestroy.apply(this, _args(arguments));
-  };
-  ZeroClipboard.prototype.setText = function(text) {
-    if (!_clientMeta[this.id]) {
-      throw new Error("Attempted to set pending clipboard data from a destroyed ZeroClipboard client instance");
-    }
-    ZeroClipboard.setData("text/plain", text);
-    return this;
-  };
-  ZeroClipboard.prototype.setHtml = function(html) {
-    if (!_clientMeta[this.id]) {
-      throw new Error("Attempted to set pending clipboard data from a destroyed ZeroClipboard client instance");
-    }
-    ZeroClipboard.setData("text/html", html);
-    return this;
-  };
-  ZeroClipboard.prototype.setRichText = function(richText) {
-    if (!_clientMeta[this.id]) {
-      throw new Error("Attempted to set pending clipboard data from a destroyed ZeroClipboard client instance");
-    }
-    ZeroClipboard.setData("application/rtf", richText);
-    return this;
-  };
-  ZeroClipboard.prototype.setData = function() {
-    if (!_clientMeta[this.id]) {
-      throw new Error("Attempted to set pending clipboard data from a destroyed ZeroClipboard client instance");
-    }
-    ZeroClipboard.setData.apply(this, _args(arguments));
-    return this;
-  };
-  ZeroClipboard.prototype.clearData = function() {
-    if (!_clientMeta[this.id]) {
-      throw new Error("Attempted to clear pending clipboard data from a destroyed ZeroClipboard client instance");
-    }
-    ZeroClipboard.clearData.apply(this, _args(arguments));
-    return this;
-  };
-  ZeroClipboard.prototype.getData = function() {
-    if (!_clientMeta[this.id]) {
-      throw new Error("Attempted to get pending clipboard data from a destroyed ZeroClipboard client instance");
-    }
-    return ZeroClipboard.getData.apply(this, _args(arguments));
-  };
-  if (typeof define === "function" && define.amd) {
-    define(function() {
-      return ZeroClipboard;
-    });
-  } else if (typeof module === "object" && module && typeof module.exports === "object" && module.exports) {
-    module.exports = ZeroClipboard;
-  } else {
-    window.ZeroClipboard = ZeroClipboard;
-  }
-})(function() {
-  return this || window;
-}());
-
-//# 
 },{}]},{},[23,107,61,63,62,64,85,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,86,87,88,89,102,103,104,92,93,94,95,96,97,31,35,32,33,40,34,36,37,38,39,108,109,110,111,112,160,158,113,114,115,116,117,119,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,151,152,153,154,155,156,157,159,161,162])("zeroclipboard")
 });
