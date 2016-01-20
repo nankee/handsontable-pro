@@ -8,8 +8,8 @@ import {InputUI} from './../ui/input';
 import {SelectUI} from './../ui/select';
 
 /**
- * @plugin Filters
  * @class ConditionComponent
+ * @plugin Filters
  */
 class ConditionComponent extends BaseComponent {
   constructor(hotInstance) {
@@ -24,6 +24,8 @@ class ConditionComponent extends BaseComponent {
 
   /**
    * Register all necessary hooks.
+   *
+   * @private
    */
   registerHooks() {
     this.getSelectElement().addLocalHook('select', (command) => this.onConditionSelect(command));
@@ -93,6 +95,8 @@ class ConditionComponent extends BaseComponent {
   }
 
   /**
+   * Get menu object descriptor.
+   *
    * @returns {Object}
    */
   getMenuItemDescriptor() {

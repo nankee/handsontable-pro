@@ -35,7 +35,7 @@ class Filters extends BasePlugin {
      */
     this.trimRowsPlugin = null;
     /**
-     * Instance of {@link DropdowmMenu}.
+     * Instance of {@link DropdownMenu}.
      *
      * @type {DropdownMenu}
      */
