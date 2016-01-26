@@ -314,9 +314,11 @@ class HiddenRows extends BasePlugin {
    * @param {Object} coords Object with `row` and `col` properties.
    */
   onBeforeSetRangeEnd(coords) {
+    let rowCount = this.hot.countRows();
+
     let getNextRow = (row) => {
       if (this.isHidden(row)) {
-        if (this.lastSelectedRow > row) {
+        if (this.lastSelectedRow > row || coords.row === rowCount - 1) {
           row = getNextRow(--row);
         } else {
           row = getNextRow(++row);
