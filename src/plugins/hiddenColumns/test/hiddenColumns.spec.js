@@ -185,6 +185,27 @@ describe('HiddenColumns', function() {
     expect(Handsontable.Dom.hasClass(tHeadTRs[3], 'beforeHiddenColumn')).toBe(true);
   });
 
+  it('should not throw any errors, when selecting a whole row with the last column hidden', function() {
+    var hot = handsontable({
+      data: Handsontable.helper.createSpreadsheetData(4, 4),
+      hiddenColumns: {
+        columns: [3]
+      },
+      rowHeaders: true
+    });
+
+    var errorThrown = false;
+
+    try {
+      hot.selectCell(2, 0, 2, 3);
+
+    } catch (err) {
+      errorThrown = true;
+    }
+
+    expect(errorThrown).toBe(false);
+  });
+
   describe('copy-paste functionality', function() {
 
     it('should allow to copy hidden columns, when "copyPasteEnabled" property is not set', function() {
