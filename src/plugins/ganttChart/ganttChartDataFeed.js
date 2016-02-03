@@ -13,6 +13,7 @@ class GanttChartDataFeed {
     this.chartInstance = chartInstance;
     this.chartPlugin = this.chartInstance.getPlugin('ganttChart');
     this.hotSource = null;
+    this.sourceHooks = {};
 
     this.applyData(data, startDateColumn, endDateColumn, additionalData);
   }
@@ -72,9 +73,15 @@ class GanttChartDataFeed {
    * @private
    */
   addSourceHotHooks() {
-    this.hotSource.instance.addHook('afterLoadData', (firstRun) => this.onAfterSourceLoadData(firstRun));
-    this.hotSource.instance.addHook('afterChange', (changes, source) => this.onAfterSourceChange(changes, source));
-    this.hotSource.instance.addHook('afterColumnSort', (column, order) => this.onAfterColumnSort(column, order));
+    this.sourceHooks = {
+      afterLoadData: (firstRun) => this.onAfterSourceLoadData(firstRun),
+      afterChange: (changes, source) => this.onAfterSourceChange(changes, source),
+      afterColumnSort: (column, order) => this.onAfterColumnSort(column, order)
+    };
+
+    this.hotSource.instance.addHook('afterLoadData', this.sourceHooks.afterLoadData);
+    this.hotSource.instance.addHook('afterChange', this.sourceHooks.afterChange);
+    this.hotSource.instance.addHook('afterColumnSort', this.sourceHooks.afterColumnSort);
   }
 
   /**
@@ -84,8 +91,17 @@ class GanttChartDataFeed {
    * @param {Object} hotSource The source Handsontable instance object.
    */
   removeSourceHotHooks(hotSource) {
-    hotSource.instance.removeHook('afterChange', (changes, source) => this.onAfterSourceChange(changes, source));
-    hotSource.instance.removeHook('afterColumnSort', (column, order) => this.onAfterColumnSort(column, order));
+    if (this.sourceHooks.afterLoadData) {
+      hotSource.instance.removeHook('afterLoadData', this.sourceHooks.afterLoadData);
+    }
+
+    if (this.sourceHooks.afterChange) {
+      hotSource.instance.removeHook('afterChange', this.sourceHooks.afterChange);
+    }
+
+    if (this.sourceHooks.afterColumnSort) {
+      hotSource.instance.removeHook('afterColumnSort', this.sourceHooks.afterColumnSort);
+    }
   }
 
   /**
