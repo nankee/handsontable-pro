@@ -313,9 +313,11 @@ class HiddenColumns extends BasePlugin {
       return;
     }
 
+    let columnCount = this.hot.countCols();
+
     let getNextColumn = (col) => {
       if (this.isHidden(col)) {
-        if (this.lastSelectedColumn > col) {
+        if (this.lastSelectedColumn > col || coords.col === columnCount - 1) {
           col = getNextColumn(--col);
         } else {
           col = getNextColumn(++col);

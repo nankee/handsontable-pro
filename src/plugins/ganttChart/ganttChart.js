@@ -210,7 +210,8 @@ class GanttChart extends BasePlugin {
     if (this.internalUpdateSettings) {
       return;
     }
-    if (this.hotSource) {
+
+    if (this.dataFeed && this.dataFeed.hotSource) {
       this.dataFeed.removeSourceHotHooks(this.dataFeed.hotSource);
     }
 

@@ -212,6 +212,27 @@ describe('HiddenRows', function() {
     expect(Handsontable.dom.hasClass(trs[5].firstChild, 'afterHiddenRow')).toBe(true);
   });
 
+  it('should not throw any errors, when selecting a whole column with the last row hidden', function() {
+    var hot = handsontable({
+      data: Handsontable.helper.createSpreadsheetData(4, 4),
+      hiddenRows: {
+        rows: [3]
+      },
+      colHeaders: true
+    });
+
+    var errorThrown = false;
+
+    try {
+      hot.selectCell(0, 2, 3, 2);
+
+    } catch (err) {
+      errorThrown = true;
+    }
+
+    expect(errorThrown).toBe(false);
+  });
+
   describe('copy-paste functionality', function() {
 
     it('should allow to copy hidden rows, when "copyPasteEnabled" property is not set', function() {
