@@ -7,7 +7,7 @@ const privatePool = new WeakMap();
 
 /**
  * @class SelectUI
- * @private
+ * @util
  */
 class SelectUI extends BaseUI {
   static get DEFAULTS() {
