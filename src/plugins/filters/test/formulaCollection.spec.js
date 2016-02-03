@@ -150,7 +150,8 @@ describe('FormulaCollection', function() {
       formulaCollection.addFormula(3, formulaMock);
 
       expect(formulaCollection.formulas['3'].length).toBe(1);
-      expect(formulaCollection.formulas['3'][0].name).toEqual('eq');
+      expect(formulaCollection.formulas['3'][0].name).toBe('eq');
+      expect(formulaCollection.formulas['3'][0].args).toEqual([1]);
       expect(formulaCollection.formulas['3'][0].func).toBeFunction();
     });
 
@@ -164,8 +165,46 @@ describe('FormulaCollection', function() {
       formulaCollection.addFormula(3, formulaMock2);
 
       expect(formulaCollection.formulas['3'].length).toBe(1);
-      expect(formulaCollection.formulas['3'][0].name).toEqual('eq');
+      expect(formulaCollection.formulas['3'][0].name).toBe('eq');
+      expect(formulaCollection.formulas['3'][0].args).toEqual([1]);
       expect(formulaCollection.formulas['3'][0].func).not.toBe(previousFunction);
+    });
+  });
+
+  describe('exportAllFormulas', function() {
+    it('should return an empty array when no formulas was added', function() {
+      var formulaCollection = getFormulaCollection();
+
+      formulaCollection.orderStack = [];
+
+      var formulas = formulaCollection.exportAllFormulas();
+
+      expect(formulas.length).toBe(0);
+    });
+
+    it('should return formulas as an array of objects for all column in the same order as it was added', function() {
+      var formulaCollection = getFormulaCollection();
+      var formulaMock = {name: 'begins_with', args: ['c']};
+      var formulaMock1 = {name: 'date_tomorrow', args: []};
+      var formulaMock2 = {name: 'eq', args: ['z']};
+
+      formulaCollection.orderStack = [6, 1, 3];
+      formulaCollection.formulas['3'] = [formulaMock];
+      formulaCollection.formulas['6'] = [formulaMock1];
+      formulaCollection.formulas['1'] = [formulaMock2];
+
+      var formulas = formulaCollection.exportAllFormulas();
+
+      expect(formulas.length).toBe(3);
+      expect(formulas[0].column).toBe(6);
+      expect(formulas[0].formulas[0].name).toBe('date_tomorrow');
+      expect(formulas[0].formulas[0].args).toEqual([]);
+      expect(formulas[1].column).toBe(1);
+      expect(formulas[1].formulas[0].name).toBe('eq');
+      expect(formulas[1].formulas[0].args).toEqual(['z']);
+      expect(formulas[2].column).toBe(3);
+      expect(formulas[2].formulas[0].name).toBe('begins_with');
+      expect(formulas[2].formulas[0].args).toEqual(['c']);
     });
   });
 
