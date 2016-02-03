@@ -96,6 +96,8 @@ YOU SHALL OBTAIN A COMMERCIAL LICENSE FOR THIS SOFTWARE AT HANDSONTABLE.COM.
 
 .handsontable th,
 .handsontable td {
+  border-top-width: 0;
+  border-left-width: 0;
   border-right: 1px solid #CCC;
   border-bottom: 1px solid #CCC;
   height: 22px;
