@@ -10,7 +10,7 @@ const privatePool = new WeakMap();
 
 /**
  * @class MultipleSelectUI
- * @private
+ * @util
  */
 class MultipleSelectUI extends BaseUI {
   static get DEFAULTS() {
