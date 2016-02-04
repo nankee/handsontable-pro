@@ -223,24 +223,28 @@ class Filters extends BasePlugin {
     let needToFilter = this.formulaCollection.isEmpty() ? false : true;
     let filteredRows = [];
 
-    if (needToFilter) {
-      let trimmedRows = [];
+    let allowFiltering = this.hot.runHooks('beforeFilter', this.formulaCollection.exportAllFormulas());
 
-      this.trimRowsPlugin.trimmedRows.length = 0;
-      filteredRows = arrayMap(dataFilter.filter(), (rowData) => rowData.meta.visualRow);
+    if (allowFiltering !== false) {
+      if (needToFilter) {
+        let trimmedRows = [];
 
-      rangeEach(this.hot.countSourceRows() - 1, (row) => {
-        if (filteredRows.indexOf(row) === -1) {
-          trimmedRows.push(row);
+        this.trimRowsPlugin.trimmedRows.length = 0;
+        filteredRows = arrayMap(dataFilter.filter(), (rowData) => rowData.meta.visualRow);
+
+        rangeEach(this.hot.countSourceRows() - 1, (row) => {
+          if (filteredRows.indexOf(row) === -1) {
+            trimmedRows.push(row);
+          }
+        });
+        this.trimRowsPlugin.trimRows(trimmedRows);
+
+        if (!filteredRows.length) {
+          this.hot.deselectCell();
         }
-      });
-      this.trimRowsPlugin.trimRows(trimmedRows);
-
-      if (!filteredRows.length) {
-        this.hot.deselectCell();
+      } else {
+        this.trimRowsPlugin.untrimAll();
       }
-    } else {
-      this.trimRowsPlugin.untrimAll();
     }
 
     this.hot.view.wt.wtOverlays.adjustElementsSize(true);

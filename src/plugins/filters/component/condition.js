@@ -60,9 +60,18 @@ class ConditionComponent extends BaseComponent {
    * @returns {Object} Returns object where `command` key keeps used formula filter and `args` key its arguments.
    */
   getState() {
+    const command = this.getSelectElement().getValue() || FORMULA_NONE;
+    let args = [];
+
+    arrayEach(this.getInputElements(), (element, index) => {
+      if (command.inputsCount > index) {
+        args.push(element.getValue());
+      }
+    });
+
     return {
-      command: this.getSelectElement().getValue() || FORMULA_NONE,
-      args: arrayMap(this.getInputElements(), (element) => element.getValue()),
+      command,
+      args,
     };
   }
 
