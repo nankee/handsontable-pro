@@ -61,6 +61,7 @@ class SelectUI extends BaseUI {
     this.menu = new Menu(this.hot, {
       className: 'htSelectUI htFiltersConditionsMenu',
       keepInViewport: false,
+      standalone: true,
     });
     this.menu.setMenuItems(this.items);
 
