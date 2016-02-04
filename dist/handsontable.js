@@ -4112,9 +4112,9 @@ var domHelpers = ($__helpers_47_dom_47_element__ = require("helpers/dom/element"
 var domEventHelpers = ($__helpers_47_dom_47_event__ = require("helpers/dom/event"), $__helpers_47_dom_47_event__ && $__helpers_47_dom_47_event__.__esModule && $__helpers_47_dom_47_event__ || {default: $__helpers_47_dom_47_event__});
 var HELPERS = [arrayHelpers, browserHelpers, dataHelpers, functionHelpers, mixedHelpers, numberHelpers, objectHelpers, settingHelpers, stringHelpers, unicodeHelpers];
 var DOM = [domHelpers, domEventHelpers];
-Handsontable.buildDate = 'Wed Feb 03 2016 13:54:42 GMT+0100 (CET)';
+Handsontable.buildDate = 'Thu Feb 04 2016 13:30:08 GMT+0100 (CET)';
 Handsontable.packageName = 'handsontable-pro';
-Handsontable.version = '1.1.0';
+Handsontable.version = '1.1.1';
 var baseVersion = '0.22.0';
 if (!/^@@/.test(baseVersion)) {
   Handsontable.baseVersion = baseVersion;
@@ -21697,11 +21697,16 @@ var $ConditionComponent = ConditionComponent;
     }
   },
   getState: function() {
+    var command = this.getSelectElement().getValue() || FORMULA_NONE;
+    var args = [];
+    arrayEach(this.getInputElements(), (function(element, index) {
+      if (command.inputsCount > index) {
+        args.push(element.getValue());
+      }
+    }));
     return {
-      command: this.getSelectElement().getValue() || FORMULA_NONE,
-      args: arrayMap(this.getInputElements(), (function(element) {
-        return element.getValue();
-      }))
+      command: command,
+      args: args
     };
   },
   getSelectElement: function() {
@@ -22434,23 +22439,26 @@ var $Filters = Filters;
     }));
     var needToFilter = this.formulaCollection.isEmpty() ? false : true;
     var filteredRows = [];
-    if (needToFilter) {
-      var trimmedRows = [];
-      this.trimRowsPlugin.trimmedRows.length = 0;
-      filteredRows = arrayMap(dataFilter.filter(), (function(rowData) {
-        return rowData.meta.visualRow;
-      }));
-      rangeEach(this.hot.countSourceRows() - 1, (function(row) {
-        if (filteredRows.indexOf(row) === -1) {
-          trimmedRows.push(row);
+    var allowFiltering = this.hot.runHooks('beforeFilter', this.formulaCollection.exportAllFormulas());
+    if (allowFiltering !== false) {
+      if (needToFilter) {
+        var trimmedRows = [];
+        this.trimRowsPlugin.trimmedRows.length = 0;
+        filteredRows = arrayMap(dataFilter.filter(), (function(rowData) {
+          return rowData.meta.visualRow;
+        }));
+        rangeEach(this.hot.countSourceRows() - 1, (function(row) {
+          if (filteredRows.indexOf(row) === -1) {
+            trimmedRows.push(row);
+          }
+        }));
+        this.trimRowsPlugin.trimRows(trimmedRows);
+        if (!filteredRows.length) {
+          this.hot.deselectCell();
         }
-      }));
-      this.trimRowsPlugin.trimRows(trimmedRows);
-      if (!filteredRows.length) {
-        this.hot.deselectCell();
+      } else {
+        this.trimRowsPlugin.untrimAll();
       }
-    } else {
-      this.trimRowsPlugin.untrimAll();
     }
     this.hot.view.wt.wtOverlays.adjustElementsSize(true);
     this.hot.render();
@@ -23077,6 +23085,7 @@ var FormulaCollection = function FormulaCollection() {
     } else {
       this.getFormulas(column).push({
         name: name,
+        args: args,
         func: getFormula(name, args)
       });
     }
@@ -23086,6 +23095,26 @@ var FormulaCollection = function FormulaCollection() {
       this.formulas[column] = [];
     }
     return this.formulas[column];
+  },
+  exportAllFormulas: function() {
+    var $__3 = this;
+    var result = [];
+    arrayEach(this.orderStack, (function(column) {
+      var formulas = arrayMap($__3.getFormulas(column), (function() {
+        var $__5 = arguments[0] !== (void 0) ? arguments[0] : formula,
+            name = $__5.name,
+            args = $__5.args;
+        return {
+          name: name,
+          args: args
+        };
+      }));
+      result.push({
+        column: column,
+        formulas: formulas
+      });
+    }));
+    return result;
   },
   removeFormulas: function(column) {
     if (this.orderStack.indexOf(column) >= 0) {
@@ -23820,6 +23849,7 @@ var GanttChart = function GanttChart(hotInstance) {
   this.initialSettings = null;
   this.dataFeed = null;
   this.colorData = {};
+  this.rangeBarMeta = Object.create(null);
 };
 var $GanttChart = GanttChart;
 ($traceurRuntime.createClass)(GanttChart, {
@@ -23871,6 +23901,7 @@ var $GanttChart = GanttChart;
     this.monthList = [];
     this.rangeBars = {};
     this.rangeList = {};
+    this.rangeBarMeta = {};
     this.hotSource = null;
     this.deassignGanttSettings();
     this.hot.getPlugin('collapsibleColumns').disablePlugin();
@@ -23997,6 +24028,25 @@ var $GanttChart = GanttChart;
     }
     this.internalUpdateSettings = void 0;
   },
+  cacheRangeBarMeta: function(row, col, key, value) {
+    if (!this.rangeBarMeta[row]) {
+      this.rangeBarMeta[row] = {};
+    }
+    if (!this.rangeBarMeta[row][col]) {
+      this.rangeBarMeta[row][col] = {};
+    }
+    this.rangeBarMeta[row][col][key] = value;
+  },
+  applyRangeBarMetaCache: function() {
+    var $__9 = this;
+    objectEach(this.rangeBarMeta, (function(rowArr, row) {
+      objectEach(rowArr, (function(cell, col) {
+        objectEach(cell, (function(value, key) {
+          $__9.hot.setCellMeta(row, col, key, value);
+        }));
+      }));
+    }));
+  },
   addRangeBar: function(row, startDate, endDate, additionalData) {
     var $__9 = this;
     var startDateColumn = this.dateCalculator.dateToColumn(startDate);
@@ -24062,6 +24112,9 @@ var $GanttChart = GanttChart;
       this.hot.setCellMeta(row, i, 'originalClassName', cellMeta.className);
       this.hot.setCellMeta(row, i, 'className', newClassName);
       this.hot.setCellMeta(row, i, 'additionalData', currentBar.additionalData);
+      this.cacheRangeBarMeta(row, i, 'originalClassName', cellMeta.className);
+      this.cacheRangeBarMeta(row, i, 'className', newClassName);
+      this.cacheRangeBarMeta(row, i, 'additionalData', currentBar.additionalData);
     }
     this.hot.render();
   },
@@ -24097,6 +24150,8 @@ var $GanttChart = GanttChart;
       var cellMeta = this.hot.getCellMeta(row, i);
       this.hot.setCellMeta(row, i, 'className', cellMeta.originalClassName);
       this.hot.setCellMeta(row, i, 'originalClassName', void 0);
+      this.cacheRangeBarMeta(row, i, 'className', cellMeta.originalClassName);
+      this.cacheRangeBarMeta(row, i, 'originalClassName', void 0);
     }
     this.hot.render();
   },
@@ -24143,6 +24198,7 @@ var $GanttChart = GanttChart;
   },
   onUpdateSettings: function() {
     if (this.internalUpdateSettings) {
+      this.applyRangeBarMetaCache();
       return;
     }
     $traceurRuntime.superGet(this, $GanttChart.prototype, "onUpdateSettings").call(this);
