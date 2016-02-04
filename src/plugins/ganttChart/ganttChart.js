@@ -145,6 +145,12 @@ class GanttChart extends BasePlugin {
      * @type {Object}
      */
     this.colorData = {};
+    /**
+     * Metadata of the range bars, used to re-apply meta after updating HOT settings.
+     *
+     * @type {Object}
+     */
+    this.rangeBarMeta = Object.create(null);
   }
 
   /**
@@ -221,6 +227,7 @@ class GanttChart extends BasePlugin {
     this.monthList = [];
     this.rangeBars = {};
     this.rangeList = {};
+    this.rangeBarMeta = {};
     this.hotSource = null;
 
     this.deassignGanttSettings();
@@ -455,6 +462,39 @@ class GanttChart extends BasePlugin {
   }
 
   /**
+   * Add rangebar meta data to the cache.
+   *
+   * @param {Number} row
+   * @param {Number} col
+   * @param {String} key
+   * @param {String|Number|Object|Array} value
+   */
+  cacheRangeBarMeta(row, col, key, value) {
+    if (!this.rangeBarMeta[row]) {
+      this.rangeBarMeta[row] = {};
+    }
+
+    if (!this.rangeBarMeta[row][col]) {
+      this.rangeBarMeta[row][col] = {};
+    }
+
+    this.rangeBarMeta[row][col][key] = value;
+  }
+
+  /**
+   * Apply the cached cell meta.
+   */
+  applyRangeBarMetaCache() {
+    objectEach(this.rangeBarMeta, (rowArr, row) => {
+      objectEach(rowArr, (cell, col) => {
+        objectEach(cell, (value, key) => {
+          this.hot.setCellMeta(row, col, key, value);
+        });
+      });
+    });
+  }
+
+  /**
    * Create a new range bar.
    *
    * @param {Number} row Row index.
@@ -571,6 +611,10 @@ class GanttChart extends BasePlugin {
       this.hot.setCellMeta(row, i, 'className', newClassName);
       this.hot.setCellMeta(row, i, 'additionalData', currentBar.additionalData);
 
+      // cache cell meta, used for updateSettings, related with a cell meta bug
+      this.cacheRangeBarMeta(row, i, 'originalClassName', cellMeta.className);
+      this.cacheRangeBarMeta(row, i, 'className', newClassName);
+      this.cacheRangeBarMeta(row, i, 'additionalData', currentBar.additionalData);
     }
 
     this.hot.render();
@@ -637,6 +681,9 @@ class GanttChart extends BasePlugin {
 
       this.hot.setCellMeta(row, i, 'className', cellMeta.originalClassName);
       this.hot.setCellMeta(row, i, 'originalClassName', void 0);
+
+      this.cacheRangeBarMeta(row, i, 'className', cellMeta.originalClassName);
+      this.cacheRangeBarMeta(row, i, 'originalClassName', void 0);
     }
 
     this.hot.render();
@@ -744,6 +791,8 @@ class GanttChart extends BasePlugin {
    */
   onUpdateSettings() {
     if (this.internalUpdateSettings) {
+      this.applyRangeBarMetaCache();
+
       return;
     }
 
