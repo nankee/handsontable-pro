@@ -37,7 +37,8 @@ import BasePlugin from 'handsontable/plugins/_base.js';
  *   additionalData: { // information about additional data passed to the chart, in this example example:
  *     label: 0, // labels are stored in the first column
  *     quantity: 1 // quantity information is stored in the second column
- *   }
+ *   },
+ *   asyncUpdates: true // if set to true, the updates from the source instance with be asynchronous. Defaults to false.
  * }
  *
  * // Data object
@@ -275,7 +276,7 @@ class GanttChart extends BasePlugin {
       let source = this.settings.dataSource;
 
       if (source.instance) {
-        this.loadData(source.instance, source.startDateColumn, source.endDateColumn, source.additionalData);
+        this.loadData(source.instance, source.startDateColumn, source.endDateColumn, source.additionalData, source.asyncUpdates);
       } else {
         this.loadData(source);
       }
@@ -292,8 +293,8 @@ class GanttChart extends BasePlugin {
    * @param {Object} [additionalData] Object containing additional data labels and their corresponding column indexes (Needed only if the data argument is a HOT instance).
    *
    */
-  loadData(data, startDateColumn, endDateColumn, additionalData) {
-    this.dataFeed = new GanttChartDataFeed(this.hot, data, startDateColumn, endDateColumn, additionalData);
+  loadData(data, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
+    this.dataFeed = new GanttChartDataFeed(this.hot, data, startDateColumn, endDateColumn, additionalData, asyncUpdates);
   }
 
   /**
