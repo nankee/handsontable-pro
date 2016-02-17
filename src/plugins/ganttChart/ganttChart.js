@@ -511,7 +511,7 @@ class GanttChart extends BasePlugin {
 
     if (!this.dateCalculator.isValidRangeBarData(startDate, endDate) || startDateColumn === false || endDateColumn === false) {
       if (row > rowCount - 1) {
-        this.hot.alter('insert_row', rowCount - 1, row - rowCount + 1);
+        this.hot.alter('insert_row', rowCount, row - rowCount + 1);
       }
 
       return false;
@@ -597,7 +597,7 @@ class GanttChart extends BasePlugin {
     let rowCount = this.hot.countRows();
 
     if (row > rowCount - 1) {
-      this.hot.alter('insert_row', rowCount - 1, row - rowCount + 1);
+      this.hot.alter('insert_row', rowCount, row - rowCount + 1);
     }
 
     for (let i = startDateColumn; i <= endDateColumn; i++) {
