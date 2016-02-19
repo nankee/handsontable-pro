@@ -37,7 +37,8 @@ import BasePlugin from 'handsontable/plugins/_base.js';
  *   additionalData: { // information about additional data passed to the chart, in this example example:
  *     label: 0, // labels are stored in the first column
  *     quantity: 1 // quantity information is stored in the second column
- *   }
+ *   },
+ *   asyncUpdates: true // if set to true, the updates from the source instance with be asynchronous. Defaults to false.
  * }
  *
  * // Data object
@@ -145,6 +146,12 @@ class GanttChart extends BasePlugin {
      * @type {Object}
      */
     this.colorData = {};
+    /**
+     * Metadata of the range bars, used to re-apply meta after updating HOT settings.
+     *
+     * @type {Object}
+     */
+    this.rangeBarMeta = Object.create(null);
   }
 
   /**
@@ -221,6 +228,7 @@ class GanttChart extends BasePlugin {
     this.monthList = [];
     this.rangeBars = {};
     this.rangeList = {};
+    this.rangeBarMeta = {};
     this.hotSource = null;
 
     this.deassignGanttSettings();
@@ -268,7 +276,7 @@ class GanttChart extends BasePlugin {
       let source = this.settings.dataSource;
 
       if (source.instance) {
-        this.loadData(source.instance, source.startDateColumn, source.endDateColumn, source.additionalData);
+        this.loadData(source.instance, source.startDateColumn, source.endDateColumn, source.additionalData, source.asyncUpdates);
       } else {
         this.loadData(source);
       }
@@ -285,8 +293,8 @@ class GanttChart extends BasePlugin {
    * @param {Object} [additionalData] Object containing additional data labels and their corresponding column indexes (Needed only if the data argument is a HOT instance).
    *
    */
-  loadData(data, startDateColumn, endDateColumn, additionalData) {
-    this.dataFeed = new GanttChartDataFeed(this.hot, data, startDateColumn, endDateColumn, additionalData);
+  loadData(data, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
+    this.dataFeed = new GanttChartDataFeed(this.hot, data, startDateColumn, endDateColumn, additionalData, asyncUpdates);
   }
 
   /**
@@ -455,6 +463,39 @@ class GanttChart extends BasePlugin {
   }
 
   /**
+   * Add rangebar meta data to the cache.
+   *
+   * @param {Number} row
+   * @param {Number} col
+   * @param {String} key
+   * @param {String|Number|Object|Array} value
+   */
+  cacheRangeBarMeta(row, col, key, value) {
+    if (!this.rangeBarMeta[row]) {
+      this.rangeBarMeta[row] = {};
+    }
+
+    if (!this.rangeBarMeta[row][col]) {
+      this.rangeBarMeta[row][col] = {};
+    }
+
+    this.rangeBarMeta[row][col][key] = value;
+  }
+
+  /**
+   * Apply the cached cell meta.
+   */
+  applyRangeBarMetaCache() {
+    objectEach(this.rangeBarMeta, (rowArr, row) => {
+      objectEach(rowArr, (cell, col) => {
+        objectEach(cell, (value, key) => {
+          this.hot.setCellMeta(row, col, key, value);
+        });
+      });
+    });
+  }
+
+  /**
    * Create a new range bar.
    *
    * @param {Number} row Row index.
@@ -470,7 +511,7 @@ class GanttChart extends BasePlugin {
 
     if (!this.dateCalculator.isValidRangeBarData(startDate, endDate) || startDateColumn === false || endDateColumn === false) {
       if (row > rowCount - 1) {
-        this.hot.alter('insert_row', rowCount - 1, row - rowCount + 1);
+        this.hot.alter('insert_row', rowCount, row - rowCount + 1);
       }
 
       return false;
@@ -556,7 +597,7 @@ class GanttChart extends BasePlugin {
     let rowCount = this.hot.countRows();
 
     if (row > rowCount - 1) {
-      this.hot.alter('insert_row', rowCount - 1, row - rowCount + 1);
+      this.hot.alter('insert_row', rowCount, row - rowCount + 1);
     }
 
     for (let i = startDateColumn; i <= endDateColumn; i++) {
@@ -571,6 +612,10 @@ class GanttChart extends BasePlugin {
       this.hot.setCellMeta(row, i, 'className', newClassName);
       this.hot.setCellMeta(row, i, 'additionalData', currentBar.additionalData);
 
+      // cache cell meta, used for updateSettings, related with a cell meta bug
+      this.cacheRangeBarMeta(row, i, 'originalClassName', cellMeta.className);
+      this.cacheRangeBarMeta(row, i, 'className', newClassName);
+      this.cacheRangeBarMeta(row, i, 'additionalData', currentBar.additionalData);
     }
 
     this.hot.render();
@@ -637,6 +682,9 @@ class GanttChart extends BasePlugin {
 
       this.hot.setCellMeta(row, i, 'className', cellMeta.originalClassName);
       this.hot.setCellMeta(row, i, 'originalClassName', void 0);
+
+      this.cacheRangeBarMeta(row, i, 'className', cellMeta.originalClassName);
+      this.cacheRangeBarMeta(row, i, 'originalClassName', void 0);
     }
 
     this.hot.render();
@@ -744,6 +792,8 @@ class GanttChart extends BasePlugin {
    */
   onUpdateSettings() {
     if (this.internalUpdateSettings) {
+      this.applyRangeBarMetaCache();
+
       return;
     }
 

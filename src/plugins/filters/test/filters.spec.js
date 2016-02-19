@@ -280,4 +280,69 @@ describe('Filters', function() {
       expect(getData()[0][6]).toBe(true);
     });
   });
+
+  describe('Hooks', function() {
+    describe('`beforeFilter` hook', function() {
+      it('should trigger `beforeFilter` hook after filtering values', function() {
+        var hot = handsontable({
+          data: getDataForFilters(),
+          columns: getColumnsForFilters(),
+          dropdownMenu: true,
+          filters: true,
+          width: 500,
+          height: 300
+        });
+
+        var spy = jasmine.createSpy();
+        hot.addHook('beforeFilter', spy);
+        var plugin = hot.getPlugin('filters');
+
+        plugin.addFormula(0, 'gt', [12]);
+        plugin.addFormula(2, 'begins_with', ['b']);
+        plugin.addFormula(4, 'eq', ['green']);
+        plugin.filter();
+
+        expect(spy).toHaveBeenCalled();
+        expect(spy.calls[0].args[0].length).toBe(3);
+        expect(spy.calls[0].args[0][0]).toEqual({
+          column: 0,
+          formulas: [{name: 'gt', args: [12]}]
+        });
+        expect(spy.calls[0].args[0][1]).toEqual({
+          column: 2,
+          formulas: [{name: 'begins_with', args: ['b']}]
+        });
+        expect(spy.calls[0].args[0][2]).toEqual({
+          column: 4,
+          formulas: [{name: 'eq', args: ['green']}]
+        });
+      });
+
+      it('should not filter values visually when `beforeFilter` hook returns `false`', function() {
+        var hot = handsontable({
+          data: getDataForFilters(),
+          columns: getColumnsForFilters(),
+          dropdownMenu: true,
+          filters: true,
+          width: 500,
+          height: 300
+        });
+
+        var spy = jasmine.createSpy();
+        spy.andCallFake(function() {
+          return false;
+        });
+        hot.addHook('beforeFilter', spy);
+        var plugin = hot.getPlugin('filters');
+
+        plugin.addFormula(0, 'gt', [12]);
+        plugin.addFormula(2, 'begins_with', ['b']);
+        plugin.addFormula(4, 'eq', ['green']);
+        plugin.filter();
+
+        expect(spy).toHaveBeenCalled();
+        expect(hot.getData(0, 0, 0, 5)).toEqual([[1, 'Nannie Patel', 'Jenkinsville', '2014-01-29', 'green', 1261.6]]);
+      });
+    })
+  });
 });

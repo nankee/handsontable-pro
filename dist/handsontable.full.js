@@ -2164,6 +2164,15 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
       left: null
     }
   };
+  this.pendingScrollCallbacks = {
+    master: {
+      top: 0,
+      left: 0
+    },
+    top: {left: 0},
+    bottom: {left: 0},
+    left: {top: 0}
+  };
   this.verticalScrolling = false;
   this.horizontalScrolling = false;
   this.delegatedScrollCallback = false;
@@ -2346,37 +2355,60 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
       } else {
         tempScrollValue = getScrollLeft(target);
       }
-      if (this.overlayScrollPositions.master.left !== tempScrollValue) {
-        this.horizontalScrolling = true;
-        this.overlayScrollPositions.master.left = tempScrollValue;
-        scrollValueChanged = true;
+      this.horizontalScrolling = true;
+      this.overlayScrollPositions.master.left = tempScrollValue;
+      scrollValueChanged = true;
+      if (this.pendingScrollCallbacks.master.left > 0) {
+        this.pendingScrollCallbacks.master.left--;
+      } else {
         if (topOverlay && topOverlay.scrollLeft !== tempScrollValue) {
+          if (fakeScrollValue == null) {
+            this.pendingScrollCallbacks.top.left++;
+          }
           topOverlay.scrollLeft = tempScrollValue;
           delegatedScroll = (masterHorizontal !== window);
         }
         if (bottomOverlay && bottomOverlay.scrollLeft !== tempScrollValue) {
+          if (fakeScrollValue == null) {
+            this.pendingScrollCallbacks.bottom.left++;
+          }
           bottomOverlay.scrollLeft = tempScrollValue;
           delegatedScroll = (masterHorizontal !== window);
         }
       }
       tempScrollValue = getScrollTop(target);
-      if (this.overlayScrollPositions.master.top !== tempScrollValue) {
-        this.verticalScrolling = true;
-        this.overlayScrollPositions.master.top = tempScrollValue;
-        scrollValueChanged = true;
+      this.verticalScrolling = true;
+      this.overlayScrollPositions.master.top = tempScrollValue;
+      scrollValueChanged = true;
+      if (this.pendingScrollCallbacks.master.top > 0) {
+        this.pendingScrollCallbacks.master.top--;
+      } else {
         if (leftOverlay && leftOverlay.scrollTop !== tempScrollValue) {
+          if (fakeScrollValue == null) {
+            this.pendingScrollCallbacks.left.top++;
+          }
           leftOverlay.scrollTop = tempScrollValue;
           delegatedScroll = (masterVertical !== window);
         }
       }
     } else if (target === bottomOverlay) {
       tempScrollValue = getScrollLeft(target);
-      if (this.overlayScrollPositions.bottom.left !== tempScrollValue) {
-        this.horizontalScrolling = true;
-        this.overlayScrollPositions.bottom.left = tempScrollValue;
-        scrollValueChanged = true;
-        if (masterHorizontal.scrollLeft !== tempScrollValue) {
-          masterHorizontal.scrollLeft = tempScrollValue;
+      this.horizontalScrolling = true;
+      this.overlayScrollPositions.bottom.left = tempScrollValue;
+      scrollValueChanged = true;
+      if (this.pendingScrollCallbacks.bottom.left > 0) {
+        this.pendingScrollCallbacks.bottom.left--;
+      } else {
+        if (fakeScrollValue == null) {
+          this.pendingScrollCallbacks.master.left++;
+        }
+        masterHorizontal.scrollLeft = tempScrollValue;
+        if (topOverlay && topOverlay.scrollLeft !== tempScrollValue) {
+          if (fakeScrollValue == null) {
+            this.pendingScrollCallbacks.top.left++;
+          }
+          topOverlay.scrollLeft = tempScrollValue;
+          delegatedScroll = (masterVertical !== window);
         }
       }
       if (fakeScrollValue !== null) {
@@ -2385,17 +2417,27 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
       }
     } else if (target === topOverlay) {
       tempScrollValue = getScrollLeft(target);
-      if (this.overlayScrollPositions.top.left !== tempScrollValue) {
-        this.horizontalScrolling = true;
-        this.overlayScrollPositions.top.left = tempScrollValue;
-        scrollValueChanged = true;
-        if (masterHorizontal.scrollLeft !== tempScrollValue) {
-          masterHorizontal.scrollLeft = tempScrollValue;
+      this.horizontalScrolling = true;
+      this.overlayScrollPositions.top.left = tempScrollValue;
+      scrollValueChanged = true;
+      if (this.pendingScrollCallbacks.top.left > 0) {
+        this.pendingScrollCallbacks.top.left--;
+      } else {
+        if (fakeScrollValue == null) {
+          this.pendingScrollCallbacks.master.left++;
         }
+        masterHorizontal.scrollLeft = tempScrollValue;
       }
       if (fakeScrollValue !== null) {
         scrollValueChanged = true;
         masterVertical.scrollTop += fakeScrollValue;
+      }
+      if (bottomOverlay && bottomOverlay.scrollLeft !== tempScrollValue) {
+        if (fakeScrollValue == null) {
+          this.pendingScrollCallbacks.bottom.left++;
+        }
+        bottomOverlay.scrollLeft = tempScrollValue;
+        delegatedScroll = (masterVertical !== window);
       }
     } else if (target === leftOverlay) {
       tempScrollValue = getScrollTop(target);
@@ -2403,7 +2445,12 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
         this.verticalScrolling = true;
         this.overlayScrollPositions.left.top = tempScrollValue;
         scrollValueChanged = true;
-        if (masterVertical.scrollTop !== tempScrollValue) {
+        if (this.pendingScrollCallbacks.left.top > 0) {
+          this.pendingScrollCallbacks.left.top--;
+        } else {
+          if (fakeScrollValue == null) {
+            this.pendingScrollCallbacks.master.top++;
+          }
           masterVertical.scrollTop = tempScrollValue;
         }
       }
@@ -4112,10 +4159,10 @@ var domHelpers = ($__helpers_47_dom_47_element__ = require("helpers/dom/element"
 var domEventHelpers = ($__helpers_47_dom_47_event__ = require("helpers/dom/event"), $__helpers_47_dom_47_event__ && $__helpers_47_dom_47_event__.__esModule && $__helpers_47_dom_47_event__ || {default: $__helpers_47_dom_47_event__});
 var HELPERS = [arrayHelpers, browserHelpers, dataHelpers, functionHelpers, mixedHelpers, numberHelpers, objectHelpers, settingHelpers, stringHelpers, unicodeHelpers];
 var DOM = [domHelpers, domEventHelpers];
-Handsontable.buildDate = 'Wed Feb 03 2016 13:54:42 GMT+0100 (CET)';
+Handsontable.buildDate = 'Fri Feb 19 2016 12:59:02 GMT+0100 (CET)';
 Handsontable.packageName = 'handsontable-pro';
-Handsontable.version = '1.1.0';
-var baseVersion = '0.22.0';
+Handsontable.version = '1.2.0';
+var baseVersion = '0.23.0';
 if (!/^@@/.test(baseVersion)) {
   Handsontable.baseVersion = baseVersion;
 }
@@ -4141,7 +4188,7 @@ arrayHelpers.arrayEach(DOM, (function(helper) {
 }));
 
 //# 
-},{"cellTypes":24,"core":25,"es6collections":"es6collections","helpers/array":42,"helpers/browser":43,"helpers/data":44,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/function":47,"helpers/mixed":48,"helpers/number":49,"helpers/object":50,"helpers/setting":51,"helpers/string":52,"helpers/unicode":53,"pluginHooks":58,"plugins":59,"plugins/jqueryHandsontable":1,"renderers/_cellDecorator":91,"shims/classes":98}],24:[function(require,module,exports){
+},{"cellTypes":24,"core":25,"es6collections":"es6collections","helpers/array":42,"helpers/browser":43,"helpers/data":44,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/function":47,"helpers/mixed":48,"helpers/number":49,"helpers/object":50,"helpers/setting":51,"helpers/string":52,"helpers/unicode":53,"pluginHooks":58,"plugins":59,"plugins/jqueryHandsontable":1,"renderers/_cellDecorator":93,"shims/classes":100}],24:[function(require,module,exports){
 "use strict";
 var $__helpers_47_browser__,
     $__editors__,
@@ -4242,7 +4289,7 @@ Handsontable.cellLookup = {validator: {
   }};
 
 //# 
-},{"editors":29,"editors/autocompleteEditor":31,"editors/checkboxEditor":32,"editors/dateEditor":33,"editors/dropdownEditor":34,"editors/handsontableEditor":35,"editors/mobileTextEditor":36,"editors/numericEditor":37,"editors/passwordEditor":38,"editors/selectEditor":39,"editors/textEditor":40,"helpers/browser":43,"renderers":90,"renderers/autocompleteRenderer":92,"renderers/checkboxRenderer":93,"renderers/htmlRenderer":94,"renderers/numericRenderer":95,"renderers/passwordRenderer":96,"renderers/textRenderer":97,"validators/autocompleteValidator":102,"validators/dateValidator":103,"validators/numericValidator":104}],25:[function(require,module,exports){
+},{"editors":29,"editors/autocompleteEditor":31,"editors/checkboxEditor":32,"editors/dateEditor":33,"editors/dropdownEditor":34,"editors/handsontableEditor":35,"editors/mobileTextEditor":36,"editors/numericEditor":37,"editors/passwordEditor":38,"editors/selectEditor":39,"editors/textEditor":40,"helpers/browser":43,"renderers":92,"renderers/autocompleteRenderer":94,"renderers/checkboxRenderer":95,"renderers/htmlRenderer":96,"renderers/numericRenderer":97,"renderers/passwordRenderer":98,"renderers/textRenderer":99,"validators/autocompleteValidator":104,"validators/dateValidator":105,"validators/numericValidator":106}],25:[function(require,module,exports){
 "use strict";
 var $__numeral__,
     $__helpers_47_dom_47_element__,
@@ -4278,7 +4325,9 @@ var $__6 = ($__helpers_47_object__ = require("helpers/object"), $__helpers_47_ob
     duckSchema = $__6.duckSchema,
     isObjectEquals = $__6.isObjectEquals,
     deepClone = $__6.deepClone;
-var arrayFlatten = ($__helpers_47_array__ = require("helpers/array"), $__helpers_47_array__ && $__helpers_47_array__.__esModule && $__helpers_47_array__ || {default: $__helpers_47_array__}).arrayFlatten;
+var $__7 = ($__helpers_47_array__ = require("helpers/array"), $__helpers_47_array__ && $__helpers_47_array__.__esModule && $__helpers_47_array__ || {default: $__helpers_47_array__}),
+    arrayFlatten = $__7.arrayFlatten,
+    arrayMap = $__7.arrayMap;
 var getPlugin = ($__plugins__ = require("plugins"), $__plugins__ && $__plugins__.__esModule && $__plugins__ || {default: $__plugins__}).getPlugin;
 var getRenderer = ($__renderers__ = require("renderers"), $__renderers__ && $__renderers__.__esModule && $__renderers__ || {default: $__renderers__}).getRenderer;
 var randomString = ($__helpers_47_string__ = require("helpers/string"), $__helpers_47_string__ && $__helpers_47_string__.__esModule && $__helpers_47_string__ || {default: $__helpers_47_string__}).randomString;
@@ -4332,12 +4381,29 @@ Handsontable.Core = function Core(rootElement, userSettings) {
     alter: function(action, index, amount, source, keepEmptyRows) {
       var delta;
       amount = amount || 1;
+      function spliceWith(data, index, count, toInject) {
+        var valueFactory = (function() {
+          var result;
+          if (toInject === 'array') {
+            result = [];
+          } else if (toInject === 'object') {
+            result = {};
+          }
+          return result;
+        });
+        var spliceArgs = arrayMap(new Array(count), (function() {
+          return valueFactory();
+        }));
+        spliceArgs.unshift(index, 0);
+        data.splice.apply(data, spliceArgs);
+      }
       switch (action) {
         case 'insert_row':
           if (instance.getSettings().maxRows === instance.countSourceRows()) {
             return;
           }
           delta = datamap.createRow(index, amount);
+          spliceWith(priv.cellSettings, index, amount, 'array');
           if (delta) {
             if (selection.isSelected() && priv.selRange.from.row >= index) {
               priv.selRange.from.row = priv.selRange.from.row + delta;
@@ -4349,6 +4415,12 @@ Handsontable.Core = function Core(rootElement, userSettings) {
           break;
         case 'insert_col':
           delta = datamap.createCol(index, amount);
+          for (var row = 0,
+              len = instance.countSourceRows(); row < len; row++) {
+            if (priv.cellSettings[row]) {
+              spliceWith(priv.cellSettings[row], index, amount);
+            }
+          }
           if (delta) {
             if (Array.isArray(instance.getSettings().colHeaders)) {
               var spliceArray = [index, 0];
@@ -4380,10 +4452,10 @@ Handsontable.Core = function Core(rootElement, userSettings) {
           break;
         case 'remove_col':
           datamap.removeCol(index, amount);
-          for (var row = 0,
-              len = datamap.getAll().length; row < len; row++) {
-            if (row in priv.cellSettings) {
-              priv.cellSettings[row].splice(index, amount);
+          for (var row$__20 = 0,
+              len$__21 = instance.countSourceRows(); row$__20 < len$__21; row$__20++) {
+            if (priv.cellSettings[row$__20]) {
+              priv.cellSettings[row$__20].splice(index, amount);
             }
           }
           var fixedColumnsLeft = instance.getSettings().fixedColumnsLeft;
@@ -5221,7 +5293,9 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       datamap.createMap();
     }
     clen = instance.countCols();
-    priv.cellSettings.length = 0;
+    if (settings.cell !== void 0 || settings.cells !== void 0 || settings.columns !== void 0) {
+      priv.cellSettings.length = 0;
+    }
     if (clen > 0) {
       var proto,
           column;
@@ -5921,6 +5995,7 @@ DefaultSettings.prototype = {
   },
   observeDOMVisibility: true,
   allowInvalid: true,
+  allowEmpty: true,
   invalidCellClassName: 'htInvalid',
   placeholder: false,
   placeholderCellClassName: 'htPlaceholder',
@@ -5986,12 +6061,13 @@ DefaultSettings.prototype = {
   nestedHeaders: void 0,
   trimRows: void 0,
   rowHeaderWidth: void 0,
-  columnHeaderHeight: void 0
+  columnHeaderHeight: void 0,
+  observeChanges: void 0
 };
 Handsontable.DefaultSettings = DefaultSettings;
 
 //# 
-},{"3rdparty/walkontable/src/calculator/viewportColumns":3,"3rdparty/walkontable/src/cell/coords":5,"3rdparty/walkontable/src/cell/range":6,"3rdparty/walkontable/src/selection":18,"dataMap":26,"dataSource":27,"editorManager":28,"eventManager":41,"helpers/array":42,"helpers/data":44,"helpers/dom/element":45,"helpers/number":49,"helpers/object":50,"helpers/setting":51,"helpers/string":52,"numeral":"numeral","plugins":59,"renderers":90,"tableView":99}],26:[function(require,module,exports){
+},{"3rdparty/walkontable/src/calculator/viewportColumns":3,"3rdparty/walkontable/src/cell/coords":5,"3rdparty/walkontable/src/cell/range":6,"3rdparty/walkontable/src/selection":18,"dataMap":26,"dataSource":27,"editorManager":28,"eventManager":41,"helpers/array":42,"helpers/data":44,"helpers/dom/element":45,"helpers/number":49,"helpers/object":50,"helpers/setting":51,"helpers/string":52,"numeral":"numeral","plugins":59,"renderers":92,"tableView":101}],26:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DataMap: {get: function() {
@@ -6256,9 +6332,12 @@ DataMap.prototype.spliceRow = function(row, index, amount) {
 };
 DataMap.prototype.get = function(row, prop) {
   row = Handsontable.hooks.run(this.instance, 'modifyRow', row);
-  if (typeof prop === 'string' && prop.indexOf('.') > -1) {
+  var dataRow = this.dataSource[row];
+  if (dataRow && dataRow.hasOwnProperty && dataRow.hasOwnProperty(prop)) {
+    return dataRow[prop];
+  } else if (typeof prop === 'string' && prop.indexOf('.') > -1) {
     var sliced = prop.split('.');
-    var out = this.dataSource[row];
+    var out = dataRow;
     if (!out) {
       return null;
     }
@@ -6273,9 +6352,6 @@ DataMap.prototype.get = function(row, prop) {
   } else if (typeof prop === 'function') {
     return prop(this.dataSource.slice(row, row + 1)[0]);
   }
-  if (this.dataSource[row] && this.dataSource[row].hasOwnProperty && this.dataSource[row].hasOwnProperty(prop)) {
-    return this.dataSource[row][prop];
-  }
   return null;
 };
 var copyableLookup = cellMethodLookupFactory('copyable', false);
@@ -6287,9 +6363,12 @@ DataMap.prototype.getCopyable = function(row, prop) {
 };
 DataMap.prototype.set = function(row, prop, value, source) {
   row = Handsontable.hooks.run(this.instance, 'modifyRow', row, source || 'datamapGet');
-  if (typeof prop === 'string' && prop.indexOf('.') > -1) {
+  var dataRow = this.dataSource[row];
+  if (dataRow && dataRow.hasOwnProperty && dataRow.hasOwnProperty(prop)) {
+    dataRow[prop] = value;
+  } else if (typeof prop === 'string' && prop.indexOf('.') > -1) {
     var sliced = prop.split('.');
-    var out = this.dataSource[row];
+    var out = dataRow;
     for (var i = 0,
         ilen = sliced.length - 1; i < ilen; i++) {
       if (typeof out[sliced[i]] === 'undefined') {
@@ -6301,7 +6380,7 @@ DataMap.prototype.set = function(row, prop, value, source) {
   } else if (typeof prop === 'function') {
     prop(this.dataSource.slice(row, row + 1)[0], value);
   } else {
-    this.dataSource[row][prop] = value;
+    dataRow[prop] = value;
   }
 };
 DataMap.prototype.physicalRowsToLogical = function(index, amount) {
@@ -6993,10 +7072,11 @@ BaseEditor.prototype.finishEditing = function(restoreOriginalValue, ctrlDown, ca
       this.instance.view.render();
       return;
     }
+    var value = this.getValue();
     if (this.instance.getSettings().trimWhitespace) {
-      val = [[typeof this.getValue() === 'string' ? String.prototype.trim.call(this.getValue() || '') : this.getValue()]];
+      val = [[typeof value === 'string' ? String.prototype.trim.call(value || '') : value]];
     } else {
-      val = [[this.getValue()]];
+      val = [[value]];
     }
     this.state = Handsontable.EditorState.WAITING;
     this.saveValue(val, ctrlDown);
@@ -8626,11 +8706,13 @@ Object.defineProperties(exports, {
   __esModule: {value: true}
 });
 var $__helpers_47_dom_47_element__,
-    $__helpers_47_browser__;
+    $__helpers_47_browser__,
+    $__helpers_47_dom_47_event__;
 var $__0 = ($__helpers_47_dom_47_element__ = require("helpers/dom/element"), $__helpers_47_dom_47_element__ && $__helpers_47_dom_47_element__.__esModule && $__helpers_47_dom_47_element__ || {default: $__helpers_47_dom_47_element__}),
     polymerWrap = $__0.polymerWrap,
     closest = $__0.closest;
 var isWebComponentSupportedNatively = ($__helpers_47_browser__ = require("helpers/browser"), $__helpers_47_browser__ && $__helpers_47_browser__.__esModule && $__helpers_47_browser__ || {default: $__helpers_47_browser__}).isWebComponentSupportedNatively;
+var _stopImmediatePropagation = ($__helpers_47_dom_47_event__ = require("helpers/dom/event"), $__helpers_47_dom_47_event__ && $__helpers_47_dom_47_event__.__esModule && $__helpers_47_dom_47_event__ || {default: $__helpers_47_dom_47_event__}).stopImmediatePropagation;
 var EventManager = function EventManager() {
   var context = arguments[0] !== (void 0) ? arguments[0] : null;
   this.context = context || this;
@@ -8640,7 +8722,7 @@ var EventManager = function EventManager() {
 };
 ($traceurRuntime.createClass)(EventManager, {
   addEventListener: function(element, eventName, callback) {
-    var $__2 = this;
+    var $__3 = this;
     var context = this.context;
     function callbackProxy(event) {
       if (event.target == void 0 && event.srcElement != void 0) {
@@ -8677,7 +8759,7 @@ var EventManager = function EventManager() {
     }
     Handsontable.countEventManagerListeners++;
     return (function() {
-      $__2.removeEventListener(element, eventName, callback);
+      $__3.removeEventListener(element, eventName, callback);
     });
   },
   removeEventListener: function(element, eventName, callback) {
@@ -8756,8 +8838,14 @@ function extendEvent(context, event) {
   var realTarget;
   var target;
   var len;
+  var nativeStopImmediatePropagation;
   event.isTargetWebComponent = false;
   event.realTarget = event.target;
+  nativeStopImmediatePropagation = event.stopImmediatePropagation;
+  event.stopImmediatePropagation = function() {
+    nativeStopImmediatePropagation.apply(this);
+    _stopImmediatePropagation(this);
+  };
   if (!Handsontable.eventManager.isHotTableEnv) {
     return event;
   }
@@ -8811,7 +8899,7 @@ function eventManager(context) {
 }
 
 //# 
-},{"helpers/browser":43,"helpers/dom/element":45}],42:[function(require,module,exports){
+},{"helpers/browser":43,"helpers/dom/element":45,"helpers/dom/event":46}],42:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   to2dArray: {get: function() {
@@ -9864,7 +9952,7 @@ function resetCssTransform(element) {
 }
 function isInput(element) {
   var inputs = ['INPUT', 'SELECT', 'TEXTAREA'];
-  return inputs.indexOf(element.nodeName) > -1 || element.contentEditable === 'true';
+  return element && (inputs.indexOf(element.nodeName) > -1 || element.contentEditable === 'true');
 }
 function isOutsideInput(element) {
   return isInput(element) && element.className.indexOf('handsontableInput') == -1 && element.className.indexOf('copyPaste') == -1;
@@ -9968,8 +10056,22 @@ Object.defineProperties(exports, {
   debounce: {get: function() {
       return debounce;
     }},
+  pipe: {get: function() {
+      return pipe;
+    }},
+  partial: {get: function() {
+      return partial;
+    }},
+  curry: {get: function() {
+      return curry;
+    }},
+  curryRight: {get: function() {
+      return curryRight;
+    }},
   __esModule: {value: true}
 });
+var $__array__;
+var arrayReduce = ($__array__ = require("array"), $__array__ && $__array__.__esModule && $__array__ || {default: $__array__}).arrayReduce;
 function proxy(func, context) {
   return function() {
     return func.apply(context, arguments);
@@ -9981,7 +10083,7 @@ function throttle(func) {
   var result = {lastCallThrottled: true};
   var lastTimer = null;
   function _throttle() {
-    var $__0 = this;
+    var $__1 = this;
     var args = arguments;
     var stamp = Date.now();
     var needCall = false;
@@ -10000,7 +10102,7 @@ function throttle(func) {
       }
       lastTimer = setTimeout((function() {
         result.lastCallThrottled = false;
-        func.apply($__0, args);
+        func.apply($__1, args);
         lastCalled = 0;
         lastTimer = void 0;
       }), remaining);
@@ -10029,25 +10131,86 @@ function throttleAfterHits(func) {
 }
 function debounce(func) {
   var wait = arguments[1] !== (void 0) ? arguments[1] : 200;
-  var needCall = false;
   var lastTimer = null;
   var result;
   function _debounce() {
-    var $__0 = this;
+    var $__1 = this;
     var args = arguments;
     if (lastTimer) {
       clearTimeout(lastTimer);
     }
     lastTimer = setTimeout((function() {
-      result = func.apply($__0, args);
+      result = func.apply($__1, args);
     }), wait);
     return result;
   }
   return _debounce;
 }
+function pipe() {
+  for (var functions = [],
+      $__2 = 0; $__2 < arguments.length; $__2++)
+    functions[$__2] = arguments[$__2];
+  var $__5 = functions,
+      firstFunc = $__5[0],
+      restFunc = Array.prototype.slice.call($__5, 1);
+  return function _pipe() {
+    return arrayReduce(restFunc, (function(acc, fn) {
+      return fn(acc);
+    }), firstFunc.apply(this, arguments));
+  };
+}
+function partial(func) {
+  for (var params = [],
+      $__3 = 1; $__3 < arguments.length; $__3++)
+    params[$__3 - 1] = arguments[$__3];
+  return function _partial() {
+    for (var restParams = [],
+        $__4 = 0; $__4 < arguments.length; $__4++)
+      restParams[$__4] = arguments[$__4];
+    return func.apply(this, params.concat(restParams));
+  };
+}
+function curry(func) {
+  var argsLength = func.length;
+  function given(argsSoFar) {
+    return function _curry() {
+      for (var params = [],
+          $__4 = 0; $__4 < arguments.length; $__4++)
+        params[$__4] = arguments[$__4];
+      var passedArgsSoFar = argsSoFar.concat(params);
+      var result;
+      if (passedArgsSoFar.length >= argsLength) {
+        result = func.apply(this, passedArgsSoFar);
+      } else {
+        result = given(passedArgsSoFar);
+      }
+      return result;
+    };
+  }
+  return given([]);
+}
+function curryRight(func) {
+  var argsLength = func.length;
+  function given(argsSoFar) {
+    return function _curry() {
+      for (var params = [],
+          $__4 = 0; $__4 < arguments.length; $__4++)
+        params[$__4] = arguments[$__4];
+      var passedArgsSoFar = argsSoFar.concat(params.reverse());
+      var result;
+      if (passedArgsSoFar.length >= argsLength) {
+        result = func.apply(this, passedArgsSoFar);
+      } else {
+        result = given(passedArgsSoFar);
+      }
+      return result;
+    };
+  }
+  return given([]);
+}
 
 //# 
-},{}],48:[function(require,module,exports){
+},{"array":42}],48:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   stringify: {get: function() {
@@ -10215,6 +10378,8 @@ function deepExtend(target, extension) {
       if (!target[key]) {
         if (Array.isArray(extension[key])) {
           target[key] = [];
+        } else if (Object.prototype.toString.call(extension[key]) === '[object Date]') {
+          target[key] = extension[key];
         } else {
           target[key] = {};
         }
@@ -10839,7 +11004,7 @@ var Hooks = function Hooks() {
     var $__2 = this;
     if (Array.isArray(callback)) {
       arrayEach(callback, (function(c) {
-        return ($__2.add(key, c, context));
+        return $__2.add(key, c, context);
       }));
     } else {
       var bucket = this.getBucket(context);
@@ -10859,7 +11024,7 @@ var Hooks = function Hooks() {
     var $__2 = this;
     if (Array.isArray(callback)) {
       arrayEach(callback, (function(c) {
-        return ($__2.once(key, c, context));
+        return $__2.once(key, c, context);
       }));
     } else {
       callback.runOnce = true;
@@ -11384,6 +11549,10 @@ var $AutoColumnSize = AutoColumnSize;
   },
   onBeforeRender: function() {
     var force = this.hot.renderCall;
+    var rowsCount = this.hot.countRows();
+    if (!rowsCount) {
+      return;
+    }
     this.calculateColumnsWidth({
       from: this.getFirstVisibleColumn(),
       to: this.getLastVisibleColumn()
@@ -11407,7 +11576,7 @@ var $AutoColumnSize = AutoColumnSize;
   onBeforeChange: function(changes) {
     var $__10 = this;
     arrayEach(changes, (function(data) {
-      return $__10.widths[data[1]] = void 0;
+      return $__10.widths[$__10.hot.propToCol(data[1])] = void 0;
     }));
   },
   onBeforeColumnResize: function(col, size, isDblClick) {
@@ -11433,7 +11602,7 @@ var $AutoColumnSize = AutoColumnSize;
 registerPlugin('autoColumnSize', AutoColumnSize);
 
 //# 
-},{"3rdparty/walkontable/src/calculator/viewportColumns":3,"_base":60,"helpers/array":42,"helpers/dom/element":45,"helpers/number":49,"helpers/object":50,"helpers/string":52,"plugins":59,"utils/ghostTable":100,"utils/samplesGenerator":101}],62:[function(require,module,exports){
+},{"3rdparty/walkontable/src/calculator/viewportColumns":3,"_base":60,"helpers/array":42,"helpers/dom/element":45,"helpers/number":49,"helpers/object":50,"helpers/string":52,"plugins":59,"utils/ghostTable":102,"utils/samplesGenerator":103}],62:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   AutoRowSize: {get: function() {
@@ -11751,7 +11920,7 @@ var $AutoRowSize = AutoRowSize;
 registerPlugin('autoRowSize', AutoRowSize);
 
 //# 
-},{"_base":60,"helpers/array":42,"helpers/dom/element":45,"helpers/number":49,"helpers/object":50,"helpers/string":52,"plugins":59,"utils/ghostTable":100,"utils/samplesGenerator":101}],63:[function(require,module,exports){
+},{"_base":60,"helpers/array":42,"helpers/dom/element":45,"helpers/number":49,"helpers/object":50,"helpers/string":52,"plugins":59,"utils/ghostTable":102,"utils/samplesGenerator":103}],63:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Autofill: {get: function() {
@@ -11839,7 +12008,7 @@ function Autofill(instance) {
     } else {
       _this.instance.mouseDragOutside = false;
     }
-    if (_this.instance.mouseDragOutside) {
+    if (_this.instance.mouseDragOutside && settings('autoInsertRow')) {
       setTimeout(function() {
         _this.addingStarted = false;
         _this.instance.alter('insert_row');
@@ -11958,9 +12127,9 @@ Autofill.prototype.apply = function() {
 Autofill.prototype.showBorder = function(coords) {
   var topLeft = this.instance.getSelectedRange().getTopLeftCorner(),
       bottomRight = this.instance.getSelectedRange().getBottomRightCorner();
-  if (this.instance.getSettings().fillHandle !== 'horizontal' && (bottomRight.row < coords.row || topLeft.row > coords.row)) {
+  if (settings('direction') !== 'horizontal' && (bottomRight.row < coords.row || topLeft.row > coords.row)) {
     coords = new WalkontableCellCoords(coords.row, bottomRight.col);
-  } else if (this.instance.getSettings().fillHandle !== 'vertical') {
+  } else if (settings('direction') !== 'vertical') {
     coords = new WalkontableCellCoords(bottomRight.row, coords.col);
   } else {
     return;
@@ -11976,7 +12145,7 @@ Autofill.prototype.checkIfNewRowNeeded = function() {
       selection,
       tableRows = this.instance.countRows(),
       that = this;
-  if (this.instance.view.wt.selections.fill.cellRange && this.addingStarted === false) {
+  if (this.instance.view.wt.selections.fill.cellRange && this.addingStarted === false && settings('autoInsertRow')) {
     selection = this.instance.getSelected();
     fillCorners = this.instance.view.wt.selections.fill.getCorners();
     if (selection[2] < tableRows - 1 && fillCorners[2] === tableRows - 1) {
@@ -11990,15 +12159,40 @@ Autofill.prototype.checkIfNewRowNeeded = function() {
 };
 Handsontable.hooks.add('afterInit', function() {
   var autofill = new Autofill(this);
-  if (typeof this.getSettings().fillHandle !== 'undefined') {
-    if (autofill.handle && this.getSettings().fillHandle === false) {
+  settings = settingsFactory(this.getSettings().fillHandle);
+  if (settings('fillHandle') !== void 0) {
+    if (autofill.handle && settings('fillHandle') === false) {
       autofill.disable();
-    } else if (!autofill.handle && this.getSettings().fillHandle !== false) {
+    } else if (!autofill.handle && settings('fillHandle') !== false) {
       this.autofill = autofill;
       this.autofill.init();
     }
   }
 });
+var settings;
+function settingsFactory(settings) {
+  return function(key) {
+    var result;
+    if (key === 'direction') {
+      if (typeof settings === 'string') {
+        result = settings;
+      } else if (typeof settings === 'object' && settings[key] !== void 0) {
+        result = settings[key];
+      } else {
+        result = true;
+      }
+    } else if (key === 'autoInsertRow') {
+      if (typeof settings === 'object' && settings[key] !== void 0) {
+        result = settings[key];
+      } else {
+        result = true;
+      }
+    } else if (key === 'fillHandle') {
+      result = settings ? true : false;
+    }
+    return result;
+  };
+}
 Handsontable.Autofill = Autofill;
 
 //# 
@@ -12033,6 +12227,7 @@ Handsontable.hooks.register('afterColumnSort');
 var ColumnSorting = function ColumnSorting(hotInstance) {
   $traceurRuntime.superConstructor($ColumnSorting).call(this, hotInstance);
   this.sortIndicators = [];
+  this.lastSortedColumn = null;
 };
 var $ColumnSorting = ColumnSorting;
 ($traceurRuntime.createClass)(ColumnSorting, {
@@ -12109,6 +12304,7 @@ var $ColumnSorting = ColumnSorting;
       sortingOrder = loadedSortingState.sortOrder;
     }
     if (typeof sortingColumn === 'number') {
+      this.lastSortedColumn = sortingColumn;
       this.sortByColumn(sortingColumn, sortingOrder);
     }
   },
@@ -12137,6 +12333,7 @@ var $ColumnSorting = ColumnSorting;
     if (allowSorting !== false) {
       this.sort();
     }
+    this.updateOrderClass();
     this.updateSortIndicator();
     this.hot.render();
     this.saveSortingState();
@@ -12159,34 +12356,33 @@ var $ColumnSorting = ColumnSorting;
     Handsontable.hooks.run(this.hot, 'persistentStateLoad', 'columnSorting', storedState);
     return storedState.value;
   },
+  updateOrderClass: function() {
+    var orderClass;
+    if (this.hot.sortOrder === true) {
+      orderClass = 'ascending';
+    } else if (this.hot.sortOrder === false) {
+      orderClass = 'descending';
+    }
+    this.sortOrderClass = orderClass;
+  },
   bindColumnSortingAfterClick: function() {
+    var $__5 = this;
     if (this.bindedSortEvent) {
       return;
     }
     var eventManager = eventManagerObject(this.hot),
         _this = this;
     this.bindedSortEvent = true;
-    eventManager.addEventListener(this.hot.rootElement, 'click', function(e) {
+    eventManager.addEventListener(this.hot.rootElement, 'click', (function(e) {
       if (hasClass(e.target, 'columnSorting')) {
         var col = getColumn(e.target);
-        if (col === this.lastSortedColumn) {
-          switch (_this.hot.sortOrder) {
-            case void 0:
-              _this.sortOrderClass = 'ascending';
-              break;
-            case true:
-              _this.sortOrderClass = 'descending';
-              break;
-            case false:
-              _this.sortOrderClass = void 0;
-          }
-        } else {
-          _this.sortOrderClass = 'ascending';
+        if (col !== $__5.lastSortedColumn) {
+          $__5.hot.sortOrder = true;
         }
-        this.lastSortedColumn = col;
-        _this.sortByColumn(col);
+        $__5.lastSortedColumn = col;
+        $__5.sortByColumn(col);
       }
-    });
+    }));
     function countRowHeaders() {
       var tr = _this.hot.view.TBODY.querySelector('tr');
       var length = 1;
@@ -12273,7 +12469,6 @@ var $ColumnSorting = ColumnSorting;
       this.hot.sortIndex.push([i, this.hot.getDataAtCell(i, this.hot.sortColumn)]);
     }
     colMeta = this.hot.getCellMeta(0, this.hot.sortColumn);
-    this.updateSortIndicator();
     switch (colMeta.type) {
       case 'date':
         sortFunction = this.dateSort;
@@ -12938,6 +13133,11 @@ var $ContextMenu = ContextMenu;
       }));
     }));
   },
+  updatePlugin: function() {
+    this.disablePlugin();
+    this.enablePlugin();
+    $traceurRuntime.superGet(this, $ContextMenu.prototype, "updatePlugin").call(this);
+  },
   disablePlugin: function() {
     this.close();
     if (this.menu) {
@@ -13254,7 +13454,9 @@ var $__0 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = require("he
     hasClass = $__0.hasClass,
     isChildOf = $__0.isChildOf,
     removeClass = $__0.removeClass;
-var arrayEach = ($___46__46__47__46__46__47_helpers_47_array__ = require("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}).arrayEach;
+var $__1 = ($___46__46__47__46__46__47_helpers_47_array__ = require("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}),
+    arrayEach = $__1.arrayEach,
+    arrayReduce = $__1.arrayReduce;
 var Cursor = ($__cursor__ = require("cursor"), $__cursor__ && $__cursor__.__esModule && $__cursor__ || {default: $__cursor__}).Cursor;
 var EventManager = ($___46__46__47__46__46__47_eventManager__ = require("eventManager"), $___46__46__47__46__46__47_eventManager__ && $___46__46__47__46__46__47_eventManager__.__esModule && $___46__46__47__46__46__47_eventManager__ || {default: $___46__46__47__46__46__47_eventManager__}).EventManager;
 var $__4 = ($___46__46__47__46__46__47_helpers_47_object__ = require("helpers/object"), $___46__46__47__46__46__47_helpers_47_object__ && $___46__46__47__46__46__47_helpers_47_object__.__esModule && $___46__46__47__46__46__47_helpers_47_object__ || {default: $___46__46__47__46__46__47_helpers_47_object__}),
@@ -13279,15 +13481,15 @@ var $__10 = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = require("hel
     stopImmediatePropagation = $__10.stopImmediatePropagation,
     pageX = $__10.pageX,
     pageY = $__10.pageY;
-var Menu = function Menu(hotInstance) {
-  var options = arguments[1] !== (void 0) ? arguments[1] : {
+var Menu = function Menu(hotInstance, options) {
+  this.hot = hotInstance;
+  this.options = options || {
     parent: null,
     name: null,
     className: '',
-    keepInViewport: true
+    keepInViewport: true,
+    standalone: false
   };
-  this.hot = hotInstance;
-  this.options = options;
   this.eventManager = new EventManager(this);
   this.container = this.createContainer(this.options.name);
   this.hotMenu = null;
@@ -13348,9 +13550,6 @@ var $Menu = Menu;
         return $__11.onBeforeKeyDown(event);
       }),
       afterOnCellMouseOver: (function(event, coords, TD) {
-        if (!TD.textContent) {
-          return;
-        }
         if ($__11.isAllSubMenusClosed()) {
           delayedOpenSubMenu(coords.row);
         } else {
@@ -13440,7 +13639,7 @@ var $Menu = Menu;
     }
     var selectedItem = this.hotMenu.getSourceDataAtRow(this.hotMenu.getSelected()[0]);
     this.runLocalHooks('select', selectedItem, event);
-    if (selectedItem.isCommand === false) {
+    if (selectedItem.isCommand === false || selectedItem.name === SEPARATOR) {
       return;
     }
     var selRange = this.hot.getSelectedRange();
@@ -13449,7 +13648,9 @@ var $Menu = Menu;
     if (this.isSubMenu()) {
       this.parentMenu.runLocalHooks('executeCommand', selectedItem.key, normalizedSelection, event);
     }
-    this.close(true);
+    if (!(selectedItem.disabled === true || typeof selectedItem.disabled === 'function' && selectedItem.disabled.call(this.hot) === true || selectedItem.submenu)) {
+      this.close(true);
+    }
   },
   setPosition: function(coords) {
     var cursor = new Cursor(coords);
@@ -13579,22 +13780,22 @@ var $Menu = Menu;
       }
     } else if (itemIsDisabled(item)) {
       addClass(TD, 'htDisabled');
-      this.eventManager.addEventListener(wrapper, 'mouseenter', (function() {
+      this.eventManager.addEventListener(TD, 'mouseenter', (function() {
         return hot.deselectCell();
       }));
     } else if (itemIsSelectionDisabled(item)) {
       addClass(TD, 'htSelectionDisabled');
-      this.eventManager.addEventListener(wrapper, 'mouseenter', (function() {
+      this.eventManager.addEventListener(TD, 'mouseenter', (function() {
         return hot.deselectCell();
       }));
     } else if (isSubMenu(item)) {
       addClass(TD, 'htSubmenu');
       if (itemIsSelectionDisabled(item)) {
-        this.eventManager.addEventListener(wrapper, 'mouseenter', (function() {
+        this.eventManager.addEventListener(TD, 'mouseenter', (function() {
           return hot.deselectCell();
         }));
       } else {
-        this.eventManager.addEventListener(wrapper, 'mouseenter', (function() {
+        this.eventManager.addEventListener(TD, 'mouseenter', (function() {
           return hot.selectCell(row, col, void 0, void 0, void 0, false);
         }));
       }
@@ -13602,11 +13803,11 @@ var $Menu = Menu;
       removeClass(TD, 'htSubmenu');
       removeClass(TD, 'htDisabled');
       if (itemIsSelectionDisabled(item)) {
-        this.eventManager.addEventListener(wrapper, 'mouseenter', (function() {
+        this.eventManager.addEventListener(TD, 'mouseenter', (function() {
           return hot.deselectCell();
         }));
       } else {
-        this.eventManager.addEventListener(wrapper, 'mouseenter', (function() {
+        this.eventManager.addEventListener(TD, 'mouseenter', (function() {
           return hot.selectCell(row, col, void 0, void 0, void 0, false);
         }));
       }
@@ -13709,10 +13910,9 @@ var $Menu = Menu;
     var hiderStyle = this.hotMenu.view.wt.wtTable.hider.style;
     var holderStyle = this.hotMenu.view.wt.wtTable.holder.style;
     var currentHiderWidth = parseInt(hiderStyle.width, 10);
-    var realHeight = 0;
-    arrayEach(data, (function(value) {
-      return realHeight += value.name === SEPARATOR ? 1 : 26;
-    }));
+    var realHeight = arrayReduce(data, (function(accumulator, value) {
+      return accumulator + (value.name === SEPARATOR ? 1 : 26);
+    }), 0);
     holderStyle.width = currentHiderWidth + 22 + 'px';
     holderStyle.height = realHeight + 4 + 'px';
   },
@@ -13723,7 +13923,9 @@ var $Menu = Menu;
     if (this.container && isChildOf(event.target, this.container)) {
       this.executeCommand(event);
     }
-    if ((this.isAllSubMenusClosed() || this.isSubMenu()) && (!isChildOf(event.target, '.htMenu') && isChildOf(event.target, document))) {
+    if (this.options.standalone && this.hotMenu && !isChildOf(event.target, this.hotMenu.rootElement)) {
+      this.close(true);
+    } else if ((this.isAllSubMenusClosed() || this.isSubMenu()) && (!isChildOf(event.target, '.htMenu') && isChildOf(event.target, document))) {
       this.close(true);
     }
   }
@@ -17165,166 +17367,262 @@ registerPlugin('multipleSelectionHandles', MultipleSelectionHandles);
 },{"_base":60,"eventManager":41,"helpers/dom/element":45,"plugins":59}],85:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
+  DataObserver: {get: function() {
+      return DataObserver;
+    }},
+  __esModule: {value: true}
+});
+var $__jsonpatch__,
+    $___46__46__47__46__46__47_mixins_47_localHooks__,
+    $___46__46__47__46__46__47_helpers_47_object__,
+    $__utils__;
+var jsonpatch = ($__jsonpatch__ = require("jsonpatch"), $__jsonpatch__ && $__jsonpatch__.__esModule && $__jsonpatch__ || {default: $__jsonpatch__}).default;
+var localHooks = ($___46__46__47__46__46__47_mixins_47_localHooks__ = require("../../mixins/localHooks"), $___46__46__47__46__46__47_mixins_47_localHooks__ && $___46__46__47__46__46__47_mixins_47_localHooks__.__esModule && $___46__46__47__46__46__47_mixins_47_localHooks__ || {default: $___46__46__47__46__46__47_mixins_47_localHooks__}).localHooks;
+var mixin = ($___46__46__47__46__46__47_helpers_47_object__ = require("../../helpers/object"), $___46__46__47__46__46__47_helpers_47_object__ && $___46__46__47__46__46__47_helpers_47_object__.__esModule && $___46__46__47__46__46__47_helpers_47_object__ || {default: $___46__46__47__46__46__47_helpers_47_object__}).mixin;
+var cleanPatches = ($__utils__ = require("utils"), $__utils__ && $__utils__.__esModule && $__utils__ || {default: $__utils__}).cleanPatches;
+var DataObserver = function DataObserver(observedData) {
+  this.observedData = null;
+  this.observer = null;
+  this.paused = false;
+  this.setObservedData(observedData);
+};
+($traceurRuntime.createClass)(DataObserver, {
+  setObservedData: function(observedData) {
+    var $__4 = this;
+    if (this.observer) {
+      jsonpatch.unobserve(this.observedData, this.observer);
+    }
+    this.observedData = observedData;
+    this.observer = jsonpatch.observe(this.observedData, (function(patches) {
+      return $__4.onChange(patches);
+    }));
+  },
+  isPaused: function() {
+    return this.paused;
+  },
+  pause: function() {
+    this.paused = true;
+  },
+  resume: function() {
+    this.paused = false;
+  },
+  onChange: function(patches) {
+    this.runLocalHooks('change', cleanPatches(patches));
+  },
+  destroy: function() {
+    jsonpatch.unobserve(this.observedData, this.observer);
+    this.observedData = null;
+    this.observer = null;
+  }
+}, {});
+mixin(DataObserver, localHooks);
+;
+
+//# 
+},{"../../helpers/object":50,"../../mixins/localHooks":55,"jsonpatch":"jsonpatch","utils":87}],86:[function(require,module,exports){
+"use strict";
+Object.defineProperties(exports, {
   ObserveChanges: {get: function() {
       return ObserveChanges;
     }},
   __esModule: {value: true}
 });
-var $___46__46__47__46__46__47_plugins__,
-    $__jsonpatch__;
-var registerPlugin = ($___46__46__47__46__46__47_plugins__ = require("plugins"), $___46__46__47__46__46__47_plugins__ && $___46__46__47__46__46__47_plugins__.__esModule && $___46__46__47__46__46__47_plugins__ || {default: $___46__46__47__46__46__47_plugins__}).registerPlugin;
+var $___46__46__47__95_base__,
+    $__jsonpatch__,
+    $__dataObserver__,
+    $___46__46__47__46__46__47_helpers_47_array__,
+    $___46__46__47__46__46__47_plugins__;
+var BasePlugin = ($___46__46__47__95_base__ = require("_base"), $___46__46__47__95_base__ && $___46__46__47__95_base__.__esModule && $___46__46__47__95_base__ || {default: $___46__46__47__95_base__}).default;
 var jsonpatch = ($__jsonpatch__ = require("jsonpatch"), $__jsonpatch__ && $__jsonpatch__.__esModule && $__jsonpatch__ || {default: $__jsonpatch__}).default;
-;
-function ObserveChanges() {}
-Handsontable.hooks.add('afterLoadData', init);
-Handsontable.hooks.add('afterUpdateSettings', init);
+var DataObserver = ($__dataObserver__ = require("dataObserver"), $__dataObserver__ && $__dataObserver__.__esModule && $__dataObserver__ || {default: $__dataObserver__}).DataObserver;
+var arrayEach = ($___46__46__47__46__46__47_helpers_47_array__ = require("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}).arrayEach;
+var registerPlugin = ($___46__46__47__46__46__47_plugins__ = require("plugins"), $___46__46__47__46__46__47_plugins__ && $___46__46__47__46__46__47_plugins__.__esModule && $___46__46__47__46__46__47_plugins__ || {default: $___46__46__47__46__46__47_plugins__}).registerPlugin;
 Handsontable.hooks.register('afterChangesObserved');
-function init() {
-  var instance = this;
-  var pluginEnabled = instance.getSettings().observeChanges;
-  if (pluginEnabled) {
-    if (instance.observer) {
-      destroy.call(instance);
-    }
-    createObserver.call(instance);
-    bindEvents.call(instance);
-  } else if (!pluginEnabled) {
-    destroy.call(instance);
-  }
-}
-function createObserver() {
-  var instance = this;
-  instance.observeChangesActive = true;
-  instance.pauseObservingChanges = function() {
-    instance.observeChangesActive = false;
-  };
-  instance.resumeObservingChanges = function() {
-    instance.observeChangesActive = true;
-  };
-  instance.observedData = instance.getSourceData();
-  instance.observer = jsonpatch.observe(instance.observedData, function(patches) {
-    if (instance.observeChangesActive) {
-      runHookForOperation.call(instance, patches);
-      instance.render();
-    }
-    instance.runHooks('afterChangesObserved');
-  });
-}
-function runHookForOperation(rawPatches) {
-  var instance = this;
-  var patches = cleanPatches(rawPatches);
-  for (var i = 0,
-      len = patches.length; i < len; i++) {
-    var patch = patches[i];
-    var parsedPath = parsePath(patch.path);
-    if (!parsedPath) {
+var ObserveChanges = function ObserveChanges(hotInstance) {
+  $traceurRuntime.superConstructor($ObserveChanges).call(this, hotInstance);
+  this.observer = null;
+};
+var $ObserveChanges = ObserveChanges;
+($traceurRuntime.createClass)(ObserveChanges, {
+  isEnabled: function() {
+    return this.hot.getSettings().observeChanges;
+  },
+  enablePlugin: function() {
+    var $__5 = this;
+    if (this.enabled) {
       return;
     }
-    switch (patch.op) {
-      case 'add':
-        if (isNaN(parsedPath.col)) {
-          instance.runHooks('afterCreateRow', parsedPath.row);
-        } else {
-          instance.runHooks('afterCreateCol', parsedPath.col);
-        }
-        break;
-      case 'remove':
-        if (isNaN(parsedPath.col)) {
-          instance.runHooks('afterRemoveRow', parsedPath.row, 1);
-        } else {
-          instance.runHooks('afterRemoveCol', parsedPath.col, 1);
-        }
-        break;
-      case 'replace':
-        instance.runHooks('afterChange', [parsedPath.row, parsedPath.col, null, patch.value], 'external');
-        break;
+    if (!this.observer) {
+      this.observer = new DataObserver(this.hot.getSourceData());
+      this._exposePublicApi();
     }
-  }
-  function cleanPatches(rawPatches) {
-    var patches;
-    patches = removeLengthRelatedPatches(rawPatches);
-    patches = removeMultipleAddOrRemoveColPatches(patches);
-    return patches;
-  }
-  function removeMultipleAddOrRemoveColPatches(rawPatches) {
-    var newOrRemovedColumns = [];
-    return rawPatches.filter(function(patch) {
-      var parsedPath = parsePath(patch.path);
-      if (!parsedPath) {
-        return;
-      }
-      if (['add', 'remove'].indexOf(patch.op) != -1 && !isNaN(parsedPath.col)) {
-        if (newOrRemovedColumns.indexOf(parsedPath.col) !== -1) {
-          return false;
+    this.observer.addLocalHook('change', (function(patches) {
+      return $__5.onDataChange(patches);
+    }));
+    this.addHook('afterCreateRow', (function() {
+      return $__5.onAfterTableAlter();
+    }));
+    this.addHook('afterRemoveRow', (function() {
+      return $__5.onAfterTableAlter();
+    }));
+    this.addHook('afterCreateCol', (function() {
+      return $__5.onAfterTableAlter();
+    }));
+    this.addHook('afterRemoveCol', (function() {
+      return $__5.onAfterTableAlter();
+    }));
+    this.addHook('afterChange', (function(changes, source) {
+      return $__5.onAfterTableAlter(source);
+    }));
+    this.addHook('afterLoadData', (function(firstRun) {
+      return $__5.onAfterLoadData(firstRun);
+    }));
+    $traceurRuntime.superGet(this, $ObserveChanges.prototype, "enablePlugin").call(this);
+  },
+  disablePlugin: function() {
+    if (this.observer) {
+      this.observer.destroy();
+      this.observer = null;
+      this._deletePublicApi();
+    }
+    $traceurRuntime.superGet(this, $ObserveChanges.prototype, "disablePlugin").call(this);
+  },
+  onDataChange: function(patches) {
+    var $__5 = this;
+    if (!this.observer.isPaused()) {
+      var actions = {
+        add: (function(patch) {
+          if (isNaN(patch.col)) {
+            $__5.hot.runHooks('afterCreateRow', patch.row);
+          } else {
+            $__5.hot.runHooks('afterCreateCol', patch.col);
+          }
+        }),
+        remove: (function(patch) {
+          if (isNaN(patch.col)) {
+            $__5.hot.runHooks('afterRemoveRow', patch.row, 1);
+          } else {
+            $__5.hot.runHooks('afterRemoveCol', patch.col, 1);
+          }
+        }),
+        replace: (function(patch) {
+          $__5.hot.runHooks('afterChange', [patch.row, patch.col, null, patch.value], 'external');
+        })
+      };
+      arrayEach(patches, (function(patch) {
+        if (actions[patch.op]) {
+          actions[patch.op](patch);
         }
-        newOrRemovedColumns.push(parsedPath.col);
-      }
-      return true;
+      }));
+      this.hot.render();
+    }
+    this.hot.runHooks('afterChangesObserved');
+  },
+  onAfterTableAlter: function(source) {
+    var $__5 = this;
+    if (source !== 'loadData') {
+      this.observer.pause();
+      this.hot.addHookOnce('afterChangesObserved', (function() {
+        return $__5.observer.resume();
+      }));
+    }
+  },
+  onAfterLoadData: function(firstRun) {
+    if (!firstRun) {
+      this.observer.setObservedData(this.hot.getSourceData());
+    }
+  },
+  destroy: function() {
+    if (this.observer) {
+      this.observer.destroy();
+      this._deletePublicApi();
+    }
+    $traceurRuntime.superGet(this, $ObserveChanges.prototype, "destroy").call(this);
+  },
+  _exposePublicApi: function() {
+    var $__5 = this;
+    var hot = this.hot;
+    hot.pauseObservingChanges = (function() {
+      return $__5.observer.pause();
     });
-  }
-  function removeLengthRelatedPatches(rawPatches) {
-    return rawPatches.filter(function(patch) {
-      return !/[/]length/ig.test(patch.path);
+    hot.resumeObservingChanges = (function() {
+      return $__5.observer.resume();
     });
+    hot.isPausedObservingChanges = (function() {
+      return $__5.observer.isPaused();
+    });
+  },
+  _deletePublicApi: function() {
+    var hot = this.hot;
+    delete hot.pauseObservingChanges;
+    delete hot.resumeObservingChanges;
+    delete hot.isPausedObservingChanges;
   }
-  function parsePath(path) {
-    var match = path.match(/^\/(\d+)\/?(.*)?$/);
-    if (!match) {
-      return;
+}, {}, BasePlugin);
+;
+registerPlugin('observeChanges', ObserveChanges);
+
+//# 
+},{"_base":60,"dataObserver":85,"helpers/array":42,"jsonpatch":"jsonpatch","plugins":59}],87:[function(require,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  cleanPatches: {get: function() {
+      return cleanPatches;
+    }},
+  parsePath: {get: function() {
+      return parsePath;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47__46__46__47_helpers_47_array__;
+var $__0 = ($___46__46__47__46__46__47_helpers_47_array__ = require("../../helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}),
+    arrayFilter = $__0.arrayFilter,
+    arrayMap = $__0.arrayMap;
+function cleanPatches(patches) {
+  var newOrRemovedColumns = [];
+  patches = arrayFilter(patches, (function(patch) {
+    if (/[/]length/ig.test(patch.path)) {
+      return false;
     }
-    return {
-      row: parseInt(match[1], 10),
-      col: /^\d*$/.test(match[2]) ? parseInt(match[2], 10) : match[2]
-    };
-  }
-}
-function destroy() {
-  var instance = this;
-  if (instance.observer) {
-    destroyObserver.call(instance);
-    unbindEvents.call(instance);
-  }
-}
-function destroyObserver() {
-  var instance = this;
-  jsonpatch.unobserve(instance.observedData, instance.observer);
-  delete instance.observedData;
-  delete instance.observeChangesActive;
-  delete instance.pauseObservingChanges;
-  delete instance.resumeObservingChanges;
-}
-function bindEvents() {
-  var instance = this;
-  instance.addHook('afterDestroy', destroy);
-  instance.addHook('afterCreateRow', afterTableAlter);
-  instance.addHook('afterRemoveRow', afterTableAlter);
-  instance.addHook('afterCreateCol', afterTableAlter);
-  instance.addHook('afterRemoveCol', afterTableAlter);
-  instance.addHook('afterChange', function(changes, source) {
-    if (source != 'loadData') {
-      afterTableAlter.call(this);
+    if (!parsePath(patch.path)) {
+      return false;
     }
+    return true;
+  }));
+  patches = arrayMap(patches, (function(patch) {
+    var coords = parsePath(patch.path);
+    patch.row = coords.row;
+    patch.col = coords.col;
+    return patch;
+  }));
+  patches = arrayFilter(patches, function(patch) {
+    if (['add', 'remove'].indexOf(patch.op) !== -1 && !isNaN(patch.col)) {
+      if (newOrRemovedColumns.indexOf(patch.col) !== -1) {
+        return false;
+      }
+      newOrRemovedColumns.push(patch.col);
+    }
+    return true;
   });
+  newOrRemovedColumns.length = 0;
+  return patches;
 }
-function unbindEvents() {
-  var instance = this;
-  instance.removeHook('afterDestroy', destroy);
-  instance.removeHook('afterCreateRow', afterTableAlter);
-  instance.removeHook('afterRemoveRow', afterTableAlter);
-  instance.removeHook('afterCreateCol', afterTableAlter);
-  instance.removeHook('afterRemoveCol', afterTableAlter);
-  instance.removeHook('afterChange', afterTableAlter);
-}
-function afterTableAlter() {
-  var instance = this;
-  instance.pauseObservingChanges();
-  instance.addHookOnce('afterChangesObserved', function() {
-    instance.resumeObservingChanges();
-  });
+function parsePath(path) {
+  var match = path.match(/^\/(\d+)\/?(.*)?$/);
+  if (!match) {
+    return null;
+  }
+  var $__1 = match,
+      row = $__1[1],
+      column = $__1[2];
+  return {
+    row: parseInt(row, 10),
+    col: /^\d*$/.test(column) ? parseInt(column, 10) : column
+  };
 }
 
 //# 
-},{"jsonpatch":"jsonpatch","plugins":59}],86:[function(require,module,exports){
+},{"../../helpers/array":42}],88:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   HandsontablePersistentState: {get: function() {
@@ -17436,7 +17734,7 @@ Handsontable.hooks.add('beforeInit', htPersistentState.init);
 Handsontable.hooks.add('afterUpdateSettings', htPersistentState.init);
 
 //# 
-},{"plugins":59}],87:[function(require,module,exports){
+},{"plugins":59}],89:[function(require,module,exports){
 "use strict";
 var $___46__46__47__46__46__47_helpers_47_dom_47_element__,
     $___46__46__47__46__46__47_renderers__;
@@ -17544,7 +17842,7 @@ Handsontable.hooks.add('afterInit', init);
 Handsontable.hooks.add('afterUpdateSettings', init);
 
 //# 
-},{"helpers/dom/element":45,"renderers":90}],88:[function(require,module,exports){
+},{"helpers/dom/element":45,"renderers":92}],90:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   TouchScroll: {get: function() {
@@ -17657,7 +17955,7 @@ var $TouchScroll = TouchScroll;
 registerPlugin('touchScroll', TouchScroll);
 
 //# 
-},{"_base":60,"helpers/dom/element":45,"plugins":59}],89:[function(require,module,exports){
+},{"_base":60,"helpers/dom/element":45,"plugins":59}],91:[function(require,module,exports){
 "use strict";
 var $___46__46__47__46__46__47_helpers_47_object__,
     $___46__46__47__46__46__47_helpers_47_dom_47_event__;
@@ -17963,7 +18261,7 @@ Handsontable.hooks.add('afterInit', init);
 Handsontable.hooks.add('afterUpdateSettings', init);
 
 //# 
-},{"helpers/dom/event":46,"helpers/object":50}],90:[function(require,module,exports){
+},{"helpers/dom/event":46,"helpers/object":50}],92:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   registerRenderer: {get: function() {
@@ -18008,7 +18306,7 @@ function hasRenderer(rendererName) {
 ;
 
 //# 
-},{"helpers/string":52}],91:[function(require,module,exports){
+},{"helpers/string":52}],93:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   cellDecorator: {get: function() {
@@ -18050,7 +18348,7 @@ function cellDecorator(instance, TD, row, col, prop, value, cellProperties) {
 }
 
 //# 
-},{"helpers/dom/element":45,"renderers":90}],92:[function(require,module,exports){
+},{"helpers/dom/element":45,"renderers":92}],94:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   autocompleteRenderer: {get: function() {
@@ -18107,7 +18405,7 @@ function autocompleteRenderer(instance, TD, row, col, prop, value, cellPropertie
 registerRenderer('autocomplete', autocompleteRenderer);
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":5,"eventManager":41,"helpers/dom/element":45,"renderers":90}],93:[function(require,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":5,"eventManager":41,"helpers/dom/element":45,"renderers":92}],95:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   checkboxRenderer: {get: function() {
@@ -18264,7 +18562,7 @@ function preventDefault(event) {
 }
 
 //# 
-},{"eventManager":41,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/string":52,"helpers/unicode":53,"renderers":90}],94:[function(require,module,exports){
+},{"eventManager":41,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/string":52,"helpers/unicode":53,"renderers":92}],96:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   htmlRenderer: {get: function() {
@@ -18289,7 +18587,7 @@ function htmlRenderer(instance, TD, row, col, prop, value, cellProperties) {
 registerRenderer('html', htmlRenderer);
 
 //# 
-},{"helpers/dom/element":45,"renderers":90}],95:[function(require,module,exports){
+},{"helpers/dom/element":45,"renderers":92}],97:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   numericRenderer: {get: function() {
@@ -18321,7 +18619,7 @@ function numericRenderer(instance, TD, row, col, prop, value, cellProperties) {
 registerRenderer('numeric', numericRenderer);
 
 //# 
-},{"helpers/dom/element":45,"helpers/number":49,"numeral":"numeral","renderers":90}],96:[function(require,module,exports){
+},{"helpers/dom/element":45,"helpers/number":49,"numeral":"numeral","renderers":92}],98:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   passwordRenderer: {get: function() {
@@ -18348,7 +18646,7 @@ function passwordRenderer(instance, TD, row, col, prop, value, cellProperties) {
 registerRenderer('password', passwordRenderer);
 
 //# 
-},{"helpers/dom/element":45,"renderers":90}],97:[function(require,module,exports){
+},{"helpers/dom/element":45,"renderers":92}],99:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   textRenderer: {get: function() {
@@ -18391,7 +18689,7 @@ function textRenderer(instance, TD, row, col, prop, value, cellProperties) {
 registerRenderer('text', textRenderer);
 
 //# 
-},{"helpers/dom/element":45,"helpers/mixed":48,"renderers":90}],98:[function(require,module,exports){
+},{"helpers/dom/element":45,"helpers/mixed":48,"renderers":92}],100:[function(require,module,exports){
 "use strict";
 (function(global) {
   'use strict';
@@ -18774,7 +19072,7 @@ registerRenderer('text', textRenderer);
 })();
 
 //# 
-},{}],99:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   TableView: {get: function() {
@@ -19297,7 +19595,7 @@ TableView.prototype.destroy = function() {
 ;
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":5,"3rdparty/walkontable/src/core":7,"3rdparty/walkontable/src/selection":18,"eventManager":41,"helpers/dom/element":45,"helpers/dom/event":46}],100:[function(require,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":5,"3rdparty/walkontable/src/core":7,"3rdparty/walkontable/src/selection":18,"eventManager":41,"helpers/dom/element":45,"helpers/dom/event":46}],102:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   GhostTable: {get: function() {
@@ -19522,7 +19820,7 @@ Handsontable.utils = Handsontable.utils || {};
 Handsontable.utils.GhostTable = GhostTable;
 
 //# 
-},{"helpers/array":42,"helpers/dom/element":45,"helpers/mixed":48,"helpers/number":49,"helpers/object":50}],101:[function(require,module,exports){
+},{"helpers/array":42,"helpers/dom/element":45,"helpers/mixed":48,"helpers/number":49,"helpers/object":50}],103:[function(require,module,exports){
 "use strict";
 var $__7;
 Object.defineProperties(exports, {
@@ -19541,7 +19839,9 @@ var $__0 = ($___46__46__47_helpers_47_dom_47_element__ = require("helpers/dom/el
     outerHeight = $__0.outerHeight,
     outerWidth = $__0.outerWidth;
 var arrayEach = ($___46__46__47_helpers_47_array__ = require("helpers/array"), $___46__46__47_helpers_47_array__ && $___46__46__47_helpers_47_array__.__esModule && $___46__46__47_helpers_47_array__ || {default: $___46__46__47_helpers_47_array__}).arrayEach;
-var objectEach = ($___46__46__47_helpers_47_object__ = require("helpers/object"), $___46__46__47_helpers_47_object__ && $___46__46__47_helpers_47_object__.__esModule && $___46__46__47_helpers_47_object__ || {default: $___46__46__47_helpers_47_object__}).objectEach;
+var $__2 = ($___46__46__47_helpers_47_object__ = require("helpers/object"), $___46__46__47_helpers_47_object__ && $___46__46__47_helpers_47_object__.__esModule && $___46__46__47_helpers_47_object__ || {default: $___46__46__47_helpers_47_object__}),
+    objectEach = $__2.objectEach,
+    isObject = $__2.isObject;
 var rangeEach = ($___46__46__47_helpers_47_number__ = require("helpers/number"), $___46__46__47_helpers_47_number__ && $___46__46__47_helpers_47_number__.__esModule && $___46__46__47_helpers_47_number__ || {default: $___46__46__47_helpers_47_number__}).rangeEach;
 var stringify = ($___46__46__47_helpers_47_mixed__ = require("helpers/mixed"), $___46__46__47_helpers_47_mixed__ && $___46__46__47_helpers_47_mixed__.__esModule && $___46__46__47_helpers_47_mixed__ || {default: $___46__46__47_helpers_47_mixed__}).stringify;
 var SamplesGenerator = function SamplesGenerator(dataFactory) {
@@ -19598,6 +19898,7 @@ var $SamplesGenerator = SamplesGenerator;
     var $__5 = this;
     var samples = new Map();
     var sampledValues = [];
+    var length;
     rangeEach(range.from, range.to, (function(index) {
       var $__7;
       var value;
@@ -19608,17 +19909,20 @@ var $SamplesGenerator = SamplesGenerator;
       } else {
         throw new Error('Unsupported sample type');
       }
-      if (!Array.isArray(value)) {
-        value = stringify(value);
+      if (isObject(value)) {
+        length = Object.keys(value).length;
+      } else if (Array.isArray(value)) {
+        length = value.length;
+      } else {
+        length = stringify(value).length;
       }
-      var len = value.length;
-      if (!samples.has(len)) {
-        samples.set(len, {
+      if (!samples.has(length)) {
+        samples.set(length, {
           needed: $__5.getSampleCount(),
           strings: []
         });
       }
-      var sample = samples.get(len);
+      var sample = samples.get(length);
       if (sample.needed) {
         var duplicate = sampledValues.indexOf(value) > -1;
         if (!duplicate) {
@@ -19652,7 +19956,7 @@ Handsontable.utils = Handsontable.utils || {};
 Handsontable.utils.SamplesGenerator = SamplesGenerator;
 
 //# 
-},{"helpers/array":42,"helpers/dom/element":45,"helpers/mixed":48,"helpers/number":49,"helpers/object":50}],102:[function(require,module,exports){
+},{"helpers/array":42,"helpers/dom/element":45,"helpers/mixed":48,"helpers/number":49,"helpers/object":50}],104:[function(require,module,exports){
 "use strict";
 var $___46__46__47_helpers_47_mixed__;
 var stringify = ($___46__46__47_helpers_47_mixed__ = require("helpers/mixed"), $___46__46__47_helpers_47_mixed__ && $___46__46__47_helpers_47_mixed__.__esModule && $___46__46__47_helpers_47_mixed__ || {default: $___46__46__47_helpers_47_mixed__}).stringify;
@@ -19687,7 +19991,7 @@ function process(value, callback) {
 }
 
 //# 
-},{"helpers/mixed":48}],103:[function(require,module,exports){
+},{"helpers/mixed":48}],105:[function(require,module,exports){
 "use strict";
 var $__moment__,
     $___46__46__47_editors__;
@@ -19696,11 +20000,15 @@ var getEditor = ($___46__46__47_editors__ = require("editors"), $___46__46__47_e
 Handsontable.DateValidator = function(value, callback) {
   var valid = true;
   var dateEditor = getEditor('date', this.instance);
-  if (value === null) {
+  if (value == null) {
     value = '';
   }
   var isValidDate = moment(new Date(value)).isValid();
   var isValidFormat = moment(value, this.dateFormat || dateEditor.defaultDateFormat, true).isValid();
+  if (this.allowEmpty && value === '') {
+    isValidDate = true;
+    isValidFormat = true;
+  }
   if (!isValidDate) {
     valid = false;
   }
@@ -19733,17 +20041,23 @@ var correctFormat = function correctFormat(value, dateFormat) {
 };
 
 //# 
-},{"editors":29,"moment":"moment"}],104:[function(require,module,exports){
+},{"editors":29,"moment":"moment"}],106:[function(require,module,exports){
 "use strict";
 Handsontable.NumericValidator = function(value, callback) {
-  if (value === null) {
+  if (value == null) {
     value = '';
   }
-  callback(/^-?\d*(\.|\,)?\d*$/.test(value));
+  if (this.allowEmpty && value === '') {
+    callback(true);
+  } else if (value === '') {
+    callback(false);
+  } else {
+    callback(/^-?\d*(\.|\,)?\d*$/.test(value));
+  }
 };
 
 //# 
-},{}],105:[function(require,module,exports){
+},{}],107:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableBottomOverlay: {get: function() {
@@ -19942,7 +20256,7 @@ window.WalkontableBottomOverlay = WalkontableBottomOverlay;
 WalkontableOverlay.registerOverlay(WalkontableOverlay.CLONE_BOTTOM, WalkontableBottomOverlay);
 
 //# 
-},{"../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js":11,"../../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45}],106:[function(require,module,exports){
+},{"../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js":11,"../../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45}],108:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableBottomLeftCornerOverlay: {get: function() {
@@ -20018,7 +20332,7 @@ window.WalkontableBottomLeftCornerOverlay = WalkontableBottomLeftCornerOverlay;
 WalkontableOverlay.registerOverlay(WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER, WalkontableBottomLeftCornerOverlay);
 
 //# 
-},{"../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js":11,"../../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45}],107:[function(require,module,exports){
+},{"../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js":11,"../../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45}],109:[function(require,module,exports){
 "use strict";
 var $__3rdparty_47_walkontable_47_src_47_overlay_47_bottom_46_js__,
     $__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner_46_js__;
@@ -20026,7 +20340,7 @@ var WalkontableBottomOverlay = ($__3rdparty_47_walkontable_47_src_47_overlay_47_
 var WalkontableBottomLeftCornerOverlay = ($__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner_46_js__ = require("3rdparty/walkontable/src/overlay/bottomLeftCorner.js"), $__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner_46_js__ && $__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner_46_js__.__esModule && $__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner_46_js__ || {default: $__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner_46_js__}).WalkontableBottomLeftCornerOverlay;
 
 //# 
-},{"3rdparty/walkontable/src/overlay/bottom.js":105,"3rdparty/walkontable/src/overlay/bottomLeftCorner.js":106}],108:[function(require,module,exports){
+},{"3rdparty/walkontable/src/overlay/bottom.js":107,"3rdparty/walkontable/src/overlay/bottomLeftCorner.js":108}],110:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BindRowsWithHeaders: {get: function() {
@@ -20122,7 +20436,7 @@ var $BindRowsWithHeaders = BindRowsWithHeaders;
 registerPlugin('bindRowsWithHeaders', BindRowsWithHeaders);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60,"bindStrategy":109}],109:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60,"bindStrategy":111}],111:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BindStrategy: {get: function() {
@@ -20196,7 +20510,7 @@ Handsontable.utils = Handsontable.utils || {};
 Handsontable.utils.BindStrategy = BindStrategy;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":54}],110:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":54}],112:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   LooseBindStrategy: {get: function() {
@@ -20229,7 +20543,7 @@ BindStrategy.registerStrategy(LooseBindStrategy.STRATEGY_NAME, LooseBindStrategy
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":54,"bindStrategy":109}],111:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":54,"bindStrategy":111}],113:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   StrictBindStrategy: {get: function() {
@@ -20262,7 +20576,7 @@ BindStrategy.registerStrategy(StrictBindStrategy.STRATEGY_NAME, StrictBindStrate
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":54,"bindStrategy":109}],112:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":54,"bindStrategy":111}],114:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   CollapsibleColumns: {get: function() {
@@ -20570,7 +20884,7 @@ var $CollapsibleColumns = CollapsibleColumns;
 registerPlugin('collapsibleColumns', CollapsibleColumns);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":41,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":46,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60}],113:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":41,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":46,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60}],115:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ColumnSummary: {get: function() {
@@ -20937,7 +21251,7 @@ var $ColumnSummary = ColumnSummary;
 registerPlugin('columnSummary', ColumnSummary);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":60}],114:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":60}],116:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DropdownMenu: {get: function() {
@@ -21135,7 +21449,7 @@ Handsontable.hooks.register('afterDropdownMenuExecute');
 registerPlugin('dropdownMenu', DropdownMenu);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":41,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":46,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/commandExecutor":67,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/itemsFactory":70,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":71,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":72}],115:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":41,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":46,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/commandExecutor":67,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/itemsFactory":70,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":71,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":72}],117:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DataProvider: {get: function() {
@@ -21250,7 +21564,7 @@ var DataProvider = function DataProvider(hotInstance) {
 ;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50}],116:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50}],118:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ExportFile: {get: function() {
@@ -21330,7 +21644,7 @@ var $ExportFile = ExportFile;
 registerPlugin('exportFile', ExportFile);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60,"dataProvider":115,"typeFactory":117}],117:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60,"dataProvider":117,"typeFactory":119}],119:[function(require,module,exports){
 "use strict";
 var $__1;
 Object.defineProperties(exports, {
@@ -21370,7 +21684,7 @@ function typeFactory(type, dataProvider, options) {
 }
 
 //# 
-},{"types/csv.js":119}],118:[function(require,module,exports){
+},{"types/csv.js":121}],120:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BaseType: {get: function() {
@@ -21423,7 +21737,7 @@ var $BaseType = BaseType;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":52}],119:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":52}],121:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Csv: {get: function() {
@@ -21499,7 +21813,7 @@ var $Csv = Csv;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":48,"_base.js":118}],120:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":48,"_base.js":120}],122:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BaseComponent: {get: function() {
@@ -21549,7 +21863,7 @@ mixin(BaseComponent, stateSaver);
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":55,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/stateSaver":56}],121:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":55,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/stateSaver":56}],123:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ActionBarComponent: {get: function() {
@@ -21636,7 +21950,7 @@ var $ActionBarComponent = ActionBarComponent;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"_base":120,"ui/input":151,"ui/select":153}],122:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"_base":122,"ui/input":153,"ui/select":155}],124:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ConditionComponent: {get: function() {
@@ -21697,11 +22011,16 @@ var $ConditionComponent = ConditionComponent;
     }
   },
   getState: function() {
+    var command = this.getSelectElement().getValue() || FORMULA_NONE;
+    var args = [];
+    arrayEach(this.getInputElements(), (function(element, index) {
+      if (command.inputsCount > index) {
+        args.push(element.getValue());
+      }
+    }));
     return {
-      command: this.getSelectElement().getValue() || FORMULA_NONE,
-      args: arrayMap(this.getInputElements(), (function(element) {
-        return element.getValue();
-      }))
+      command: command,
+      args: args
     };
   },
   getSelectElement: function() {
@@ -21775,7 +22094,7 @@ var $ConditionComponent = ConditionComponent;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":46,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode":53,"_base":120,"constants":124,"ui/input":151,"ui/select":153}],123:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":46,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode":53,"_base":122,"constants":126,"ui/input":153,"ui/select":155}],125:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ValueComponent: {get: function() {
@@ -21875,7 +22194,7 @@ var $ValueComponent = ValueComponent;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"_base":120,"constants":124,"ui/input":151,"ui/multipleSelect":152,"ui/select":153}],124:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"_base":122,"constants":126,"ui/input":153,"ui/multipleSelect":154,"ui/select":155}],126:[function(require,module,exports){
 "use strict";
 var $__24,
     $__25;
@@ -22227,7 +22546,7 @@ var _selectOptions = ($__25 = {}, Object.defineProperty($__25, SEPARATOR, {
 }), $__25);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":72,"formula/beginsWith":127,"formula/between":128,"formula/byValue":129,"formula/contains":130,"formula/date/after":131,"formula/date/before":132,"formula/date/today":133,"formula/date/tomorrow":134,"formula/date/yesterday":135,"formula/empty":136,"formula/endsWith":137,"formula/equal":138,"formula/greaterThan":139,"formula/greaterThanOrEqual":140,"formula/lessThan":141,"formula/lessThanOrEqual":142,"formula/none":143,"formula/notBetween":144,"formula/notContains":145,"formula/notEmpty":146,"formula/notEqual":147}],125:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":72,"formula/beginsWith":129,"formula/between":130,"formula/byValue":131,"formula/contains":132,"formula/date/after":133,"formula/date/before":134,"formula/date/today":135,"formula/date/tomorrow":136,"formula/date/yesterday":137,"formula/empty":138,"formula/endsWith":139,"formula/equal":140,"formula/greaterThan":141,"formula/greaterThanOrEqual":142,"formula/lessThan":143,"formula/lessThanOrEqual":144,"formula/none":145,"formula/notBetween":146,"formula/notContains":147,"formula/notEmpty":148,"formula/notEqual":149}],127:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DataFilter: {get: function() {
@@ -22286,7 +22605,7 @@ Handsontable.utils = Handsontable.utils || {};
 Handsontable.utils.FiltersDataFilter = DataFilter;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42}],126:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42}],128:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Filters: {get: function() {
@@ -22434,23 +22753,26 @@ var $Filters = Filters;
     }));
     var needToFilter = this.formulaCollection.isEmpty() ? false : true;
     var filteredRows = [];
-    if (needToFilter) {
-      var trimmedRows = [];
-      this.trimRowsPlugin.trimmedRows.length = 0;
-      filteredRows = arrayMap(dataFilter.filter(), (function(rowData) {
-        return rowData.meta.visualRow;
-      }));
-      rangeEach(this.hot.countSourceRows() - 1, (function(row) {
-        if (filteredRows.indexOf(row) === -1) {
-          trimmedRows.push(row);
+    var allowFiltering = this.hot.runHooks('beforeFilter', this.formulaCollection.exportAllFormulas());
+    if (allowFiltering !== false) {
+      if (needToFilter) {
+        var trimmedRows = [];
+        this.trimRowsPlugin.trimmedRows.length = 0;
+        filteredRows = arrayMap(dataFilter.filter(), (function(rowData) {
+          return rowData.meta.visualRow;
+        }));
+        rangeEach(this.hot.countSourceRows() - 1, (function(row) {
+          if (filteredRows.indexOf(row) === -1) {
+            trimmedRows.push(row);
+          }
+        }));
+        this.trimRowsPlugin.trimRows(trimmedRows);
+        if (!filteredRows.length) {
+          this.hot.deselectCell();
         }
-      }));
-      this.trimRowsPlugin.trimRows(trimmedRows);
-      if (!filteredRows.length) {
-        this.hot.deselectCell();
+      } else {
+        this.trimRowsPlugin.untrimAll();
       }
-    } else {
-      this.trimRowsPlugin.untrimAll();
     }
     this.hot.view.wt.wtOverlays.adjustElementsSize(true);
     this.hot.render();
@@ -22555,7 +22877,7 @@ var $Filters = Filters;
 registerPlugin('filters', Filters);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":41,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60,"component/actionBar":121,"component/condition":122,"component/value":123,"constants":124,"dataFilter":125,"formulaCollection":148}],127:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":41,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60,"component/actionBar":123,"component/condition":124,"component/value":125,"constants":126,"dataFilter":127,"formulaCollection":150}],129:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22577,7 +22899,7 @@ function formula(dataRow) {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":48,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":52,"formulaRegisterer":149}],128:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":48,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":52,"formulaRegisterer":151}],130:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22613,7 +22935,7 @@ function formula(dataRow) {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"date/after":131,"date/before":132,"formulaRegisterer":149}],129:[function(require,module,exports){
+},{"date/after":133,"date/before":134,"formulaRegisterer":151}],131:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22631,7 +22953,7 @@ function formula(dataRow) {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"formulaRegisterer":149}],130:[function(require,module,exports){
+},{"formulaRegisterer":151}],132:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22651,7 +22973,7 @@ function formula(dataRow) {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":48,"formulaRegisterer":149}],131:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":48,"formulaRegisterer":151}],133:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22676,7 +22998,7 @@ function formula(dataRow) {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"formulaRegisterer":149,"moment":"moment"}],132:[function(require,module,exports){
+},{"formulaRegisterer":151,"moment":"moment"}],134:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22701,7 +23023,7 @@ function formula(dataRow) {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"formulaRegisterer":149,"moment":"moment"}],133:[function(require,module,exports){
+},{"formulaRegisterer":151,"moment":"moment"}],135:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22724,7 +23046,7 @@ function formula(dataRow) {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"formulaRegisterer":149,"moment":"moment"}],134:[function(require,module,exports){
+},{"formulaRegisterer":151,"moment":"moment"}],136:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22747,7 +23069,7 @@ function formula(dataRow) {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"formulaRegisterer":149,"moment":"moment"}],135:[function(require,module,exports){
+},{"formulaRegisterer":151,"moment":"moment"}],137:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22770,7 +23092,7 @@ function formula(dataRow) {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"formulaRegisterer":149,"moment":"moment"}],136:[function(require,module,exports){
+},{"formulaRegisterer":151,"moment":"moment"}],138:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22787,7 +23109,7 @@ function formula(dataRow) {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"formulaRegisterer":149}],137:[function(require,module,exports){
+},{"formulaRegisterer":151}],139:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22809,7 +23131,7 @@ function formula(dataRow) {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":48,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":52,"formulaRegisterer":149}],138:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":48,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":52,"formulaRegisterer":151}],140:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22829,7 +23151,7 @@ function formula(dataRow) {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":48,"formulaRegisterer":149}],139:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":48,"formulaRegisterer":151}],141:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22850,7 +23172,7 @@ function formula(dataRow) {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"formulaRegisterer":149}],140:[function(require,module,exports){
+},{"formulaRegisterer":151}],142:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22871,7 +23193,7 @@ function formula(dataRow) {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"formulaRegisterer":149}],141:[function(require,module,exports){
+},{"formulaRegisterer":151}],143:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22892,7 +23214,7 @@ function formula(dataRow) {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"formulaRegisterer":149}],142:[function(require,module,exports){
+},{"formulaRegisterer":151}],144:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22913,7 +23235,7 @@ function formula(dataRow) {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"formulaRegisterer":149}],143:[function(require,module,exports){
+},{"formulaRegisterer":151}],145:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22930,7 +23252,7 @@ function formula() {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"formulaRegisterer":149}],144:[function(require,module,exports){
+},{"formulaRegisterer":151}],146:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22951,7 +23273,7 @@ function formula(dataRow, inputValues) {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"between":128,"formulaRegisterer":149}],145:[function(require,module,exports){
+},{"between":130,"formulaRegisterer":151}],147:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22972,7 +23294,7 @@ function formula(dataRow, inputValues) {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"contains":130,"formulaRegisterer":149}],146:[function(require,module,exports){
+},{"contains":132,"formulaRegisterer":151}],148:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22993,7 +23315,7 @@ function formula(dataRow, inputValues) {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"empty":136,"formulaRegisterer":149}],147:[function(require,module,exports){
+},{"empty":138,"formulaRegisterer":151}],149:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -23014,7 +23336,7 @@ function formula(dataRow, inputValues) {
 registerFormula(FORMULA_NAME, formula);
 
 //# 
-},{"equal":138,"formulaRegisterer":149}],148:[function(require,module,exports){
+},{"equal":140,"formulaRegisterer":151}],150:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FormulaCollection: {get: function() {
@@ -23077,6 +23399,7 @@ var FormulaCollection = function FormulaCollection() {
     } else {
       this.getFormulas(column).push({
         name: name,
+        args: args,
         func: getFormula(name, args)
       });
     }
@@ -23086,6 +23409,26 @@ var FormulaCollection = function FormulaCollection() {
       this.formulas[column] = [];
     }
     return this.formulas[column];
+  },
+  exportAllFormulas: function() {
+    var $__3 = this;
+    var result = [];
+    arrayEach(this.orderStack, (function(column) {
+      var formulas = arrayMap($__3.getFormulas(column), (function() {
+        var $__5 = arguments[0] !== (void 0) ? arguments[0] : formula,
+            name = $__5.name,
+            args = $__5.args;
+        return {
+          name: name,
+          args: args
+        };
+      }));
+      result.push({
+        column: column,
+        formulas: formulas
+      });
+    }));
+    return result;
   },
   removeFormulas: function(column) {
     if (this.orderStack.indexOf(column) >= 0) {
@@ -23120,7 +23463,7 @@ var FormulaCollection = function FormulaCollection() {
 ;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"formulaRegisterer":149}],149:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"formulaRegisterer":151}],151:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   getFormula: {get: function() {
@@ -23151,7 +23494,7 @@ Handsontable.utils.FiltersFormulaRegisterer = {
 };
 
 //# 
-},{}],150:[function(require,module,exports){
+},{}],152:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BaseUI: {get: function() {
@@ -23238,7 +23581,7 @@ mixin(BaseUI, localHooks);
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":41,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":55}],151:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":41,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":55}],153:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   InputUI: {get: function() {
@@ -23324,7 +23667,7 @@ var $InputUI = InputUI;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"_base":150}],152:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"_base":152}],154:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   MultipleSelectUI: {get: function() {
@@ -23468,7 +23811,7 @@ function itemsToValue(availableItems) {
 }
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":52,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":71,"_base":150,"input":151}],153:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":52,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":71,"_base":152,"input":153}],155:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   SelectUI: {get: function() {
@@ -23516,7 +23859,8 @@ var $SelectUI = SelectUI;
     $traceurRuntime.superGet(this, $SelectUI.prototype, "build").call(this);
     this.menu = new Menu(this.hot, {
       className: 'htSelectUI htFiltersConditionsMenu',
-      keepInViewport: false
+      keepInViewport: false,
+      standalone: true
     });
     this.menu.setMenuItems(this.items);
     var caption = privatePool.get(this).caption = document.createElement('div');
@@ -23582,7 +23926,7 @@ var $SelectUI = SelectUI;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":71,"_base":150}],154:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":71,"_base":152}],156:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DateCalculator: {get: function() {
@@ -23773,7 +24117,7 @@ var DateCalculator = function DateCalculator(year) {
 ;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50}],155:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50}],157:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   GanttChart: {get: function() {
@@ -23820,6 +24164,7 @@ var GanttChart = function GanttChart(hotInstance) {
   this.initialSettings = null;
   this.dataFeed = null;
   this.colorData = {};
+  this.rangeBarMeta = Object.create(null);
 };
 var $GanttChart = GanttChart;
 ($traceurRuntime.createClass)(GanttChart, {
@@ -23871,6 +24216,7 @@ var $GanttChart = GanttChart;
     this.monthList = [];
     this.rangeBars = {};
     this.rangeList = {};
+    this.rangeBarMeta = {};
     this.hotSource = null;
     this.deassignGanttSettings();
     this.hot.getPlugin('collapsibleColumns').disablePlugin();
@@ -23896,14 +24242,14 @@ var $GanttChart = GanttChart;
     if (this.settings.dataSource) {
       var source = this.settings.dataSource;
       if (source.instance) {
-        this.loadData(source.instance, source.startDateColumn, source.endDateColumn, source.additionalData);
+        this.loadData(source.instance, source.startDateColumn, source.endDateColumn, source.additionalData, source.asyncUpdates);
       } else {
         this.loadData(source);
       }
     }
   },
-  loadData: function(data, startDateColumn, endDateColumn, additionalData) {
-    this.dataFeed = new GanttChartDataFeed(this.hot, data, startDateColumn, endDateColumn, additionalData);
+  loadData: function(data, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
+    this.dataFeed = new GanttChartDataFeed(this.hot, data, startDateColumn, endDateColumn, additionalData, asyncUpdates);
   },
   clearRangeBars: function() {
     this.rangeBars = {};
@@ -23997,6 +24343,25 @@ var $GanttChart = GanttChart;
     }
     this.internalUpdateSettings = void 0;
   },
+  cacheRangeBarMeta: function(row, col, key, value) {
+    if (!this.rangeBarMeta[row]) {
+      this.rangeBarMeta[row] = {};
+    }
+    if (!this.rangeBarMeta[row][col]) {
+      this.rangeBarMeta[row][col] = {};
+    }
+    this.rangeBarMeta[row][col][key] = value;
+  },
+  applyRangeBarMetaCache: function() {
+    var $__9 = this;
+    objectEach(this.rangeBarMeta, (function(rowArr, row) {
+      objectEach(rowArr, (function(cell, col) {
+        objectEach(cell, (function(value, key) {
+          $__9.hot.setCellMeta(row, col, key, value);
+        }));
+      }));
+    }));
+  },
   addRangeBar: function(row, startDate, endDate, additionalData) {
     var $__9 = this;
     var startDateColumn = this.dateCalculator.dateToColumn(startDate);
@@ -24004,7 +24369,7 @@ var $GanttChart = GanttChart;
     var rowCount = this.hot.countRows();
     if (!this.dateCalculator.isValidRangeBarData(startDate, endDate) || startDateColumn === false || endDateColumn === false) {
       if (row > rowCount - 1) {
-        this.hot.alter('insert_row', rowCount - 1, row - rowCount + 1);
+        this.hot.alter('insert_row', rowCount, row - rowCount + 1);
       }
       return false;
     }
@@ -24051,7 +24416,7 @@ var $GanttChart = GanttChart;
     var currentBar = this.rangeBars[row][startDateColumn];
     var rowCount = this.hot.countRows();
     if (row > rowCount - 1) {
-      this.hot.alter('insert_row', rowCount - 1, row - rowCount + 1);
+      this.hot.alter('insert_row', rowCount, row - rowCount + 1);
     }
     for (var i = startDateColumn; i <= endDateColumn; i++) {
       var cellMeta = this.hot.getCellMeta(row, i);
@@ -24062,6 +24427,9 @@ var $GanttChart = GanttChart;
       this.hot.setCellMeta(row, i, 'originalClassName', cellMeta.className);
       this.hot.setCellMeta(row, i, 'className', newClassName);
       this.hot.setCellMeta(row, i, 'additionalData', currentBar.additionalData);
+      this.cacheRangeBarMeta(row, i, 'originalClassName', cellMeta.className);
+      this.cacheRangeBarMeta(row, i, 'className', newClassName);
+      this.cacheRangeBarMeta(row, i, 'additionalData', currentBar.additionalData);
     }
     this.hot.render();
   },
@@ -24097,6 +24465,8 @@ var $GanttChart = GanttChart;
       var cellMeta = this.hot.getCellMeta(row, i);
       this.hot.setCellMeta(row, i, 'className', cellMeta.originalClassName);
       this.hot.setCellMeta(row, i, 'originalClassName', void 0);
+      this.cacheRangeBarMeta(row, i, 'className', cellMeta.originalClassName);
+      this.cacheRangeBarMeta(row, i, 'originalClassName', void 0);
     }
     this.hot.render();
   },
@@ -24143,6 +24513,7 @@ var $GanttChart = GanttChart;
   },
   onUpdateSettings: function() {
     if (this.internalUpdateSettings) {
+      this.applyRangeBarMetaCache();
       return;
     }
     $traceurRuntime.superGet(this, $GanttChart.prototype, "onUpdateSettings").call(this);
@@ -24158,7 +24529,7 @@ var $GanttChart = GanttChart;
 registerPlugin('ganttChart', GanttChart);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/data":44,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":60,"dateCalculator":154,"ganttChartDataFeed":156}],156:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/data":44,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":60,"dateCalculator":156,"ganttChartDataFeed":158}],158:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   GanttChartDataFeed: {get: function() {
@@ -24174,31 +24545,51 @@ var $__0 = ($__handsontable_47_helpers_47_object__ = require("../../../node_modu
     deepClone = $__0.deepClone;
 var arrayEach = ($__handsontable_47_helpers_47_array__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
 var DateCalculator = ($__dateCalculator__ = require("dateCalculator"), $__dateCalculator__ && $__dateCalculator__.__esModule && $__dateCalculator__ || {default: $__dateCalculator__}).DateCalculator;
-var GanttChartDataFeed = function GanttChartDataFeed(chartInstance, data, startDateColumn, endDateColumn, additionalData) {
+var GanttChartDataFeed = function GanttChartDataFeed(chartInstance, data, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
   this.data = data;
   this.chartInstance = chartInstance;
   this.chartPlugin = this.chartInstance.getPlugin('ganttChart');
   this.hotSource = null;
   this.sourceHooks = {};
-  this.applyData(data, startDateColumn, endDateColumn, additionalData);
+  this.ongoingAsync = false;
+  this.applyData(data, startDateColumn, endDateColumn, additionalData, asyncUpdates || false);
 };
 ($traceurRuntime.createClass)(GanttChartDataFeed, {
-  applyData: function(data, startDateColumn, endDateColumn, additionalData) {
+  applyData: function(data, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
     if (Object.prototype.toString.call(data) === '[object Array]') {
       this.loadData(data);
     } else if (data.guid) {
-      this.bindWithHotInstance(data, startDateColumn, endDateColumn, additionalData);
+      this.bindWithHotInstance(data, startDateColumn, endDateColumn, additionalData, asyncUpdates);
     }
   },
-  bindWithHotInstance: function(instance, startDateColumn, endDateColumn, additionalData) {
+  bindWithHotInstance: function(instance, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
     this.hotSource = {
       instance: instance,
       startColumn: startDateColumn,
       endColumn: endDateColumn,
-      additionalData: additionalData
+      additionalData: additionalData,
+      asyncUpdates: asyncUpdates
     };
     this.addSourceHotHooks();
-    this.updateFromSource();
+    this.asyncCall(this.updateFromSource);
+  },
+  asyncCall: function(func) {
+    var $__3 = this;
+    if (!this.hotSource.asyncUpdates) {
+      func.call(this);
+      return;
+    }
+    this.asyncStart();
+    setTimeout((function() {
+      func.call($__3);
+      $__3.asyncEnd();
+    }), 0);
+  },
+  asyncStart: function() {
+    this.ongoingAsync = true;
+  },
+  asyncEnd: function() {
+    this.ongoingAsync = false;
   },
   addSourceHotHooks: function() {
     var $__3 = this;
@@ -24298,41 +24689,49 @@ var GanttChartDataFeed = function GanttChartDataFeed(chartInstance, data, startD
   },
   onAfterSourceChange: function(changes, source) {
     var $__3 = this;
-    if (!changes) {
-      return;
-    }
-    var changesByRows = {};
-    for (var i = 0,
-        changesLength = changes.length; i < changesLength; i++) {
-      var currentChange = changes[i];
-      var row = parseInt(currentChange[0], 10);
-      var col = parseInt(currentChange[1], 10);
-      if (!changesByRows[row]) {
-        changesByRows[row] = {};
+    this.asyncCall((function() {
+      if (!changes) {
+        return;
       }
-      changesByRows[row][col] = [currentChange[2], currentChange[3]];
-    }
-    objectEach(changesByRows, (function(prop, i) {
-      i = parseInt(i, 10);
-      if ($__3.chartPlugin.getRangeBarCoordinates(i)) {
-        $__3.chartPlugin.removeRangeBarByColumn(i, $__3.chartPlugin.rangeList[i][1]);
+      var changesByRows = {};
+      for (var i = 0,
+          changesLength = changes.length; i < changesLength; i++) {
+        var currentChange = changes[i];
+        var row = parseInt(currentChange[0], 10);
+        var col = parseInt(currentChange[1], 10);
+        if (!changesByRows[row]) {
+          changesByRows[row] = {};
+        }
+        changesByRows[row][col] = [currentChange[2], currentChange[3]];
       }
-      $__3.updateFromSource(i);
+      objectEach(changesByRows, (function(prop, i) {
+        i = parseInt(i, 10);
+        if ($__3.chartPlugin.getRangeBarCoordinates(i)) {
+          $__3.chartPlugin.removeRangeBarByColumn(i, $__3.chartPlugin.rangeList[i][1]);
+        }
+        $__3.updateFromSource(i);
+      }));
     }));
   },
   onAfterSourceLoadData: function(firstRun) {
-    this.chartPlugin.removeAllRangeBars();
-    this.updateFromSource();
+    var $__3 = this;
+    this.asyncCall((function(firstRun) {
+      $__3.chartPlugin.removeAllRangeBars();
+      $__3.updateFromSource();
+    }));
   },
   onAfterColumnSort: function(column, order) {
-    this.chartPlugin.removeAllRangeBars();
-    this.updateFromSource();
+    var $__3 = this;
+    this.asyncCall((function() {
+      $__3.chartPlugin.removeAllRangeBars();
+      $__3.updateFromSource();
+    }));
   }
 }, {});
 ;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"dateCalculator":154}],157:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"dateCalculator":156}],159:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   HeaderTooltips: {get: function() {
@@ -24428,7 +24827,7 @@ var $HeaderTooltips = HeaderTooltips;
 registerPlugin('headerTooltips', HeaderTooltips);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element.js":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":60}],158:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element.js":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":60}],160:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   HiddenColumns: {get: function() {
@@ -24664,7 +25063,7 @@ function hiddenRenderer(hotInstance, td) {
 registerPlugin('hiddenColumns', HiddenColumns);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60}],159:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60}],161:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   HiddenRows: {get: function() {
@@ -24882,7 +25281,7 @@ var $HiddenRows = HiddenRows;
 registerPlugin('hiddenRows', HiddenRows);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60}],160:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60}],162:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   NestedHeaders: {get: function() {
@@ -25206,7 +25605,7 @@ var $NestedHeaders = NestedHeaders;
 registerPlugin('nestedHeaders', NestedHeaders);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60}],161:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60}],163:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   RowsMapper: {get: function() {
@@ -25247,7 +25646,7 @@ Handsontable.utils = Handsontable.utils || {};
 Handsontable.utils.TrimRowsRowsMapper = RowsMapper;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":54}],162:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":54}],164:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   TrimRows: {get: function() {
@@ -25389,7 +25788,7 @@ var $TrimRows = TrimRows;
 registerPlugin('trimRows', TrimRows);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60,"rowsMapper":161}],"SheetClip":[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60,"rowsMapper":163}],"SheetClip":[function(require,module,exports){
 "use strict";
 (function(global) {
   "use strict";
@@ -25685,7 +26084,7 @@ CopyPasteClass.prototype.init = function() {
           clipboardContents = temp.join('\n');
         }
         this.value = clipboardContents;
-        return false;
+        event.preventDefault();
       }
     };
     style = this.elTextarea.style;
@@ -26658,7 +27057,7 @@ module.exports = function() {
     }
     function loadLocale(name) {
       var oldLocale = null;
-      if (!locales[name] && !isUndefined(module) && module && module.exports) {
+      if (!locales[name] && (typeof module !== 'undefined') && module && module.exports) {
         try {
           oldLocale = globalLocale._abbr;
           require('./locale/' + name);
@@ -26861,10 +27260,10 @@ module.exports = function() {
     var matchOffset = /Z|[+-]\d\d:?\d\d/gi;
     var matchShortOffset = /Z|[+-]\d\d(?::?\d\d)?/gi;
     var matchTimestamp = /[+-]?\d+(\.\d{1,3})?/;
-    var matchWord = /[0-9]*(a[mn]\s?)?['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF\-]+|[\u0600-\u06FF\/]+(\s*?[\u0600-\u06FF]+){1,2}/i;
+    var matchWord = /[0-9]*['a-z\u00A0-\u05FF\u0700-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+|[\u0600-\u06FF\/]+(\s*?[\u0600-\u06FF]+){1,2}/i;
     var regexes = {};
     function addRegexToken(token, regex, strictRegex) {
-      regexes[token] = isFunction(regex) ? regex : function(isStrict) {
+      regexes[token] = isFunction(regex) ? regex : function(isStrict, localeData) {
         return (isStrict && strictRegex) ? strictRegex : regex;
       };
     }
@@ -26875,9 +27274,12 @@ module.exports = function() {
       return regexes[token](config._strict, config._locale);
     }
     function unescapeFormat(s) {
-      return s.replace('\\', '').replace(/\\(\[)|\\(\])|\[([^\]\[]*)\]|\\(.)/g, function(matched, p1, p2, p3, p4) {
+      return regexEscape(s.replace('\\', '').replace(/\\(\[)|\\(\])|\[([^\]\[]*)\]|\\(.)/g, function(matched, p1, p2, p3, p4) {
         return p1 || p2 || p3 || p4;
-      }).replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      }));
+    }
+    function regexEscape(s) {
+      return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     }
     var tokens = {};
     function addParseToken(token, callback) {
@@ -26930,8 +27332,12 @@ module.exports = function() {
     addUnitAlias('month', 'M');
     addRegexToken('M', match1to2);
     addRegexToken('MM', match1to2, match2);
-    addRegexToken('MMM', matchWord);
-    addRegexToken('MMMM', matchWord);
+    addRegexToken('MMM', function(isStrict, locale) {
+      return locale.monthsShortRegex(isStrict);
+    });
+    addRegexToken('MMMM', function(isStrict, locale) {
+      return locale.monthsRegex(isStrict);
+    });
     addParseToken(['M', 'MM'], function(input, array) {
       array[MONTH] = toInt(input) - 1;
     });
@@ -26948,7 +27354,7 @@ module.exports = function() {
     function localeMonths(m, format) {
       return isArray(this._months) ? this._months[m.month()] : this._months[MONTHS_IN_FORMAT.test(format) ? 'format' : 'standalone'][m.month()];
     }
-    var defaultLocaleMonthsShort = 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sept_Oct_Nov_Dec'.split('_');
+    var defaultLocaleMonthsShort = 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_');
     function localeMonthsShort(m, format) {
       return isArray(this._monthsShort) ? this._monthsShort[m.month()] : this._monthsShort[MONTHS_IN_FORMAT.test(format) ? 'format' : 'standalone'][m.month()];
     }
@@ -27007,6 +27413,65 @@ module.exports = function() {
     function getDaysInMonth() {
       return daysInMonth(this.year(), this.month());
     }
+    var defaultMonthsShortRegex = matchWord;
+    function monthsShortRegex(isStrict) {
+      if (this._monthsParseExact) {
+        if (!hasOwnProp(this, '_monthsRegex')) {
+          computeMonthsParse.call(this);
+        }
+        if (isStrict) {
+          return this._monthsShortStrictRegex;
+        } else {
+          return this._monthsShortRegex;
+        }
+      } else {
+        return this._monthsShortStrictRegex && isStrict ? this._monthsShortStrictRegex : this._monthsShortRegex;
+      }
+    }
+    var defaultMonthsRegex = matchWord;
+    function monthsRegex(isStrict) {
+      if (this._monthsParseExact) {
+        if (!hasOwnProp(this, '_monthsRegex')) {
+          computeMonthsParse.call(this);
+        }
+        if (isStrict) {
+          return this._monthsStrictRegex;
+        } else {
+          return this._monthsRegex;
+        }
+      } else {
+        return this._monthsStrictRegex && isStrict ? this._monthsStrictRegex : this._monthsRegex;
+      }
+    }
+    function computeMonthsParse() {
+      function cmpLenRev(a, b) {
+        return b.length - a.length;
+      }
+      var shortPieces = [],
+          longPieces = [],
+          mixedPieces = [],
+          i,
+          mom;
+      for (i = 0; i < 12; i++) {
+        mom = create_utc__createUTC([2000, i]);
+        shortPieces.push(this.monthsShort(mom, ''));
+        longPieces.push(this.months(mom, ''));
+        mixedPieces.push(this.months(mom, ''));
+        mixedPieces.push(this.monthsShort(mom, ''));
+      }
+      shortPieces.sort(cmpLenRev);
+      longPieces.sort(cmpLenRev);
+      mixedPieces.sort(cmpLenRev);
+      for (i = 0; i < 12; i++) {
+        shortPieces[i] = regexEscape(shortPieces[i]);
+        longPieces[i] = regexEscape(longPieces[i]);
+        mixedPieces[i] = regexEscape(mixedPieces[i]);
+      }
+      this._monthsRegex = new RegExp('^(' + mixedPieces.join('|') + ')', 'i');
+      this._monthsShortRegex = this._monthsRegex;
+      this._monthsStrictRegex = new RegExp('^(' + longPieces.join('|') + ')$', 'i');
+      this._monthsShortStrictRegex = new RegExp('^(' + shortPieces.join('|') + ')$', 'i');
+    }
     function checkOverflow(m) {
       var overflow;
       var a = m._a;
@@ -27026,7 +27491,7 @@ module.exports = function() {
       return m;
     }
     function warn(msg) {
-      if (utils_hooks__hooks.suppressDeprecationWarnings === false && !isUndefined(console) && console.warn) {
+      if (utils_hooks__hooks.suppressDeprecationWarnings === false && (typeof console !== 'undefined') && console.warn) {
         console.warn('Deprecation warning: ' + msg);
       }
     }
@@ -27135,6 +27600,10 @@ module.exports = function() {
       }
       return date;
     }
+    addFormatToken('Y', 0, 0, function() {
+      var y = this.year();
+      return y <= 9999 ? '' + y : '+' + y;
+    });
     addFormatToken(0, ['YY', 2], 0, function() {
       return this.year() % 100;
     });
@@ -27153,6 +27622,9 @@ module.exports = function() {
     });
     addParseToken('YY', function(input, array) {
       array[YEAR] = utils_hooks__hooks.parseTwoDigitYear(input);
+    });
+    addParseToken('Y', function(input, array) {
+      array[YEAR] = parseInt(input, 10);
     });
     function daysInYear(year) {
       return isLeapYear(year) ? 366 : 365;
@@ -27547,8 +28019,8 @@ module.exports = function() {
       var args = [].slice.call(arguments, 0);
       return pickBy('isAfter', args);
     }
-    var now = Date.now || function() {
-      return +(new Date());
+    var now = function() {
+      return Date.now ? Date.now() : +(new Date());
     };
     function Duration(duration) {
       var normalizedInput = normalizeObjectUnits(duration),
@@ -27715,7 +28187,7 @@ module.exports = function() {
     function isUtc() {
       return this.isValid() ? this._isUTC && this._offset === 0 : false;
     }
-    var aspNetRegex = /(\-)?(?:(\d*)[. ])?(\d+)\:(\d+)(?:\:(\d+)\.?(\d{3})?)?/;
+    var aspNetRegex = /^(\-)?(?:(\d*)[. ])?(\d+)\:(\d+)(?:\:(\d+)\.?(\d{3})?\d*)?$/;
     var isoRegex = /^(-)?P(?:(?:([0-9,.]*)Y)?(?:([0-9,.]*)M)?(?:([0-9,.]*)D)?(?:T(?:([0-9,.]*)H)?(?:([0-9,.]*)M)?(?:([0-9,.]*)S)?)?|([0-9,.]*)W)$/;
     function create__createDuration(input, key) {
       var duration = input,
@@ -28662,6 +29134,10 @@ module.exports = function() {
     prototype__proto.monthsShort = localeMonthsShort;
     prototype__proto._monthsShort = defaultLocaleMonthsShort;
     prototype__proto.monthsParse = localeMonthsParse;
+    prototype__proto._monthsRegex = defaultMonthsRegex;
+    prototype__proto.monthsRegex = monthsRegex;
+    prototype__proto._monthsShortRegex = defaultMonthsShortRegex;
+    prototype__proto.monthsShortRegex = monthsShortRegex;
     prototype__proto.week = localeWeek;
     prototype__proto._week = defaultLocaleWeek;
     prototype__proto.firstDayOfYear = localeFirstDayOfYear;
@@ -28713,9 +29189,6 @@ module.exports = function() {
       return list(format, index, 'weekdaysMin', 7, 'day');
     }
     locale_locales__getSetGlobalLocale('en', {
-      monthsParse: [/^jan/i, /^feb/i, /^mar/i, /^apr/i, /^may/i, /^jun/i, /^jul/i, /^aug/i, /^sep/i, /^oct/i, /^nov/i, /^dec/i],
-      longMonthsParse: [/^january$/i, /^february$/i, /^march$/i, /^april$/i, /^may$/i, /^june$/i, /^july$/i, /^august$/i, /^september$/i, /^october$/i, /^november$/i, /^december$/i],
-      shortMonthsParse: [/^jan$/i, /^feb$/i, /^mar$/i, /^apr$/i, /^may$/i, /^jun$/i, /^jul$/i, /^aug/i, /^sept?$/i, /^oct$/i, /^nov$/i, /^dec$/i],
       ordinalParse: /\d{1,2}(th|st|nd|rd)/,
       ordinal: function(number) {
         var b = number % 10,
@@ -28973,7 +29446,7 @@ module.exports = function() {
     addParseToken('x', function(input, array, config) {
       config._d = new Date(toInt(input));
     });
-    utils_hooks__hooks.version = '2.11.0';
+    utils_hooks__hooks.version = '2.11.2';
     setHookCallback(local__createLocal);
     utils_hooks__hooks.fn = momentPrototype;
     utils_hooks__hooks.min = min;
@@ -29007,7 +29480,7 @@ module.exports = function() {
 //# 
 },{}],"moment":[function(require,module,exports){
 //! moment.js
-//! version : 2.11.1
+//! version : 2.11.2
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
 //! license : MIT
 //! momentjs.com
@@ -30824,7 +31297,7 @@ module.exports = function() {
     }
 
     // ASP.NET json date format regex
-    var aspNetRegex = /(\-)?(?:(\d*)[. ])?(\d+)\:(\d+)(?:\:(\d+)\.?(\d{3})?)?/;
+    var aspNetRegex = /^(\-)?(?:(\d*)[. ])?(\d+)\:(\d+)(?:\:(\d+)\.?(\d{3})?\d*)?$/;
 
     // from http://docs.closure-library.googlecode.com/git/closure_goog_date_date.js.source.html
     // somewhat more in line with 4.4.3.2 2004 spec, but allows decimal anywhere
@@ -32579,7 +33052,7 @@ module.exports = function() {
     // Side effect imports
 
 
-    utils_hooks__hooks.version = '2.11.1';
+    utils_hooks__hooks.version = '2.11.2';
 
     setHookCallback(local__createLocal);
 
@@ -35014,6 +35487,1916 @@ module.exports = function() {
 }));
 
 },{"moment":"moment"}],"zeroclipboard":[function(require,module,exports){
+"use strict";
+(function(window, undefined) {
+  "use strict";
+  var _window = window,
+      _document = _window.document,
+      _navigator = _window.navigator,
+      _setTimeout = _window.setTimeout,
+      _clearTimeout = _window.clearTimeout,
+      _setInterval = _window.setInterval,
+      _clearInterval = _window.clearInterval,
+      _getComputedStyle = _window.getComputedStyle,
+      _encodeURIComponent = _window.encodeURIComponent,
+      _ActiveXObject = _window.ActiveXObject,
+      _Error = _window.Error,
+      _parseInt = _window.Number.parseInt || _window.parseInt,
+      _parseFloat = _window.Number.parseFloat || _window.parseFloat,
+      _isNaN = _window.Number.isNaN || _window.isNaN,
+      _now = _window.Date.now,
+      _keys = _window.Object.keys,
+      _defineProperty = _window.Object.defineProperty,
+      _hasOwn = _window.Object.prototype.hasOwnProperty,
+      _slice = _window.Array.prototype.slice,
+      _unwrap = function() {
+        var unwrapper = function(el) {
+          return el;
+        };
+        if (typeof _window.wrap === "function" && typeof _window.unwrap === "function") {
+          try {
+            var div = _document.createElement("div");
+            var unwrappedDiv = _window.unwrap(div);
+            if (div.nodeType === 1 && unwrappedDiv && unwrappedDiv.nodeType === 1) {
+              unwrapper = _window.unwrap;
+            }
+          } catch (e) {}
+        }
+        return unwrapper;
+      }();
+  var _args = function(argumentsObj) {
+    return _slice.call(argumentsObj, 0);
+  };
+  var _extend = function() {
+    var i,
+        len,
+        arg,
+        prop,
+        src,
+        copy,
+        args = _args(arguments),
+        target = args[0] || {};
+    for (i = 1, len = args.length; i < len; i++) {
+      if ((arg = args[i]) != null) {
+        for (prop in arg) {
+          if (_hasOwn.call(arg, prop)) {
+            src = target[prop];
+            copy = arg[prop];
+            if (target !== copy && copy !== undefined) {
+              target[prop] = copy;
+            }
+          }
+        }
+      }
+    }
+    return target;
+  };
+  var _deepCopy = function(source) {
+    var copy,
+        i,
+        len,
+        prop;
+    if (typeof source !== "object" || source == null || typeof source.nodeType === "number") {
+      copy = source;
+    } else if (typeof source.length === "number") {
+      copy = [];
+      for (i = 0, len = source.length; i < len; i++) {
+        if (_hasOwn.call(source, i)) {
+          copy[i] = _deepCopy(source[i]);
+        }
+      }
+    } else {
+      copy = {};
+      for (prop in source) {
+        if (_hasOwn.call(source, prop)) {
+          copy[prop] = _deepCopy(source[prop]);
+        }
+      }
+    }
+    return copy;
+  };
+  var _pick = function(obj, keys) {
+    var newObj = {};
+    for (var i = 0,
+        len = keys.length; i < len; i++) {
+      if (keys[i] in obj) {
+        newObj[keys[i]] = obj[keys[i]];
+      }
+    }
+    return newObj;
+  };
+  var _omit = function(obj, keys) {
+    var newObj = {};
+    for (var prop in obj) {
+      if (keys.indexOf(prop) === -1) {
+        newObj[prop] = obj[prop];
+      }
+    }
+    return newObj;
+  };
+  var _deleteOwnProperties = function(obj) {
+    if (obj) {
+      for (var prop in obj) {
+        if (_hasOwn.call(obj, prop)) {
+          delete obj[prop];
+        }
+      }
+    }
+    return obj;
+  };
+  var _containedBy = function(el, ancestorEl) {
+    if (el && el.nodeType === 1 && el.ownerDocument && ancestorEl && (ancestorEl.nodeType === 1 && ancestorEl.ownerDocument && ancestorEl.ownerDocument === el.ownerDocument || ancestorEl.nodeType === 9 && !ancestorEl.ownerDocument && ancestorEl === el.ownerDocument)) {
+      do {
+        if (el === ancestorEl) {
+          return true;
+        }
+        el = el.parentNode;
+      } while (el);
+    }
+    return false;
+  };
+  var _getDirPathOfUrl = function(url) {
+    var dir;
+    if (typeof url === "string" && url) {
+      dir = url.split("#")[0].split("?")[0];
+      dir = url.slice(0, url.lastIndexOf("/") + 1);
+    }
+    return dir;
+  };
+  var _getCurrentScriptUrlFromErrorStack = function(stack) {
+    var url,
+        matches;
+    if (typeof stack === "string" && stack) {
+      matches = stack.match(/^(?:|[^:@]*@|.+\)@(?=http[s]?|file)|.+?\s+(?: at |@)(?:[^:\(]+ )*[\(]?)((?:http[s]?|file):\/\/[\/]?.+?\/[^:\)]*?)(?::\d+)(?::\d+)?/);
+      if (matches && matches[1]) {
+        url = matches[1];
+      } else {
+        matches = stack.match(/\)@((?:http[s]?|file):\/\/[\/]?.+?\/[^:\)]*?)(?::\d+)(?::\d+)?/);
+        if (matches && matches[1]) {
+          url = matches[1];
+        }
+      }
+    }
+    return url;
+  };
+  var _getCurrentScriptUrlFromError = function() {
+    var url,
+        err;
+    try {
+      throw new _Error();
+    } catch (e) {
+      err = e;
+    }
+    if (err) {
+      url = err.sourceURL || err.fileName || _getCurrentScriptUrlFromErrorStack(err.stack);
+    }
+    return url;
+  };
+  var _getCurrentScriptUrl = function() {
+    var jsPath,
+        scripts,
+        i;
+    if (_document.currentScript && (jsPath = _document.currentScript.src)) {
+      return jsPath;
+    }
+    scripts = _document.getElementsByTagName("script");
+    if (scripts.length === 1) {
+      return scripts[0].src || undefined;
+    }
+    if ("readyState" in scripts[0]) {
+      for (i = scripts.length; i--; ) {
+        if (scripts[i].readyState === "interactive" && (jsPath = scripts[i].src)) {
+          return jsPath;
+        }
+      }
+    }
+    if (_document.readyState === "loading" && (jsPath = scripts[scripts.length - 1].src)) {
+      return jsPath;
+    }
+    if (jsPath = _getCurrentScriptUrlFromError()) {
+      return jsPath;
+    }
+    return undefined;
+  };
+  var _getUnanimousScriptParentDir = function() {
+    var i,
+        jsDir,
+        jsPath,
+        scripts = _document.getElementsByTagName("script");
+    for (i = scripts.length; i--; ) {
+      if (!(jsPath = scripts[i].src)) {
+        jsDir = null;
+        break;
+      }
+      jsPath = _getDirPathOfUrl(jsPath);
+      if (jsDir == null) {
+        jsDir = jsPath;
+      } else if (jsDir !== jsPath) {
+        jsDir = null;
+        break;
+      }
+    }
+    return jsDir || undefined;
+  };
+  var _getDefaultSwfPath = function() {
+    var jsDir = _getDirPathOfUrl(_getCurrentScriptUrl()) || _getUnanimousScriptParentDir() || "";
+    return jsDir + "ZeroClipboard.swf";
+  };
+  var _pageIsFramed = function() {
+    return window.opener == null && (!!window.top && window != window.top || !!window.parent && window != window.parent);
+  }();
+  var _flashState = {
+    bridge: null,
+    version: "0.0.0",
+    pluginType: "unknown",
+    disabled: null,
+    outdated: null,
+    sandboxed: null,
+    unavailable: null,
+    degraded: null,
+    deactivated: null,
+    overdue: null,
+    ready: null
+  };
+  var _minimumFlashVersion = "11.0.0";
+  var _zcSwfVersion;
+  var _handlers = {};
+  var _currentElement;
+  var _copyTarget;
+  var _clipData = {};
+  var _clipDataFormatMap = null;
+  var _flashCheckTimeout = 0;
+  var _swfFallbackCheckInterval = 0;
+  var _eventMessages = {
+    ready: "Flash communication is established",
+    error: {
+      "flash-disabled": "Flash is disabled or not installed. May also be attempting to run Flash in a sandboxed iframe, which is impossible.",
+      "flash-outdated": "Flash is too outdated to support ZeroClipboard",
+      "flash-sandboxed": "Attempting to run Flash in a sandboxed iframe, which is impossible",
+      "flash-unavailable": "Flash is unable to communicate bidirectionally with JavaScript",
+      "flash-degraded": "Flash is unable to preserve data fidelity when communicating with JavaScript",
+      "flash-deactivated": "Flash is too outdated for your browser and/or is configured as click-to-activate.\nThis may also mean that the ZeroClipboard SWF object could not be loaded, so please check your `swfPath` configuration and/or network connectivity.\nMay also be attempting to run Flash in a sandboxed iframe, which is impossible.",
+      "flash-overdue": "Flash communication was established but NOT within the acceptable time limit",
+      "version-mismatch": "ZeroClipboard JS version number does not match ZeroClipboard SWF version number",
+      "clipboard-error": "At least one error was thrown while ZeroClipboard was attempting to inject your data into the clipboard",
+      "config-mismatch": "ZeroClipboard configuration does not match Flash's reality",
+      "swf-not-found": "The ZeroClipboard SWF object could not be loaded, so please check your `swfPath` configuration and/or network connectivity"
+    }
+  };
+  var _errorsThatOnlyOccurAfterFlashLoads = ["flash-unavailable", "flash-degraded", "flash-overdue", "version-mismatch", "config-mismatch", "clipboard-error"];
+  var _flashStateErrorNames = ["flash-disabled", "flash-outdated", "flash-sandboxed", "flash-unavailable", "flash-degraded", "flash-deactivated", "flash-overdue"];
+  var _flashStateErrorNameMatchingRegex = new RegExp("^flash-(" + _flashStateErrorNames.map(function(errorName) {
+    return errorName.replace(/^flash-/, "");
+  }).join("|") + ")$");
+  var _flashStateEnabledErrorNameMatchingRegex = new RegExp("^flash-(" + _flashStateErrorNames.slice(1).map(function(errorName) {
+    return errorName.replace(/^flash-/, "");
+  }).join("|") + ")$");
+  var _globalConfig = {
+    swfPath: _getDefaultSwfPath(),
+    trustedDomains: window.location.host ? [window.location.host] : [],
+    cacheBust: true,
+    forceEnhancedClipboard: false,
+    flashLoadTimeout: 3e4,
+    autoActivate: true,
+    bubbleEvents: true,
+    containerId: "global-zeroclipboard-html-bridge",
+    containerClass: "global-zeroclipboard-container",
+    swfObjectId: "global-zeroclipboard-flash-bridge",
+    hoverClass: "zeroclipboard-is-hover",
+    activeClass: "zeroclipboard-is-active",
+    forceHandCursor: false,
+    title: null,
+    zIndex: 999999999
+  };
+  var _config = function(options) {
+    if (typeof options === "object" && options !== null) {
+      for (var prop in options) {
+        if (_hasOwn.call(options, prop)) {
+          if (/^(?:forceHandCursor|title|zIndex|bubbleEvents)$/.test(prop)) {
+            _globalConfig[prop] = options[prop];
+          } else if (_flashState.bridge == null) {
+            if (prop === "containerId" || prop === "swfObjectId") {
+              if (_isValidHtml4Id(options[prop])) {
+                _globalConfig[prop] = options[prop];
+              } else {
+                throw new Error("The specified `" + prop + "` value is not valid as an HTML4 Element ID");
+              }
+            } else {
+              _globalConfig[prop] = options[prop];
+            }
+          }
+        }
+      }
+    }
+    if (typeof options === "string" && options) {
+      if (_hasOwn.call(_globalConfig, options)) {
+        return _globalConfig[options];
+      }
+      return;
+    }
+    return _deepCopy(_globalConfig);
+  };
+  var _state = function() {
+    _detectSandbox();
+    return {
+      browser: _pick(_navigator, ["userAgent", "platform", "appName"]),
+      flash: _omit(_flashState, ["bridge"]),
+      zeroclipboard: {
+        version: ZeroClipboard.version,
+        config: ZeroClipboard.config()
+      }
+    };
+  };
+  var _isFlashUnusable = function() {
+    return !!(_flashState.disabled || _flashState.outdated || _flashState.sandboxed || _flashState.unavailable || _flashState.degraded || _flashState.deactivated);
+  };
+  var _on = function(eventType, listener) {
+    var i,
+        len,
+        events,
+        added = {};
+    if (typeof eventType === "string" && eventType) {
+      events = eventType.toLowerCase().split(/\s+/);
+    } else if (typeof eventType === "object" && eventType && typeof listener === "undefined") {
+      for (i in eventType) {
+        if (_hasOwn.call(eventType, i) && typeof i === "string" && i && typeof eventType[i] === "function") {
+          ZeroClipboard.on(i, eventType[i]);
+        }
+      }
+    }
+    if (events && events.length) {
+      for (i = 0, len = events.length; i < len; i++) {
+        eventType = events[i].replace(/^on/, "");
+        added[eventType] = true;
+        if (!_handlers[eventType]) {
+          _handlers[eventType] = [];
+        }
+        _handlers[eventType].push(listener);
+      }
+      if (added.ready && _flashState.ready) {
+        ZeroClipboard.emit({type: "ready"});
+      }
+      if (added.error) {
+        for (i = 0, len = _flashStateErrorNames.length; i < len; i++) {
+          if (_flashState[_flashStateErrorNames[i].replace(/^flash-/, "")] === true) {
+            ZeroClipboard.emit({
+              type: "error",
+              name: _flashStateErrorNames[i]
+            });
+            break;
+          }
+        }
+        if (_zcSwfVersion !== undefined && ZeroClipboard.version !== _zcSwfVersion) {
+          ZeroClipboard.emit({
+            type: "error",
+            name: "version-mismatch",
+            jsVersion: ZeroClipboard.version,
+            swfVersion: _zcSwfVersion
+          });
+        }
+      }
+    }
+    return ZeroClipboard;
+  };
+  var _off = function(eventType, listener) {
+    var i,
+        len,
+        foundIndex,
+        events,
+        perEventHandlers;
+    if (arguments.length === 0) {
+      events = _keys(_handlers);
+    } else if (typeof eventType === "string" && eventType) {
+      events = eventType.split(/\s+/);
+    } else if (typeof eventType === "object" && eventType && typeof listener === "undefined") {
+      for (i in eventType) {
+        if (_hasOwn.call(eventType, i) && typeof i === "string" && i && typeof eventType[i] === "function") {
+          ZeroClipboard.off(i, eventType[i]);
+        }
+      }
+    }
+    if (events && events.length) {
+      for (i = 0, len = events.length; i < len; i++) {
+        eventType = events[i].toLowerCase().replace(/^on/, "");
+        perEventHandlers = _handlers[eventType];
+        if (perEventHandlers && perEventHandlers.length) {
+          if (listener) {
+            foundIndex = perEventHandlers.indexOf(listener);
+            while (foundIndex !== -1) {
+              perEventHandlers.splice(foundIndex, 1);
+              foundIndex = perEventHandlers.indexOf(listener, foundIndex);
+            }
+          } else {
+            perEventHandlers.length = 0;
+          }
+        }
+      }
+    }
+    return ZeroClipboard;
+  };
+  var _listeners = function(eventType) {
+    var copy;
+    if (typeof eventType === "string" && eventType) {
+      copy = _deepCopy(_handlers[eventType]) || null;
+    } else {
+      copy = _deepCopy(_handlers);
+    }
+    return copy;
+  };
+  var _emit = function(event) {
+    var eventCopy,
+        returnVal,
+        tmp;
+    event = _createEvent(event);
+    if (!event) {
+      return;
+    }
+    if (_preprocessEvent(event)) {
+      return;
+    }
+    if (event.type === "ready" && _flashState.overdue === true) {
+      return ZeroClipboard.emit({
+        type: "error",
+        name: "flash-overdue"
+      });
+    }
+    eventCopy = _extend({}, event);
+    _dispatchCallbacks.call(this, eventCopy);
+    if (event.type === "copy") {
+      tmp = _mapClipDataToFlash(_clipData);
+      returnVal = tmp.data;
+      _clipDataFormatMap = tmp.formatMap;
+    }
+    return returnVal;
+  };
+  var _create = function() {
+    var previousState = _flashState.sandboxed;
+    _detectSandbox();
+    if (typeof _flashState.ready !== "boolean") {
+      _flashState.ready = false;
+    }
+    if (_flashState.sandboxed !== previousState && _flashState.sandboxed === true) {
+      _flashState.ready = false;
+      ZeroClipboard.emit({
+        type: "error",
+        name: "flash-sandboxed"
+      });
+    } else if (!ZeroClipboard.isFlashUnusable() && _flashState.bridge === null) {
+      var maxWait = _globalConfig.flashLoadTimeout;
+      if (typeof maxWait === "number" && maxWait >= 0) {
+        _flashCheckTimeout = _setTimeout(function() {
+          if (typeof _flashState.deactivated !== "boolean") {
+            _flashState.deactivated = true;
+          }
+          if (_flashState.deactivated === true) {
+            ZeroClipboard.emit({
+              type: "error",
+              name: "flash-deactivated"
+            });
+          }
+        }, maxWait);
+      }
+      _flashState.overdue = false;
+      _embedSwf();
+    }
+  };
+  var _destroy = function() {
+    ZeroClipboard.clearData();
+    ZeroClipboard.blur();
+    ZeroClipboard.emit("destroy");
+    _unembedSwf();
+    ZeroClipboard.off();
+  };
+  var _setData = function(format, data) {
+    var dataObj;
+    if (typeof format === "object" && format && typeof data === "undefined") {
+      dataObj = format;
+      ZeroClipboard.clearData();
+    } else if (typeof format === "string" && format) {
+      dataObj = {};
+      dataObj[format] = data;
+    } else {
+      return;
+    }
+    for (var dataFormat in dataObj) {
+      if (typeof dataFormat === "string" && dataFormat && _hasOwn.call(dataObj, dataFormat) && typeof dataObj[dataFormat] === "string" && dataObj[dataFormat]) {
+        _clipData[dataFormat] = dataObj[dataFormat];
+      }
+    }
+  };
+  var _clearData = function(format) {
+    if (typeof format === "undefined") {
+      _deleteOwnProperties(_clipData);
+      _clipDataFormatMap = null;
+    } else if (typeof format === "string" && _hasOwn.call(_clipData, format)) {
+      delete _clipData[format];
+    }
+  };
+  var _getData = function(format) {
+    if (typeof format === "undefined") {
+      return _deepCopy(_clipData);
+    } else if (typeof format === "string" && _hasOwn.call(_clipData, format)) {
+      return _clipData[format];
+    }
+  };
+  var _focus = function(element) {
+    if (!(element && element.nodeType === 1)) {
+      return;
+    }
+    if (_currentElement) {
+      _removeClass(_currentElement, _globalConfig.activeClass);
+      if (_currentElement !== element) {
+        _removeClass(_currentElement, _globalConfig.hoverClass);
+      }
+    }
+    _currentElement = element;
+    _addClass(element, _globalConfig.hoverClass);
+    var newTitle = element.getAttribute("title") || _globalConfig.title;
+    if (typeof newTitle === "string" && newTitle) {
+      var htmlBridge = _getHtmlBridge(_flashState.bridge);
+      if (htmlBridge) {
+        htmlBridge.setAttribute("title", newTitle);
+      }
+    }
+    var useHandCursor = _globalConfig.forceHandCursor === true || _getStyle(element, "cursor") === "pointer";
+    _setHandCursor(useHandCursor);
+    _reposition();
+  };
+  var _blur = function() {
+    var htmlBridge = _getHtmlBridge(_flashState.bridge);
+    if (htmlBridge) {
+      htmlBridge.removeAttribute("title");
+      htmlBridge.style.left = "0px";
+      htmlBridge.style.top = "-9999px";
+      htmlBridge.style.width = "1px";
+      htmlBridge.style.height = "1px";
+    }
+    if (_currentElement) {
+      _removeClass(_currentElement, _globalConfig.hoverClass);
+      _removeClass(_currentElement, _globalConfig.activeClass);
+      _currentElement = null;
+    }
+  };
+  var _activeElement = function() {
+    return _currentElement || null;
+  };
+  var _isValidHtml4Id = function(id) {
+    return typeof id === "string" && id && /^[A-Za-z][A-Za-z0-9_:\-\.]*$/.test(id);
+  };
+  var _createEvent = function(event) {
+    var eventType;
+    if (typeof event === "string" && event) {
+      eventType = event;
+      event = {};
+    } else if (typeof event === "object" && event && typeof event.type === "string" && event.type) {
+      eventType = event.type;
+    }
+    if (!eventType) {
+      return;
+    }
+    eventType = eventType.toLowerCase();
+    if (!event.target && (/^(copy|aftercopy|_click)$/.test(eventType) || eventType === "error" && event.name === "clipboard-error")) {
+      event.target = _copyTarget;
+    }
+    _extend(event, {
+      type: eventType,
+      target: event.target || _currentElement || null,
+      relatedTarget: event.relatedTarget || null,
+      currentTarget: _flashState && _flashState.bridge || null,
+      timeStamp: event.timeStamp || _now() || null
+    });
+    var msg = _eventMessages[event.type];
+    if (event.type === "error" && event.name && msg) {
+      msg = msg[event.name];
+    }
+    if (msg) {
+      event.message = msg;
+    }
+    if (event.type === "ready") {
+      _extend(event, {
+        target: null,
+        version: _flashState.version
+      });
+    }
+    if (event.type === "error") {
+      if (_flashStateErrorNameMatchingRegex.test(event.name)) {
+        _extend(event, {
+          target: null,
+          minimumVersion: _minimumFlashVersion
+        });
+      }
+      if (_flashStateEnabledErrorNameMatchingRegex.test(event.name)) {
+        _extend(event, {version: _flashState.version});
+      }
+    }
+    if (event.type === "copy") {
+      event.clipboardData = {
+        setData: ZeroClipboard.setData,
+        clearData: ZeroClipboard.clearData
+      };
+    }
+    if (event.type === "aftercopy") {
+      event = _mapClipResultsFromFlash(event, _clipDataFormatMap);
+    }
+    if (event.target && !event.relatedTarget) {
+      event.relatedTarget = _getRelatedTarget(event.target);
+    }
+    return _addMouseData(event);
+  };
+  var _getRelatedTarget = function(targetEl) {
+    var relatedTargetId = targetEl && targetEl.getAttribute && targetEl.getAttribute("data-clipboard-target");
+    return relatedTargetId ? _document.getElementById(relatedTargetId) : null;
+  };
+  var _addMouseData = function(event) {
+    if (event && /^_(?:click|mouse(?:over|out|down|up|move))$/.test(event.type)) {
+      var srcElement = event.target;
+      var fromElement = event.type === "_mouseover" && event.relatedTarget ? event.relatedTarget : undefined;
+      var toElement = event.type === "_mouseout" && event.relatedTarget ? event.relatedTarget : undefined;
+      var pos = _getElementPosition(srcElement);
+      var screenLeft = _window.screenLeft || _window.screenX || 0;
+      var screenTop = _window.screenTop || _window.screenY || 0;
+      var scrollLeft = _document.body.scrollLeft + _document.documentElement.scrollLeft;
+      var scrollTop = _document.body.scrollTop + _document.documentElement.scrollTop;
+      var pageX = pos.left + (typeof event._stageX === "number" ? event._stageX : 0);
+      var pageY = pos.top + (typeof event._stageY === "number" ? event._stageY : 0);
+      var clientX = pageX - scrollLeft;
+      var clientY = pageY - scrollTop;
+      var screenX = screenLeft + clientX;
+      var screenY = screenTop + clientY;
+      var moveX = typeof event.movementX === "number" ? event.movementX : 0;
+      var moveY = typeof event.movementY === "number" ? event.movementY : 0;
+      delete event._stageX;
+      delete event._stageY;
+      _extend(event, {
+        srcElement: srcElement,
+        fromElement: fromElement,
+        toElement: toElement,
+        screenX: screenX,
+        screenY: screenY,
+        pageX: pageX,
+        pageY: pageY,
+        clientX: clientX,
+        clientY: clientY,
+        x: clientX,
+        y: clientY,
+        movementX: moveX,
+        movementY: moveY,
+        offsetX: 0,
+        offsetY: 0,
+        layerX: 0,
+        layerY: 0
+      });
+    }
+    return event;
+  };
+  var _shouldPerformAsync = function(event) {
+    var eventType = event && typeof event.type === "string" && event.type || "";
+    return !/^(?:(?:before)?copy|destroy)$/.test(eventType);
+  };
+  var _dispatchCallback = function(func, context, args, async) {
+    if (async) {
+      _setTimeout(function() {
+        func.apply(context, args);
+      }, 0);
+    } else {
+      func.apply(context, args);
+    }
+  };
+  var _dispatchCallbacks = function(event) {
+    if (!(typeof event === "object" && event && event.type)) {
+      return;
+    }
+    var async = _shouldPerformAsync(event);
+    var wildcardTypeHandlers = _handlers["*"] || [];
+    var specificTypeHandlers = _handlers[event.type] || [];
+    var handlers = wildcardTypeHandlers.concat(specificTypeHandlers);
+    if (handlers && handlers.length) {
+      var i,
+          len,
+          func,
+          context,
+          eventCopy,
+          originalContext = this;
+      for (i = 0, len = handlers.length; i < len; i++) {
+        func = handlers[i];
+        context = originalContext;
+        if (typeof func === "string" && typeof _window[func] === "function") {
+          func = _window[func];
+        }
+        if (typeof func === "object" && func && typeof func.handleEvent === "function") {
+          context = func;
+          func = func.handleEvent;
+        }
+        if (typeof func === "function") {
+          eventCopy = _extend({}, event);
+          _dispatchCallback(func, context, [eventCopy], async);
+        }
+      }
+    }
+    return this;
+  };
+  var _getSandboxStatusFromErrorEvent = function(event) {
+    var isSandboxed = null;
+    if (_pageIsFramed === false || event && event.type === "error" && event.name && _errorsThatOnlyOccurAfterFlashLoads.indexOf(event.name) !== -1) {
+      isSandboxed = false;
+    }
+    return isSandboxed;
+  };
+  var _preprocessEvent = function(event) {
+    var element = event.target || _currentElement || null;
+    var sourceIsSwf = event._source === "swf";
+    delete event._source;
+    switch (event.type) {
+      case "error":
+        var isSandboxed = event.name === "flash-sandboxed" || _getSandboxStatusFromErrorEvent(event);
+        if (typeof isSandboxed === "boolean") {
+          _flashState.sandboxed = isSandboxed;
+        }
+        if (_flashStateErrorNames.indexOf(event.name) !== -1) {
+          _extend(_flashState, {
+            disabled: event.name === "flash-disabled",
+            outdated: event.name === "flash-outdated",
+            unavailable: event.name === "flash-unavailable",
+            degraded: event.name === "flash-degraded",
+            deactivated: event.name === "flash-deactivated",
+            overdue: event.name === "flash-overdue",
+            ready: false
+          });
+        } else if (event.name === "version-mismatch") {
+          _zcSwfVersion = event.swfVersion;
+          _extend(_flashState, {
+            disabled: false,
+            outdated: false,
+            unavailable: false,
+            degraded: false,
+            deactivated: false,
+            overdue: false,
+            ready: false
+          });
+        }
+        _clearTimeoutsAndPolling();
+        break;
+      case "ready":
+        _zcSwfVersion = event.swfVersion;
+        var wasDeactivated = _flashState.deactivated === true;
+        _extend(_flashState, {
+          disabled: false,
+          outdated: false,
+          sandboxed: false,
+          unavailable: false,
+          degraded: false,
+          deactivated: false,
+          overdue: wasDeactivated,
+          ready: !wasDeactivated
+        });
+        _clearTimeoutsAndPolling();
+        break;
+      case "beforecopy":
+        _copyTarget = element;
+        break;
+      case "copy":
+        var textContent,
+            htmlContent,
+            targetEl = event.relatedTarget;
+        if (!(_clipData["text/html"] || _clipData["text/plain"]) && targetEl && (htmlContent = targetEl.value || targetEl.outerHTML || targetEl.innerHTML) && (textContent = targetEl.value || targetEl.textContent || targetEl.innerText)) {
+          event.clipboardData.clearData();
+          event.clipboardData.setData("text/plain", textContent);
+          if (htmlContent !== textContent) {
+            event.clipboardData.setData("text/html", htmlContent);
+          }
+        } else if (!_clipData["text/plain"] && event.target && (textContent = event.target.getAttribute("data-clipboard-text"))) {
+          event.clipboardData.clearData();
+          event.clipboardData.setData("text/plain", textContent);
+        }
+        break;
+      case "aftercopy":
+        _queueEmitClipboardErrors(event);
+        ZeroClipboard.clearData();
+        if (element && element !== _safeActiveElement() && element.focus) {
+          element.focus();
+        }
+        break;
+      case "_mouseover":
+        ZeroClipboard.focus(element);
+        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
+          if (element && element !== event.relatedTarget && !_containedBy(event.relatedTarget, element)) {
+            _fireMouseEvent(_extend({}, event, {
+              type: "mouseenter",
+              bubbles: false,
+              cancelable: false
+            }));
+          }
+          _fireMouseEvent(_extend({}, event, {type: "mouseover"}));
+        }
+        break;
+      case "_mouseout":
+        ZeroClipboard.blur();
+        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
+          if (element && element !== event.relatedTarget && !_containedBy(event.relatedTarget, element)) {
+            _fireMouseEvent(_extend({}, event, {
+              type: "mouseleave",
+              bubbles: false,
+              cancelable: false
+            }));
+          }
+          _fireMouseEvent(_extend({}, event, {type: "mouseout"}));
+        }
+        break;
+      case "_mousedown":
+        _addClass(element, _globalConfig.activeClass);
+        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
+          _fireMouseEvent(_extend({}, event, {type: event.type.slice(1)}));
+        }
+        break;
+      case "_mouseup":
+        _removeClass(element, _globalConfig.activeClass);
+        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
+          _fireMouseEvent(_extend({}, event, {type: event.type.slice(1)}));
+        }
+        break;
+      case "_click":
+        _copyTarget = null;
+        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
+          _fireMouseEvent(_extend({}, event, {type: event.type.slice(1)}));
+        }
+        break;
+      case "_mousemove":
+        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
+          _fireMouseEvent(_extend({}, event, {type: event.type.slice(1)}));
+        }
+        break;
+    }
+    if (/^_(?:click|mouse(?:over|out|down|up|move))$/.test(event.type)) {
+      return true;
+    }
+  };
+  var _queueEmitClipboardErrors = function(aftercopyEvent) {
+    if (aftercopyEvent.errors && aftercopyEvent.errors.length > 0) {
+      var errorEvent = _deepCopy(aftercopyEvent);
+      _extend(errorEvent, {
+        type: "error",
+        name: "clipboard-error"
+      });
+      delete errorEvent.success;
+      _setTimeout(function() {
+        ZeroClipboard.emit(errorEvent);
+      }, 0);
+    }
+  };
+  var _fireMouseEvent = function(event) {
+    if (!(event && typeof event.type === "string" && event)) {
+      return;
+    }
+    var e,
+        target = event.target || null,
+        doc = target && target.ownerDocument || _document,
+        defaults = {
+          view: doc.defaultView || _window,
+          canBubble: true,
+          cancelable: true,
+          detail: event.type === "click" ? 1 : 0,
+          button: typeof event.which === "number" ? event.which - 1 : typeof event.button === "number" ? event.button : doc.createEvent ? 0 : 1
+        },
+        args = _extend(defaults, event);
+    if (!target) {
+      return;
+    }
+    if (doc.createEvent && target.dispatchEvent) {
+      args = [args.type, args.canBubble, args.cancelable, args.view, args.detail, args.screenX, args.screenY, args.clientX, args.clientY, args.ctrlKey, args.altKey, args.shiftKey, args.metaKey, args.button, args.relatedTarget];
+      e = doc.createEvent("MouseEvents");
+      if (e.initMouseEvent) {
+        e.initMouseEvent.apply(e, args);
+        e._source = "js";
+        target.dispatchEvent(e);
+      }
+    }
+  };
+  var _watchForSwfFallbackContent = function() {
+    var maxWait = _globalConfig.flashLoadTimeout;
+    if (typeof maxWait === "number" && maxWait >= 0) {
+      var pollWait = Math.min(1e3, maxWait / 10);
+      var fallbackContentId = _globalConfig.swfObjectId + "_fallbackContent";
+      _swfFallbackCheckInterval = _setInterval(function() {
+        var el = _document.getElementById(fallbackContentId);
+        if (_isElementVisible(el)) {
+          _clearTimeoutsAndPolling();
+          _flashState.deactivated = null;
+          ZeroClipboard.emit({
+            type: "error",
+            name: "swf-not-found"
+          });
+        }
+      }, pollWait);
+    }
+  };
+  var _createHtmlBridge = function() {
+    var container = _document.createElement("div");
+    container.id = _globalConfig.containerId;
+    container.className = _globalConfig.containerClass;
+    container.style.position = "absolute";
+    container.style.left = "0px";
+    container.style.top = "-9999px";
+    container.style.width = "1px";
+    container.style.height = "1px";
+    container.style.zIndex = "" + _getSafeZIndex(_globalConfig.zIndex);
+    return container;
+  };
+  var _getHtmlBridge = function(flashBridge) {
+    var htmlBridge = flashBridge && flashBridge.parentNode;
+    while (htmlBridge && htmlBridge.nodeName === "OBJECT" && htmlBridge.parentNode) {
+      htmlBridge = htmlBridge.parentNode;
+    }
+    return htmlBridge || null;
+  };
+  var _embedSwf = function() {
+    var len,
+        flashBridge = _flashState.bridge,
+        container = _getHtmlBridge(flashBridge);
+    if (!flashBridge) {
+      var allowScriptAccess = _determineScriptAccess(_window.location.host, _globalConfig);
+      var allowNetworking = allowScriptAccess === "never" ? "none" : "all";
+      var flashvars = _vars(_extend({jsVersion: ZeroClipboard.version}, _globalConfig));
+      var swfUrl = _globalConfig.swfPath + _cacheBust(_globalConfig.swfPath, _globalConfig);
+      container = _createHtmlBridge();
+      var divToBeReplaced = _document.createElement("div");
+      container.appendChild(divToBeReplaced);
+      _document.body.appendChild(container);
+      var tmpDiv = _document.createElement("div");
+      var usingActiveX = _flashState.pluginType === "activex";
+      tmpDiv.innerHTML = '<object id="' + _globalConfig.swfObjectId + '" name="' + _globalConfig.swfObjectId + '" ' + 'width="100%" height="100%" ' + (usingActiveX ? 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"' : 'type="application/x-shockwave-flash" data="' + swfUrl + '"') + ">" + (usingActiveX ? '<param name="movie" value="' + swfUrl + '"/>' : "") + '<param name="allowScriptAccess" value="' + allowScriptAccess + '"/>' + '<param name="allowNetworking" value="' + allowNetworking + '"/>' + '<param name="menu" value="false"/>' + '<param name="wmode" value="transparent"/>' + '<param name="flashvars" value="' + flashvars + '"/>' + '<div id="' + _globalConfig.swfObjectId + '_fallbackContent">&nbsp;</div>' + "</object>";
+      flashBridge = tmpDiv.firstChild;
+      tmpDiv = null;
+      _unwrap(flashBridge).ZeroClipboard = ZeroClipboard;
+      container.replaceChild(flashBridge, divToBeReplaced);
+      _watchForSwfFallbackContent();
+    }
+    if (!flashBridge) {
+      flashBridge = _document[_globalConfig.swfObjectId];
+      if (flashBridge && (len = flashBridge.length)) {
+        flashBridge = flashBridge[len - 1];
+      }
+      if (!flashBridge && container) {
+        flashBridge = container.firstChild;
+      }
+    }
+    _flashState.bridge = flashBridge || null;
+    return flashBridge;
+  };
+  var _unembedSwf = function() {
+    var flashBridge = _flashState.bridge;
+    if (flashBridge) {
+      var htmlBridge = _getHtmlBridge(flashBridge);
+      if (htmlBridge) {
+        if (_flashState.pluginType === "activex" && "readyState" in flashBridge) {
+          flashBridge.style.display = "none";
+          (function removeSwfFromIE() {
+            if (flashBridge.readyState === 4) {
+              for (var prop in flashBridge) {
+                if (typeof flashBridge[prop] === "function") {
+                  flashBridge[prop] = null;
+                }
+              }
+              if (flashBridge.parentNode) {
+                flashBridge.parentNode.removeChild(flashBridge);
+              }
+              if (htmlBridge.parentNode) {
+                htmlBridge.parentNode.removeChild(htmlBridge);
+              }
+            } else {
+              _setTimeout(removeSwfFromIE, 10);
+            }
+          })();
+        } else {
+          if (flashBridge.parentNode) {
+            flashBridge.parentNode.removeChild(flashBridge);
+          }
+          if (htmlBridge.parentNode) {
+            htmlBridge.parentNode.removeChild(htmlBridge);
+          }
+        }
+      }
+      _clearTimeoutsAndPolling();
+      _flashState.ready = null;
+      _flashState.bridge = null;
+      _flashState.deactivated = null;
+      _zcSwfVersion = undefined;
+    }
+  };
+  var _mapClipDataToFlash = function(clipData) {
+    var newClipData = {},
+        formatMap = {};
+    if (!(typeof clipData === "object" && clipData)) {
+      return;
+    }
+    for (var dataFormat in clipData) {
+      if (dataFormat && _hasOwn.call(clipData, dataFormat) && typeof clipData[dataFormat] === "string" && clipData[dataFormat]) {
+        switch (dataFormat.toLowerCase()) {
+          case "text/plain":
+          case "text":
+          case "air:text":
+          case "flash:text":
+            newClipData.text = clipData[dataFormat];
+            formatMap.text = dataFormat;
+            break;
+          case "text/html":
+          case "html":
+          case "air:html":
+          case "flash:html":
+            newClipData.html = clipData[dataFormat];
+            formatMap.html = dataFormat;
+            break;
+          case "application/rtf":
+          case "text/rtf":
+          case "rtf":
+          case "richtext":
+          case "air:rtf":
+          case "flash:rtf":
+            newClipData.rtf = clipData[dataFormat];
+            formatMap.rtf = dataFormat;
+            break;
+          default:
+            break;
+        }
+      }
+    }
+    return {
+      data: newClipData,
+      formatMap: formatMap
+    };
+  };
+  var _mapClipResultsFromFlash = function(clipResults, formatMap) {
+    if (!(typeof clipResults === "object" && clipResults && typeof formatMap === "object" && formatMap)) {
+      return clipResults;
+    }
+    var newResults = {};
+    for (var prop in clipResults) {
+      if (_hasOwn.call(clipResults, prop)) {
+        if (prop === "errors") {
+          newResults[prop] = clipResults[prop] ? clipResults[prop].slice() : [];
+          for (var i = 0,
+              len = newResults[prop].length; i < len; i++) {
+            newResults[prop][i].format = formatMap[newResults[prop][i].format];
+          }
+        } else if (prop !== "success" && prop !== "data") {
+          newResults[prop] = clipResults[prop];
+        } else {
+          newResults[prop] = {};
+          var tmpHash = clipResults[prop];
+          for (var dataFormat in tmpHash) {
+            if (dataFormat && _hasOwn.call(tmpHash, dataFormat) && _hasOwn.call(formatMap, dataFormat)) {
+              newResults[prop][formatMap[dataFormat]] = tmpHash[dataFormat];
+            }
+          }
+        }
+      }
+    }
+    return newResults;
+  };
+  var _cacheBust = function(path, options) {
+    var cacheBust = options == null || options && options.cacheBust === true;
+    if (cacheBust) {
+      return (path.indexOf("?") === -1 ? "?" : "&") + "noCache=" + _now();
+    } else {
+      return "";
+    }
+  };
+  var _vars = function(options) {
+    var i,
+        len,
+        domain,
+        domains,
+        str = "",
+        trustedOriginsExpanded = [];
+    if (options.trustedDomains) {
+      if (typeof options.trustedDomains === "string") {
+        domains = [options.trustedDomains];
+      } else if (typeof options.trustedDomains === "object" && "length" in options.trustedDomains) {
+        domains = options.trustedDomains;
+      }
+    }
+    if (domains && domains.length) {
+      for (i = 0, len = domains.length; i < len; i++) {
+        if (_hasOwn.call(domains, i) && domains[i] && typeof domains[i] === "string") {
+          domain = _extractDomain(domains[i]);
+          if (!domain) {
+            continue;
+          }
+          if (domain === "*") {
+            trustedOriginsExpanded.length = 0;
+            trustedOriginsExpanded.push(domain);
+            break;
+          }
+          trustedOriginsExpanded.push.apply(trustedOriginsExpanded, [domain, "//" + domain, _window.location.protocol + "//" + domain]);
+        }
+      }
+    }
+    if (trustedOriginsExpanded.length) {
+      str += "trustedOrigins=" + _encodeURIComponent(trustedOriginsExpanded.join(","));
+    }
+    if (options.forceEnhancedClipboard === true) {
+      str += (str ? "&" : "") + "forceEnhancedClipboard=true";
+    }
+    if (typeof options.swfObjectId === "string" && options.swfObjectId) {
+      str += (str ? "&" : "") + "swfObjectId=" + _encodeURIComponent(options.swfObjectId);
+    }
+    if (typeof options.jsVersion === "string" && options.jsVersion) {
+      str += (str ? "&" : "") + "jsVersion=" + _encodeURIComponent(options.jsVersion);
+    }
+    return str;
+  };
+  var _extractDomain = function(originOrUrl) {
+    if (originOrUrl == null || originOrUrl === "") {
+      return null;
+    }
+    originOrUrl = originOrUrl.replace(/^\s+|\s+$/g, "");
+    if (originOrUrl === "") {
+      return null;
+    }
+    var protocolIndex = originOrUrl.indexOf("//");
+    originOrUrl = protocolIndex === -1 ? originOrUrl : originOrUrl.slice(protocolIndex + 2);
+    var pathIndex = originOrUrl.indexOf("/");
+    originOrUrl = pathIndex === -1 ? originOrUrl : protocolIndex === -1 || pathIndex === 0 ? null : originOrUrl.slice(0, pathIndex);
+    if (originOrUrl && originOrUrl.slice(-4).toLowerCase() === ".swf") {
+      return null;
+    }
+    return originOrUrl || null;
+  };
+  var _determineScriptAccess = function() {
+    var _extractAllDomains = function(origins) {
+      var i,
+          len,
+          tmp,
+          resultsArray = [];
+      if (typeof origins === "string") {
+        origins = [origins];
+      }
+      if (!(typeof origins === "object" && origins && typeof origins.length === "number")) {
+        return resultsArray;
+      }
+      for (i = 0, len = origins.length; i < len; i++) {
+        if (_hasOwn.call(origins, i) && (tmp = _extractDomain(origins[i]))) {
+          if (tmp === "*") {
+            resultsArray.length = 0;
+            resultsArray.push("*");
+            break;
+          }
+          if (resultsArray.indexOf(tmp) === -1) {
+            resultsArray.push(tmp);
+          }
+        }
+      }
+      return resultsArray;
+    };
+    return function(currentDomain, configOptions) {
+      var swfDomain = _extractDomain(configOptions.swfPath);
+      if (swfDomain === null) {
+        swfDomain = currentDomain;
+      }
+      var trustedDomains = _extractAllDomains(configOptions.trustedDomains);
+      var len = trustedDomains.length;
+      if (len > 0) {
+        if (len === 1 && trustedDomains[0] === "*") {
+          return "always";
+        }
+        if (trustedDomains.indexOf(currentDomain) !== -1) {
+          if (len === 1 && currentDomain === swfDomain) {
+            return "sameDomain";
+          }
+          return "always";
+        }
+      }
+      return "never";
+    };
+  }();
+  var _safeActiveElement = function() {
+    try {
+      return _document.activeElement;
+    } catch (err) {
+      return null;
+    }
+  };
+  var _addClass = function(element, value) {
+    var c,
+        cl,
+        className,
+        classNames = [];
+    if (typeof value === "string" && value) {
+      classNames = value.split(/\s+/);
+    }
+    if (element && element.nodeType === 1 && classNames.length > 0) {
+      if (element.classList) {
+        for (c = 0, cl = classNames.length; c < cl; c++) {
+          element.classList.add(classNames[c]);
+        }
+      } else if (element.hasOwnProperty("className")) {
+        className = " " + element.className + " ";
+        for (c = 0, cl = classNames.length; c < cl; c++) {
+          if (className.indexOf(" " + classNames[c] + " ") === -1) {
+            className += classNames[c] + " ";
+          }
+        }
+        element.className = className.replace(/^\s+|\s+$/g, "");
+      }
+    }
+    return element;
+  };
+  var _removeClass = function(element, value) {
+    var c,
+        cl,
+        className,
+        classNames = [];
+    if (typeof value === "string" && value) {
+      classNames = value.split(/\s+/);
+    }
+    if (element && element.nodeType === 1 && classNames.length > 0) {
+      if (element.classList && element.classList.length > 0) {
+        for (c = 0, cl = classNames.length; c < cl; c++) {
+          element.classList.remove(classNames[c]);
+        }
+      } else if (element.className) {
+        className = (" " + element.className + " ").replace(/[\r\n\t]/g, " ");
+        for (c = 0, cl = classNames.length; c < cl; c++) {
+          className = className.replace(" " + classNames[c] + " ", " ");
+        }
+        element.className = className.replace(/^\s+|\s+$/g, "");
+      }
+    }
+    return element;
+  };
+  var _getStyle = function(el, prop) {
+    var value = _getComputedStyle(el, null).getPropertyValue(prop);
+    if (prop === "cursor") {
+      if (!value || value === "auto") {
+        if (el.nodeName === "A") {
+          return "pointer";
+        }
+      }
+    }
+    return value;
+  };
+  var _getElementPosition = function(el) {
+    var pos = {
+      left: 0,
+      top: 0,
+      width: 0,
+      height: 0
+    };
+    if (el.getBoundingClientRect) {
+      var elRect = el.getBoundingClientRect();
+      var pageXOffset = _window.pageXOffset;
+      var pageYOffset = _window.pageYOffset;
+      var leftBorderWidth = _document.documentElement.clientLeft || 0;
+      var topBorderWidth = _document.documentElement.clientTop || 0;
+      var leftBodyOffset = 0;
+      var topBodyOffset = 0;
+      if (_getStyle(_document.body, "position") === "relative") {
+        var bodyRect = _document.body.getBoundingClientRect();
+        var htmlRect = _document.documentElement.getBoundingClientRect();
+        leftBodyOffset = bodyRect.left - htmlRect.left || 0;
+        topBodyOffset = bodyRect.top - htmlRect.top || 0;
+      }
+      pos.left = elRect.left + pageXOffset - leftBorderWidth - leftBodyOffset;
+      pos.top = elRect.top + pageYOffset - topBorderWidth - topBodyOffset;
+      pos.width = "width" in elRect ? elRect.width : elRect.right - elRect.left;
+      pos.height = "height" in elRect ? elRect.height : elRect.bottom - elRect.top;
+    }
+    return pos;
+  };
+  var _isElementVisible = function(el) {
+    if (!el) {
+      return false;
+    }
+    var styles = _getComputedStyle(el, null);
+    var hasCssHeight = _parseFloat(styles.height) > 0;
+    var hasCssWidth = _parseFloat(styles.width) > 0;
+    var hasCssTop = _parseFloat(styles.top) >= 0;
+    var hasCssLeft = _parseFloat(styles.left) >= 0;
+    var cssKnows = hasCssHeight && hasCssWidth && hasCssTop && hasCssLeft;
+    var rect = cssKnows ? null : _getElementPosition(el);
+    var isVisible = styles.display !== "none" && styles.visibility !== "collapse" && (cssKnows || !!rect && (hasCssHeight || rect.height > 0) && (hasCssWidth || rect.width > 0) && (hasCssTop || rect.top >= 0) && (hasCssLeft || rect.left >= 0));
+    return isVisible;
+  };
+  var _clearTimeoutsAndPolling = function() {
+    _clearTimeout(_flashCheckTimeout);
+    _flashCheckTimeout = 0;
+    _clearInterval(_swfFallbackCheckInterval);
+    _swfFallbackCheckInterval = 0;
+  };
+  var _reposition = function() {
+    var htmlBridge;
+    if (_currentElement && (htmlBridge = _getHtmlBridge(_flashState.bridge))) {
+      var pos = _getElementPosition(_currentElement);
+      _extend(htmlBridge.style, {
+        width: pos.width + "px",
+        height: pos.height + "px",
+        top: pos.top + "px",
+        left: pos.left + "px",
+        zIndex: "" + _getSafeZIndex(_globalConfig.zIndex)
+      });
+    }
+  };
+  var _setHandCursor = function(enabled) {
+    if (_flashState.ready === true) {
+      if (_flashState.bridge && typeof _flashState.bridge.setHandCursor === "function") {
+        _flashState.bridge.setHandCursor(enabled);
+      } else {
+        _flashState.ready = false;
+      }
+    }
+  };
+  var _getSafeZIndex = function(val) {
+    if (/^(?:auto|inherit)$/.test(val)) {
+      return val;
+    }
+    var zIndex;
+    if (typeof val === "number" && !_isNaN(val)) {
+      zIndex = val;
+    } else if (typeof val === "string") {
+      zIndex = _getSafeZIndex(_parseInt(val, 10));
+    }
+    return typeof zIndex === "number" ? zIndex : "auto";
+  };
+  var _detectSandbox = function(doNotReassessFlashSupport) {
+    var effectiveScriptOrigin,
+        frame,
+        frameError,
+        previousState = _flashState.sandboxed,
+        isSandboxed = null;
+    doNotReassessFlashSupport = doNotReassessFlashSupport === true;
+    if (_pageIsFramed === false) {
+      isSandboxed = false;
+    } else {
+      try {
+        frame = window.frameElement || null;
+      } catch (e) {
+        frameError = {
+          name: e.name,
+          message: e.message
+        };
+      }
+      if (frame && frame.nodeType === 1 && frame.nodeName === "IFRAME") {
+        try {
+          isSandboxed = frame.hasAttribute("sandbox");
+        } catch (e) {
+          isSandboxed = null;
+        }
+      } else {
+        try {
+          effectiveScriptOrigin = document.domain || null;
+        } catch (e) {
+          effectiveScriptOrigin = null;
+        }
+        if (effectiveScriptOrigin === null || frameError && frameError.name === "SecurityError" && /(^|[\s\(\[@])sandbox(es|ed|ing|[\s\.,!\)\]@]|$)/.test(frameError.message.toLowerCase())) {
+          isSandboxed = true;
+        }
+      }
+    }
+    _flashState.sandboxed = isSandboxed;
+    if (previousState !== isSandboxed && !doNotReassessFlashSupport) {
+      _detectFlashSupport(_ActiveXObject);
+    }
+    return isSandboxed;
+  };
+  var _detectFlashSupport = function(ActiveXObject) {
+    var plugin,
+        ax,
+        mimeType,
+        hasFlash = false,
+        isActiveX = false,
+        isPPAPI = false,
+        flashVersion = "";
+    function parseFlashVersion(desc) {
+      var matches = desc.match(/[\d]+/g);
+      matches.length = 3;
+      return matches.join(".");
+    }
+    function isPepperFlash(flashPlayerFileName) {
+      return !!flashPlayerFileName && (flashPlayerFileName = flashPlayerFileName.toLowerCase()) && (/^(pepflashplayer\.dll|libpepflashplayer\.so|pepperflashplayer\.plugin)$/.test(flashPlayerFileName) || flashPlayerFileName.slice(-13) === "chrome.plugin");
+    }
+    function inspectPlugin(plugin) {
+      if (plugin) {
+        hasFlash = true;
+        if (plugin.version) {
+          flashVersion = parseFlashVersion(plugin.version);
+        }
+        if (!flashVersion && plugin.description) {
+          flashVersion = parseFlashVersion(plugin.description);
+        }
+        if (plugin.filename) {
+          isPPAPI = isPepperFlash(plugin.filename);
+        }
+      }
+    }
+    if (_navigator.plugins && _navigator.plugins.length) {
+      plugin = _navigator.plugins["Shockwave Flash"];
+      inspectPlugin(plugin);
+      if (_navigator.plugins["Shockwave Flash 2.0"]) {
+        hasFlash = true;
+        flashVersion = "2.0.0.11";
+      }
+    } else if (_navigator.mimeTypes && _navigator.mimeTypes.length) {
+      mimeType = _navigator.mimeTypes["application/x-shockwave-flash"];
+      plugin = mimeType && mimeType.enabledPlugin;
+      inspectPlugin(plugin);
+    } else if (typeof ActiveXObject !== "undefined") {
+      isActiveX = true;
+      try {
+        ax = new ActiveXObject("ShockwaveFlash.ShockwaveFlash.7");
+        hasFlash = true;
+        flashVersion = parseFlashVersion(ax.GetVariable("$version"));
+      } catch (e1) {
+        try {
+          ax = new ActiveXObject("ShockwaveFlash.ShockwaveFlash.6");
+          hasFlash = true;
+          flashVersion = "6.0.21";
+        } catch (e2) {
+          try {
+            ax = new ActiveXObject("ShockwaveFlash.ShockwaveFlash");
+            hasFlash = true;
+            flashVersion = parseFlashVersion(ax.GetVariable("$version"));
+          } catch (e3) {
+            isActiveX = false;
+          }
+        }
+      }
+    }
+    _flashState.disabled = hasFlash !== true;
+    _flashState.outdated = flashVersion && _parseFloat(flashVersion) < _parseFloat(_minimumFlashVersion);
+    _flashState.version = flashVersion || "0.0.0";
+    _flashState.pluginType = isPPAPI ? "pepper" : isActiveX ? "activex" : hasFlash ? "netscape" : "unknown";
+  };
+  _detectFlashSupport(_ActiveXObject);
+  _detectSandbox(true);
+  var ZeroClipboard = function() {
+    if (!(this instanceof ZeroClipboard)) {
+      return new ZeroClipboard();
+    }
+    if (typeof ZeroClipboard._createClient === "function") {
+      ZeroClipboard._createClient.apply(this, _args(arguments));
+    }
+  };
+  _defineProperty(ZeroClipboard, "version", {
+    value: "2.2.0",
+    writable: false,
+    configurable: true,
+    enumerable: true
+  });
+  ZeroClipboard.config = function() {
+    return _config.apply(this, _args(arguments));
+  };
+  ZeroClipboard.state = function() {
+    return _state.apply(this, _args(arguments));
+  };
+  ZeroClipboard.isFlashUnusable = function() {
+    return _isFlashUnusable.apply(this, _args(arguments));
+  };
+  ZeroClipboard.on = function() {
+    return _on.apply(this, _args(arguments));
+  };
+  ZeroClipboard.off = function() {
+    return _off.apply(this, _args(arguments));
+  };
+  ZeroClipboard.handlers = function() {
+    return _listeners.apply(this, _args(arguments));
+  };
+  ZeroClipboard.emit = function() {
+    return _emit.apply(this, _args(arguments));
+  };
+  ZeroClipboard.create = function() {
+    return _create.apply(this, _args(arguments));
+  };
+  ZeroClipboard.destroy = function() {
+    return _destroy.apply(this, _args(arguments));
+  };
+  ZeroClipboard.setData = function() {
+    return _setData.apply(this, _args(arguments));
+  };
+  ZeroClipboard.clearData = function() {
+    return _clearData.apply(this, _args(arguments));
+  };
+  ZeroClipboard.getData = function() {
+    return _getData.apply(this, _args(arguments));
+  };
+  ZeroClipboard.focus = ZeroClipboard.activate = function() {
+    return _focus.apply(this, _args(arguments));
+  };
+  ZeroClipboard.blur = ZeroClipboard.deactivate = function() {
+    return _blur.apply(this, _args(arguments));
+  };
+  ZeroClipboard.activeElement = function() {
+    return _activeElement.apply(this, _args(arguments));
+  };
+  var _clientIdCounter = 0;
+  var _clientMeta = {};
+  var _elementIdCounter = 0;
+  var _elementMeta = {};
+  var _mouseHandlers = {};
+  _extend(_globalConfig, {autoActivate: true});
+  var _clientConstructor = function(elements) {
+    var client = this;
+    client.id = "" + _clientIdCounter++;
+    _clientMeta[client.id] = {
+      instance: client,
+      elements: [],
+      handlers: {}
+    };
+    if (elements) {
+      client.clip(elements);
+    }
+    ZeroClipboard.on("*", function(event) {
+      return client.emit(event);
+    });
+    ZeroClipboard.on("destroy", function() {
+      client.destroy();
+    });
+    ZeroClipboard.create();
+  };
+  var _clientOn = function(eventType, listener) {
+    var i,
+        len,
+        events,
+        added = {},
+        meta = _clientMeta[this.id],
+        handlers = meta && meta.handlers;
+    if (!meta) {
+      throw new Error("Attempted to add new listener(s) to a destroyed ZeroClipboard client instance");
+    }
+    if (typeof eventType === "string" && eventType) {
+      events = eventType.toLowerCase().split(/\s+/);
+    } else if (typeof eventType === "object" && eventType && typeof listener === "undefined") {
+      for (i in eventType) {
+        if (_hasOwn.call(eventType, i) && typeof i === "string" && i && typeof eventType[i] === "function") {
+          this.on(i, eventType[i]);
+        }
+      }
+    }
+    if (events && events.length) {
+      for (i = 0, len = events.length; i < len; i++) {
+        eventType = events[i].replace(/^on/, "");
+        added[eventType] = true;
+        if (!handlers[eventType]) {
+          handlers[eventType] = [];
+        }
+        handlers[eventType].push(listener);
+      }
+      if (added.ready && _flashState.ready) {
+        this.emit({
+          type: "ready",
+          client: this
+        });
+      }
+      if (added.error) {
+        for (i = 0, len = _flashStateErrorNames.length; i < len; i++) {
+          if (_flashState[_flashStateErrorNames[i].replace(/^flash-/, "")]) {
+            this.emit({
+              type: "error",
+              name: _flashStateErrorNames[i],
+              client: this
+            });
+            break;
+          }
+        }
+        if (_zcSwfVersion !== undefined && ZeroClipboard.version !== _zcSwfVersion) {
+          this.emit({
+            type: "error",
+            name: "version-mismatch",
+            jsVersion: ZeroClipboard.version,
+            swfVersion: _zcSwfVersion
+          });
+        }
+      }
+    }
+    return this;
+  };
+  var _clientOff = function(eventType, listener) {
+    var i,
+        len,
+        foundIndex,
+        events,
+        perEventHandlers,
+        meta = _clientMeta[this.id],
+        handlers = meta && meta.handlers;
+    if (!handlers) {
+      return this;
+    }
+    if (arguments.length === 0) {
+      events = _keys(handlers);
+    } else if (typeof eventType === "string" && eventType) {
+      events = eventType.split(/\s+/);
+    } else if (typeof eventType === "object" && eventType && typeof listener === "undefined") {
+      for (i in eventType) {
+        if (_hasOwn.call(eventType, i) && typeof i === "string" && i && typeof eventType[i] === "function") {
+          this.off(i, eventType[i]);
+        }
+      }
+    }
+    if (events && events.length) {
+      for (i = 0, len = events.length; i < len; i++) {
+        eventType = events[i].toLowerCase().replace(/^on/, "");
+        perEventHandlers = handlers[eventType];
+        if (perEventHandlers && perEventHandlers.length) {
+          if (listener) {
+            foundIndex = perEventHandlers.indexOf(listener);
+            while (foundIndex !== -1) {
+              perEventHandlers.splice(foundIndex, 1);
+              foundIndex = perEventHandlers.indexOf(listener, foundIndex);
+            }
+          } else {
+            perEventHandlers.length = 0;
+          }
+        }
+      }
+    }
+    return this;
+  };
+  var _clientListeners = function(eventType) {
+    var copy = null,
+        handlers = _clientMeta[this.id] && _clientMeta[this.id].handlers;
+    if (handlers) {
+      if (typeof eventType === "string" && eventType) {
+        copy = handlers[eventType] ? handlers[eventType].slice(0) : [];
+      } else {
+        copy = _deepCopy(handlers);
+      }
+    }
+    return copy;
+  };
+  var _clientEmit = function(event) {
+    if (_clientShouldEmit.call(this, event)) {
+      if (typeof event === "object" && event && typeof event.type === "string" && event.type) {
+        event = _extend({}, event);
+      }
+      var eventCopy = _extend({}, _createEvent(event), {client: this});
+      _clientDispatchCallbacks.call(this, eventCopy);
+    }
+    return this;
+  };
+  var _clientClip = function(elements) {
+    if (!_clientMeta[this.id]) {
+      throw new Error("Attempted to clip element(s) to a destroyed ZeroClipboard client instance");
+    }
+    elements = _prepClip(elements);
+    for (var i = 0; i < elements.length; i++) {
+      if (_hasOwn.call(elements, i) && elements[i] && elements[i].nodeType === 1) {
+        if (!elements[i].zcClippingId) {
+          elements[i].zcClippingId = "zcClippingId_" + _elementIdCounter++;
+          _elementMeta[elements[i].zcClippingId] = [this.id];
+          if (_globalConfig.autoActivate === true) {
+            _addMouseHandlers(elements[i]);
+          }
+        } else if (_elementMeta[elements[i].zcClippingId].indexOf(this.id) === -1) {
+          _elementMeta[elements[i].zcClippingId].push(this.id);
+        }
+        var clippedElements = _clientMeta[this.id] && _clientMeta[this.id].elements;
+        if (clippedElements.indexOf(elements[i]) === -1) {
+          clippedElements.push(elements[i]);
+        }
+      }
+    }
+    return this;
+  };
+  var _clientUnclip = function(elements) {
+    var meta = _clientMeta[this.id];
+    if (!meta) {
+      return this;
+    }
+    var clippedElements = meta.elements;
+    var arrayIndex;
+    if (typeof elements === "undefined") {
+      elements = clippedElements.slice(0);
+    } else {
+      elements = _prepClip(elements);
+    }
+    for (var i = elements.length; i--; ) {
+      if (_hasOwn.call(elements, i) && elements[i] && elements[i].nodeType === 1) {
+        arrayIndex = 0;
+        while ((arrayIndex = clippedElements.indexOf(elements[i], arrayIndex)) !== -1) {
+          clippedElements.splice(arrayIndex, 1);
+        }
+        var clientIds = _elementMeta[elements[i].zcClippingId];
+        if (clientIds) {
+          arrayIndex = 0;
+          while ((arrayIndex = clientIds.indexOf(this.id, arrayIndex)) !== -1) {
+            clientIds.splice(arrayIndex, 1);
+          }
+          if (clientIds.length === 0) {
+            if (_globalConfig.autoActivate === true) {
+              _removeMouseHandlers(elements[i]);
+            }
+            delete elements[i].zcClippingId;
+          }
+        }
+      }
+    }
+    return this;
+  };
+  var _clientElements = function() {
+    var meta = _clientMeta[this.id];
+    return meta && meta.elements ? meta.elements.slice(0) : [];
+  };
+  var _clientDestroy = function() {
+    if (!_clientMeta[this.id]) {
+      return;
+    }
+    this.unclip();
+    this.off();
+    delete _clientMeta[this.id];
+  };
+  var _clientShouldEmit = function(event) {
+    if (!(event && event.type)) {
+      return false;
+    }
+    if (event.client && event.client !== this) {
+      return false;
+    }
+    var meta = _clientMeta[this.id];
+    var clippedEls = meta && meta.elements;
+    var hasClippedEls = !!clippedEls && clippedEls.length > 0;
+    var goodTarget = !event.target || hasClippedEls && clippedEls.indexOf(event.target) !== -1;
+    var goodRelTarget = event.relatedTarget && hasClippedEls && clippedEls.indexOf(event.relatedTarget) !== -1;
+    var goodClient = event.client && event.client === this;
+    if (!meta || !(goodTarget || goodRelTarget || goodClient)) {
+      return false;
+    }
+    return true;
+  };
+  var _clientDispatchCallbacks = function(event) {
+    var meta = _clientMeta[this.id];
+    if (!(typeof event === "object" && event && event.type && meta)) {
+      return;
+    }
+    var async = _shouldPerformAsync(event);
+    var wildcardTypeHandlers = meta && meta.handlers["*"] || [];
+    var specificTypeHandlers = meta && meta.handlers[event.type] || [];
+    var handlers = wildcardTypeHandlers.concat(specificTypeHandlers);
+    if (handlers && handlers.length) {
+      var i,
+          len,
+          func,
+          context,
+          eventCopy,
+          originalContext = this;
+      for (i = 0, len = handlers.length; i < len; i++) {
+        func = handlers[i];
+        context = originalContext;
+        if (typeof func === "string" && typeof _window[func] === "function") {
+          func = _window[func];
+        }
+        if (typeof func === "object" && func && typeof func.handleEvent === "function") {
+          context = func;
+          func = func.handleEvent;
+        }
+        if (typeof func === "function") {
+          eventCopy = _extend({}, event);
+          _dispatchCallback(func, context, [eventCopy], async);
+        }
+      }
+    }
+  };
+  var _prepClip = function(elements) {
+    if (typeof elements === "string") {
+      elements = [];
+    }
+    return typeof elements.length !== "number" ? [elements] : elements;
+  };
+  var _addMouseHandlers = function(element) {
+    if (!(element && element.nodeType === 1)) {
+      return;
+    }
+    var _suppressMouseEvents = function(event) {
+      if (!(event || (event = _window.event))) {
+        return;
+      }
+      if (event._source !== "js") {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+      }
+      delete event._source;
+    };
+    var _elementMouseOver = function(event) {
+      if (!(event || (event = _window.event))) {
+        return;
+      }
+      _suppressMouseEvents(event);
+      ZeroClipboard.focus(element);
+    };
+    element.addEventListener("mouseover", _elementMouseOver, false);
+    element.addEventListener("mouseout", _suppressMouseEvents, false);
+    element.addEventListener("mouseenter", _suppressMouseEvents, false);
+    element.addEventListener("mouseleave", _suppressMouseEvents, false);
+    element.addEventListener("mousemove", _suppressMouseEvents, false);
+    _mouseHandlers[element.zcClippingId] = {
+      mouseover: _elementMouseOver,
+      mouseout: _suppressMouseEvents,
+      mouseenter: _suppressMouseEvents,
+      mouseleave: _suppressMouseEvents,
+      mousemove: _suppressMouseEvents
+    };
+  };
+  var _removeMouseHandlers = function(element) {
+    if (!(element && element.nodeType === 1)) {
+      return;
+    }
+    var mouseHandlers = _mouseHandlers[element.zcClippingId];
+    if (!(typeof mouseHandlers === "object" && mouseHandlers)) {
+      return;
+    }
+    var key,
+        val,
+        mouseEvents = ["move", "leave", "enter", "out", "over"];
+    for (var i = 0,
+        len = mouseEvents.length; i < len; i++) {
+      key = "mouse" + mouseEvents[i];
+      val = mouseHandlers[key];
+      if (typeof val === "function") {
+        element.removeEventListener(key, val, false);
+      }
+    }
+    delete _mouseHandlers[element.zcClippingId];
+  };
+  ZeroClipboard._createClient = function() {
+    _clientConstructor.apply(this, _args(arguments));
+  };
+  ZeroClipboard.prototype.on = function() {
+    return _clientOn.apply(this, _args(arguments));
+  };
+  ZeroClipboard.prototype.off = function() {
+    return _clientOff.apply(this, _args(arguments));
+  };
+  ZeroClipboard.prototype.handlers = function() {
+    return _clientListeners.apply(this, _args(arguments));
+  };
+  ZeroClipboard.prototype.emit = function() {
+    return _clientEmit.apply(this, _args(arguments));
+  };
+  ZeroClipboard.prototype.clip = function() {
+    return _clientClip.apply(this, _args(arguments));
+  };
+  ZeroClipboard.prototype.unclip = function() {
+    return _clientUnclip.apply(this, _args(arguments));
+  };
+  ZeroClipboard.prototype.elements = function() {
+    return _clientElements.apply(this, _args(arguments));
+  };
+  ZeroClipboard.prototype.destroy = function() {
+    return _clientDestroy.apply(this, _args(arguments));
+  };
+  ZeroClipboard.prototype.setText = function(text) {
+    if (!_clientMeta[this.id]) {
+      throw new Error("Attempted to set pending clipboard data from a destroyed ZeroClipboard client instance");
+    }
+    ZeroClipboard.setData("text/plain", text);
+    return this;
+  };
+  ZeroClipboard.prototype.setHtml = function(html) {
+    if (!_clientMeta[this.id]) {
+      throw new Error("Attempted to set pending clipboard data from a destroyed ZeroClipboard client instance");
+    }
+    ZeroClipboard.setData("text/html", html);
+    return this;
+  };
+  ZeroClipboard.prototype.setRichText = function(richText) {
+    if (!_clientMeta[this.id]) {
+      throw new Error("Attempted to set pending clipboard data from a destroyed ZeroClipboard client instance");
+    }
+    ZeroClipboard.setData("application/rtf", richText);
+    return this;
+  };
+  ZeroClipboard.prototype.setData = function() {
+    if (!_clientMeta[this.id]) {
+      throw new Error("Attempted to set pending clipboard data from a destroyed ZeroClipboard client instance");
+    }
+    ZeroClipboard.setData.apply(this, _args(arguments));
+    return this;
+  };
+  ZeroClipboard.prototype.clearData = function() {
+    if (!_clientMeta[this.id]) {
+      throw new Error("Attempted to clear pending clipboard data from a destroyed ZeroClipboard client instance");
+    }
+    ZeroClipboard.clearData.apply(this, _args(arguments));
+    return this;
+  };
+  ZeroClipboard.prototype.getData = function() {
+    if (!_clientMeta[this.id]) {
+      throw new Error("Attempted to get pending clipboard data from a destroyed ZeroClipboard client instance");
+    }
+    return ZeroClipboard.getData.apply(this, _args(arguments));
+  };
+  if (typeof define === "function" && define.amd) {
+    define(function() {
+      return ZeroClipboard;
+    });
+  } else if (typeof module === "object" && module && typeof module.exports === "object" && module.exports) {
+    module.exports = ZeroClipboard;
+  } else {
+    window.ZeroClipboard = ZeroClipboard;
+  }
+})(function() {
+  return this || window;
+}());
+
+//# 
+},{}],"zeroclipboard":[function(require,module,exports){
 /*!
  * ZeroClipboard
  * The ZeroClipboard library provides an easy way to copy text to the clipboard using an invisible Adobe Flash movie and a JavaScript interface.
@@ -37595,1915 +39978,5 @@ module.exports = function() {
 })(function() {
   return this || window;
 }());
-},{}],"zeroclipboard":[function(require,module,exports){
-"use strict";
-(function(window, undefined) {
-  "use strict";
-  var _window = window,
-      _document = _window.document,
-      _navigator = _window.navigator,
-      _setTimeout = _window.setTimeout,
-      _clearTimeout = _window.clearTimeout,
-      _setInterval = _window.setInterval,
-      _clearInterval = _window.clearInterval,
-      _getComputedStyle = _window.getComputedStyle,
-      _encodeURIComponent = _window.encodeURIComponent,
-      _ActiveXObject = _window.ActiveXObject,
-      _Error = _window.Error,
-      _parseInt = _window.Number.parseInt || _window.parseInt,
-      _parseFloat = _window.Number.parseFloat || _window.parseFloat,
-      _isNaN = _window.Number.isNaN || _window.isNaN,
-      _now = _window.Date.now,
-      _keys = _window.Object.keys,
-      _defineProperty = _window.Object.defineProperty,
-      _hasOwn = _window.Object.prototype.hasOwnProperty,
-      _slice = _window.Array.prototype.slice,
-      _unwrap = function() {
-        var unwrapper = function(el) {
-          return el;
-        };
-        if (typeof _window.wrap === "function" && typeof _window.unwrap === "function") {
-          try {
-            var div = _document.createElement("div");
-            var unwrappedDiv = _window.unwrap(div);
-            if (div.nodeType === 1 && unwrappedDiv && unwrappedDiv.nodeType === 1) {
-              unwrapper = _window.unwrap;
-            }
-          } catch (e) {}
-        }
-        return unwrapper;
-      }();
-  var _args = function(argumentsObj) {
-    return _slice.call(argumentsObj, 0);
-  };
-  var _extend = function() {
-    var i,
-        len,
-        arg,
-        prop,
-        src,
-        copy,
-        args = _args(arguments),
-        target = args[0] || {};
-    for (i = 1, len = args.length; i < len; i++) {
-      if ((arg = args[i]) != null) {
-        for (prop in arg) {
-          if (_hasOwn.call(arg, prop)) {
-            src = target[prop];
-            copy = arg[prop];
-            if (target !== copy && copy !== undefined) {
-              target[prop] = copy;
-            }
-          }
-        }
-      }
-    }
-    return target;
-  };
-  var _deepCopy = function(source) {
-    var copy,
-        i,
-        len,
-        prop;
-    if (typeof source !== "object" || source == null || typeof source.nodeType === "number") {
-      copy = source;
-    } else if (typeof source.length === "number") {
-      copy = [];
-      for (i = 0, len = source.length; i < len; i++) {
-        if (_hasOwn.call(source, i)) {
-          copy[i] = _deepCopy(source[i]);
-        }
-      }
-    } else {
-      copy = {};
-      for (prop in source) {
-        if (_hasOwn.call(source, prop)) {
-          copy[prop] = _deepCopy(source[prop]);
-        }
-      }
-    }
-    return copy;
-  };
-  var _pick = function(obj, keys) {
-    var newObj = {};
-    for (var i = 0,
-        len = keys.length; i < len; i++) {
-      if (keys[i] in obj) {
-        newObj[keys[i]] = obj[keys[i]];
-      }
-    }
-    return newObj;
-  };
-  var _omit = function(obj, keys) {
-    var newObj = {};
-    for (var prop in obj) {
-      if (keys.indexOf(prop) === -1) {
-        newObj[prop] = obj[prop];
-      }
-    }
-    return newObj;
-  };
-  var _deleteOwnProperties = function(obj) {
-    if (obj) {
-      for (var prop in obj) {
-        if (_hasOwn.call(obj, prop)) {
-          delete obj[prop];
-        }
-      }
-    }
-    return obj;
-  };
-  var _containedBy = function(el, ancestorEl) {
-    if (el && el.nodeType === 1 && el.ownerDocument && ancestorEl && (ancestorEl.nodeType === 1 && ancestorEl.ownerDocument && ancestorEl.ownerDocument === el.ownerDocument || ancestorEl.nodeType === 9 && !ancestorEl.ownerDocument && ancestorEl === el.ownerDocument)) {
-      do {
-        if (el === ancestorEl) {
-          return true;
-        }
-        el = el.parentNode;
-      } while (el);
-    }
-    return false;
-  };
-  var _getDirPathOfUrl = function(url) {
-    var dir;
-    if (typeof url === "string" && url) {
-      dir = url.split("#")[0].split("?")[0];
-      dir = url.slice(0, url.lastIndexOf("/") + 1);
-    }
-    return dir;
-  };
-  var _getCurrentScriptUrlFromErrorStack = function(stack) {
-    var url,
-        matches;
-    if (typeof stack === "string" && stack) {
-      matches = stack.match(/^(?:|[^:@]*@|.+\)@(?=http[s]?|file)|.+?\s+(?: at |@)(?:[^:\(]+ )*[\(]?)((?:http[s]?|file):\/\/[\/]?.+?\/[^:\)]*?)(?::\d+)(?::\d+)?/);
-      if (matches && matches[1]) {
-        url = matches[1];
-      } else {
-        matches = stack.match(/\)@((?:http[s]?|file):\/\/[\/]?.+?\/[^:\)]*?)(?::\d+)(?::\d+)?/);
-        if (matches && matches[1]) {
-          url = matches[1];
-        }
-      }
-    }
-    return url;
-  };
-  var _getCurrentScriptUrlFromError = function() {
-    var url,
-        err;
-    try {
-      throw new _Error();
-    } catch (e) {
-      err = e;
-    }
-    if (err) {
-      url = err.sourceURL || err.fileName || _getCurrentScriptUrlFromErrorStack(err.stack);
-    }
-    return url;
-  };
-  var _getCurrentScriptUrl = function() {
-    var jsPath,
-        scripts,
-        i;
-    if (_document.currentScript && (jsPath = _document.currentScript.src)) {
-      return jsPath;
-    }
-    scripts = _document.getElementsByTagName("script");
-    if (scripts.length === 1) {
-      return scripts[0].src || undefined;
-    }
-    if ("readyState" in scripts[0]) {
-      for (i = scripts.length; i--; ) {
-        if (scripts[i].readyState === "interactive" && (jsPath = scripts[i].src)) {
-          return jsPath;
-        }
-      }
-    }
-    if (_document.readyState === "loading" && (jsPath = scripts[scripts.length - 1].src)) {
-      return jsPath;
-    }
-    if (jsPath = _getCurrentScriptUrlFromError()) {
-      return jsPath;
-    }
-    return undefined;
-  };
-  var _getUnanimousScriptParentDir = function() {
-    var i,
-        jsDir,
-        jsPath,
-        scripts = _document.getElementsByTagName("script");
-    for (i = scripts.length; i--; ) {
-      if (!(jsPath = scripts[i].src)) {
-        jsDir = null;
-        break;
-      }
-      jsPath = _getDirPathOfUrl(jsPath);
-      if (jsDir == null) {
-        jsDir = jsPath;
-      } else if (jsDir !== jsPath) {
-        jsDir = null;
-        break;
-      }
-    }
-    return jsDir || undefined;
-  };
-  var _getDefaultSwfPath = function() {
-    var jsDir = _getDirPathOfUrl(_getCurrentScriptUrl()) || _getUnanimousScriptParentDir() || "";
-    return jsDir + "ZeroClipboard.swf";
-  };
-  var _pageIsFramed = function() {
-    return window.opener == null && (!!window.top && window != window.top || !!window.parent && window != window.parent);
-  }();
-  var _flashState = {
-    bridge: null,
-    version: "0.0.0",
-    pluginType: "unknown",
-    disabled: null,
-    outdated: null,
-    sandboxed: null,
-    unavailable: null,
-    degraded: null,
-    deactivated: null,
-    overdue: null,
-    ready: null
-  };
-  var _minimumFlashVersion = "11.0.0";
-  var _zcSwfVersion;
-  var _handlers = {};
-  var _currentElement;
-  var _copyTarget;
-  var _clipData = {};
-  var _clipDataFormatMap = null;
-  var _flashCheckTimeout = 0;
-  var _swfFallbackCheckInterval = 0;
-  var _eventMessages = {
-    ready: "Flash communication is established",
-    error: {
-      "flash-disabled": "Flash is disabled or not installed. May also be attempting to run Flash in a sandboxed iframe, which is impossible.",
-      "flash-outdated": "Flash is too outdated to support ZeroClipboard",
-      "flash-sandboxed": "Attempting to run Flash in a sandboxed iframe, which is impossible",
-      "flash-unavailable": "Flash is unable to communicate bidirectionally with JavaScript",
-      "flash-degraded": "Flash is unable to preserve data fidelity when communicating with JavaScript",
-      "flash-deactivated": "Flash is too outdated for your browser and/or is configured as click-to-activate.\nThis may also mean that the ZeroClipboard SWF object could not be loaded, so please check your `swfPath` configuration and/or network connectivity.\nMay also be attempting to run Flash in a sandboxed iframe, which is impossible.",
-      "flash-overdue": "Flash communication was established but NOT within the acceptable time limit",
-      "version-mismatch": "ZeroClipboard JS version number does not match ZeroClipboard SWF version number",
-      "clipboard-error": "At least one error was thrown while ZeroClipboard was attempting to inject your data into the clipboard",
-      "config-mismatch": "ZeroClipboard configuration does not match Flash's reality",
-      "swf-not-found": "The ZeroClipboard SWF object could not be loaded, so please check your `swfPath` configuration and/or network connectivity"
-    }
-  };
-  var _errorsThatOnlyOccurAfterFlashLoads = ["flash-unavailable", "flash-degraded", "flash-overdue", "version-mismatch", "config-mismatch", "clipboard-error"];
-  var _flashStateErrorNames = ["flash-disabled", "flash-outdated", "flash-sandboxed", "flash-unavailable", "flash-degraded", "flash-deactivated", "flash-overdue"];
-  var _flashStateErrorNameMatchingRegex = new RegExp("^flash-(" + _flashStateErrorNames.map(function(errorName) {
-    return errorName.replace(/^flash-/, "");
-  }).join("|") + ")$");
-  var _flashStateEnabledErrorNameMatchingRegex = new RegExp("^flash-(" + _flashStateErrorNames.slice(1).map(function(errorName) {
-    return errorName.replace(/^flash-/, "");
-  }).join("|") + ")$");
-  var _globalConfig = {
-    swfPath: _getDefaultSwfPath(),
-    trustedDomains: window.location.host ? [window.location.host] : [],
-    cacheBust: true,
-    forceEnhancedClipboard: false,
-    flashLoadTimeout: 3e4,
-    autoActivate: true,
-    bubbleEvents: true,
-    containerId: "global-zeroclipboard-html-bridge",
-    containerClass: "global-zeroclipboard-container",
-    swfObjectId: "global-zeroclipboard-flash-bridge",
-    hoverClass: "zeroclipboard-is-hover",
-    activeClass: "zeroclipboard-is-active",
-    forceHandCursor: false,
-    title: null,
-    zIndex: 999999999
-  };
-  var _config = function(options) {
-    if (typeof options === "object" && options !== null) {
-      for (var prop in options) {
-        if (_hasOwn.call(options, prop)) {
-          if (/^(?:forceHandCursor|title|zIndex|bubbleEvents)$/.test(prop)) {
-            _globalConfig[prop] = options[prop];
-          } else if (_flashState.bridge == null) {
-            if (prop === "containerId" || prop === "swfObjectId") {
-              if (_isValidHtml4Id(options[prop])) {
-                _globalConfig[prop] = options[prop];
-              } else {
-                throw new Error("The specified `" + prop + "` value is not valid as an HTML4 Element ID");
-              }
-            } else {
-              _globalConfig[prop] = options[prop];
-            }
-          }
-        }
-      }
-    }
-    if (typeof options === "string" && options) {
-      if (_hasOwn.call(_globalConfig, options)) {
-        return _globalConfig[options];
-      }
-      return;
-    }
-    return _deepCopy(_globalConfig);
-  };
-  var _state = function() {
-    _detectSandbox();
-    return {
-      browser: _pick(_navigator, ["userAgent", "platform", "appName"]),
-      flash: _omit(_flashState, ["bridge"]),
-      zeroclipboard: {
-        version: ZeroClipboard.version,
-        config: ZeroClipboard.config()
-      }
-    };
-  };
-  var _isFlashUnusable = function() {
-    return !!(_flashState.disabled || _flashState.outdated || _flashState.sandboxed || _flashState.unavailable || _flashState.degraded || _flashState.deactivated);
-  };
-  var _on = function(eventType, listener) {
-    var i,
-        len,
-        events,
-        added = {};
-    if (typeof eventType === "string" && eventType) {
-      events = eventType.toLowerCase().split(/\s+/);
-    } else if (typeof eventType === "object" && eventType && typeof listener === "undefined") {
-      for (i in eventType) {
-        if (_hasOwn.call(eventType, i) && typeof i === "string" && i && typeof eventType[i] === "function") {
-          ZeroClipboard.on(i, eventType[i]);
-        }
-      }
-    }
-    if (events && events.length) {
-      for (i = 0, len = events.length; i < len; i++) {
-        eventType = events[i].replace(/^on/, "");
-        added[eventType] = true;
-        if (!_handlers[eventType]) {
-          _handlers[eventType] = [];
-        }
-        _handlers[eventType].push(listener);
-      }
-      if (added.ready && _flashState.ready) {
-        ZeroClipboard.emit({type: "ready"});
-      }
-      if (added.error) {
-        for (i = 0, len = _flashStateErrorNames.length; i < len; i++) {
-          if (_flashState[_flashStateErrorNames[i].replace(/^flash-/, "")] === true) {
-            ZeroClipboard.emit({
-              type: "error",
-              name: _flashStateErrorNames[i]
-            });
-            break;
-          }
-        }
-        if (_zcSwfVersion !== undefined && ZeroClipboard.version !== _zcSwfVersion) {
-          ZeroClipboard.emit({
-            type: "error",
-            name: "version-mismatch",
-            jsVersion: ZeroClipboard.version,
-            swfVersion: _zcSwfVersion
-          });
-        }
-      }
-    }
-    return ZeroClipboard;
-  };
-  var _off = function(eventType, listener) {
-    var i,
-        len,
-        foundIndex,
-        events,
-        perEventHandlers;
-    if (arguments.length === 0) {
-      events = _keys(_handlers);
-    } else if (typeof eventType === "string" && eventType) {
-      events = eventType.split(/\s+/);
-    } else if (typeof eventType === "object" && eventType && typeof listener === "undefined") {
-      for (i in eventType) {
-        if (_hasOwn.call(eventType, i) && typeof i === "string" && i && typeof eventType[i] === "function") {
-          ZeroClipboard.off(i, eventType[i]);
-        }
-      }
-    }
-    if (events && events.length) {
-      for (i = 0, len = events.length; i < len; i++) {
-        eventType = events[i].toLowerCase().replace(/^on/, "");
-        perEventHandlers = _handlers[eventType];
-        if (perEventHandlers && perEventHandlers.length) {
-          if (listener) {
-            foundIndex = perEventHandlers.indexOf(listener);
-            while (foundIndex !== -1) {
-              perEventHandlers.splice(foundIndex, 1);
-              foundIndex = perEventHandlers.indexOf(listener, foundIndex);
-            }
-          } else {
-            perEventHandlers.length = 0;
-          }
-        }
-      }
-    }
-    return ZeroClipboard;
-  };
-  var _listeners = function(eventType) {
-    var copy;
-    if (typeof eventType === "string" && eventType) {
-      copy = _deepCopy(_handlers[eventType]) || null;
-    } else {
-      copy = _deepCopy(_handlers);
-    }
-    return copy;
-  };
-  var _emit = function(event) {
-    var eventCopy,
-        returnVal,
-        tmp;
-    event = _createEvent(event);
-    if (!event) {
-      return;
-    }
-    if (_preprocessEvent(event)) {
-      return;
-    }
-    if (event.type === "ready" && _flashState.overdue === true) {
-      return ZeroClipboard.emit({
-        type: "error",
-        name: "flash-overdue"
-      });
-    }
-    eventCopy = _extend({}, event);
-    _dispatchCallbacks.call(this, eventCopy);
-    if (event.type === "copy") {
-      tmp = _mapClipDataToFlash(_clipData);
-      returnVal = tmp.data;
-      _clipDataFormatMap = tmp.formatMap;
-    }
-    return returnVal;
-  };
-  var _create = function() {
-    var previousState = _flashState.sandboxed;
-    _detectSandbox();
-    if (typeof _flashState.ready !== "boolean") {
-      _flashState.ready = false;
-    }
-    if (_flashState.sandboxed !== previousState && _flashState.sandboxed === true) {
-      _flashState.ready = false;
-      ZeroClipboard.emit({
-        type: "error",
-        name: "flash-sandboxed"
-      });
-    } else if (!ZeroClipboard.isFlashUnusable() && _flashState.bridge === null) {
-      var maxWait = _globalConfig.flashLoadTimeout;
-      if (typeof maxWait === "number" && maxWait >= 0) {
-        _flashCheckTimeout = _setTimeout(function() {
-          if (typeof _flashState.deactivated !== "boolean") {
-            _flashState.deactivated = true;
-          }
-          if (_flashState.deactivated === true) {
-            ZeroClipboard.emit({
-              type: "error",
-              name: "flash-deactivated"
-            });
-          }
-        }, maxWait);
-      }
-      _flashState.overdue = false;
-      _embedSwf();
-    }
-  };
-  var _destroy = function() {
-    ZeroClipboard.clearData();
-    ZeroClipboard.blur();
-    ZeroClipboard.emit("destroy");
-    _unembedSwf();
-    ZeroClipboard.off();
-  };
-  var _setData = function(format, data) {
-    var dataObj;
-    if (typeof format === "object" && format && typeof data === "undefined") {
-      dataObj = format;
-      ZeroClipboard.clearData();
-    } else if (typeof format === "string" && format) {
-      dataObj = {};
-      dataObj[format] = data;
-    } else {
-      return;
-    }
-    for (var dataFormat in dataObj) {
-      if (typeof dataFormat === "string" && dataFormat && _hasOwn.call(dataObj, dataFormat) && typeof dataObj[dataFormat] === "string" && dataObj[dataFormat]) {
-        _clipData[dataFormat] = dataObj[dataFormat];
-      }
-    }
-  };
-  var _clearData = function(format) {
-    if (typeof format === "undefined") {
-      _deleteOwnProperties(_clipData);
-      _clipDataFormatMap = null;
-    } else if (typeof format === "string" && _hasOwn.call(_clipData, format)) {
-      delete _clipData[format];
-    }
-  };
-  var _getData = function(format) {
-    if (typeof format === "undefined") {
-      return _deepCopy(_clipData);
-    } else if (typeof format === "string" && _hasOwn.call(_clipData, format)) {
-      return _clipData[format];
-    }
-  };
-  var _focus = function(element) {
-    if (!(element && element.nodeType === 1)) {
-      return;
-    }
-    if (_currentElement) {
-      _removeClass(_currentElement, _globalConfig.activeClass);
-      if (_currentElement !== element) {
-        _removeClass(_currentElement, _globalConfig.hoverClass);
-      }
-    }
-    _currentElement = element;
-    _addClass(element, _globalConfig.hoverClass);
-    var newTitle = element.getAttribute("title") || _globalConfig.title;
-    if (typeof newTitle === "string" && newTitle) {
-      var htmlBridge = _getHtmlBridge(_flashState.bridge);
-      if (htmlBridge) {
-        htmlBridge.setAttribute("title", newTitle);
-      }
-    }
-    var useHandCursor = _globalConfig.forceHandCursor === true || _getStyle(element, "cursor") === "pointer";
-    _setHandCursor(useHandCursor);
-    _reposition();
-  };
-  var _blur = function() {
-    var htmlBridge = _getHtmlBridge(_flashState.bridge);
-    if (htmlBridge) {
-      htmlBridge.removeAttribute("title");
-      htmlBridge.style.left = "0px";
-      htmlBridge.style.top = "-9999px";
-      htmlBridge.style.width = "1px";
-      htmlBridge.style.height = "1px";
-    }
-    if (_currentElement) {
-      _removeClass(_currentElement, _globalConfig.hoverClass);
-      _removeClass(_currentElement, _globalConfig.activeClass);
-      _currentElement = null;
-    }
-  };
-  var _activeElement = function() {
-    return _currentElement || null;
-  };
-  var _isValidHtml4Id = function(id) {
-    return typeof id === "string" && id && /^[A-Za-z][A-Za-z0-9_:\-\.]*$/.test(id);
-  };
-  var _createEvent = function(event) {
-    var eventType;
-    if (typeof event === "string" && event) {
-      eventType = event;
-      event = {};
-    } else if (typeof event === "object" && event && typeof event.type === "string" && event.type) {
-      eventType = event.type;
-    }
-    if (!eventType) {
-      return;
-    }
-    eventType = eventType.toLowerCase();
-    if (!event.target && (/^(copy|aftercopy|_click)$/.test(eventType) || eventType === "error" && event.name === "clipboard-error")) {
-      event.target = _copyTarget;
-    }
-    _extend(event, {
-      type: eventType,
-      target: event.target || _currentElement || null,
-      relatedTarget: event.relatedTarget || null,
-      currentTarget: _flashState && _flashState.bridge || null,
-      timeStamp: event.timeStamp || _now() || null
-    });
-    var msg = _eventMessages[event.type];
-    if (event.type === "error" && event.name && msg) {
-      msg = msg[event.name];
-    }
-    if (msg) {
-      event.message = msg;
-    }
-    if (event.type === "ready") {
-      _extend(event, {
-        target: null,
-        version: _flashState.version
-      });
-    }
-    if (event.type === "error") {
-      if (_flashStateErrorNameMatchingRegex.test(event.name)) {
-        _extend(event, {
-          target: null,
-          minimumVersion: _minimumFlashVersion
-        });
-      }
-      if (_flashStateEnabledErrorNameMatchingRegex.test(event.name)) {
-        _extend(event, {version: _flashState.version});
-      }
-    }
-    if (event.type === "copy") {
-      event.clipboardData = {
-        setData: ZeroClipboard.setData,
-        clearData: ZeroClipboard.clearData
-      };
-    }
-    if (event.type === "aftercopy") {
-      event = _mapClipResultsFromFlash(event, _clipDataFormatMap);
-    }
-    if (event.target && !event.relatedTarget) {
-      event.relatedTarget = _getRelatedTarget(event.target);
-    }
-    return _addMouseData(event);
-  };
-  var _getRelatedTarget = function(targetEl) {
-    var relatedTargetId = targetEl && targetEl.getAttribute && targetEl.getAttribute("data-clipboard-target");
-    return relatedTargetId ? _document.getElementById(relatedTargetId) : null;
-  };
-  var _addMouseData = function(event) {
-    if (event && /^_(?:click|mouse(?:over|out|down|up|move))$/.test(event.type)) {
-      var srcElement = event.target;
-      var fromElement = event.type === "_mouseover" && event.relatedTarget ? event.relatedTarget : undefined;
-      var toElement = event.type === "_mouseout" && event.relatedTarget ? event.relatedTarget : undefined;
-      var pos = _getElementPosition(srcElement);
-      var screenLeft = _window.screenLeft || _window.screenX || 0;
-      var screenTop = _window.screenTop || _window.screenY || 0;
-      var scrollLeft = _document.body.scrollLeft + _document.documentElement.scrollLeft;
-      var scrollTop = _document.body.scrollTop + _document.documentElement.scrollTop;
-      var pageX = pos.left + (typeof event._stageX === "number" ? event._stageX : 0);
-      var pageY = pos.top + (typeof event._stageY === "number" ? event._stageY : 0);
-      var clientX = pageX - scrollLeft;
-      var clientY = pageY - scrollTop;
-      var screenX = screenLeft + clientX;
-      var screenY = screenTop + clientY;
-      var moveX = typeof event.movementX === "number" ? event.movementX : 0;
-      var moveY = typeof event.movementY === "number" ? event.movementY : 0;
-      delete event._stageX;
-      delete event._stageY;
-      _extend(event, {
-        srcElement: srcElement,
-        fromElement: fromElement,
-        toElement: toElement,
-        screenX: screenX,
-        screenY: screenY,
-        pageX: pageX,
-        pageY: pageY,
-        clientX: clientX,
-        clientY: clientY,
-        x: clientX,
-        y: clientY,
-        movementX: moveX,
-        movementY: moveY,
-        offsetX: 0,
-        offsetY: 0,
-        layerX: 0,
-        layerY: 0
-      });
-    }
-    return event;
-  };
-  var _shouldPerformAsync = function(event) {
-    var eventType = event && typeof event.type === "string" && event.type || "";
-    return !/^(?:(?:before)?copy|destroy)$/.test(eventType);
-  };
-  var _dispatchCallback = function(func, context, args, async) {
-    if (async) {
-      _setTimeout(function() {
-        func.apply(context, args);
-      }, 0);
-    } else {
-      func.apply(context, args);
-    }
-  };
-  var _dispatchCallbacks = function(event) {
-    if (!(typeof event === "object" && event && event.type)) {
-      return;
-    }
-    var async = _shouldPerformAsync(event);
-    var wildcardTypeHandlers = _handlers["*"] || [];
-    var specificTypeHandlers = _handlers[event.type] || [];
-    var handlers = wildcardTypeHandlers.concat(specificTypeHandlers);
-    if (handlers && handlers.length) {
-      var i,
-          len,
-          func,
-          context,
-          eventCopy,
-          originalContext = this;
-      for (i = 0, len = handlers.length; i < len; i++) {
-        func = handlers[i];
-        context = originalContext;
-        if (typeof func === "string" && typeof _window[func] === "function") {
-          func = _window[func];
-        }
-        if (typeof func === "object" && func && typeof func.handleEvent === "function") {
-          context = func;
-          func = func.handleEvent;
-        }
-        if (typeof func === "function") {
-          eventCopy = _extend({}, event);
-          _dispatchCallback(func, context, [eventCopy], async);
-        }
-      }
-    }
-    return this;
-  };
-  var _getSandboxStatusFromErrorEvent = function(event) {
-    var isSandboxed = null;
-    if (_pageIsFramed === false || event && event.type === "error" && event.name && _errorsThatOnlyOccurAfterFlashLoads.indexOf(event.name) !== -1) {
-      isSandboxed = false;
-    }
-    return isSandboxed;
-  };
-  var _preprocessEvent = function(event) {
-    var element = event.target || _currentElement || null;
-    var sourceIsSwf = event._source === "swf";
-    delete event._source;
-    switch (event.type) {
-      case "error":
-        var isSandboxed = event.name === "flash-sandboxed" || _getSandboxStatusFromErrorEvent(event);
-        if (typeof isSandboxed === "boolean") {
-          _flashState.sandboxed = isSandboxed;
-        }
-        if (_flashStateErrorNames.indexOf(event.name) !== -1) {
-          _extend(_flashState, {
-            disabled: event.name === "flash-disabled",
-            outdated: event.name === "flash-outdated",
-            unavailable: event.name === "flash-unavailable",
-            degraded: event.name === "flash-degraded",
-            deactivated: event.name === "flash-deactivated",
-            overdue: event.name === "flash-overdue",
-            ready: false
-          });
-        } else if (event.name === "version-mismatch") {
-          _zcSwfVersion = event.swfVersion;
-          _extend(_flashState, {
-            disabled: false,
-            outdated: false,
-            unavailable: false,
-            degraded: false,
-            deactivated: false,
-            overdue: false,
-            ready: false
-          });
-        }
-        _clearTimeoutsAndPolling();
-        break;
-      case "ready":
-        _zcSwfVersion = event.swfVersion;
-        var wasDeactivated = _flashState.deactivated === true;
-        _extend(_flashState, {
-          disabled: false,
-          outdated: false,
-          sandboxed: false,
-          unavailable: false,
-          degraded: false,
-          deactivated: false,
-          overdue: wasDeactivated,
-          ready: !wasDeactivated
-        });
-        _clearTimeoutsAndPolling();
-        break;
-      case "beforecopy":
-        _copyTarget = element;
-        break;
-      case "copy":
-        var textContent,
-            htmlContent,
-            targetEl = event.relatedTarget;
-        if (!(_clipData["text/html"] || _clipData["text/plain"]) && targetEl && (htmlContent = targetEl.value || targetEl.outerHTML || targetEl.innerHTML) && (textContent = targetEl.value || targetEl.textContent || targetEl.innerText)) {
-          event.clipboardData.clearData();
-          event.clipboardData.setData("text/plain", textContent);
-          if (htmlContent !== textContent) {
-            event.clipboardData.setData("text/html", htmlContent);
-          }
-        } else if (!_clipData["text/plain"] && event.target && (textContent = event.target.getAttribute("data-clipboard-text"))) {
-          event.clipboardData.clearData();
-          event.clipboardData.setData("text/plain", textContent);
-        }
-        break;
-      case "aftercopy":
-        _queueEmitClipboardErrors(event);
-        ZeroClipboard.clearData();
-        if (element && element !== _safeActiveElement() && element.focus) {
-          element.focus();
-        }
-        break;
-      case "_mouseover":
-        ZeroClipboard.focus(element);
-        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
-          if (element && element !== event.relatedTarget && !_containedBy(event.relatedTarget, element)) {
-            _fireMouseEvent(_extend({}, event, {
-              type: "mouseenter",
-              bubbles: false,
-              cancelable: false
-            }));
-          }
-          _fireMouseEvent(_extend({}, event, {type: "mouseover"}));
-        }
-        break;
-      case "_mouseout":
-        ZeroClipboard.blur();
-        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
-          if (element && element !== event.relatedTarget && !_containedBy(event.relatedTarget, element)) {
-            _fireMouseEvent(_extend({}, event, {
-              type: "mouseleave",
-              bubbles: false,
-              cancelable: false
-            }));
-          }
-          _fireMouseEvent(_extend({}, event, {type: "mouseout"}));
-        }
-        break;
-      case "_mousedown":
-        _addClass(element, _globalConfig.activeClass);
-        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
-          _fireMouseEvent(_extend({}, event, {type: event.type.slice(1)}));
-        }
-        break;
-      case "_mouseup":
-        _removeClass(element, _globalConfig.activeClass);
-        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
-          _fireMouseEvent(_extend({}, event, {type: event.type.slice(1)}));
-        }
-        break;
-      case "_click":
-        _copyTarget = null;
-        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
-          _fireMouseEvent(_extend({}, event, {type: event.type.slice(1)}));
-        }
-        break;
-      case "_mousemove":
-        if (_globalConfig.bubbleEvents === true && sourceIsSwf) {
-          _fireMouseEvent(_extend({}, event, {type: event.type.slice(1)}));
-        }
-        break;
-    }
-    if (/^_(?:click|mouse(?:over|out|down|up|move))$/.test(event.type)) {
-      return true;
-    }
-  };
-  var _queueEmitClipboardErrors = function(aftercopyEvent) {
-    if (aftercopyEvent.errors && aftercopyEvent.errors.length > 0) {
-      var errorEvent = _deepCopy(aftercopyEvent);
-      _extend(errorEvent, {
-        type: "error",
-        name: "clipboard-error"
-      });
-      delete errorEvent.success;
-      _setTimeout(function() {
-        ZeroClipboard.emit(errorEvent);
-      }, 0);
-    }
-  };
-  var _fireMouseEvent = function(event) {
-    if (!(event && typeof event.type === "string" && event)) {
-      return;
-    }
-    var e,
-        target = event.target || null,
-        doc = target && target.ownerDocument || _document,
-        defaults = {
-          view: doc.defaultView || _window,
-          canBubble: true,
-          cancelable: true,
-          detail: event.type === "click" ? 1 : 0,
-          button: typeof event.which === "number" ? event.which - 1 : typeof event.button === "number" ? event.button : doc.createEvent ? 0 : 1
-        },
-        args = _extend(defaults, event);
-    if (!target) {
-      return;
-    }
-    if (doc.createEvent && target.dispatchEvent) {
-      args = [args.type, args.canBubble, args.cancelable, args.view, args.detail, args.screenX, args.screenY, args.clientX, args.clientY, args.ctrlKey, args.altKey, args.shiftKey, args.metaKey, args.button, args.relatedTarget];
-      e = doc.createEvent("MouseEvents");
-      if (e.initMouseEvent) {
-        e.initMouseEvent.apply(e, args);
-        e._source = "js";
-        target.dispatchEvent(e);
-      }
-    }
-  };
-  var _watchForSwfFallbackContent = function() {
-    var maxWait = _globalConfig.flashLoadTimeout;
-    if (typeof maxWait === "number" && maxWait >= 0) {
-      var pollWait = Math.min(1e3, maxWait / 10);
-      var fallbackContentId = _globalConfig.swfObjectId + "_fallbackContent";
-      _swfFallbackCheckInterval = _setInterval(function() {
-        var el = _document.getElementById(fallbackContentId);
-        if (_isElementVisible(el)) {
-          _clearTimeoutsAndPolling();
-          _flashState.deactivated = null;
-          ZeroClipboard.emit({
-            type: "error",
-            name: "swf-not-found"
-          });
-        }
-      }, pollWait);
-    }
-  };
-  var _createHtmlBridge = function() {
-    var container = _document.createElement("div");
-    container.id = _globalConfig.containerId;
-    container.className = _globalConfig.containerClass;
-    container.style.position = "absolute";
-    container.style.left = "0px";
-    container.style.top = "-9999px";
-    container.style.width = "1px";
-    container.style.height = "1px";
-    container.style.zIndex = "" + _getSafeZIndex(_globalConfig.zIndex);
-    return container;
-  };
-  var _getHtmlBridge = function(flashBridge) {
-    var htmlBridge = flashBridge && flashBridge.parentNode;
-    while (htmlBridge && htmlBridge.nodeName === "OBJECT" && htmlBridge.parentNode) {
-      htmlBridge = htmlBridge.parentNode;
-    }
-    return htmlBridge || null;
-  };
-  var _embedSwf = function() {
-    var len,
-        flashBridge = _flashState.bridge,
-        container = _getHtmlBridge(flashBridge);
-    if (!flashBridge) {
-      var allowScriptAccess = _determineScriptAccess(_window.location.host, _globalConfig);
-      var allowNetworking = allowScriptAccess === "never" ? "none" : "all";
-      var flashvars = _vars(_extend({jsVersion: ZeroClipboard.version}, _globalConfig));
-      var swfUrl = _globalConfig.swfPath + _cacheBust(_globalConfig.swfPath, _globalConfig);
-      container = _createHtmlBridge();
-      var divToBeReplaced = _document.createElement("div");
-      container.appendChild(divToBeReplaced);
-      _document.body.appendChild(container);
-      var tmpDiv = _document.createElement("div");
-      var usingActiveX = _flashState.pluginType === "activex";
-      tmpDiv.innerHTML = '<object id="' + _globalConfig.swfObjectId + '" name="' + _globalConfig.swfObjectId + '" ' + 'width="100%" height="100%" ' + (usingActiveX ? 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"' : 'type="application/x-shockwave-flash" data="' + swfUrl + '"') + ">" + (usingActiveX ? '<param name="movie" value="' + swfUrl + '"/>' : "") + '<param name="allowScriptAccess" value="' + allowScriptAccess + '"/>' + '<param name="allowNetworking" value="' + allowNetworking + '"/>' + '<param name="menu" value="false"/>' + '<param name="wmode" value="transparent"/>' + '<param name="flashvars" value="' + flashvars + '"/>' + '<div id="' + _globalConfig.swfObjectId + '_fallbackContent">&nbsp;</div>' + "</object>";
-      flashBridge = tmpDiv.firstChild;
-      tmpDiv = null;
-      _unwrap(flashBridge).ZeroClipboard = ZeroClipboard;
-      container.replaceChild(flashBridge, divToBeReplaced);
-      _watchForSwfFallbackContent();
-    }
-    if (!flashBridge) {
-      flashBridge = _document[_globalConfig.swfObjectId];
-      if (flashBridge && (len = flashBridge.length)) {
-        flashBridge = flashBridge[len - 1];
-      }
-      if (!flashBridge && container) {
-        flashBridge = container.firstChild;
-      }
-    }
-    _flashState.bridge = flashBridge || null;
-    return flashBridge;
-  };
-  var _unembedSwf = function() {
-    var flashBridge = _flashState.bridge;
-    if (flashBridge) {
-      var htmlBridge = _getHtmlBridge(flashBridge);
-      if (htmlBridge) {
-        if (_flashState.pluginType === "activex" && "readyState" in flashBridge) {
-          flashBridge.style.display = "none";
-          (function removeSwfFromIE() {
-            if (flashBridge.readyState === 4) {
-              for (var prop in flashBridge) {
-                if (typeof flashBridge[prop] === "function") {
-                  flashBridge[prop] = null;
-                }
-              }
-              if (flashBridge.parentNode) {
-                flashBridge.parentNode.removeChild(flashBridge);
-              }
-              if (htmlBridge.parentNode) {
-                htmlBridge.parentNode.removeChild(htmlBridge);
-              }
-            } else {
-              _setTimeout(removeSwfFromIE, 10);
-            }
-          })();
-        } else {
-          if (flashBridge.parentNode) {
-            flashBridge.parentNode.removeChild(flashBridge);
-          }
-          if (htmlBridge.parentNode) {
-            htmlBridge.parentNode.removeChild(htmlBridge);
-          }
-        }
-      }
-      _clearTimeoutsAndPolling();
-      _flashState.ready = null;
-      _flashState.bridge = null;
-      _flashState.deactivated = null;
-      _zcSwfVersion = undefined;
-    }
-  };
-  var _mapClipDataToFlash = function(clipData) {
-    var newClipData = {},
-        formatMap = {};
-    if (!(typeof clipData === "object" && clipData)) {
-      return;
-    }
-    for (var dataFormat in clipData) {
-      if (dataFormat && _hasOwn.call(clipData, dataFormat) && typeof clipData[dataFormat] === "string" && clipData[dataFormat]) {
-        switch (dataFormat.toLowerCase()) {
-          case "text/plain":
-          case "text":
-          case "air:text":
-          case "flash:text":
-            newClipData.text = clipData[dataFormat];
-            formatMap.text = dataFormat;
-            break;
-          case "text/html":
-          case "html":
-          case "air:html":
-          case "flash:html":
-            newClipData.html = clipData[dataFormat];
-            formatMap.html = dataFormat;
-            break;
-          case "application/rtf":
-          case "text/rtf":
-          case "rtf":
-          case "richtext":
-          case "air:rtf":
-          case "flash:rtf":
-            newClipData.rtf = clipData[dataFormat];
-            formatMap.rtf = dataFormat;
-            break;
-          default:
-            break;
-        }
-      }
-    }
-    return {
-      data: newClipData,
-      formatMap: formatMap
-    };
-  };
-  var _mapClipResultsFromFlash = function(clipResults, formatMap) {
-    if (!(typeof clipResults === "object" && clipResults && typeof formatMap === "object" && formatMap)) {
-      return clipResults;
-    }
-    var newResults = {};
-    for (var prop in clipResults) {
-      if (_hasOwn.call(clipResults, prop)) {
-        if (prop === "errors") {
-          newResults[prop] = clipResults[prop] ? clipResults[prop].slice() : [];
-          for (var i = 0,
-              len = newResults[prop].length; i < len; i++) {
-            newResults[prop][i].format = formatMap[newResults[prop][i].format];
-          }
-        } else if (prop !== "success" && prop !== "data") {
-          newResults[prop] = clipResults[prop];
-        } else {
-          newResults[prop] = {};
-          var tmpHash = clipResults[prop];
-          for (var dataFormat in tmpHash) {
-            if (dataFormat && _hasOwn.call(tmpHash, dataFormat) && _hasOwn.call(formatMap, dataFormat)) {
-              newResults[prop][formatMap[dataFormat]] = tmpHash[dataFormat];
-            }
-          }
-        }
-      }
-    }
-    return newResults;
-  };
-  var _cacheBust = function(path, options) {
-    var cacheBust = options == null || options && options.cacheBust === true;
-    if (cacheBust) {
-      return (path.indexOf("?") === -1 ? "?" : "&") + "noCache=" + _now();
-    } else {
-      return "";
-    }
-  };
-  var _vars = function(options) {
-    var i,
-        len,
-        domain,
-        domains,
-        str = "",
-        trustedOriginsExpanded = [];
-    if (options.trustedDomains) {
-      if (typeof options.trustedDomains === "string") {
-        domains = [options.trustedDomains];
-      } else if (typeof options.trustedDomains === "object" && "length" in options.trustedDomains) {
-        domains = options.trustedDomains;
-      }
-    }
-    if (domains && domains.length) {
-      for (i = 0, len = domains.length; i < len; i++) {
-        if (_hasOwn.call(domains, i) && domains[i] && typeof domains[i] === "string") {
-          domain = _extractDomain(domains[i]);
-          if (!domain) {
-            continue;
-          }
-          if (domain === "*") {
-            trustedOriginsExpanded.length = 0;
-            trustedOriginsExpanded.push(domain);
-            break;
-          }
-          trustedOriginsExpanded.push.apply(trustedOriginsExpanded, [domain, "//" + domain, _window.location.protocol + "//" + domain]);
-        }
-      }
-    }
-    if (trustedOriginsExpanded.length) {
-      str += "trustedOrigins=" + _encodeURIComponent(trustedOriginsExpanded.join(","));
-    }
-    if (options.forceEnhancedClipboard === true) {
-      str += (str ? "&" : "") + "forceEnhancedClipboard=true";
-    }
-    if (typeof options.swfObjectId === "string" && options.swfObjectId) {
-      str += (str ? "&" : "") + "swfObjectId=" + _encodeURIComponent(options.swfObjectId);
-    }
-    if (typeof options.jsVersion === "string" && options.jsVersion) {
-      str += (str ? "&" : "") + "jsVersion=" + _encodeURIComponent(options.jsVersion);
-    }
-    return str;
-  };
-  var _extractDomain = function(originOrUrl) {
-    if (originOrUrl == null || originOrUrl === "") {
-      return null;
-    }
-    originOrUrl = originOrUrl.replace(/^\s+|\s+$/g, "");
-    if (originOrUrl === "") {
-      return null;
-    }
-    var protocolIndex = originOrUrl.indexOf("//");
-    originOrUrl = protocolIndex === -1 ? originOrUrl : originOrUrl.slice(protocolIndex + 2);
-    var pathIndex = originOrUrl.indexOf("/");
-    originOrUrl = pathIndex === -1 ? originOrUrl : protocolIndex === -1 || pathIndex === 0 ? null : originOrUrl.slice(0, pathIndex);
-    if (originOrUrl && originOrUrl.slice(-4).toLowerCase() === ".swf") {
-      return null;
-    }
-    return originOrUrl || null;
-  };
-  var _determineScriptAccess = function() {
-    var _extractAllDomains = function(origins) {
-      var i,
-          len,
-          tmp,
-          resultsArray = [];
-      if (typeof origins === "string") {
-        origins = [origins];
-      }
-      if (!(typeof origins === "object" && origins && typeof origins.length === "number")) {
-        return resultsArray;
-      }
-      for (i = 0, len = origins.length; i < len; i++) {
-        if (_hasOwn.call(origins, i) && (tmp = _extractDomain(origins[i]))) {
-          if (tmp === "*") {
-            resultsArray.length = 0;
-            resultsArray.push("*");
-            break;
-          }
-          if (resultsArray.indexOf(tmp) === -1) {
-            resultsArray.push(tmp);
-          }
-        }
-      }
-      return resultsArray;
-    };
-    return function(currentDomain, configOptions) {
-      var swfDomain = _extractDomain(configOptions.swfPath);
-      if (swfDomain === null) {
-        swfDomain = currentDomain;
-      }
-      var trustedDomains = _extractAllDomains(configOptions.trustedDomains);
-      var len = trustedDomains.length;
-      if (len > 0) {
-        if (len === 1 && trustedDomains[0] === "*") {
-          return "always";
-        }
-        if (trustedDomains.indexOf(currentDomain) !== -1) {
-          if (len === 1 && currentDomain === swfDomain) {
-            return "sameDomain";
-          }
-          return "always";
-        }
-      }
-      return "never";
-    };
-  }();
-  var _safeActiveElement = function() {
-    try {
-      return _document.activeElement;
-    } catch (err) {
-      return null;
-    }
-  };
-  var _addClass = function(element, value) {
-    var c,
-        cl,
-        className,
-        classNames = [];
-    if (typeof value === "string" && value) {
-      classNames = value.split(/\s+/);
-    }
-    if (element && element.nodeType === 1 && classNames.length > 0) {
-      if (element.classList) {
-        for (c = 0, cl = classNames.length; c < cl; c++) {
-          element.classList.add(classNames[c]);
-        }
-      } else if (element.hasOwnProperty("className")) {
-        className = " " + element.className + " ";
-        for (c = 0, cl = classNames.length; c < cl; c++) {
-          if (className.indexOf(" " + classNames[c] + " ") === -1) {
-            className += classNames[c] + " ";
-          }
-        }
-        element.className = className.replace(/^\s+|\s+$/g, "");
-      }
-    }
-    return element;
-  };
-  var _removeClass = function(element, value) {
-    var c,
-        cl,
-        className,
-        classNames = [];
-    if (typeof value === "string" && value) {
-      classNames = value.split(/\s+/);
-    }
-    if (element && element.nodeType === 1 && classNames.length > 0) {
-      if (element.classList && element.classList.length > 0) {
-        for (c = 0, cl = classNames.length; c < cl; c++) {
-          element.classList.remove(classNames[c]);
-        }
-      } else if (element.className) {
-        className = (" " + element.className + " ").replace(/[\r\n\t]/g, " ");
-        for (c = 0, cl = classNames.length; c < cl; c++) {
-          className = className.replace(" " + classNames[c] + " ", " ");
-        }
-        element.className = className.replace(/^\s+|\s+$/g, "");
-      }
-    }
-    return element;
-  };
-  var _getStyle = function(el, prop) {
-    var value = _getComputedStyle(el, null).getPropertyValue(prop);
-    if (prop === "cursor") {
-      if (!value || value === "auto") {
-        if (el.nodeName === "A") {
-          return "pointer";
-        }
-      }
-    }
-    return value;
-  };
-  var _getElementPosition = function(el) {
-    var pos = {
-      left: 0,
-      top: 0,
-      width: 0,
-      height: 0
-    };
-    if (el.getBoundingClientRect) {
-      var elRect = el.getBoundingClientRect();
-      var pageXOffset = _window.pageXOffset;
-      var pageYOffset = _window.pageYOffset;
-      var leftBorderWidth = _document.documentElement.clientLeft || 0;
-      var topBorderWidth = _document.documentElement.clientTop || 0;
-      var leftBodyOffset = 0;
-      var topBodyOffset = 0;
-      if (_getStyle(_document.body, "position") === "relative") {
-        var bodyRect = _document.body.getBoundingClientRect();
-        var htmlRect = _document.documentElement.getBoundingClientRect();
-        leftBodyOffset = bodyRect.left - htmlRect.left || 0;
-        topBodyOffset = bodyRect.top - htmlRect.top || 0;
-      }
-      pos.left = elRect.left + pageXOffset - leftBorderWidth - leftBodyOffset;
-      pos.top = elRect.top + pageYOffset - topBorderWidth - topBodyOffset;
-      pos.width = "width" in elRect ? elRect.width : elRect.right - elRect.left;
-      pos.height = "height" in elRect ? elRect.height : elRect.bottom - elRect.top;
-    }
-    return pos;
-  };
-  var _isElementVisible = function(el) {
-    if (!el) {
-      return false;
-    }
-    var styles = _getComputedStyle(el, null);
-    var hasCssHeight = _parseFloat(styles.height) > 0;
-    var hasCssWidth = _parseFloat(styles.width) > 0;
-    var hasCssTop = _parseFloat(styles.top) >= 0;
-    var hasCssLeft = _parseFloat(styles.left) >= 0;
-    var cssKnows = hasCssHeight && hasCssWidth && hasCssTop && hasCssLeft;
-    var rect = cssKnows ? null : _getElementPosition(el);
-    var isVisible = styles.display !== "none" && styles.visibility !== "collapse" && (cssKnows || !!rect && (hasCssHeight || rect.height > 0) && (hasCssWidth || rect.width > 0) && (hasCssTop || rect.top >= 0) && (hasCssLeft || rect.left >= 0));
-    return isVisible;
-  };
-  var _clearTimeoutsAndPolling = function() {
-    _clearTimeout(_flashCheckTimeout);
-    _flashCheckTimeout = 0;
-    _clearInterval(_swfFallbackCheckInterval);
-    _swfFallbackCheckInterval = 0;
-  };
-  var _reposition = function() {
-    var htmlBridge;
-    if (_currentElement && (htmlBridge = _getHtmlBridge(_flashState.bridge))) {
-      var pos = _getElementPosition(_currentElement);
-      _extend(htmlBridge.style, {
-        width: pos.width + "px",
-        height: pos.height + "px",
-        top: pos.top + "px",
-        left: pos.left + "px",
-        zIndex: "" + _getSafeZIndex(_globalConfig.zIndex)
-      });
-    }
-  };
-  var _setHandCursor = function(enabled) {
-    if (_flashState.ready === true) {
-      if (_flashState.bridge && typeof _flashState.bridge.setHandCursor === "function") {
-        _flashState.bridge.setHandCursor(enabled);
-      } else {
-        _flashState.ready = false;
-      }
-    }
-  };
-  var _getSafeZIndex = function(val) {
-    if (/^(?:auto|inherit)$/.test(val)) {
-      return val;
-    }
-    var zIndex;
-    if (typeof val === "number" && !_isNaN(val)) {
-      zIndex = val;
-    } else if (typeof val === "string") {
-      zIndex = _getSafeZIndex(_parseInt(val, 10));
-    }
-    return typeof zIndex === "number" ? zIndex : "auto";
-  };
-  var _detectSandbox = function(doNotReassessFlashSupport) {
-    var effectiveScriptOrigin,
-        frame,
-        frameError,
-        previousState = _flashState.sandboxed,
-        isSandboxed = null;
-    doNotReassessFlashSupport = doNotReassessFlashSupport === true;
-    if (_pageIsFramed === false) {
-      isSandboxed = false;
-    } else {
-      try {
-        frame = window.frameElement || null;
-      } catch (e) {
-        frameError = {
-          name: e.name,
-          message: e.message
-        };
-      }
-      if (frame && frame.nodeType === 1 && frame.nodeName === "IFRAME") {
-        try {
-          isSandboxed = frame.hasAttribute("sandbox");
-        } catch (e) {
-          isSandboxed = null;
-        }
-      } else {
-        try {
-          effectiveScriptOrigin = document.domain || null;
-        } catch (e) {
-          effectiveScriptOrigin = null;
-        }
-        if (effectiveScriptOrigin === null || frameError && frameError.name === "SecurityError" && /(^|[\s\(\[@])sandbox(es|ed|ing|[\s\.,!\)\]@]|$)/.test(frameError.message.toLowerCase())) {
-          isSandboxed = true;
-        }
-      }
-    }
-    _flashState.sandboxed = isSandboxed;
-    if (previousState !== isSandboxed && !doNotReassessFlashSupport) {
-      _detectFlashSupport(_ActiveXObject);
-    }
-    return isSandboxed;
-  };
-  var _detectFlashSupport = function(ActiveXObject) {
-    var plugin,
-        ax,
-        mimeType,
-        hasFlash = false,
-        isActiveX = false,
-        isPPAPI = false,
-        flashVersion = "";
-    function parseFlashVersion(desc) {
-      var matches = desc.match(/[\d]+/g);
-      matches.length = 3;
-      return matches.join(".");
-    }
-    function isPepperFlash(flashPlayerFileName) {
-      return !!flashPlayerFileName && (flashPlayerFileName = flashPlayerFileName.toLowerCase()) && (/^(pepflashplayer\.dll|libpepflashplayer\.so|pepperflashplayer\.plugin)$/.test(flashPlayerFileName) || flashPlayerFileName.slice(-13) === "chrome.plugin");
-    }
-    function inspectPlugin(plugin) {
-      if (plugin) {
-        hasFlash = true;
-        if (plugin.version) {
-          flashVersion = parseFlashVersion(plugin.version);
-        }
-        if (!flashVersion && plugin.description) {
-          flashVersion = parseFlashVersion(plugin.description);
-        }
-        if (plugin.filename) {
-          isPPAPI = isPepperFlash(plugin.filename);
-        }
-      }
-    }
-    if (_navigator.plugins && _navigator.plugins.length) {
-      plugin = _navigator.plugins["Shockwave Flash"];
-      inspectPlugin(plugin);
-      if (_navigator.plugins["Shockwave Flash 2.0"]) {
-        hasFlash = true;
-        flashVersion = "2.0.0.11";
-      }
-    } else if (_navigator.mimeTypes && _navigator.mimeTypes.length) {
-      mimeType = _navigator.mimeTypes["application/x-shockwave-flash"];
-      plugin = mimeType && mimeType.enabledPlugin;
-      inspectPlugin(plugin);
-    } else if (typeof ActiveXObject !== "undefined") {
-      isActiveX = true;
-      try {
-        ax = new ActiveXObject("ShockwaveFlash.ShockwaveFlash.7");
-        hasFlash = true;
-        flashVersion = parseFlashVersion(ax.GetVariable("$version"));
-      } catch (e1) {
-        try {
-          ax = new ActiveXObject("ShockwaveFlash.ShockwaveFlash.6");
-          hasFlash = true;
-          flashVersion = "6.0.21";
-        } catch (e2) {
-          try {
-            ax = new ActiveXObject("ShockwaveFlash.ShockwaveFlash");
-            hasFlash = true;
-            flashVersion = parseFlashVersion(ax.GetVariable("$version"));
-          } catch (e3) {
-            isActiveX = false;
-          }
-        }
-      }
-    }
-    _flashState.disabled = hasFlash !== true;
-    _flashState.outdated = flashVersion && _parseFloat(flashVersion) < _parseFloat(_minimumFlashVersion);
-    _flashState.version = flashVersion || "0.0.0";
-    _flashState.pluginType = isPPAPI ? "pepper" : isActiveX ? "activex" : hasFlash ? "netscape" : "unknown";
-  };
-  _detectFlashSupport(_ActiveXObject);
-  _detectSandbox(true);
-  var ZeroClipboard = function() {
-    if (!(this instanceof ZeroClipboard)) {
-      return new ZeroClipboard();
-    }
-    if (typeof ZeroClipboard._createClient === "function") {
-      ZeroClipboard._createClient.apply(this, _args(arguments));
-    }
-  };
-  _defineProperty(ZeroClipboard, "version", {
-    value: "2.2.0",
-    writable: false,
-    configurable: true,
-    enumerable: true
-  });
-  ZeroClipboard.config = function() {
-    return _config.apply(this, _args(arguments));
-  };
-  ZeroClipboard.state = function() {
-    return _state.apply(this, _args(arguments));
-  };
-  ZeroClipboard.isFlashUnusable = function() {
-    return _isFlashUnusable.apply(this, _args(arguments));
-  };
-  ZeroClipboard.on = function() {
-    return _on.apply(this, _args(arguments));
-  };
-  ZeroClipboard.off = function() {
-    return _off.apply(this, _args(arguments));
-  };
-  ZeroClipboard.handlers = function() {
-    return _listeners.apply(this, _args(arguments));
-  };
-  ZeroClipboard.emit = function() {
-    return _emit.apply(this, _args(arguments));
-  };
-  ZeroClipboard.create = function() {
-    return _create.apply(this, _args(arguments));
-  };
-  ZeroClipboard.destroy = function() {
-    return _destroy.apply(this, _args(arguments));
-  };
-  ZeroClipboard.setData = function() {
-    return _setData.apply(this, _args(arguments));
-  };
-  ZeroClipboard.clearData = function() {
-    return _clearData.apply(this, _args(arguments));
-  };
-  ZeroClipboard.getData = function() {
-    return _getData.apply(this, _args(arguments));
-  };
-  ZeroClipboard.focus = ZeroClipboard.activate = function() {
-    return _focus.apply(this, _args(arguments));
-  };
-  ZeroClipboard.blur = ZeroClipboard.deactivate = function() {
-    return _blur.apply(this, _args(arguments));
-  };
-  ZeroClipboard.activeElement = function() {
-    return _activeElement.apply(this, _args(arguments));
-  };
-  var _clientIdCounter = 0;
-  var _clientMeta = {};
-  var _elementIdCounter = 0;
-  var _elementMeta = {};
-  var _mouseHandlers = {};
-  _extend(_globalConfig, {autoActivate: true});
-  var _clientConstructor = function(elements) {
-    var client = this;
-    client.id = "" + _clientIdCounter++;
-    _clientMeta[client.id] = {
-      instance: client,
-      elements: [],
-      handlers: {}
-    };
-    if (elements) {
-      client.clip(elements);
-    }
-    ZeroClipboard.on("*", function(event) {
-      return client.emit(event);
-    });
-    ZeroClipboard.on("destroy", function() {
-      client.destroy();
-    });
-    ZeroClipboard.create();
-  };
-  var _clientOn = function(eventType, listener) {
-    var i,
-        len,
-        events,
-        added = {},
-        meta = _clientMeta[this.id],
-        handlers = meta && meta.handlers;
-    if (!meta) {
-      throw new Error("Attempted to add new listener(s) to a destroyed ZeroClipboard client instance");
-    }
-    if (typeof eventType === "string" && eventType) {
-      events = eventType.toLowerCase().split(/\s+/);
-    } else if (typeof eventType === "object" && eventType && typeof listener === "undefined") {
-      for (i in eventType) {
-        if (_hasOwn.call(eventType, i) && typeof i === "string" && i && typeof eventType[i] === "function") {
-          this.on(i, eventType[i]);
-        }
-      }
-    }
-    if (events && events.length) {
-      for (i = 0, len = events.length; i < len; i++) {
-        eventType = events[i].replace(/^on/, "");
-        added[eventType] = true;
-        if (!handlers[eventType]) {
-          handlers[eventType] = [];
-        }
-        handlers[eventType].push(listener);
-      }
-      if (added.ready && _flashState.ready) {
-        this.emit({
-          type: "ready",
-          client: this
-        });
-      }
-      if (added.error) {
-        for (i = 0, len = _flashStateErrorNames.length; i < len; i++) {
-          if (_flashState[_flashStateErrorNames[i].replace(/^flash-/, "")]) {
-            this.emit({
-              type: "error",
-              name: _flashStateErrorNames[i],
-              client: this
-            });
-            break;
-          }
-        }
-        if (_zcSwfVersion !== undefined && ZeroClipboard.version !== _zcSwfVersion) {
-          this.emit({
-            type: "error",
-            name: "version-mismatch",
-            jsVersion: ZeroClipboard.version,
-            swfVersion: _zcSwfVersion
-          });
-        }
-      }
-    }
-    return this;
-  };
-  var _clientOff = function(eventType, listener) {
-    var i,
-        len,
-        foundIndex,
-        events,
-        perEventHandlers,
-        meta = _clientMeta[this.id],
-        handlers = meta && meta.handlers;
-    if (!handlers) {
-      return this;
-    }
-    if (arguments.length === 0) {
-      events = _keys(handlers);
-    } else if (typeof eventType === "string" && eventType) {
-      events = eventType.split(/\s+/);
-    } else if (typeof eventType === "object" && eventType && typeof listener === "undefined") {
-      for (i in eventType) {
-        if (_hasOwn.call(eventType, i) && typeof i === "string" && i && typeof eventType[i] === "function") {
-          this.off(i, eventType[i]);
-        }
-      }
-    }
-    if (events && events.length) {
-      for (i = 0, len = events.length; i < len; i++) {
-        eventType = events[i].toLowerCase().replace(/^on/, "");
-        perEventHandlers = handlers[eventType];
-        if (perEventHandlers && perEventHandlers.length) {
-          if (listener) {
-            foundIndex = perEventHandlers.indexOf(listener);
-            while (foundIndex !== -1) {
-              perEventHandlers.splice(foundIndex, 1);
-              foundIndex = perEventHandlers.indexOf(listener, foundIndex);
-            }
-          } else {
-            perEventHandlers.length = 0;
-          }
-        }
-      }
-    }
-    return this;
-  };
-  var _clientListeners = function(eventType) {
-    var copy = null,
-        handlers = _clientMeta[this.id] && _clientMeta[this.id].handlers;
-    if (handlers) {
-      if (typeof eventType === "string" && eventType) {
-        copy = handlers[eventType] ? handlers[eventType].slice(0) : [];
-      } else {
-        copy = _deepCopy(handlers);
-      }
-    }
-    return copy;
-  };
-  var _clientEmit = function(event) {
-    if (_clientShouldEmit.call(this, event)) {
-      if (typeof event === "object" && event && typeof event.type === "string" && event.type) {
-        event = _extend({}, event);
-      }
-      var eventCopy = _extend({}, _createEvent(event), {client: this});
-      _clientDispatchCallbacks.call(this, eventCopy);
-    }
-    return this;
-  };
-  var _clientClip = function(elements) {
-    if (!_clientMeta[this.id]) {
-      throw new Error("Attempted to clip element(s) to a destroyed ZeroClipboard client instance");
-    }
-    elements = _prepClip(elements);
-    for (var i = 0; i < elements.length; i++) {
-      if (_hasOwn.call(elements, i) && elements[i] && elements[i].nodeType === 1) {
-        if (!elements[i].zcClippingId) {
-          elements[i].zcClippingId = "zcClippingId_" + _elementIdCounter++;
-          _elementMeta[elements[i].zcClippingId] = [this.id];
-          if (_globalConfig.autoActivate === true) {
-            _addMouseHandlers(elements[i]);
-          }
-        } else if (_elementMeta[elements[i].zcClippingId].indexOf(this.id) === -1) {
-          _elementMeta[elements[i].zcClippingId].push(this.id);
-        }
-        var clippedElements = _clientMeta[this.id] && _clientMeta[this.id].elements;
-        if (clippedElements.indexOf(elements[i]) === -1) {
-          clippedElements.push(elements[i]);
-        }
-      }
-    }
-    return this;
-  };
-  var _clientUnclip = function(elements) {
-    var meta = _clientMeta[this.id];
-    if (!meta) {
-      return this;
-    }
-    var clippedElements = meta.elements;
-    var arrayIndex;
-    if (typeof elements === "undefined") {
-      elements = clippedElements.slice(0);
-    } else {
-      elements = _prepClip(elements);
-    }
-    for (var i = elements.length; i--; ) {
-      if (_hasOwn.call(elements, i) && elements[i] && elements[i].nodeType === 1) {
-        arrayIndex = 0;
-        while ((arrayIndex = clippedElements.indexOf(elements[i], arrayIndex)) !== -1) {
-          clippedElements.splice(arrayIndex, 1);
-        }
-        var clientIds = _elementMeta[elements[i].zcClippingId];
-        if (clientIds) {
-          arrayIndex = 0;
-          while ((arrayIndex = clientIds.indexOf(this.id, arrayIndex)) !== -1) {
-            clientIds.splice(arrayIndex, 1);
-          }
-          if (clientIds.length === 0) {
-            if (_globalConfig.autoActivate === true) {
-              _removeMouseHandlers(elements[i]);
-            }
-            delete elements[i].zcClippingId;
-          }
-        }
-      }
-    }
-    return this;
-  };
-  var _clientElements = function() {
-    var meta = _clientMeta[this.id];
-    return meta && meta.elements ? meta.elements.slice(0) : [];
-  };
-  var _clientDestroy = function() {
-    if (!_clientMeta[this.id]) {
-      return;
-    }
-    this.unclip();
-    this.off();
-    delete _clientMeta[this.id];
-  };
-  var _clientShouldEmit = function(event) {
-    if (!(event && event.type)) {
-      return false;
-    }
-    if (event.client && event.client !== this) {
-      return false;
-    }
-    var meta = _clientMeta[this.id];
-    var clippedEls = meta && meta.elements;
-    var hasClippedEls = !!clippedEls && clippedEls.length > 0;
-    var goodTarget = !event.target || hasClippedEls && clippedEls.indexOf(event.target) !== -1;
-    var goodRelTarget = event.relatedTarget && hasClippedEls && clippedEls.indexOf(event.relatedTarget) !== -1;
-    var goodClient = event.client && event.client === this;
-    if (!meta || !(goodTarget || goodRelTarget || goodClient)) {
-      return false;
-    }
-    return true;
-  };
-  var _clientDispatchCallbacks = function(event) {
-    var meta = _clientMeta[this.id];
-    if (!(typeof event === "object" && event && event.type && meta)) {
-      return;
-    }
-    var async = _shouldPerformAsync(event);
-    var wildcardTypeHandlers = meta && meta.handlers["*"] || [];
-    var specificTypeHandlers = meta && meta.handlers[event.type] || [];
-    var handlers = wildcardTypeHandlers.concat(specificTypeHandlers);
-    if (handlers && handlers.length) {
-      var i,
-          len,
-          func,
-          context,
-          eventCopy,
-          originalContext = this;
-      for (i = 0, len = handlers.length; i < len; i++) {
-        func = handlers[i];
-        context = originalContext;
-        if (typeof func === "string" && typeof _window[func] === "function") {
-          func = _window[func];
-        }
-        if (typeof func === "object" && func && typeof func.handleEvent === "function") {
-          context = func;
-          func = func.handleEvent;
-        }
-        if (typeof func === "function") {
-          eventCopy = _extend({}, event);
-          _dispatchCallback(func, context, [eventCopy], async);
-        }
-      }
-    }
-  };
-  var _prepClip = function(elements) {
-    if (typeof elements === "string") {
-      elements = [];
-    }
-    return typeof elements.length !== "number" ? [elements] : elements;
-  };
-  var _addMouseHandlers = function(element) {
-    if (!(element && element.nodeType === 1)) {
-      return;
-    }
-    var _suppressMouseEvents = function(event) {
-      if (!(event || (event = _window.event))) {
-        return;
-      }
-      if (event._source !== "js") {
-        event.stopImmediatePropagation();
-        event.preventDefault();
-      }
-      delete event._source;
-    };
-    var _elementMouseOver = function(event) {
-      if (!(event || (event = _window.event))) {
-        return;
-      }
-      _suppressMouseEvents(event);
-      ZeroClipboard.focus(element);
-    };
-    element.addEventListener("mouseover", _elementMouseOver, false);
-    element.addEventListener("mouseout", _suppressMouseEvents, false);
-    element.addEventListener("mouseenter", _suppressMouseEvents, false);
-    element.addEventListener("mouseleave", _suppressMouseEvents, false);
-    element.addEventListener("mousemove", _suppressMouseEvents, false);
-    _mouseHandlers[element.zcClippingId] = {
-      mouseover: _elementMouseOver,
-      mouseout: _suppressMouseEvents,
-      mouseenter: _suppressMouseEvents,
-      mouseleave: _suppressMouseEvents,
-      mousemove: _suppressMouseEvents
-    };
-  };
-  var _removeMouseHandlers = function(element) {
-    if (!(element && element.nodeType === 1)) {
-      return;
-    }
-    var mouseHandlers = _mouseHandlers[element.zcClippingId];
-    if (!(typeof mouseHandlers === "object" && mouseHandlers)) {
-      return;
-    }
-    var key,
-        val,
-        mouseEvents = ["move", "leave", "enter", "out", "over"];
-    for (var i = 0,
-        len = mouseEvents.length; i < len; i++) {
-      key = "mouse" + mouseEvents[i];
-      val = mouseHandlers[key];
-      if (typeof val === "function") {
-        element.removeEventListener(key, val, false);
-      }
-    }
-    delete _mouseHandlers[element.zcClippingId];
-  };
-  ZeroClipboard._createClient = function() {
-    _clientConstructor.apply(this, _args(arguments));
-  };
-  ZeroClipboard.prototype.on = function() {
-    return _clientOn.apply(this, _args(arguments));
-  };
-  ZeroClipboard.prototype.off = function() {
-    return _clientOff.apply(this, _args(arguments));
-  };
-  ZeroClipboard.prototype.handlers = function() {
-    return _clientListeners.apply(this, _args(arguments));
-  };
-  ZeroClipboard.prototype.emit = function() {
-    return _clientEmit.apply(this, _args(arguments));
-  };
-  ZeroClipboard.prototype.clip = function() {
-    return _clientClip.apply(this, _args(arguments));
-  };
-  ZeroClipboard.prototype.unclip = function() {
-    return _clientUnclip.apply(this, _args(arguments));
-  };
-  ZeroClipboard.prototype.elements = function() {
-    return _clientElements.apply(this, _args(arguments));
-  };
-  ZeroClipboard.prototype.destroy = function() {
-    return _clientDestroy.apply(this, _args(arguments));
-  };
-  ZeroClipboard.prototype.setText = function(text) {
-    if (!_clientMeta[this.id]) {
-      throw new Error("Attempted to set pending clipboard data from a destroyed ZeroClipboard client instance");
-    }
-    ZeroClipboard.setData("text/plain", text);
-    return this;
-  };
-  ZeroClipboard.prototype.setHtml = function(html) {
-    if (!_clientMeta[this.id]) {
-      throw new Error("Attempted to set pending clipboard data from a destroyed ZeroClipboard client instance");
-    }
-    ZeroClipboard.setData("text/html", html);
-    return this;
-  };
-  ZeroClipboard.prototype.setRichText = function(richText) {
-    if (!_clientMeta[this.id]) {
-      throw new Error("Attempted to set pending clipboard data from a destroyed ZeroClipboard client instance");
-    }
-    ZeroClipboard.setData("application/rtf", richText);
-    return this;
-  };
-  ZeroClipboard.prototype.setData = function() {
-    if (!_clientMeta[this.id]) {
-      throw new Error("Attempted to set pending clipboard data from a destroyed ZeroClipboard client instance");
-    }
-    ZeroClipboard.setData.apply(this, _args(arguments));
-    return this;
-  };
-  ZeroClipboard.prototype.clearData = function() {
-    if (!_clientMeta[this.id]) {
-      throw new Error("Attempted to clear pending clipboard data from a destroyed ZeroClipboard client instance");
-    }
-    ZeroClipboard.clearData.apply(this, _args(arguments));
-    return this;
-  };
-  ZeroClipboard.prototype.getData = function() {
-    if (!_clientMeta[this.id]) {
-      throw new Error("Attempted to get pending clipboard data from a destroyed ZeroClipboard client instance");
-    }
-    return ZeroClipboard.getData.apply(this, _args(arguments));
-  };
-  if (typeof define === "function" && define.amd) {
-    define(function() {
-      return ZeroClipboard;
-    });
-  } else if (typeof module === "object" && module && typeof module.exports === "object" && module.exports) {
-    module.exports = ZeroClipboard;
-  } else {
-    window.ZeroClipboard = ZeroClipboard;
-  }
-})(function() {
-  return this || window;
-}());
-
-//# 
-},{}]},{},[23,107,61,63,62,64,85,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,86,87,88,89,102,103,104,92,93,94,95,96,97,31,35,32,33,40,34,36,37,38,39,108,109,110,111,112,160,158,113,114,115,116,117,119,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,151,152,153,154,155,156,157,159,161,162])("zeroclipboard")
+},{}]},{},[23,109,61,63,62,64,85,86,87,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,88,89,90,91,104,105,106,94,95,96,97,98,99,31,35,32,33,40,34,36,37,38,39,110,111,112,113,114,162,160,115,116,117,118,119,121,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,153,154,155,156,157,158,159,161,163,164])("zeroclipboard")
 });

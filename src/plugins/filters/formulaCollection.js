@@ -98,6 +98,7 @@ class FormulaCollection {
       // Add formula
       this.getFormulas(column).push({
         name,
+        args,
         func: getFormula(name, args)
       });
     }
@@ -115,6 +116,30 @@ class FormulaCollection {
     }
 
     return this.formulas[column];
+  }
+
+  /**
+   * Export all previously added formulas.
+   *
+   * @returns {Array}
+   */
+  exportAllFormulas() {
+    let result = [];
+
+    arrayEach(this.orderStack, (column) => {
+      const formulas = arrayMap(this.getFormulas(column), ({name, args} = formula) => {
+        return {
+          name, args
+        };
+      });
+
+      result.push({
+        column,
+        formulas
+      });
+    });
+
+    return result;
   }
 
   /**

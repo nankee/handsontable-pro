@@ -272,6 +272,27 @@ describe('Filters UI', function() {
     expect($(dropdownMenuRootElement()).is(':visible')).toBe(false);
   });
 
+  it('should disappear conditional options menu after click inside main menu', function() {
+    var hot = handsontable({
+      data: getDataForFilters(),
+      columns: getColumnsForFilters(),
+      filters: true,
+      dropdownMenu: true,
+      width: 500,
+      height: 300
+    });
+
+    dropdownMenu(1);
+    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+
+    expect(document.querySelector('.htFiltersConditionsMenu.handsontable table')).not.toBeNull();
+
+    $(document.querySelector('.htDropdownMenu.handsontable table tr td')).simulate('mousedown');
+
+    expect($(conditionMenuRootElement()).is(':visible')).toBe(false);
+    expect($(dropdownMenuRootElement()).is(':visible')).toBe(true);
+  });
+
   it('should disappear conditional options menu after dropdown action click', function() {
     var hot = handsontable({
       data: getDataForFilters(),
