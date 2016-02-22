@@ -50,6 +50,10 @@ class ConditionComponent extends BaseComponent {
 
         element.setValue(arg);
         element[value.command.inputsCount > index ? 'show' : 'hide']();
+
+        if (!index) {
+          setTimeout(() => element.focus(), 10);
+        }
       });
     }
   }

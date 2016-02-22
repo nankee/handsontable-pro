@@ -6,4 +6,7 @@ function formula(dataRow, [value] = inputValues) {
   return value.indexOf(dataRow.value) >= 0;
 }
 
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'By value',
+  inputsCount: 0
+});

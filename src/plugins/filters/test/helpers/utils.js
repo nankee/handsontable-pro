@@ -11,7 +11,7 @@ function conditionMenuRootElement() {
 }
 
 function getFilterFormula(name) {
-  return Handsontable.utils.FiltersFormulaRegisterer.formulas[name];
+  return Handsontable.utils.FiltersFormulaRegisterer.formulas[name].formula;
 }
 
 function dateRowFactory(meta) {

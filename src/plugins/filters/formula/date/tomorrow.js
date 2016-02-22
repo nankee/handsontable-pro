@@ -13,4 +13,7 @@ function formula(dataRow) {
   return date.isSame(moment().subtract(-1, 'days').startOf('day'), 'd');
 }
 
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Tomorrow',
+  inputsCount: 0
+});

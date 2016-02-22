@@ -22,4 +22,7 @@ function formula(dataRow, [from, to] = inputValues) {
   return dataRow.value >= from && dataRow.value <= to;
 }
 
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Is between',
+  inputsCount: 2
+});

@@ -392,6 +392,53 @@ describe('Filters UI', function() {
     });
   });
 
+  it('should save state of applied filter for specified column when formulas was added from API', function() {
+    var hot = handsontable({
+      data: getDataForFilters(),
+      columns: getColumnsForFilters(),
+      dropdownMenu: true,
+      filters: true,
+      width: 500,
+      height: 300
+    });
+
+    var filters = hot.getPlugin('filters');
+
+    filters.addFormula(1, 'gte', [10]);
+    filters.applyToUI();
+    filters.filter();
+
+    dropdownMenu(1);
+
+    waitsFor(function() {
+      return document.activeElement.nodeName === 'INPUT';
+    });
+    runs(function() {
+      expect(dropdownMenuRootElement().querySelector('.htUISelectCaption').textContent).toBe('Greater than or equal to');
+
+      var inputs = dropdownMenuRootElement().querySelectorAll('.htFiltersMenuCondition .htUIInput input');
+
+      expect($(inputs[0]).is(':visible')).toBe(true);
+      expect(inputs[0].value).toBe('10');
+      expect($(inputs[1]).is(':visible')).toBe(false);
+
+      filters.clearFormulas(1);
+      filters.applyToUI();
+      filters.filter();
+
+      dropdownMenu(1);
+    });
+    waits(100);
+    runs(function() {
+      expect(dropdownMenuRootElement().querySelector('.htUISelectCaption').textContent).toBe('None');
+
+      var inputs = dropdownMenuRootElement().querySelectorAll('.htFiltersMenuCondition .htUIInput input');
+
+      expect($(inputs[0]).is(':visible')).toBe(false);
+      expect($(inputs[1]).is(':visible')).toBe(false);
+    });
+  });
+
   describe('Simple filtering (one column)', function() {
     it('should filter numeric value (greater than)', function() {
       var hot = handsontable({

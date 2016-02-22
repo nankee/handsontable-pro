@@ -10,4 +10,7 @@ function formula(dataRow, [value] = inputValues) {
   return dataRow.value < value;
 }
 
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Less than',
+  inputsCount: 1
+});

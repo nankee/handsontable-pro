@@ -10,6 +10,7 @@ import {ActionBarComponent} from './component/actionBar';
 import {FormulaCollection} from './formulaCollection';
 import {DataFilter} from './dataFilter';
 import {FORMULA_NONE} from './constants';
+import {getFormulaDescriptor} from './formulaRegisterer';
 
 /**
  * The filters plugin.
@@ -216,11 +217,32 @@ class Filters extends BasePlugin {
   }
 
   /**
+   * Apply representation of formula collections to filter UI. Please notice that filter UI can grab only one formula
+   * per column, so if you have added more formulas per column first formula will be shown.
+   */
+  applyToUI() {
+    rangeEach(this.hot.countCols() - 1, (column) => {
+      const [formula] = this.formulaCollection.getFormulas(column);
+
+      if (formula) {
+        this.conditionComponent.setState({
+          command: getFormulaDescriptor(formula.name),
+          args: formula.args
+        });
+        this.conditionComponent.saveState(column);
+
+      } else {
+        this.conditionComponent.clearState(column);
+      }
+    });
+  }
+
+  /**
    * Filter data based on added filter formulas.
    */
   filter() {
     let dataFilter = new DataFilter(this.formulaCollection, (column) => this.getDataMapAtColumn(column));
-    let needToFilter = this.formulaCollection.isEmpty() ? false : true;
+    let needToFilter = !this.formulaCollection.isEmpty();
     let filteredRows = [];
 
     let allowFiltering = this.hot.runHooks('beforeFilter', this.formulaCollection.exportAllFormulas());
@@ -303,6 +325,8 @@ class Filters extends BasePlugin {
 
     this.conditionComponent.restoreState(column);
     this.valueComponent.restoreState(column);
+
+    console.log('restore state');
   }
 
   /**

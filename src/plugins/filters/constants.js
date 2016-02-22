@@ -1,6 +1,7 @@
 import {clone} from 'handsontable/helpers/object';
 import {arrayEach} from 'handsontable/helpers/array';
 import {SEPARATOR} from 'handsontable/plugins/contextMenu/predefinedItems';
+import {getFormulaDescriptor} from './formulaRegisterer';
 
 import {FORMULA_NAME as FORMULA_NONE} from './formula/none';
 import {FORMULA_NAME as FORMULA_EMPTY} from './formula/empty';
@@ -119,116 +120,16 @@ export function getOptionsList(type) {
     type = TYPE_TEXT;
   }
   arrayEach(TYPES[type], (type) => {
-    let option = clone(_selectOptions[type]);
+    let option;
 
+    if (type === SEPARATOR) {
+      option = {name: SEPARATOR};
+
+    } else {
+      option = clone(getFormulaDescriptor(type));
+    }
     items.push(option);
   });
 
   return items;
 }
-
-const _selectOptions = {
-  [SEPARATOR]: {
-    name: SEPARATOR,
-  },
-  [FORMULA_NONE]: {
-    key: FORMULA_NONE,
-    name: 'None',
-    inputsCount: 0,
-  },
-  [FORMULA_EMPTY]: {
-    key: FORMULA_EMPTY,
-    name: 'Is empty',
-    inputsCount: 0,
-  },
-  [FORMULA_NOT_EMPTY]: {
-    key: FORMULA_NOT_EMPTY,
-    name: 'Is not empty',
-    inputsCount: 0,
-  },
-  [FORMULA_EQUAL]: {
-    key: FORMULA_EQUAL,
-    name: 'Is equal to',
-    inputsCount: 1,
-  },
-  [FORMULA_NOT_EQUAL]: {
-    key: FORMULA_NOT_EQUAL,
-    name: 'Is not equal to',
-    inputsCount: 1,
-  },
-  [FORMULA_GREATER_THAN]: {
-    key: FORMULA_GREATER_THAN,
-    name: 'Greater than',
-    inputsCount: 1,
-  },
-  [FORMULA_GREATER_THAN_OR_EQUAL]: {
-    key: FORMULA_GREATER_THAN_OR_EQUAL,
-    name: 'Greater than or equal to',
-    inputsCount: 1,
-  },
-  [FORMULA_LESS_THAN]: {
-    key: FORMULA_LESS_THAN,
-    name: 'Less than',
-    inputsCount: 1,
-  },
-  [FORMULA_LESS_THAN_OR_EQUAL]: {
-    key: FORMULA_LESS_THAN_OR_EQUAL,
-    name: 'Less than or equal to',
-    inputsCount: 1,
-  },
-  [FORMULA_BETWEEN]: {
-    key: FORMULA_BETWEEN,
-    name: 'Is between',
-    inputsCount: 2,
-  },
-  [FORMULA_NOT_BETWEEN]: {
-    key: FORMULA_NOT_BETWEEN,
-    name: 'Is not between',
-    inputsCount: 2,
-  },
-  [FORMULA_BEGINS_WITH]: {
-    key: FORMULA_BEGINS_WITH,
-    name: 'Begins with',
-    inputsCount: 1,
-  },
-  [FORMULA_ENDS_WITH]: {
-    key: FORMULA_ENDS_WITH,
-    name: 'Ends with',
-    inputsCount: 1,
-  },
-  [FORMULA_CONTAINS]: {
-    key: FORMULA_CONTAINS,
-    name: 'Contains',
-    inputsCount: 1,
-  },
-  [FORMULA_NOT_CONTAINS]: {
-    key: FORMULA_NOT_CONTAINS,
-    name: 'Does not contain',
-    inputsCount: 1,
-  },
-  [FORMULA_DATE_BEFORE]: {
-    key: FORMULA_DATE_BEFORE,
-    name: 'Before',
-    inputsCount: 1,
-  },
-  [FORMULA_DATE_AFTER]: {
-    key: FORMULA_DATE_AFTER,
-    name: 'After',
-    inputsCount: 1,
-  },
-  [FORMULA_TOMORROW]: {
-    key: FORMULA_TOMORROW,
-    name: 'Tomorrow',
-    inputsCount: 0,
-  },
-  [FORMULA_TODAY]: {
-    key: FORMULA_TODAY,
-    name: 'Today',
-    inputsCount: 0,
-  },
-  [FORMULA_YESTERDAY]: {
-    key: FORMULA_YESTERDAY,
-    name: 'Yesterday',
-    inputsCount: 0,
-  },
-};
