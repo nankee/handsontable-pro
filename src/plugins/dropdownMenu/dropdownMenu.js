@@ -275,6 +275,11 @@ class DropdownMenu extends BasePlugin {
 
     button.className = BUTTON_CLASS_NAME;
 
+    // prevent page reload on button click
+    button.onclick = function() {
+      return false;
+    };
+
     TH.firstChild.insertBefore(button, TH.firstChild.firstChild);
   }
 
