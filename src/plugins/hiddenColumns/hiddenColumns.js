@@ -181,10 +181,12 @@ class HiddenColumns extends BasePlugin {
    * @returns {Number}
    */
   onModifyColWidth(width, col) {
-    if (this.isHidden(col)) {
+    let logicalCol = Handsontable.hooks.run(this.hot, 'modifyCol', col);
+
+    if (this.isHidden(logicalCol)) {
       return 0.1;
 
-    } else if (this.settings.indicators && (this.isHidden(col + 1) || this.isHidden(col - 1))) {
+    } else if (this.settings.indicators && (this.isHidden(logicalCol + 1) || this.isHidden(logicalCol - 1))) {
 
       // add additional space for hidden column indicator
       return width + (this.hot.hasColHeaders() ? 15 : 0);
