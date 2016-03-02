@@ -318,7 +318,9 @@ class HiddenColumns extends BasePlugin {
     let columnCount = this.hot.countCols();
 
     let getNextColumn = (col) => {
-      if (this.isHidden(col)) {
+      let logicalCol = Handsontable.hooks.run(this.hot, 'modifyCol', col);
+
+      if (this.isHidden(logicalCol)) {
         if (this.lastSelectedColumn > col || coords.col === columnCount - 1) {
           col = getNextColumn(--col);
         } else {
