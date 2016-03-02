@@ -1,11 +1,13 @@
 import {addClass} from 'handsontable/helpers/dom/element';
 import {stopImmediatePropagation} from 'handsontable/helpers/dom/event';
-import {arrayEach, arrayMap} from 'handsontable/helpers/array';
+import {arrayEach, arrayFilter} from 'handsontable/helpers/array';
+import {extend} from 'handsontable/helpers/object';
 import {isKey} from 'handsontable/helpers/unicode';
 import {BaseComponent} from './_base';
-import {getOptionsList, FORMULA_NONE} from './../constants';
+import {getOptionsList, FORMULA_NONE, FORMULA_BY_VALUE} from './../constants';
 import {InputUI} from './../ui/input';
 import {SelectUI} from './../ui/select';
+import {getFormulaDescriptor} from './../formulaRegisterer';
 
 /**
  * @class ConditionComponent
@@ -64,7 +66,7 @@ class ConditionComponent extends BaseComponent {
    * @returns {Object} Returns object where `command` key keeps used formula filter and `args` key its arguments.
    */
   getState() {
-    const command = this.getSelectElement().getValue() || FORMULA_NONE;
+    const command = this.getSelectElement().getValue() || getFormulaDescriptor(FORMULA_NONE);
     let args = [];
 
     arrayEach(this.getInputElements(), (element, index) => {
@@ -77,6 +79,25 @@ class ConditionComponent extends BaseComponent {
       command,
       args,
     };
+  }
+
+  /**
+   * Update state of component.
+   *
+   * @param {Object} editedFormulaStack Formula stack for edited column.
+   */
+  updateState({column, formulas: currentFormulas}) {
+    const [formula] = arrayFilter(currentFormulas, formula => formula.name !== FORMULA_BY_VALUE);
+
+    // Ignore formulas by_value
+    if (formula && formula.name === FORMULA_BY_VALUE) {
+      return;
+    }
+
+    this.setCachedState(column, {
+      command: formula ? getFormulaDescriptor(formula.name) : getFormulaDescriptor(FORMULA_NONE),
+      args: formula ? formula.args : [],
+    });
   }
 
   /**

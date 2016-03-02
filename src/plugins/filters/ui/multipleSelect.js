@@ -52,6 +52,7 @@ class MultipleSelectUI extends BaseUI {
    */
   registerHooks() {
     this.searchInput.addLocalHook('keyup', (event) => this.onInputKeyUp(event));
+    this.searchInput.addLocalHook('blur', (event) => this.onInputBlur(event));
   }
 
   /**
@@ -65,6 +66,15 @@ class MultipleSelectUI extends BaseUI {
     if (this.itemsBox) {
       this.itemsBox.loadData(this.items);
     }
+  }
+
+  /**
+   * Get all available options.
+   *
+   * @returns {Array}
+   */
+  getItems() {
+    return [...this.items];
   }
 
   /**
@@ -99,6 +109,9 @@ class MultipleSelectUI extends BaseUI {
     this._element.appendChild(itemsBoxWrapper);
 
     let hotInitializer = (wrapper) => {
+      if (!this._element) {
+        return;
+      }
       if (this.itemsBox) {
         this.itemsBox.destroy();
       }
@@ -111,6 +124,11 @@ class MultipleSelectUI extends BaseUI {
         colWidths: 150,
         height: 110,
         width: 168,
+        copyPaste: false,
+        disableVisualSelection: 'area',
+        fillHandle: false,
+        fragmentSelection: 'cell',
+        tabMoves: {row: 1, col: 0},
       });
     };
     hotInitializer(itemsBoxWrapper);
@@ -157,17 +175,25 @@ class MultipleSelectUI extends BaseUI {
    * @param {Event} event DOM event.
    */
   onInputKeyUp(event) {
-    let value = this.searchInput.getValue();
+    let value = this.searchInput.getValue().toLowerCase();
     let filteredItems;
 
     if (value === '') {
       filteredItems = [...this.items];
     } else {
-      filteredItems = arrayFilter(this.items, (item) => {
-        return startsWith((item.value + '').toLowerCase(), this.searchInput.getValue().toLowerCase());
-      });
+      filteredItems = arrayFilter(this.items, (item) => (item.value + '').toLowerCase().indexOf(value) >= 0);
     }
     this.itemsBox.loadData(filteredItems);
+  }
+
+  /**
+   * 'blur' event listener for input element.
+   *
+   * @private
+   */
+  onInputBlur() {
+    this.itemsBox.listen();
+    this.itemsBox.selectCell(0, 0);
   }
 }
 

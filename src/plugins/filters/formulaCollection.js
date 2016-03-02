@@ -1,6 +1,7 @@
 import {arrayEach, arrayMap, arrayFilter} from 'handsontable/helpers/array';
-import {objectEach} from 'handsontable/helpers/object';
+import {objectEach, mixin} from 'handsontable/helpers/object';
 import {getFormula} from './formulaRegisterer';
+import {localHooks} from 'handsontable/mixins/localHooks';
 
 /**
  * @class FormulaCollection
@@ -65,7 +66,12 @@ class FormulaCollection {
   isMatchInFormulas(formulas, value) {
     let result = false;
 
-    arrayEach(formulas, (formula) => result = formula.func(value));
+    if (formulas.length) {
+      arrayEach(formulas, (formula) => result = formula.func(value));
+
+    } else {
+      result = true;
+    }
 
     return result;
   }
@@ -77,10 +83,14 @@ class FormulaCollection {
    * @param {Object} formulaDefinition Object with keys:
    *  * `command` Object, Command object with formula name as `key` property.
    *  * `args` Array, Formula arguments.
+   * @fires FormulaCollection#beforeAdd
+   * @fires FormulaCollection#afterAdd
    */
   addFormula(column, formulaDefinition) {
     let args = arrayMap(formulaDefinition.args, (v) => typeof v === 'string' ? v.toLowerCase() : v);
-    let name = formulaDefinition.command.key;
+    let name = formulaDefinition.name || formulaDefinition.command.key;
+
+    this.runLocalHooks('beforeAdd', column);
 
     if (this.orderStack.indexOf(column) === -1) {
       this.orderStack.push(column);
@@ -90,6 +100,7 @@ class FormulaCollection {
       arrayEach(this.getFormulas(column), (formula) => {
         if (formula.name === name) {
           formula.func = getFormula(formula.name, args);
+          formula.args = args;
 
           return false;
         }
@@ -102,6 +113,7 @@ class FormulaCollection {
         func: getFormula(name, args)
       });
     }
+    this.runLocalHooks('afterAdd', column);
   }
 
   /**
@@ -143,24 +155,46 @@ class FormulaCollection {
   }
 
   /**
+   * Import formulas to the collection.
+   */
+  importAllFormulas(formulas) {
+    this.clean();
+
+    arrayEach(formulas, (stack) => {
+      this.orderStack.push(stack.column);
+
+      arrayEach(stack.formulas, (formula) => this.addFormula(stack.column, formula));
+    });
+  }
+
+  /**
    * Remove formulas at given column index.
    *
    * @param {Number} column Column index.
+   * @fires FormulaCollection#beforeRemove
+   * @fires FormulaCollection#afterRemove
    */
   removeFormulas(column) {
+    this.runLocalHooks('beforeRemove', column);
+
     if (this.orderStack.indexOf(column) >= 0) {
       this.orderStack.splice(this.orderStack.indexOf(column), 1);
     }
     this.clearFormulas(column);
+    this.runLocalHooks('afterRemove', column);
   }
 
   /**
    * Clear formulas at specified column index but without clearing stack order.
    *
    * @param {Number }column Column index.
+   * @fires FormulaCollection#beforeClear
+   * @fires FormulaCollection#afterClear
    */
   clearFormulas(column) {
+    this.runLocalHooks('beforeClear', column);
     this.getFormulas(column).length = 0;
+    this.runLocalHooks('afterClear', column);
   }
 
   /**
@@ -185,20 +219,28 @@ class FormulaCollection {
   }
 
   /**
-   * Clear formulas collection.
+   * Clean all formulas collection and reset order stack.
+   *
+   * @fires FormulaCollection#beforeClean
+   * @fires FormulaCollection#afterClean
    */
-  clear() {
+  clean() {
+    this.runLocalHooks('beforeClean');
     this.formulas = Object.create(null);
     this.orderStack.length = 0;
+    this.runLocalHooks('afterClean');
   }
 
   /**
    * Destroy object.
    */
   destroy() {
+    this.clearLocalHooks();
     this.formulas = null;
     this.orderStack = null;
   }
 }
+
+mixin(FormulaCollection, localHooks);
 
 export {FormulaCollection};

@@ -33,7 +33,7 @@ describe('Filters', function() {
       // Begins with 'c'
       document.activeElement.value = 'c';
       $(document.activeElement).simulate('keyup');
-      $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK')).simulate('click');
+      $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
 
       expect(getData().length).toEqual(4);
     });
