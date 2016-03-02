@@ -281,6 +281,78 @@ describe('Filters', function() {
     });
   });
 
+  describe('Undo/Redo', function() {
+    it('should undo previously added filters', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        dropdownMenu: true,
+        filters: true,
+        width: 500,
+        height: 300
+      });
+      var plugin = hot.getPlugin('filters');
+
+      plugin.addFormula(0, 'gt', [3]);
+      plugin.filter();
+      plugin.addFormula(2, 'begins_with', ['b']);
+      plugin.filter();
+      plugin.addFormula(4, 'eq', ['green']);
+      plugin.filter();
+
+      expect(getData().length).toEqual(2);
+
+      hot.undo();
+
+      expect(getData().length).toEqual(3);
+
+      hot.undo();
+
+      expect(getData().length).toEqual(36);
+
+      hot.undo();
+
+      expect(getData().length).toEqual(39);
+    });
+
+    it('should redo previously reverted filters', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        dropdownMenu: true,
+        filters: true,
+        width: 500,
+        height: 300
+      });
+      var plugin = hot.getPlugin('filters');
+
+      plugin.addFormula(0, 'gt', [3]);
+      plugin.filter();
+      plugin.addFormula(2, 'begins_with', ['b']);
+      plugin.filter();
+      plugin.addFormula(4, 'eq', ['green']);
+      plugin.filter();
+
+      hot.undo();
+      hot.undo();
+      hot.undo();
+
+      expect(getData().length).toEqual(39);
+
+      hot.redo();
+
+      expect(getData().length).toEqual(36);
+
+      hot.redo();
+
+      expect(getData().length).toEqual(3);
+
+      hot.redo();
+
+      expect(getData().length).toEqual(2);
+    });
+  });
+
   describe('Hooks', function() {
     describe('`beforeFilter` hook', function() {
       it('should trigger `beforeFilter` hook after filtering values', function() {
