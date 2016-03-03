@@ -265,6 +265,7 @@ describe('GanttChart', function() {
       expect(hot.getCellMeta(2, 8).className.indexOf('rangeBar')).toBeGreaterThan(-1);
       expect(hot.getCellMeta(2, 8).className.indexOf('partial')).toBeGreaterThan(-1);
 
+      source.destroy();
     });
 
     it('should be able to feed the gantt chart data from another HOT instance, when the asyncUpdates option is enabled', function() {
@@ -330,6 +331,8 @@ describe('GanttChart', function() {
         expect(hot.getCellMeta(2, 7).className.indexOf('partial')).toEqual(-1);
         expect(hot.getCellMeta(2, 8).className.indexOf('rangeBar')).toBeGreaterThan(-1);
         expect(hot.getCellMeta(2, 8).className.indexOf('partial')).toBeGreaterThan(-1);
+
+        source.destroy();
       });
     });
 
@@ -404,5 +407,4 @@ describe('GanttChart', function() {
 
     });
   });
-
 });
