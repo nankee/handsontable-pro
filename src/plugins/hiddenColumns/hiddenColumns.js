@@ -173,6 +173,16 @@ class HiddenColumns extends BasePlugin {
   }
 
   /**
+   * Get the logical index of the provided column.
+   *
+   * @param {Number} col
+   * @returns {Number}
+   */
+  getLogicalColumnIndex(col) {
+    return this.hot.runHooks('modifyCol', col);
+  }
+
+  /**
    * Add the additional column width for the hidden column indicators.
    *
    * @private
@@ -181,12 +191,11 @@ class HiddenColumns extends BasePlugin {
    * @returns {Number}
    */
   onModifyColWidth(width, col) {
-    let logicalCol = Handsontable.hooks.run(this.hot, 'modifyCol', col);
-
-    if (this.isHidden(logicalCol)) {
+    if (this.isHidden(this.getLogicalColumnIndex(col))) {
       return 0.1;
 
-    } else if (this.settings.indicators && (this.isHidden(logicalCol + 1) || this.isHidden(logicalCol - 1))) {
+    } else if (this.settings.indicators && (this.isHidden(this.getLogicalColumnIndex(col + 1))
+      || this.isHidden(this.getLogicalColumnIndex(col - 1)))) {
 
       // add additional space for hidden column indicator
       return width + (this.hot.hasColHeaders() ? 15 : 0);
@@ -291,15 +300,15 @@ class HiddenColumns extends BasePlugin {
    * @param {HTMLElement} TH
    */
   onAfterGetColHeader(col, TH) {
-    if (!this.settings.indicators || this.isHidden(col)) {
+    if (!this.settings.indicators || this.isHidden(this.getLogicalColumnIndex(col))) {
       return;
     }
 
-    if (this.isHidden(col - 1)) {
+    if (this.isHidden(this.getLogicalColumnIndex(col - 1))) {
       addClass(TH, 'afterHiddenColumn');
     }
 
-    if (this.isHidden(col + 1)) {
+    if (this.isHidden(this.getLogicalColumnIndex(col + 1))) {
       addClass(TH, 'beforeHiddenColumn');
     }
   }
@@ -318,7 +327,7 @@ class HiddenColumns extends BasePlugin {
     let columnCount = this.hot.countCols();
 
     let getNextColumn = (col) => {
-      let logicalCol = Handsontable.hooks.run(this.hot, 'modifyCol', col);
+      let logicalCol = this.hot.runHooks('modifyCol', col);
 
       if (this.isHidden(logicalCol)) {
         if (this.lastSelectedColumn > col || coords.col === columnCount - 1) {
