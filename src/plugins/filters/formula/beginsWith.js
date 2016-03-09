@@ -8,4 +8,7 @@ function formula(dataRow, [value] = inputValues) {
   return startsWith(stringify(dataRow.value).toLowerCase(), stringify(value));
 }
 
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Begins with',
+  inputsCount: 1
+});

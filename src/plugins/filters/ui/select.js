@@ -2,6 +2,7 @@ import {BaseUI} from './_base';
 import {addClass, getWindowScrollTop, getWindowScrollLeft} from 'handsontable/helpers/dom/element';
 import {Menu} from 'handsontable/plugins/contextMenu/menu';
 import {clone, extend} from 'handsontable/helpers/object';
+import {SEPARATOR} from 'handsontable/plugins/contextMenu/predefinedItems';
 
 const privatePool = new WeakMap();
 
@@ -126,10 +127,12 @@ class SelectUI extends BaseUI {
    * @param {Object} command Selected item
    */
   onMenuSelect(command) {
-    this.options.value = command;
-    this.closeOptions();
-    this.update();
-    this.runLocalHooks('select', this.options.value);
+    if (command.name !== SEPARATOR) {
+      this.options.value = command;
+      this.closeOptions();
+      this.update();
+      this.runLocalHooks('select', this.options.value);
+    }
   }
 
   /**

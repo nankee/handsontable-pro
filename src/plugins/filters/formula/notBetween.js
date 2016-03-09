@@ -7,4 +7,7 @@ function formula(dataRow, inputValues) {
   return !getFormula(FORMULA_BETWEEN, inputValues)(dataRow);
 }
 
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Is not between',
+  inputsCount: 2
+});

@@ -96,6 +96,14 @@ describe('FormulaCollection', function() {
   });
 
   describe('isMatchInFormulas', function() {
+    it('should returns `true` if passed formulas is empty', function() {
+      var formulaCollection = getFormulaCollection();
+
+      var result = formulaCollection.isMatchInFormulas([], 'foo');
+
+      expect(result).toBe(true);
+    });
+
     it('should check if array of formulas is matched to the value', function() {
       var formulaCollection = getFormulaCollection();
       var formulaMock = {func: function() {return true}};
@@ -131,6 +139,20 @@ describe('FormulaCollection', function() {
   });
 
   describe('addFormula', function() {
+    it('should trigger `beforeAdd` and `afterAdd` hook on adding formula', function() {
+      var formulaCollection = getFormulaCollection();
+      var formulaMock = {args: [], command: {key: 'eq'}};
+      var hookBeforeSpy = jasmine.createSpy('hookBefore');
+      var hookAfterSpy = jasmine.createSpy('hookAfter');
+
+      formulaCollection.addLocalHook('beforeAdd', hookBeforeSpy);
+      formulaCollection.addLocalHook('afterAdd', hookAfterSpy);
+      formulaCollection.addFormula(3, formulaMock);
+
+      expect(hookBeforeSpy).toHaveBeenCalledWith(3);
+      expect(hookAfterSpy).toHaveBeenCalledWith(3);
+    });
+
     it('should add column index to the orderStack without duplicate values', function() {
       var formulaCollection = getFormulaCollection();
       var formulaMock = {args: [], command: {key: 'eq'}};
@@ -166,7 +188,7 @@ describe('FormulaCollection', function() {
 
       expect(formulaCollection.formulas['3'].length).toBe(1);
       expect(formulaCollection.formulas['3'][0].name).toBe('eq');
-      expect(formulaCollection.formulas['3'][0].args).toEqual([1]);
+      expect(formulaCollection.formulas['3'][0].args).toEqual([2]);
       expect(formulaCollection.formulas['3'][0].func).not.toBe(previousFunction);
     });
   });
@@ -221,6 +243,24 @@ describe('FormulaCollection', function() {
   });
 
   describe('removeFormulas', function() {
+    it('should trigger `beforeRemove` and `afterRemove` hook on removing formulas', function() {
+      var formulaCollection = getFormulaCollection();
+      var formulaMock = {};
+
+      formulaCollection.orderStack = [3];
+      formulaCollection.formulas['3'] = [formulaMock];
+
+      var hookBeforeSpy = jasmine.createSpy('hookBefore');
+      var hookAfterSpy = jasmine.createSpy('hookAfter');
+
+      formulaCollection.addLocalHook('beforeRemove', hookBeforeSpy);
+      formulaCollection.addLocalHook('afterRemove', hookAfterSpy);
+      formulaCollection.removeFormulas(3);
+
+      expect(hookBeforeSpy).toHaveBeenCalledWith(3);
+      expect(hookAfterSpy).toHaveBeenCalledWith(3);
+    });
+
     it('should remove formula from collection and column index from orderStack', function() {
       var formulaCollection = getFormulaCollection();
       var formulaMock = {};
@@ -237,6 +277,21 @@ describe('FormulaCollection', function() {
   });
 
   describe('clearFormulas', function() {
+    it('should trigger `beforeClear` and `afterClear` hook on clearing formulas', function() {
+      var formulaCollection = getFormulaCollection();
+      var formulasMock = [{}, {}];
+
+      var hookBeforeSpy = jasmine.createSpy('hookBefore');
+      var hookAfterSpy = jasmine.createSpy('hookAfter');
+
+      formulaCollection.addLocalHook('beforeClear', hookBeforeSpy);
+      formulaCollection.addLocalHook('afterClear', hookAfterSpy);
+      formulaCollection.clearFormulas(3);
+
+      expect(hookBeforeSpy).toHaveBeenCalledWith(3);
+      expect(hookAfterSpy).toHaveBeenCalledWith(3);
+    });
+
     it('should clear all formulas at specified column index', function() {
       var formulaCollection = getFormulaCollection();
       var formulasMock = [{}, {}];
@@ -300,14 +355,31 @@ describe('FormulaCollection', function() {
     });
   });
 
-  describe('clear', function() {
+  describe('clean', function() {
+    it('should trigger `beforeClean` and `afterClean` hook on cleaning formulas', function() {
+      var formulaCollection = getFormulaCollection();
+
+      formulaCollection.formulas = {0: []};
+      formulaCollection.formulas = [1, 2, 3, 4];
+
+      var hookBeforeSpy = jasmine.createSpy('hookBefore');
+      var hookAfterSpy = jasmine.createSpy('hookAfter');
+
+      formulaCollection.addLocalHook('beforeClean', hookBeforeSpy);
+      formulaCollection.addLocalHook('afterClean', hookAfterSpy);
+      formulaCollection.clean();
+
+      expect(hookBeforeSpy).toHaveBeenCalled();
+      expect(hookAfterSpy).toHaveBeenCalled();
+    });
+
     it('should clear formula collection and orderStack', function() {
       var formulaCollection = getFormulaCollection();
 
       formulaCollection.formulas = {0: []};
       formulaCollection.formulas = [1, 2, 3, 4];
 
-      formulaCollection.clear();
+      formulaCollection.clean();
 
       expect(formulaCollection.formulas).toEqual({});
       expect(formulaCollection.orderStack.length).toBe(0);

@@ -6,4 +6,7 @@ function formula(dataRow) {
   return dataRow.value === '' || dataRow.value === null || dataRow.value === void 0;
 }
 
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Is empty',
+  inputsCount: 0
+});

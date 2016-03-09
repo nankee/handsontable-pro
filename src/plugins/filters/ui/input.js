@@ -1,6 +1,7 @@
 import {BaseUI} from './_base';
 import {addClass} from 'handsontable/helpers/dom/element';
 import {clone, extend} from 'handsontable/helpers/object';
+import {arrayEach} from 'handsontable/helpers/array';
 
 const privatePool = new WeakMap();
 
@@ -51,9 +52,9 @@ class InputUI extends BaseUI {
     this._element.appendChild(input);
     this._element.appendChild(icon);
 
-    this.eventManager.addEventListener(this._element, 'click', (event) => this.runLocalHooks('click', event, this));
-    this.eventManager.addEventListener(this._element, 'keyup', (event) => this.runLocalHooks('keyup', event, this));
-    this.eventManager.addEventListener(this._element, 'keydown', (event) => this.runLocalHooks('keydown', event, this));
+    arrayEach(['click', 'keydown', 'keyup', 'focus',  'blur'], (eventName) => {
+      this.eventManager.addEventListener(input, eventName, (event) => this.runLocalHooks(eventName, event, this));
+    });
     this.update();
   }
 

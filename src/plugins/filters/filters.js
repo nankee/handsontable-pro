@@ -9,7 +9,10 @@ import {ValueComponent} from './component/value';
 import {ActionBarComponent} from './component/actionBar';
 import {FormulaCollection} from './formulaCollection';
 import {DataFilter} from './dataFilter';
+import {FormulaUpdateObserver} from './formulaUpdateObserver';
+import {getFormulaDescriptor} from './formulaRegisterer';
 import {FORMULA_NONE} from './constants';
+import {SEPARATOR} from 'handsontable/plugins/contextMenu/predefinedItems';
 
 /**
  * The filters plugin.
@@ -46,6 +49,12 @@ class Filters extends BasePlugin {
      * @type {FormulaCollection}
      */
     this.formulaCollection = null;
+    /**
+     * Instance of {@link FormulaUpdateObserver}.
+     *
+     * @type {FormulaUpdateObserver}
+     */
+    this.formulaUpdateObserver = null;
     /**
      * Instance of {@link ConditionComponent}.
      *
@@ -95,9 +104,6 @@ class Filters extends BasePlugin {
     this.trimRowsPlugin = this.hot.getPlugin('trimRows');
     this.dropdownMenuPlugin = this.hot.getPlugin('dropdownMenu');
 
-    if (!this.formulaCollection) {
-      this.formulaCollection = new FormulaCollection();
-    }
     if (!this.conditionComponent) {
       this.conditionComponent = new ConditionComponent(this.hot);
       this.conditionComponent.addLocalHook('accept', () => this.onActionBarSubmit('accept'));
@@ -110,6 +116,14 @@ class Filters extends BasePlugin {
       this.actionBarComponent = new ActionBarComponent(this.hot);
       this.actionBarComponent.addLocalHook('accept', () => this.onActionBarSubmit('accept'));
       this.actionBarComponent.addLocalHook('cancel', () => this.onActionBarSubmit('cancel'));
+    }
+    if (!this.formulaCollection) {
+      this.formulaCollection = new FormulaCollection();
+    }
+    if (!this.formulaUpdateObserver) {
+      this.formulaUpdateObserver = new FormulaUpdateObserver(this.formulaCollection, column => this.getDataMapAtColumn(column));
+      this.formulaUpdateObserver.addLocalHook('update', (...params) => this.conditionComponent.updateState(...params));
+      this.formulaUpdateObserver.addLocalHook('update', (...params) => this.valueComponent.updateState(...params));
     }
     this.conditionComponent.show();
     this.valueComponent.show();
@@ -150,7 +164,7 @@ class Filters extends BasePlugin {
       this.conditionComponent.hide();
       this.valueComponent.hide();
       this.actionBarComponent.hide();
-      this.formulaCollection.clear();
+      this.formulaCollection.clean();
       this.trimRowsPlugin.untrimAll();
     }
     super.disablePlugin();
@@ -209,7 +223,7 @@ class Filters extends BasePlugin {
    */
   clearFormulas(column) {
     if (column === void 0) {
-      this.formulaCollection.clear();
+      this.formulaCollection.clean();
     } else {
       this.formulaCollection.clearFormulas(column);
     }
@@ -219,8 +233,8 @@ class Filters extends BasePlugin {
    * Filter data based on added filter formulas.
    */
   filter() {
-    let dataFilter = new DataFilter(this.formulaCollection, (column) => this.getDataMapAtColumn(column));
-    let needToFilter = this.formulaCollection.isEmpty() ? false : true;
+    let dataFilter = this._createDataFilter();
+    let needToFilter = !this.formulaCollection.isEmpty();
     let filteredRows = [];
 
     let allowFiltering = this.hot.runHooks('beforeFilter', this.formulaCollection.exportAllFormulas());
@@ -321,9 +335,9 @@ class Filters extends BasePlugin {
    * @param {Object} defaultOptions ContextMenu default item options.
    */
   onAfterDropdownMenuDefaultOptions(defaultOptions) {
-    defaultOptions.items.push(Handsontable.plugins.DropdownMenu.SEPARATOR);
+    defaultOptions.items.push({name: SEPARATOR});
     defaultOptions.items.push(this.conditionComponent.getMenuItemDescriptor());
-    //defaultOptions.items.push(this.valueComponent.getMenuItemDescriptor());
+    defaultOptions.items.push(this.valueComponent.getMenuItemDescriptor());
     defaultOptions.items.push(this.actionBarComponent.getMenuItemDescriptor());
   }
 
@@ -339,6 +353,7 @@ class Filters extends BasePlugin {
       let byConditionState = this.conditionComponent.getState();
       let byValueState = this.valueComponent.getState();
 
+      this.formulaUpdateObserver.groupChanges();
       this.formulaCollection.clearFormulas(column);
 
       if (byConditionState.command.key === FORMULA_NONE && byValueState.command.key === FORMULA_NONE) {
@@ -350,6 +365,7 @@ class Filters extends BasePlugin {
       if (byValueState.command.key !== FORMULA_NONE) {
         this.formulaCollection.addFormula(column, byValueState);
       }
+      this.formulaUpdateObserver.flush();
 
       this.conditionComponent.saveState(column);
       this.valueComponent.saveState(column);
@@ -396,8 +412,20 @@ class Filters extends BasePlugin {
       this.valueComponent.destroy();
       this.actionBarComponent.destroy();
       this.formulaCollection.destroy();
+      this.formulaUpdateObserver.destroy();
     }
     super.destroy();
+  }
+
+  /**
+   * Create DataFilter instance based on formula collection.
+   *
+   * @private
+   * @param {FormulaCollection} formulaCollection Formula collection object.
+   * @returns {DataFilter}
+   */
+  _createDataFilter(formulaCollection = this.formulaCollection) {
+    return new DataFilter(formulaCollection, (column) => this.getDataMapAtColumn(column));
   }
 }
 

@@ -13,4 +13,7 @@ function formula(dataRow) {
   return date.isSame(moment().startOf('day'), 'd');
 }
 
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Today',
+  inputsCount: 0
+});

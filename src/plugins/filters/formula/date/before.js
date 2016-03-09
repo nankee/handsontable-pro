@@ -14,4 +14,7 @@ function formula(dataRow, [value] = inputValues) {
   return date.diff(inputDate) <= 0;
 }
 
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Before',
+  inputsCount: 1
+});
