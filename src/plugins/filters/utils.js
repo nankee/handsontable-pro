@@ -1,4 +1,4 @@
-import {getComparisonFunction} from 'handsontable/helpers/browser';
+import {getComparisonFunction} from 'handsontable/helpers/feature';
 
 const sortCompare = getComparisonFunction();
 
