@@ -2,7 +2,8 @@ import {
   getScrollbarWidth,
   outerHeight,
   outerWidth,
-  setOverlayPosition
+  setOverlayPosition,
+  resetCssTransform
 } from 'handsontable/helpers/dom/element';
 import {WalkontableOverlay} from 'handsontable/3rdparty/walkontable/src/overlay/_base.js';
 
@@ -47,6 +48,8 @@ class WalkontableBottomLeftCornerOverlay extends WalkontableOverlay {
    * Updates the corner overlay position
    */
   resetFixedPosition() {
+    this.updateTrimmingContainer();
+
     if (!this.wot.wtTable.holder.parentNode) {
       // removed from DOM
       return;
@@ -84,6 +87,7 @@ class WalkontableBottomLeftCornerOverlay extends WalkontableOverlay {
       overlayRoot.style.bottom = finalBottom;
 
     } else {
+      resetCssTransform(overlayRoot);
       this.repositionOverlay();
     }
     overlayRoot.style.height = (tableHeight === 0 ? tableHeight : tableHeight) + 'px';
