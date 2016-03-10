@@ -206,6 +206,21 @@ describe('HiddenColumns', function() {
     expect(errorThrown).toBe(false);
   });
 
+  it("should properly hide columns, when using the manualColumnMove plugin", function() {
+    var hot = handsontable({
+      data: Handsontable.helper.createSpreadsheetData(4, 10),
+      manualColumnMove: [4, 1, 2, 6, 0, 3, 5, 7, 8, 9],
+      hiddenColumns: {
+        columns: [3]
+      },
+      rowHeaders: true
+    });
+
+    var COLGROUP = this.$container.find('.ht_master colgroup');
+
+    expect(parseInt(COLGROUP.find('col:nth-child(7)').css('width'), 10)).toEqual(0);
+  });
+
   describe('copy-paste functionality', function() {
 
     it('should allow to copy hidden columns, when "copyPasteEnabled" property is not set', function() {
