@@ -1,3 +1,4 @@
+import Handsontable from '../../browser';
 import {arrayMapper} from 'handsontable/mixins/arrayMapper';
 import {mixin} from 'handsontable/helpers/object';
 import {rangeEach} from 'handsontable/helpers/number';
@@ -50,5 +51,4 @@ mixin(RowsMapper, arrayMapper);
 export {RowsMapper};
 
 // For tests only!
-Handsontable.utils = Handsontable.utils || {};
 Handsontable.utils.TrimRowsRowsMapper = RowsMapper;
