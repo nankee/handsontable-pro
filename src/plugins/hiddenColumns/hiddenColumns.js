@@ -194,8 +194,8 @@ class HiddenColumns extends BasePlugin {
     if (this.isHidden(this.getLogicalColumnIndex(col))) {
       return 0.1;
 
-    } else if (this.settings.indicators && (this.isHidden(this.getLogicalColumnIndex(col + 1))
-      || this.isHidden(this.getLogicalColumnIndex(col - 1)))) {
+    } else if (this.settings.indicators && (this.isHidden(this.getLogicalColumnIndex(col + 1)) ||
+               this.isHidden(this.getLogicalColumnIndex(col - 1)))) {
 
       // add additional space for hidden column indicator
       return width + (this.hot.hasColHeaders() ? 15 : 0);

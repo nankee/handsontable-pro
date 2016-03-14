@@ -52,7 +52,7 @@ class InputUI extends BaseUI {
     this._element.appendChild(input);
     this._element.appendChild(icon);
 
-    arrayEach(['click', 'keydown', 'keyup', 'focus',  'blur'], (eventName) => {
+    arrayEach(['click', 'input', 'keydown', 'keypress', 'keyup', 'focus',  'blur'], (eventName) => {
       this.eventManager.addEventListener(input, eventName, (event) => this.runLocalHooks(eventName, event, this));
     });
     this.update();
