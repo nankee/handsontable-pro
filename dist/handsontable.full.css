@@ -1723,9 +1723,6 @@ http://nicolasgallagher.com/micro-clearfix-hack/
 .handsontable .htUIMultipleSelect .handsontable .htCore {
   border: none;
 }
-.handsontable .htUIMultipleSelect table tbody tr td {
-  background-color: transparent;
-}
 
 .handsontable .htUIMultipleSelectSearch input {
   border-radius: 2px;
