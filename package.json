@@ -7,8 +7,8 @@
     "url": "https://my.handsontable.com/handsontable/handsontable-pro.git"
   },
   "author": "Handsoncode <hello@handsontable.com>",
-  "version": "1.2.0",
-  "compatibleHotVersion": "0.23.0",
+  "version": "1.3.0",
+  "compatibleHotVersion": "0.24.0",
   "keywords": [
     "data",
     "grid",
