@@ -1,10 +1,12 @@
 import {addClass} from 'handsontable/helpers/dom/element';
-import {arrayEach, arrayMap, arrayUnique, arrayFilter} from 'handsontable/helpers/array';
+import {arrayEach, arrayUnique, arrayFilter} from 'handsontable/helpers/array';
+import {sortComparison} from './../utils';
 import {BaseComponent} from './_base';
 import {InputUI} from './../ui/input';
 import {SelectUI} from './../ui/select';
 import {MultipleSelectUI} from './../ui/multipleSelect';
 import {FORMULA_BY_VALUE, FORMULA_NONE} from './../constants';
+import {getFormulaDescriptor} from './../formulaRegisterer';
 
 /**
  * @class ValueComponent
@@ -25,8 +27,11 @@ class ValueComponent extends BaseComponent {
   setState(value) {
     this.reset();
 
-    if (value) {
-      this.getMultipleSelectElement().setValue(value.args[0]);
+    if (value && value.command.key === FORMULA_BY_VALUE) {
+      const select = this.getMultipleSelectElement();
+
+      select.setItems(value.itemsSnapshot);
+      select.setValue(value.args[0]);
     }
   }
 
@@ -36,12 +41,66 @@ class ValueComponent extends BaseComponent {
    * @returns {Object} Returns object where `command` key keeps used formula filter and `args` key its arguments.
    */
   getState() {
-    let select = this.getMultipleSelectElement();
+    const select = this.getMultipleSelectElement();
+    const availableItems = select.getItems();
 
     return {
-      command: {key: select.isSelectedAllValues() ? FORMULA_NONE : FORMULA_BY_VALUE},
+      command: {key: select.isSelectedAllValues() || !availableItems.length ? FORMULA_NONE : FORMULA_BY_VALUE},
       args: [select.getValue()],
+      itemsSnapshot: availableItems
     };
+  }
+
+  /**
+   * Update state of component.
+   *
+   * @param {Object} editedFormulaStack Formula stack for edited column.
+   * @param {Object} dependentFormulaStacks Formula stacks of dependent formulas.
+   * @param {Function} filteredRowsFactory Data factory
+   */
+  updateState(editedFormulaStack, dependentFormulaStacks, filteredRowsFactory) {
+    const {column, formulas} = editedFormulaStack;
+
+    const updateColumnState = (column, formulas, formulasStack) => {
+      const [formula] = arrayFilter(formulas, formula => formula.name === FORMULA_BY_VALUE);
+      const state = {};
+
+      if (formula) {
+        let itemsSnapshot = [];
+        let values = [];
+
+        arrayEach(filteredRowsFactory(column, formulasStack), ({value}) => {
+          let checked = false;
+
+          if (formula.args[0].indexOf(value) >= 0) {
+            checked = true;
+            values.push(value);
+          }
+          itemsSnapshot.push({checked, value});
+        });
+
+        itemsSnapshot = itemsSnapshot.sort((a, b) => sortComparison(a.value, b.value));
+
+        state.args = [values];
+        state.command = getFormulaDescriptor(FORMULA_BY_VALUE);
+        state.itemsSnapshot = itemsSnapshot;
+
+      } else {
+        state.args = [];
+        state.command = getFormulaDescriptor(FORMULA_NONE);
+      }
+
+      this.setCachedState(column, state);
+    };
+
+    updateColumnState(column, formulas);
+
+    // Shallow deep update of component state
+    if (dependentFormulaStacks.length) {
+      const {column, formulas} = dependentFormulaStacks[0];
+
+      updateColumnState(column, formulas, editedFormulaStack);
+    }
   }
 
   /**
@@ -85,21 +144,39 @@ class ValueComponent extends BaseComponent {
    * Reset elements to their initial state.
    */
   reset() {
-    if (!this.hot.getSelectedRange()) {
-      return;
-    }
-    let values = this.hot.getSourceDataAtCol(this.hot.getSelectedRange().from.col);
-    let items = [];
+    let values = this._getColumnVisibleValues();
+
+    let transformToItems = function(values) {
+      let result = [];
+
+      arrayEach(values, (value) => result.push({checked: true, value}));
+
+      return result;
+    };
 
     values = arrayUnique(values);
     values = arrayFilter(values, (value) => !(value === null || value === void 0));
-    values = values.sort();
 
-    arrayEach(values, (value) => items.push({checked: true, value}));
+    // sort numbers correctly then strings
+    values = values.sort(sortComparison);
+
+    let items = transformToItems(values);
 
     this.getMultipleSelectElement().setItems(items);
     super.reset();
     this.getMultipleSelectElement().setValue(values);
+  }
+
+  /**
+   * Get data for currently selected column.
+   *
+   * @returns {Array}
+   * @private
+   */
+  _getColumnVisibleValues() {
+    let lastSelectedColumn = this.hot.getPlugin('filters').getSelectedColumn();
+
+    return this.hot.getDataAtCol(lastSelectedColumn);
   }
 }
 

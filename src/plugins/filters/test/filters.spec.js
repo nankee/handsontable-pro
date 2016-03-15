@@ -33,7 +33,7 @@ describe('Filters', function() {
       // Begins with 'c'
       document.activeElement.value = 'c';
       $(document.activeElement).simulate('keyup');
-      $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK')).simulate('click');
+      $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
 
       expect(getData().length).toEqual(4);
     });
@@ -278,6 +278,78 @@ describe('Filters', function() {
       expect(getData()[0][4]).toBe('brown');
       expect(getData()[0][5]).toBe(3917.34);
       expect(getData()[0][6]).toBe(true);
+    });
+  });
+
+  describe('Undo/Redo', function() {
+    it('should undo previously added filters', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        dropdownMenu: true,
+        filters: true,
+        width: 500,
+        height: 300
+      });
+      var plugin = hot.getPlugin('filters');
+
+      plugin.addFormula(0, 'gt', [3]);
+      plugin.filter();
+      plugin.addFormula(2, 'begins_with', ['b']);
+      plugin.filter();
+      plugin.addFormula(4, 'eq', ['green']);
+      plugin.filter();
+
+      expect(getData().length).toEqual(2);
+
+      hot.undo();
+
+      expect(getData().length).toEqual(3);
+
+      hot.undo();
+
+      expect(getData().length).toEqual(36);
+
+      hot.undo();
+
+      expect(getData().length).toEqual(39);
+    });
+
+    it('should redo previously reverted filters', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        dropdownMenu: true,
+        filters: true,
+        width: 500,
+        height: 300
+      });
+      var plugin = hot.getPlugin('filters');
+
+      plugin.addFormula(0, 'gt', [3]);
+      plugin.filter();
+      plugin.addFormula(2, 'begins_with', ['b']);
+      plugin.filter();
+      plugin.addFormula(4, 'eq', ['green']);
+      plugin.filter();
+
+      hot.undo();
+      hot.undo();
+      hot.undo();
+
+      expect(getData().length).toEqual(39);
+
+      hot.redo();
+
+      expect(getData().length).toEqual(36);
+
+      hot.redo();
+
+      expect(getData().length).toEqual(3);
+
+      hot.redo();
+
+      expect(getData().length).toEqual(2);
     });
   });
 

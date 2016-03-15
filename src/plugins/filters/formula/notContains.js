@@ -7,4 +7,7 @@ function formula(dataRow, inputValues) {
   return !getFormula(FORMULA_CONTAINS, inputValues)(dataRow);
 }
 
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Does not contain',
+  inputsCount: 1
+});

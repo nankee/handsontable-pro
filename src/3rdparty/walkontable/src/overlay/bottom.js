@@ -8,6 +8,7 @@ import {
   innerHeight,
   removeClass,
   setOverlayPosition,
+  resetCssTransform
 } from 'handsontable/helpers/dom/element';
 import {WalkontableOverlay} from 'handsontable/3rdparty/walkontable/src/overlay/_base.js';
 
@@ -84,6 +85,7 @@ class WalkontableBottomOverlay extends WalkontableOverlay {
 
     } else {
       headerPosition = this.getScrollPosition();
+      resetCssTransform(overlayRoot);
       this.repositionOverlay();
     }
     this.adjustHeaderBordersPosition(headerPosition);
@@ -137,6 +139,8 @@ class WalkontableBottomOverlay extends WalkontableOverlay {
    * @param {Boolean} [force=false]
    */
   adjustElementsSize(force = false) {
+    this.updateTrimmingContainer();
+
     if (this.needFullRender || force) {
       this.adjustRootElementSize();
       this.adjustRootChildrenSize();
@@ -157,9 +161,13 @@ class WalkontableBottomOverlay extends WalkontableOverlay {
     let overlayRootStyle = overlayRoot.style;
     let tableHeight;
 
-    if (this.trimmingContainer !== window) {
+    if (this.trimmingContainer === window) {
+      overlayRootStyle.width = '';
+
+    } else {
       overlayRootStyle.width = this.wot.wtViewport.getWorkspaceWidth() - scrollbarWidth + 'px';
     }
+
     this.clone.wtTable.holder.style.width = overlayRootStyle.width;
 
     tableHeight = outerHeight(this.clone.wtTable.TABLE);

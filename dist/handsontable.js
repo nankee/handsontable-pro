@@ -1259,7 +1259,7 @@ var Walkontable = function Walkontable(settings) {
 window.Walkontable = Walkontable;
 
 //# 
-},{"event":8,"helpers/dom/element":45,"helpers/object":50,"helpers/string":52,"overlay/_base.js":11,"overlay/debug.js":12,"overlay/left.js":13,"overlay/top.js":14,"overlay/topLeftCorner.js":15,"overlays":16,"scroll":17,"settings":19,"table":20,"viewport":22}],8:[function(require,module,exports){
+},{"event":8,"helpers/dom/element":45,"helpers/object":51,"helpers/string":53,"overlay/_base.js":11,"overlay/debug.js":12,"overlay/left.js":13,"overlay/top.js":14,"overlay/topLeftCorner.js":15,"overlays":16,"scroll":17,"settings":19,"table":20,"viewport":22}],8:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableEvent: {get: function() {
@@ -1404,7 +1404,8 @@ WalkontableEvent.prototype.parentCell = function(elem) {
   var cell = {};
   var TABLE = this.instance.wtTable.TABLE;
   var TD = closest(elem, ['TD', 'TH'], TABLE);
-  if (TD && isChildOf(TD, TABLE)) {
+  var referenceTABLE = closest(TD, ['TABLE']);
+  if (TD && isChildOf(TD, TABLE) && referenceTABLE == TABLE) {
     cell.coords = this.instance.wtTable.getCoords(TD);
     cell.TD = TD;
   } else if (hasClass(elem, 'wtBorder') && hasClass(elem, 'current')) {
@@ -1544,6 +1545,12 @@ var $WalkontableOverlay = WalkontableOverlay;
   shouldBeRendered: function() {
     return true;
   },
+  updateTrimmingContainer: function() {
+    this.trimmingContainer = getTrimmingContainer(this.hider.parentNode.parentNode);
+  },
+  updateMainScrollableElement: function() {
+    this.mainTableScrollableElement = getScrollableElement(this.wot.wtTable.TABLE);
+  },
   makeClone: function(direction) {
     if ($WalkontableOverlay.CLONE_TYPES.indexOf(direction) === -1) {
       throw new Error('Clone type "' + direction + '" is not supported.');
@@ -1624,7 +1631,7 @@ var $WalkontableOverlay = WalkontableOverlay;
 window.WalkontableOverlay = WalkontableOverlay;
 
 //# 
-},{"eventManager":41,"helpers/dom/element":45,"helpers/object":50}],12:[function(require,module,exports){
+},{"eventManager":41,"helpers/dom/element":45,"helpers/object":51}],12:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableDebugOverlay: {get: function() {
@@ -1669,7 +1676,8 @@ var $__0 = ($___46__46__47__46__46__47__46__46__47__46__46__47_helpers_47_dom_47
     outerWidth = $__0.outerWidth,
     innerHeight = $__0.innerHeight,
     removeClass = $__0.removeClass,
-    setOverlayPosition = $__0.setOverlayPosition;
+    setOverlayPosition = $__0.setOverlayPosition,
+    resetCssTransform = $__0.resetCssTransform;
 var WalkontableOverlay = ($___95_base__ = require("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).WalkontableOverlay;
 var WalkontableLeftOverlay = function WalkontableLeftOverlay(wotInstance) {
   $traceurRuntime.superConstructor($WalkontableLeftOverlay).call(this, wotInstance);
@@ -1705,6 +1713,7 @@ var $WalkontableLeftOverlay = WalkontableLeftOverlay;
       setOverlayPosition(overlayRoot, finalLeft, finalTop);
     } else {
       headerPosition = this.getScrollPosition();
+      resetCssTransform(overlayRoot);
     }
     this.adjustHeaderBordersPosition(headerPosition);
     this.adjustElementsSize();
@@ -1730,6 +1739,7 @@ var $WalkontableLeftOverlay = WalkontableLeftOverlay;
   },
   adjustElementsSize: function() {
     var force = arguments[0] !== (void 0) ? arguments[0] : false;
+    this.updateTrimmingContainer();
     if (this.needFullRender || force) {
       this.adjustRootElementSize();
       this.adjustRootChildrenSize();
@@ -1749,6 +1759,8 @@ var $WalkontableLeftOverlay = WalkontableLeftOverlay;
       var height = this.wot.wtViewport.getWorkspaceHeight() - scrollbarHeight;
       height = Math.min(height, innerHeight(this.wot.wtTable.wtRootElement));
       overlayRootStyle.height = height + 'px';
+    } else {
+      overlayRootStyle.height = '';
     }
     this.clone.wtTable.holder.style.height = overlayRootStyle.height;
     tableWidth = outerWidth(this.clone.wtTable.TABLE);
@@ -1858,7 +1870,8 @@ var $__0 = ($___46__46__47__46__46__47__46__46__47__46__46__47_helpers_47_dom_47
     outerHeight = $__0.outerHeight,
     innerWidth = $__0.innerWidth,
     removeClass = $__0.removeClass,
-    setOverlayPosition = $__0.setOverlayPosition;
+    setOverlayPosition = $__0.setOverlayPosition,
+    resetCssTransform = $__0.resetCssTransform;
 var WalkontableOverlay = ($___95_base__ = require("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).WalkontableOverlay;
 var WalkontableTopOverlay = function WalkontableTopOverlay(wotInstance) {
   $traceurRuntime.superConstructor($WalkontableTopOverlay).call(this, wotInstance);
@@ -1894,6 +1907,7 @@ var $WalkontableTopOverlay = WalkontableTopOverlay;
       setOverlayPosition(overlayRoot, finalLeft, finalTop);
     } else {
       headerPosition = this.getScrollPosition();
+      resetCssTransform(overlayRoot);
     }
     this.adjustHeaderBordersPosition(headerPosition);
     this.adjustElementsSize();
@@ -1920,6 +1934,7 @@ var $WalkontableTopOverlay = WalkontableTopOverlay;
   },
   adjustElementsSize: function() {
     var force = arguments[0] !== (void 0) ? arguments[0] : false;
+    this.updateTrimmingContainer();
     if (this.needFullRender || force) {
       this.adjustRootElementSize();
       this.adjustRootChildrenSize();
@@ -1939,6 +1954,8 @@ var $WalkontableTopOverlay = WalkontableTopOverlay;
       var width = this.wot.wtViewport.getWorkspaceWidth() - scrollbarWidth;
       width = Math.min(width, innerWidth(this.wot.wtTable.wtRootElement));
       overlayRootStyle.width = width + 'px';
+    } else {
+      overlayRootStyle.width = '';
     }
     this.clone.wtTable.holder.style.width = overlayRootStyle.width;
     tableHeight = outerHeight(this.clone.wtTable.TABLE);
@@ -2049,7 +2066,8 @@ var $___46__46__47__46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element
 var $__0 = ($___46__46__47__46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__ = require("helpers/dom/element"), $___46__46__47__46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__}),
     outerHeight = $__0.outerHeight,
     outerWidth = $__0.outerWidth,
-    setOverlayPosition = $__0.setOverlayPosition;
+    setOverlayPosition = $__0.setOverlayPosition,
+    resetCssTransform = $__0.resetCssTransform;
 var WalkontableOverlay = ($___95_base__ = require("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).WalkontableOverlay;
 var WalkontableTopLeftCornerOverlay = function WalkontableTopLeftCornerOverlay(wotInstance) {
   $traceurRuntime.superConstructor($WalkontableTopLeftCornerOverlay).call(this, wotInstance);
@@ -2061,6 +2079,7 @@ var $WalkontableTopLeftCornerOverlay = WalkontableTopLeftCornerOverlay;
     return (this.wot.getSetting('fixedRowsTop') || this.wot.getSetting('columnHeaders').length) && (this.wot.getSetting('fixedColumnsLeft') || this.wot.getSetting('rowHeaders').length) ? true : false;
   },
   resetFixedPosition: function() {
+    this.updateTrimmingContainer();
     if (!this.wot.wtTable.holder.parentNode) {
       return;
     }
@@ -2087,6 +2106,8 @@ var $WalkontableTopLeftCornerOverlay = WalkontableTopLeftCornerOverlay;
         }
       }
       setOverlayPosition(overlayRoot, finalLeft, finalTop);
+    } else {
+      resetCssTransform(overlayRoot);
     }
     overlayRoot.style.height = (tableHeight === 0 ? tableHeight : tableHeight + 4) + 'px';
     overlayRoot.style.width = (tableWidth === 0 ? tableWidth : tableWidth + 4) + 'px';
@@ -2164,9 +2185,19 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
       left: null
     }
   };
+  this.pendingScrollCallbacks = {
+    master: {
+      top: 0,
+      left: 0
+    },
+    top: {left: 0},
+    bottom: {left: 0},
+    left: {top: 0}
+  };
   this.verticalScrolling = false;
   this.horizontalScrolling = false;
   this.delegatedScrollCallback = false;
+  this.registeredListeners = [];
   this.registerListeners();
 };
 ($traceurRuntime.createClass)(WalkontableOverlays, {
@@ -2190,51 +2221,52 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
   },
   registerListeners: function() {
     var $__3 = this;
-    this.eventManager.addEventListener(document.documentElement, 'keydown', (function(event) {
-      return $__3.onKeyDown(event);
-    }));
-    this.eventManager.addEventListener(document.documentElement, 'keyup', (function() {
-      return $__3.onKeyUp();
-    }));
-    this.eventManager.addEventListener(document, 'visibilitychange', (function() {
-      return $__3.onKeyUp();
-    }));
     var topOverlayScrollable = this.topOverlay.mainTableScrollableElement;
     var leftOverlayScrollable = this.leftOverlay.mainTableScrollableElement;
-    this.eventManager.addEventListener(topOverlayScrollable, 'scroll', (function(event) {
+    var listenersToRegister = [];
+    listenersToRegister.push([document.documentElement, 'keydown', (function(event) {
+      return $__3.onKeyDown(event);
+    })]);
+    listenersToRegister.push([document.documentElement, 'keyup', (function() {
+      return $__3.onKeyUp();
+    })]);
+    listenersToRegister.push([document, 'visibilitychange', (function() {
+      return $__3.onKeyUp();
+    })]);
+    listenersToRegister.push([topOverlayScrollable, 'scroll', (function(event) {
       return $__3.onTableScroll(event);
-    }));
+    })]);
     if (topOverlayScrollable !== leftOverlayScrollable) {
-      this.eventManager.addEventListener(leftOverlayScrollable, 'scroll', (function(event) {
+      listenersToRegister.push([leftOverlayScrollable, 'scroll', (function(event) {
         return $__3.onTableScroll(event);
-      }));
+      })]);
     }
     if (this.topOverlay.needFullRender) {
-      this.eventManager.addEventListener(this.topOverlay.clone.wtTable.holder, 'scroll', (function(event) {
+      listenersToRegister.push([this.topOverlay.clone.wtTable.holder, 'scroll', (function(event) {
         return $__3.onTableScroll(event);
-      }));
-      this.eventManager.addEventListener(this.topOverlay.clone.wtTable.holder, 'wheel', (function(event) {
+      })]);
+      listenersToRegister.push([this.topOverlay.clone.wtTable.holder, 'wheel', (function(event) {
         return $__3.onTableScroll(event);
-      }));
+      })]);
     }
     if (this.bottomOverlay.needFullRender) {
-      this.eventManager.addEventListener(this.bottomOverlay.clone.wtTable.holder, 'scroll', (function(event) {
+      listenersToRegister.push([this.bottomOverlay.clone.wtTable.holder, 'scroll', (function(event) {
         return $__3.onTableScroll(event);
-      }));
-      this.eventManager.addEventListener(this.bottomOverlay.clone.wtTable.holder, 'wheel', (function(event) {
+      })]);
+      listenersToRegister.push([this.bottomOverlay.clone.wtTable.holder, 'wheel', (function(event) {
         return $__3.onTableScroll(event);
-      }));
+      })]);
     }
     if (this.leftOverlay.needFullRender) {
-      this.eventManager.addEventListener(this.leftOverlay.clone.wtTable.holder, 'scroll', (function(event) {
+      listenersToRegister.push([this.leftOverlay.clone.wtTable.holder, 'scroll', (function(event) {
         return $__3.onTableScroll(event);
-      }));
-      this.eventManager.addEventListener(this.leftOverlay.clone.wtTable.holder, 'wheel', (function(event) {
+      })]);
+      listenersToRegister.push([this.leftOverlay.clone.wtTable.holder, 'wheel', (function(event) {
         return $__3.onTableScroll(event);
-      }));
+      })]);
     }
     if (this.topOverlay.trimmingContainer !== window && this.leftOverlay.trimmingContainer !== window) {
-      this.eventManager.addEventListener(window, 'wheel', (function(event) {
+      listenersToRegister.push([window, 'wheel', (function(event) {
         var overlay;
         var deltaY = event.wheelDeltaY || event.deltaY;
         var deltaX = event.wheelDeltaX || event.deltaX;
@@ -2252,7 +2284,18 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
         } else if (overlay == 'bottom' && deltaY !== 0) {
           event.preventDefault();
         }
-      }));
+      })]);
+    }
+    while (listenersToRegister.length) {
+      var listener = listenersToRegister.pop();
+      this.eventManager.addEventListener(listener[0], listener[1], listener[2]);
+      this.registeredListeners.push(listener);
+    }
+  },
+  deregisterListeners: function() {
+    while (this.registeredListeners.length) {
+      var listener = this.registeredListeners.pop();
+      this.eventManager.removeEventListener(listener[0], listener[1], listener[2]);
     }
   },
   onTableScroll: function(event) {
@@ -2346,37 +2389,60 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
       } else {
         tempScrollValue = getScrollLeft(target);
       }
-      if (this.overlayScrollPositions.master.left !== tempScrollValue) {
-        this.horizontalScrolling = true;
-        this.overlayScrollPositions.master.left = tempScrollValue;
-        scrollValueChanged = true;
+      this.horizontalScrolling = true;
+      this.overlayScrollPositions.master.left = tempScrollValue;
+      scrollValueChanged = true;
+      if (this.pendingScrollCallbacks.master.left > 0) {
+        this.pendingScrollCallbacks.master.left--;
+      } else {
         if (topOverlay && topOverlay.scrollLeft !== tempScrollValue) {
+          if (fakeScrollValue == null) {
+            this.pendingScrollCallbacks.top.left++;
+          }
           topOverlay.scrollLeft = tempScrollValue;
           delegatedScroll = (masterHorizontal !== window);
         }
         if (bottomOverlay && bottomOverlay.scrollLeft !== tempScrollValue) {
+          if (fakeScrollValue == null) {
+            this.pendingScrollCallbacks.bottom.left++;
+          }
           bottomOverlay.scrollLeft = tempScrollValue;
           delegatedScroll = (masterHorizontal !== window);
         }
       }
       tempScrollValue = getScrollTop(target);
-      if (this.overlayScrollPositions.master.top !== tempScrollValue) {
-        this.verticalScrolling = true;
-        this.overlayScrollPositions.master.top = tempScrollValue;
-        scrollValueChanged = true;
+      this.verticalScrolling = true;
+      this.overlayScrollPositions.master.top = tempScrollValue;
+      scrollValueChanged = true;
+      if (this.pendingScrollCallbacks.master.top > 0) {
+        this.pendingScrollCallbacks.master.top--;
+      } else {
         if (leftOverlay && leftOverlay.scrollTop !== tempScrollValue) {
+          if (fakeScrollValue == null) {
+            this.pendingScrollCallbacks.left.top++;
+          }
           leftOverlay.scrollTop = tempScrollValue;
           delegatedScroll = (masterVertical !== window);
         }
       }
     } else if (target === bottomOverlay) {
       tempScrollValue = getScrollLeft(target);
-      if (this.overlayScrollPositions.bottom.left !== tempScrollValue) {
-        this.horizontalScrolling = true;
-        this.overlayScrollPositions.bottom.left = tempScrollValue;
-        scrollValueChanged = true;
-        if (masterHorizontal.scrollLeft !== tempScrollValue) {
-          masterHorizontal.scrollLeft = tempScrollValue;
+      this.horizontalScrolling = true;
+      this.overlayScrollPositions.bottom.left = tempScrollValue;
+      scrollValueChanged = true;
+      if (this.pendingScrollCallbacks.bottom.left > 0) {
+        this.pendingScrollCallbacks.bottom.left--;
+      } else {
+        if (fakeScrollValue == null) {
+          this.pendingScrollCallbacks.master.left++;
+        }
+        masterHorizontal.scrollLeft = tempScrollValue;
+        if (topOverlay && topOverlay.scrollLeft !== tempScrollValue) {
+          if (fakeScrollValue == null) {
+            this.pendingScrollCallbacks.top.left++;
+          }
+          topOverlay.scrollLeft = tempScrollValue;
+          delegatedScroll = (masterVertical !== window);
         }
       }
       if (fakeScrollValue !== null) {
@@ -2385,17 +2451,27 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
       }
     } else if (target === topOverlay) {
       tempScrollValue = getScrollLeft(target);
-      if (this.overlayScrollPositions.top.left !== tempScrollValue) {
-        this.horizontalScrolling = true;
-        this.overlayScrollPositions.top.left = tempScrollValue;
-        scrollValueChanged = true;
-        if (masterHorizontal.scrollLeft !== tempScrollValue) {
-          masterHorizontal.scrollLeft = tempScrollValue;
+      this.horizontalScrolling = true;
+      this.overlayScrollPositions.top.left = tempScrollValue;
+      scrollValueChanged = true;
+      if (this.pendingScrollCallbacks.top.left > 0) {
+        this.pendingScrollCallbacks.top.left--;
+      } else {
+        if (fakeScrollValue == null) {
+          this.pendingScrollCallbacks.master.left++;
         }
+        masterHorizontal.scrollLeft = tempScrollValue;
       }
       if (fakeScrollValue !== null) {
         scrollValueChanged = true;
         masterVertical.scrollTop += fakeScrollValue;
+      }
+      if (bottomOverlay && bottomOverlay.scrollLeft !== tempScrollValue) {
+        if (fakeScrollValue == null) {
+          this.pendingScrollCallbacks.bottom.left++;
+        }
+        bottomOverlay.scrollLeft = tempScrollValue;
+        delegatedScroll = (masterVertical !== window);
       }
     } else if (target === leftOverlay) {
       tempScrollValue = getScrollTop(target);
@@ -2403,7 +2479,12 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
         this.verticalScrolling = true;
         this.overlayScrollPositions.left.top = tempScrollValue;
         scrollValueChanged = true;
-        if (masterVertical.scrollTop !== tempScrollValue) {
+        if (this.pendingScrollCallbacks.left.top > 0) {
+          this.pendingScrollCallbacks.left.top--;
+        } else {
+          if (fakeScrollValue == null) {
+            this.pendingScrollCallbacks.master.top++;
+          }
           masterVertical.scrollTop = tempScrollValue;
         }
       }
@@ -2431,6 +2512,16 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
     if (this.leftOverlay.needFullRender) {
       this.leftOverlay.clone.wtTable.holder.scrollTop = master.scrollTop;
     }
+  },
+  updateMainScrollableElements: function() {
+    this.deregisterListeners();
+    this.leftOverlay.updateMainScrollableElement();
+    this.topOverlay.updateMainScrollableElement();
+    if (this.bottomOverlay.needFullRender) {
+      this.bottomOverlay.updateMainScrollableElement();
+    }
+    this.scrollableElement = getScrollableElement(this.wot.wtTable.TABLE);
+    this.registerListeners();
   },
   destroy: function() {
     this.eventManager.destroy();
@@ -2507,7 +2598,7 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
 window.WalkontableOverlays = WalkontableOverlays;
 
 //# 
-},{"eventManager":41,"helpers/dom/element":45,"helpers/unicode":53}],17:[function(require,module,exports){
+},{"eventManager":41,"helpers/dom/element":45,"helpers/unicode":54}],17:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableScroll: {get: function() {
@@ -2689,7 +2780,7 @@ var WalkontableScroll = function WalkontableScroll(wotInstance) {
 window.WalkontableScroll = WalkontableScroll;
 
 //# 
-},{"helpers/dom/element":45,"helpers/number":49}],18:[function(require,module,exports){
+},{"helpers/dom/element":45,"helpers/number":50}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableSelection: {get: function() {
@@ -4073,6 +4164,7 @@ var $__shims_47_classes__,
     $__helpers_47_array__,
     $__helpers_47_browser__,
     $__helpers_47_data__,
+    $__helpers_47_feature__,
     $__helpers_47_function__,
     $__helpers_47_mixed__,
     $__helpers_47_number__,
@@ -4101,6 +4193,7 @@ if (!Handsontable.hooks) {
 var arrayHelpers = ($__helpers_47_array__ = require("helpers/array"), $__helpers_47_array__ && $__helpers_47_array__.__esModule && $__helpers_47_array__ || {default: $__helpers_47_array__});
 var browserHelpers = ($__helpers_47_browser__ = require("helpers/browser"), $__helpers_47_browser__ && $__helpers_47_browser__.__esModule && $__helpers_47_browser__ || {default: $__helpers_47_browser__});
 var dataHelpers = ($__helpers_47_data__ = require("helpers/data"), $__helpers_47_data__ && $__helpers_47_data__.__esModule && $__helpers_47_data__ || {default: $__helpers_47_data__});
+var featureHelpers = ($__helpers_47_feature__ = require("helpers/feature"), $__helpers_47_feature__ && $__helpers_47_feature__.__esModule && $__helpers_47_feature__ || {default: $__helpers_47_feature__});
 var functionHelpers = ($__helpers_47_function__ = require("helpers/function"), $__helpers_47_function__ && $__helpers_47_function__.__esModule && $__helpers_47_function__ || {default: $__helpers_47_function__});
 var mixedHelpers = ($__helpers_47_mixed__ = require("helpers/mixed"), $__helpers_47_mixed__ && $__helpers_47_mixed__.__esModule && $__helpers_47_mixed__ || {default: $__helpers_47_mixed__});
 var numberHelpers = ($__helpers_47_number__ = require("helpers/number"), $__helpers_47_number__ && $__helpers_47_number__.__esModule && $__helpers_47_number__ || {default: $__helpers_47_number__});
@@ -4110,12 +4203,12 @@ var stringHelpers = ($__helpers_47_string__ = require("helpers/string"), $__help
 var unicodeHelpers = ($__helpers_47_unicode__ = require("helpers/unicode"), $__helpers_47_unicode__ && $__helpers_47_unicode__.__esModule && $__helpers_47_unicode__ || {default: $__helpers_47_unicode__});
 var domHelpers = ($__helpers_47_dom_47_element__ = require("helpers/dom/element"), $__helpers_47_dom_47_element__ && $__helpers_47_dom_47_element__.__esModule && $__helpers_47_dom_47_element__ || {default: $__helpers_47_dom_47_element__});
 var domEventHelpers = ($__helpers_47_dom_47_event__ = require("helpers/dom/event"), $__helpers_47_dom_47_event__ && $__helpers_47_dom_47_event__.__esModule && $__helpers_47_dom_47_event__ || {default: $__helpers_47_dom_47_event__});
-var HELPERS = [arrayHelpers, browserHelpers, dataHelpers, functionHelpers, mixedHelpers, numberHelpers, objectHelpers, settingHelpers, stringHelpers, unicodeHelpers];
+var HELPERS = [arrayHelpers, browserHelpers, dataHelpers, featureHelpers, functionHelpers, mixedHelpers, numberHelpers, objectHelpers, settingHelpers, stringHelpers, unicodeHelpers];
 var DOM = [domHelpers, domEventHelpers];
-Handsontable.buildDate = 'Thu Feb 04 2016 13:30:08 GMT+0100 (CET)';
+Handsontable.buildDate = 'Tue Mar 15 2016 12:11:18 GMT+0100 (CET)';
 Handsontable.packageName = 'handsontable-pro';
-Handsontable.version = '1.1.1';
-var baseVersion = '0.22.0';
+Handsontable.version = '1.3.0';
+var baseVersion = '0.24.0';
 if (!/^@@/.test(baseVersion)) {
   Handsontable.baseVersion = baseVersion;
 }
@@ -4141,7 +4234,7 @@ arrayHelpers.arrayEach(DOM, (function(helper) {
 }));
 
 //# 
-},{"cellTypes":24,"core":25,"es6collections":"es6collections","helpers/array":42,"helpers/browser":43,"helpers/data":44,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/function":47,"helpers/mixed":48,"helpers/number":49,"helpers/object":50,"helpers/setting":51,"helpers/string":52,"helpers/unicode":53,"pluginHooks":58,"plugins":59,"plugins/jqueryHandsontable":1,"renderers/_cellDecorator":91,"shims/classes":98}],24:[function(require,module,exports){
+},{"cellTypes":24,"core":25,"es6collections":"es6collections","helpers/array":42,"helpers/browser":43,"helpers/data":44,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/feature":47,"helpers/function":48,"helpers/mixed":49,"helpers/number":50,"helpers/object":51,"helpers/setting":52,"helpers/string":53,"helpers/unicode":54,"pluginHooks":59,"plugins":60,"plugins/jqueryHandsontable":1,"renderers/_cellDecorator":94,"shims/classes":101}],24:[function(require,module,exports){
 "use strict";
 var $__helpers_47_browser__,
     $__editors__,
@@ -4164,6 +4257,7 @@ var $__helpers_47_browser__,
     $__renderers_47_textRenderer__,
     $__validators_47_autocompleteValidator__,
     $__validators_47_dateValidator__,
+    $__validators_47_timeValidator__,
     $__validators_47_numericValidator__;
 var isMobileBrowser = ($__helpers_47_browser__ = require("helpers/browser"), $__helpers_47_browser__ && $__helpers_47_browser__.__esModule && $__helpers_47_browser__ || {default: $__helpers_47_browser__}).isMobileBrowser;
 var getEditorConstructor = ($__editors__ = require("editors"), $__editors__ && $__editors__.__esModule && $__editors__ || {default: $__editors__}).getEditorConstructor;
@@ -4186,6 +4280,7 @@ var PasswordRenderer = ($__renderers_47_passwordRenderer__ = require("renderers/
 var TextRenderer = ($__renderers_47_textRenderer__ = require("renderers/textRenderer"), $__renderers_47_textRenderer__ && $__renderers_47_textRenderer__.__esModule && $__renderers_47_textRenderer__ || {default: $__renderers_47_textRenderer__}).TextRenderer;
 var AutocompleteValidator = ($__validators_47_autocompleteValidator__ = require("validators/autocompleteValidator"), $__validators_47_autocompleteValidator__ && $__validators_47_autocompleteValidator__.__esModule && $__validators_47_autocompleteValidator__ || {default: $__validators_47_autocompleteValidator__}).AutocompleteValidator;
 var DateValidator = ($__validators_47_dateValidator__ = require("validators/dateValidator"), $__validators_47_dateValidator__ && $__validators_47_dateValidator__.__esModule && $__validators_47_dateValidator__ || {default: $__validators_47_dateValidator__}).DateValidator;
+var TimeValidator = ($__validators_47_timeValidator__ = require("validators/timeValidator"), $__validators_47_timeValidator__ && $__validators_47_timeValidator__.__esModule && $__validators_47_timeValidator__ || {default: $__validators_47_timeValidator__}).TimeValidator;
 var NumericValidator = ($__validators_47_numericValidator__ = require("validators/numericValidator"), $__validators_47_numericValidator__ && $__validators_47_numericValidator__.__esModule && $__validators_47_numericValidator__ || {default: $__validators_47_numericValidator__}).NumericValidator;
 Handsontable.mobileBrowser = isMobileBrowser();
 Handsontable.AutocompleteCell = {
@@ -4212,6 +4307,11 @@ Handsontable.DateCell = {
   validator: Handsontable.DateValidator,
   renderer: getRenderer('autocomplete')
 };
+Handsontable.TimeCell = {
+  editor: getEditorConstructor('text'),
+  validator: Handsontable.TimeValidator,
+  renderer: getRenderer('text')
+};
 Handsontable.HandsontableCell = {
   editor: getEditorConstructor('handsontable'),
   renderer: getRenderer('autocomplete')
@@ -4229,6 +4329,7 @@ Handsontable.DropdownCell = {
 Handsontable.cellTypes = {
   text: Handsontable.TextCell,
   date: Handsontable.DateCell,
+  time: Handsontable.TimeCell,
   numeric: Handsontable.NumericCell,
   checkbox: Handsontable.CheckboxCell,
   autocomplete: Handsontable.AutocompleteCell,
@@ -4242,7 +4343,7 @@ Handsontable.cellLookup = {validator: {
   }};
 
 //# 
-},{"editors":29,"editors/autocompleteEditor":31,"editors/checkboxEditor":32,"editors/dateEditor":33,"editors/dropdownEditor":34,"editors/handsontableEditor":35,"editors/mobileTextEditor":36,"editors/numericEditor":37,"editors/passwordEditor":38,"editors/selectEditor":39,"editors/textEditor":40,"helpers/browser":43,"renderers":90,"renderers/autocompleteRenderer":92,"renderers/checkboxRenderer":93,"renderers/htmlRenderer":94,"renderers/numericRenderer":95,"renderers/passwordRenderer":96,"renderers/textRenderer":97,"validators/autocompleteValidator":102,"validators/dateValidator":103,"validators/numericValidator":104}],25:[function(require,module,exports){
+},{"editors":29,"editors/autocompleteEditor":31,"editors/checkboxEditor":32,"editors/dateEditor":33,"editors/dropdownEditor":34,"editors/handsontableEditor":35,"editors/mobileTextEditor":36,"editors/numericEditor":37,"editors/passwordEditor":38,"editors/selectEditor":39,"editors/textEditor":40,"helpers/browser":43,"renderers":93,"renderers/autocompleteRenderer":95,"renderers/checkboxRenderer":96,"renderers/htmlRenderer":97,"renderers/numericRenderer":98,"renderers/passwordRenderer":99,"renderers/textRenderer":100,"validators/autocompleteValidator":106,"validators/dateValidator":107,"validators/numericValidator":108,"validators/timeValidator":109}],25:[function(require,module,exports){
 "use strict";
 var $__numeral__,
     $__helpers_47_dom_47_element__,
@@ -4278,7 +4379,9 @@ var $__6 = ($__helpers_47_object__ = require("helpers/object"), $__helpers_47_ob
     duckSchema = $__6.duckSchema,
     isObjectEquals = $__6.isObjectEquals,
     deepClone = $__6.deepClone;
-var arrayFlatten = ($__helpers_47_array__ = require("helpers/array"), $__helpers_47_array__ && $__helpers_47_array__.__esModule && $__helpers_47_array__ || {default: $__helpers_47_array__}).arrayFlatten;
+var $__7 = ($__helpers_47_array__ = require("helpers/array"), $__helpers_47_array__ && $__helpers_47_array__.__esModule && $__helpers_47_array__ || {default: $__helpers_47_array__}),
+    arrayFlatten = $__7.arrayFlatten,
+    arrayMap = $__7.arrayMap;
 var getPlugin = ($__plugins__ = require("plugins"), $__plugins__ && $__plugins__.__esModule && $__plugins__ || {default: $__plugins__}).getPlugin;
 var getRenderer = ($__renderers__ = require("renderers"), $__renderers__ && $__renderers__.__esModule && $__renderers__ || {default: $__renderers__}).getRenderer;
 var randomString = ($__helpers_47_string__ = require("helpers/string"), $__helpers_47_string__ && $__helpers_47_string__.__esModule && $__helpers_47_string__ || {default: $__helpers_47_string__}).randomString;
@@ -4332,12 +4435,29 @@ Handsontable.Core = function Core(rootElement, userSettings) {
     alter: function(action, index, amount, source, keepEmptyRows) {
       var delta;
       amount = amount || 1;
+      function spliceWith(data, index, count, toInject) {
+        var valueFactory = (function() {
+          var result;
+          if (toInject === 'array') {
+            result = [];
+          } else if (toInject === 'object') {
+            result = {};
+          }
+          return result;
+        });
+        var spliceArgs = arrayMap(new Array(count), (function() {
+          return valueFactory();
+        }));
+        spliceArgs.unshift(index, 0);
+        data.splice.apply(data, spliceArgs);
+      }
       switch (action) {
         case 'insert_row':
           if (instance.getSettings().maxRows === instance.countSourceRows()) {
             return;
           }
           delta = datamap.createRow(index, amount);
+          spliceWith(priv.cellSettings, index, amount, 'array');
           if (delta) {
             if (selection.isSelected() && priv.selRange.from.row >= index) {
               priv.selRange.from.row = priv.selRange.from.row + delta;
@@ -4349,6 +4469,12 @@ Handsontable.Core = function Core(rootElement, userSettings) {
           break;
         case 'insert_col':
           delta = datamap.createCol(index, amount);
+          for (var row = 0,
+              len = instance.countSourceRows(); row < len; row++) {
+            if (priv.cellSettings[row]) {
+              spliceWith(priv.cellSettings[row], index, amount);
+            }
+          }
           if (delta) {
             if (Array.isArray(instance.getSettings().colHeaders)) {
               var spliceArray = [index, 0];
@@ -4379,11 +4505,12 @@ Handsontable.Core = function Core(rootElement, userSettings) {
           selection.refreshBorders();
           break;
         case 'remove_col':
+          var logicalColumnIndex = translateColIndex(index);
           datamap.removeCol(index, amount);
-          for (var row = 0,
-              len = datamap.getAll().length; row < len; row++) {
-            if (row in priv.cellSettings) {
-              priv.cellSettings[row].splice(index, amount);
+          for (var row$__20 = 0,
+              len$__21 = instance.countSourceRows(); row$__20 < len$__21; row$__20++) {
+            if (priv.cellSettings[row$__20]) {
+              priv.cellSettings[row$__20].splice(logicalColumnIndex, amount);
             }
           }
           var fixedColumnsLeft = instance.getSettings().fixedColumnsLeft;
@@ -4391,17 +4518,16 @@ Handsontable.Core = function Core(rootElement, userSettings) {
             instance.getSettings().fixedColumnsLeft -= Math.min(amount, fixedColumnsLeft - index);
           }
           if (Array.isArray(instance.getSettings().colHeaders)) {
-            if (typeof index == 'undefined') {
-              index = -1;
+            if (typeof logicalColumnIndex == 'undefined') {
+              logicalColumnIndex = -1;
             }
-            instance.getSettings().colHeaders.splice(index, amount);
+            instance.getSettings().colHeaders.splice(logicalColumnIndex, amount);
           }
           grid.adjustRowsAndCols();
           selection.refreshBorders();
           break;
         default:
           throw new Error('There is no such action "' + action + '"');
-          break;
       }
       if (!keepEmptyRows) {
         grid.adjustRowsAndCols();
@@ -4923,8 +5049,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       } else {
         var row = changes[i][0];
         var col = datamap.propToCol(changes[i][1]);
-        var logicalCol = instance.runHooks('modifyCol', col);
-        var cellProperties = instance.getCellMeta(row, logicalCol);
+        var cellProperties = instance.getCellMeta(row, col);
         if (cellProperties.type === 'numeric' && typeof changes[i][3] === 'string') {
           if (changes[i][3].length > 0 && (/^-?[\d\s]*(\.|\,)?\d*$/.test(changes[i][3]) || cellProperties.format)) {
             var len = changes[i][3].length;
@@ -5033,8 +5158,10 @@ Handsontable.Core = function Core(rootElement, userSettings) {
         });
       }, 0));
     } else {
-      cellProperties.valid = true;
-      done(cellProperties.valid);
+      instance._registerTimeout(setTimeout(function() {
+        cellProperties.valid = true;
+        done(cellProperties.valid);
+      }, 0));
     }
   };
   function setDataInputToArray(row, propOrCol, value) {
@@ -5154,6 +5281,9 @@ Handsontable.Core = function Core(rootElement, userSettings) {
     } else {
       instance.dataType = 'object';
     }
+    if (datamap) {
+      datamap.destroy();
+    }
     datamap = new DataMap(instance, priv, GridSettings);
     dataSource.data = data;
     dataSource.dataType = instance.dataType;
@@ -5221,7 +5351,9 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       datamap.createMap();
     }
     clen = instance.countCols();
-    priv.cellSettings.length = 0;
+    if (settings.cell !== void 0 || settings.cells !== void 0 || settings.columns !== void 0) {
+      priv.cellSettings.length = 0;
+    }
     if (clen > 0) {
       var proto,
           column;
@@ -5230,8 +5362,10 @@ Handsontable.Core = function Core(rootElement, userSettings) {
         proto = priv.columnSettings[i].prototype;
         if (GridSettings.prototype.columns) {
           column = GridSettings.prototype.columns[i];
-          extend(proto, column);
-          extend(proto, expandType(column));
+          if (column) {
+            extend(proto, column);
+            extend(proto, expandType(column));
+          }
         }
       }
     }
@@ -5252,12 +5386,31 @@ Handsontable.Core = function Core(rootElement, userSettings) {
         addClass(instance.rootElement, settings.className);
       }
     }
-    if (typeof settings.height != 'undefined') {
-      var height = settings.height;
-      if (typeof height == 'function') {
-        height = height();
+    var currentHeight = instance.rootElement.style.height;
+    if (currentHeight !== '') {
+      currentHeight = parseInt(instance.rootElement.style.height, 10);
+    }
+    var height = settings.height;
+    if (typeof height == 'function') {
+      height = height();
+    }
+    if (init) {
+      var initialStyle = instance.rootElement.getAttribute('style');
+      if (initialStyle) {
+        instance.rootElement.setAttribute('data-initialstyle', instance.rootElement.getAttribute('style'));
       }
+    }
+    if (height === void 0) {
+      var initialStyle$__22 = instance.rootElement.getAttribute('data-initialstyle');
+      if (initialStyle$__22 && (initialStyle$__22.indexOf('height') > -1 || initialStyle$__22.indexOf('overflow') > -1)) {
+        instance.rootElement.setAttribute('style', initialStyle$__22);
+      } else {
+        instance.rootElement.style.height = '';
+        instance.rootElement.style.overflow = '';
+      }
+    } else {
       instance.rootElement.style.height = height + 'px';
+      instance.rootElement.style.overflow = 'hidden';
     }
     if (typeof settings.width != 'undefined') {
       var width = settings.width;
@@ -5266,9 +5419,6 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       }
       instance.rootElement.style.width = width + 'px';
     }
-    if (height) {
-      instance.rootElement.style.overflow = 'hidden';
-    }
     if (!init) {
       Handsontable.hooks.run(instance, 'afterUpdateSettings');
     }
@@ -5276,6 +5426,9 @@ Handsontable.Core = function Core(rootElement, userSettings) {
     if (instance.view && !priv.firstRun) {
       instance.forceFullRender = true;
       selection.refreshBorders(null, true);
+    }
+    if (!init && instance.view && (currentHeight === '' || height === '' || height === void 0) && currentHeight !== height) {
+      instance.view.wt.wtOverlays.updateMainScrollableElements();
     }
   };
   this.getValue = function() {
@@ -5789,8 +5942,11 @@ Handsontable.Core = function Core(rootElement, userSettings) {
         }
       }
     }
-    priv = null;
+    if (datamap) {
+      datamap.destroy();
+    }
     datamap = null;
+    priv = null;
     grid = null;
     selection = null;
     editorManager = null;
@@ -5921,6 +6077,7 @@ DefaultSettings.prototype = {
   },
   observeDOMVisibility: true,
   allowInvalid: true,
+  allowEmpty: true,
   invalidCellClassName: 'htInvalid',
   placeholder: false,
   placeholderCellClassName: 'htPlaceholder',
@@ -5986,12 +6143,14 @@ DefaultSettings.prototype = {
   nestedHeaders: void 0,
   trimRows: void 0,
   rowHeaderWidth: void 0,
-  columnHeaderHeight: void 0
+  columnHeaderHeight: void 0,
+  observeChanges: void 0,
+  sortFunction: void 0
 };
 Handsontable.DefaultSettings = DefaultSettings;
 
 //# 
-},{"3rdparty/walkontable/src/calculator/viewportColumns":3,"3rdparty/walkontable/src/cell/coords":5,"3rdparty/walkontable/src/cell/range":6,"3rdparty/walkontable/src/selection":18,"dataMap":26,"dataSource":27,"editorManager":28,"eventManager":41,"helpers/array":42,"helpers/data":44,"helpers/dom/element":45,"helpers/number":49,"helpers/object":50,"helpers/setting":51,"helpers/string":52,"numeral":"numeral","plugins":59,"renderers":90,"tableView":99}],26:[function(require,module,exports){
+},{"3rdparty/walkontable/src/calculator/viewportColumns":3,"3rdparty/walkontable/src/cell/coords":5,"3rdparty/walkontable/src/cell/range":6,"3rdparty/walkontable/src/selection":18,"dataMap":26,"dataSource":27,"editorManager":28,"eventManager":41,"helpers/array":42,"helpers/data":44,"helpers/dom/element":45,"helpers/number":50,"helpers/object":51,"helpers/setting":52,"helpers/string":53,"numeral":"numeral","plugins":60,"renderers":93,"tableView":102}],26:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DataMap: {get: function() {
@@ -6004,6 +6163,7 @@ var $__SheetClip__,
     $__helpers_47_setting__,
     $__helpers_47_object__,
     $__helpers_47_array__,
+    $__utils_47_interval__,
     $__helpers_47_number__,
     $__multiMap__;
 var SheetClip = ($__SheetClip__ = require("SheetClip"), $__SheetClip__ && $__SheetClip__.__esModule && $__SheetClip__ || {default: $__SheetClip__}).default;
@@ -6015,19 +6175,26 @@ var $__3 = ($__helpers_47_object__ = require("helpers/object"), $__helpers_47_ob
 var $__4 = ($__helpers_47_array__ = require("helpers/array"), $__helpers_47_array__ && $__helpers_47_array__.__esModule && $__helpers_47_array__ || {default: $__helpers_47_array__}),
     extendArray = $__4.extendArray,
     to2dArray = $__4.to2dArray;
+var Interval = ($__utils_47_interval__ = require("utils/interval"), $__utils_47_interval__ && $__utils_47_interval__.__esModule && $__utils_47_interval__ || {default: $__utils_47_interval__}).Interval;
 var rangeEach = ($__helpers_47_number__ = require("helpers/number"), $__helpers_47_number__ && $__helpers_47_number__.__esModule && $__helpers_47_number__ || {default: $__helpers_47_number__}).rangeEach;
 var MultiMap = ($__multiMap__ = require("multiMap"), $__multiMap__ && $__multiMap__.__esModule && $__multiMap__ || {default: $__multiMap__}).MultiMap;
 function DataMap(instance, priv, GridSettings) {
+  var $__8 = this;
   this.instance = instance;
   this.priv = priv;
   this.GridSettings = GridSettings;
   this.dataSource = this.instance.getSettings().data;
+  this.cachedLength = null;
+  this.latestSourceRowsCount = 0;
   if (this.dataSource[0]) {
     this.duckSchema = this.recursiveDuckSchema(this.dataSource[0]);
   } else {
     this.duckSchema = {};
   }
   this.createMap();
+  this.interval = Interval.create((function() {
+    return $__8.clearLengthCache();
+  }), '15fps');
 }
 DataMap.prototype.DESTINATION_RENDERER = 1;
 DataMap.prototype.DESTINATION_CLIPBOARD_GENERATOR = 2;
@@ -6092,7 +6259,7 @@ DataMap.prototype.propToCol = function(prop) {
   } else {
     col = this.propToColCache.get(prop);
   }
-  col = Handsontable.hooks.run(this.instance, 'modifyCol', col);
+  col = Handsontable.hooks.run(this.instance, 'unmodifyCol', col);
   return col;
 };
 DataMap.prototype.getSchema = function() {
@@ -6188,12 +6355,16 @@ DataMap.prototype.removeRow = function(index, amount) {
   }
   index = (this.instance.countSourceRows() + index) % this.instance.countSourceRows();
   var logicRows = this.physicalRowsToLogical(index, amount);
+  var descendingLogicRows = logicRows.slice(0).sort(function(a, b) {
+    return b - a;
+  });
   var actionWasNotCancelled = Handsontable.hooks.run(this.instance, 'beforeRemoveRow', index, amount, logicRows);
   if (actionWasNotCancelled === false) {
     return;
   }
   var data = this.dataSource;
-  var newData = data.filter(function(row, index) {
+  var newData;
+  newData = data.filter(function(row, index) {
     return logicRows.indexOf(index) == -1;
   });
   data.length = 0;
@@ -6212,16 +6383,38 @@ DataMap.prototype.removeCol = function(index, amount) {
     index = -amount;
   }
   index = (this.instance.countCols() + index) % this.instance.countCols();
-  var actionWasNotCancelled = Handsontable.hooks.run(this.instance, 'beforeRemoveCol', index, amount);
+  var logicColumns = this.physicalColumnsToLogical(index, amount);
+  var descendingLogicColumns = logicColumns.slice(0).sort(function(a, b) {
+    return b - a;
+  });
+  var actionWasNotCancelled = Handsontable.hooks.run(this.instance, 'beforeRemoveCol', index, amount, logicColumns);
   if (actionWasNotCancelled === false) {
     return;
   }
+  var isTableUniform = true;
+  var removedColumnsCount = descendingLogicColumns.length;
   var data = this.dataSource;
-  for (var r = 0,
-      rlen = this.instance.countSourceRows(); r < rlen; r++) {
-    data[r].splice(index, amount);
+  for (var c = 0; c < removedColumnsCount; c++) {
+    if (isTableUniform && logicColumns[0] !== logicColumns[c] - c) {
+      isTableUniform = false;
+    }
   }
-  this.priv.columnSettings.splice(index, amount);
+  if (isTableUniform) {
+    for (var r = 0,
+        rlen = this.instance.countSourceRows(); r < rlen; r++) {
+      data[r].splice(logicColumns[0], amount);
+    }
+  } else {
+    for (var r$__9 = 0,
+        rlen$__10 = this.instance.countSourceRows(); r$__9 < rlen$__10; r$__9++) {
+      for (var c$__11 = 0; c$__11 < removedColumnsCount; c$__11++) {
+        data[r$__9].splice(descendingLogicColumns[c$__11], 1);
+      }
+    }
+    for (var c$__12 = 0; c$__12 < removedColumnsCount; c$__12++) {
+      this.priv.columnSettings.splice(logicColumns[c$__12], 1);
+    }
+  }
   Handsontable.hooks.run(this.instance, 'afterRemoveCol', index, amount);
   this.instance.forceFullRender = true;
 };
@@ -6256,9 +6449,12 @@ DataMap.prototype.spliceRow = function(row, index, amount) {
 };
 DataMap.prototype.get = function(row, prop) {
   row = Handsontable.hooks.run(this.instance, 'modifyRow', row);
-  if (typeof prop === 'string' && prop.indexOf('.') > -1) {
+  var dataRow = this.dataSource[row];
+  if (dataRow && dataRow.hasOwnProperty && dataRow.hasOwnProperty(prop)) {
+    return dataRow[prop];
+  } else if (typeof prop === 'string' && prop.indexOf('.') > -1) {
     var sliced = prop.split('.');
-    var out = this.dataSource[row];
+    var out = dataRow;
     if (!out) {
       return null;
     }
@@ -6273,9 +6469,6 @@ DataMap.prototype.get = function(row, prop) {
   } else if (typeof prop === 'function') {
     return prop(this.dataSource.slice(row, row + 1)[0]);
   }
-  if (this.dataSource[row] && this.dataSource[row].hasOwnProperty && this.dataSource[row].hasOwnProperty(prop)) {
-    return this.dataSource[row][prop];
-  }
   return null;
 };
 var copyableLookup = cellMethodLookupFactory('copyable', false);
@@ -6287,9 +6480,12 @@ DataMap.prototype.getCopyable = function(row, prop) {
 };
 DataMap.prototype.set = function(row, prop, value, source) {
   row = Handsontable.hooks.run(this.instance, 'modifyRow', row, source || 'datamapGet');
-  if (typeof prop === 'string' && prop.indexOf('.') > -1) {
+  var dataRow = this.dataSource[row];
+  if (dataRow && dataRow.hasOwnProperty && dataRow.hasOwnProperty(prop)) {
+    dataRow[prop] = value;
+  } else if (typeof prop === 'string' && prop.indexOf('.') > -1) {
     var sliced = prop.split('.');
-    var out = this.dataSource[row];
+    var out = dataRow;
     for (var i = 0,
         ilen = sliced.length - 1; i < ilen; i++) {
       if (typeof out[sliced[i]] === 'undefined') {
@@ -6301,7 +6497,7 @@ DataMap.prototype.set = function(row, prop, value, source) {
   } else if (typeof prop === 'function') {
     prop(this.dataSource.slice(row, row + 1)[0], value);
   } else {
-    this.dataSource[row][prop] = value;
+    dataRow[prop] = value;
   }
 };
 DataMap.prototype.physicalRowsToLogical = function(index, amount) {
@@ -6318,6 +6514,19 @@ DataMap.prototype.physicalRowsToLogical = function(index, amount) {
   }
   return logicRows;
 };
+DataMap.prototype.physicalColumnsToLogical = function(index, amount) {
+  var totalCols = this.instance.countCols();
+  var physicalCol = (totalCols + index) % totalCols;
+  var logicalCols = [];
+  var colsToRemove = amount;
+  while (physicalCol < totalCols && colsToRemove) {
+    var col = Handsontable.hooks.run(this.instance, 'modifyCol', physicalCol);
+    logicalCols.push(col);
+    colsToRemove--;
+    physicalCol++;
+  }
+  return logicalCols;
+};
 DataMap.prototype.clear = function() {
   for (var r = 0; r < this.instance.countSourceRows(); r++) {
     for (var c = 0; c < this.instance.countCols(); c++) {
@@ -6325,16 +6534,32 @@ DataMap.prototype.clear = function() {
     }
   }
 };
+DataMap.prototype.clearLengthCache = function() {
+  this.cachedLength = null;
+};
 DataMap.prototype.getLength = function() {
-  var $__7 = this;
+  var $__8 = this;
   var length = this.instance.countSourceRows();
   if (Handsontable.hooks.has('modifyRow', this.instance)) {
-    rangeEach(this.instance.countSourceRows() - 1, (function(row) {
-      row = Handsontable.hooks.run($__7.instance, 'modifyRow', row);
-      if (row === null) {
-        length--;
-      }
-    }));
+    var reValidate = false;
+    this.interval.start();
+    if (length !== this.latestSourceRowsCount) {
+      reValidate = true;
+    }
+    this.latestSourceRowsCount = length;
+    if (this.cachedLength === null || reValidate) {
+      rangeEach(length - 1, (function(row) {
+        row = Handsontable.hooks.run($__8.instance, 'modifyRow', row);
+        if (row === null) {
+          --length;
+        }
+      }));
+      this.cachedLength = length;
+    } else {
+      length = this.cachedLength;
+    }
+  } else {
+    this.interval.stop();
   }
   return length;
 };
@@ -6385,11 +6610,21 @@ DataMap.prototype.getText = function(start, end) {
 DataMap.prototype.getCopyableText = function(start, end) {
   return SheetClip.stringify(this.getRange(start, end, this.DESTINATION_CLIPBOARD_GENERATOR));
 };
+DataMap.prototype.destroy = function() {
+  this.interval.stop();
+  this.interval = null;
+  this.instance = null;
+  this.priv = null;
+  this.GridSettings = null;
+  this.dataSource = null;
+  this.cachedLength = null;
+  this.duckSchema = null;
+};
 ;
 Handsontable.DataMap = DataMap;
 
 //# 
-},{"SheetClip":"SheetClip","helpers/array":42,"helpers/data":44,"helpers/number":49,"helpers/object":50,"helpers/setting":51,"multiMap":57}],27:[function(require,module,exports){
+},{"SheetClip":"SheetClip","helpers/array":42,"helpers/data":44,"helpers/number":50,"helpers/object":51,"helpers/setting":52,"multiMap":58,"utils/interval":104}],27:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DataSource: {get: function() {
@@ -6478,7 +6713,7 @@ var DataSource = function DataSource(hotInstance) {
 ;
 
 //# 
-},{"helpers/array":42,"helpers/data":44,"helpers/number":49,"helpers/object":50,"helpers/setting":51}],28:[function(require,module,exports){
+},{"helpers/array":42,"helpers/data":44,"helpers/number":50,"helpers/object":51,"helpers/setting":52}],28:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   EditorManager: {get: function() {
@@ -6774,7 +7009,7 @@ function EditorManager(instance, priv, selection) {
 }
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":5,"editors":29,"eventManager":41,"helpers/dom/event":46,"helpers/unicode":53}],29:[function(require,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":5,"editors":29,"eventManager":41,"helpers/dom/event":46,"helpers/unicode":54}],29:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   registerEditor: {get: function() {
@@ -6856,7 +7091,7 @@ function hasEditor(editorName) {
 }
 
 //# 
-},{"helpers/string":52}],30:[function(require,module,exports){
+},{"helpers/string":53}],30:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BaseEditor: {get: function() {
@@ -6993,10 +7228,11 @@ BaseEditor.prototype.finishEditing = function(restoreOriginalValue, ctrlDown, ca
       this.instance.view.render();
       return;
     }
+    var value = this.getValue();
     if (this.instance.getSettings().trimWhitespace) {
-      val = [[typeof this.getValue() === 'string' ? String.prototype.trim.call(this.getValue() || '') : this.getValue()]];
+      val = [[typeof value === 'string' ? String.prototype.trim.call(value || '') : value]];
     } else {
-      val = [[this.getValue()]];
+      val = [[value]];
     }
     this.state = Handsontable.EditorState.WAITING;
     this.saveValue(val, ctrlDown);
@@ -7068,7 +7304,7 @@ BaseEditor.prototype.checkEditorSection = function() {
 };
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":5,"helpers/mixed":48}],31:[function(require,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":5,"helpers/mixed":49}],31:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   AutocompleteEditor: {get: function() {
@@ -7332,7 +7568,7 @@ AutocompleteEditor.prototype.allowKeyEventPropagation = function(keyCode) {
 registerEditor('autocomplete', AutocompleteEditor);
 
 //# 
-},{"editors":29,"handsontableEditor":35,"helpers/array":42,"helpers/dom/element":45,"helpers/mixed":48,"helpers/unicode":53}],32:[function(require,module,exports){
+},{"editors":29,"handsontableEditor":35,"helpers/array":42,"helpers/dom/element":45,"helpers/mixed":49,"helpers/unicode":54}],32:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   CheckboxEditor: {get: function() {
@@ -7556,7 +7792,7 @@ var $DateEditor = DateEditor;
 registerEditor('date', DateEditor);
 
 //# 
-},{"editors":29,"eventManager":41,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/object":50,"helpers/unicode":53,"moment":undefined,"pikaday":undefined,"textEditor":40}],34:[function(require,module,exports){
+},{"editors":29,"eventManager":41,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/object":51,"helpers/unicode":54,"moment":undefined,"pikaday":undefined,"textEditor":40}],34:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DropdownEditor: {get: function() {
@@ -7743,7 +7979,7 @@ HandsontableEditor.prototype.assignHooks = function() {
 registerEditor('handsontable', HandsontableEditor);
 
 //# 
-},{"editors":29,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/object":50,"helpers/unicode":53,"textEditor":40}],36:[function(require,module,exports){
+},{"editors":29,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/object":51,"helpers/unicode":54,"textEditor":40}],36:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   MobileTextEditor: {get: function() {
@@ -8002,7 +8238,7 @@ MobileTextEditor.prototype.destroy = function() {
 registerEditor('mobile', MobileTextEditor);
 
 //# 
-},{"_baseEditor":30,"editors":29,"eventManager":41,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/unicode":53}],37:[function(require,module,exports){
+},{"_baseEditor":30,"editors":29,"eventManager":41,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/unicode":54}],37:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   NumericEditor: {get: function() {
@@ -8296,7 +8532,7 @@ SelectEditor.prototype.getEditedCell = function() {
 registerEditor('select', SelectEditor);
 
 //# 
-},{"_baseEditor":30,"editors":29,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/unicode":53}],40:[function(require,module,exports){
+},{"_baseEditor":30,"editors":29,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/unicode":54}],40:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   TextEditor: {get: function() {
@@ -8551,7 +8787,7 @@ TextEditor.prototype.refreshDimensions = function() {
   if (cssTransformOffset && cssTransformOffset != -1) {
     this.textareaParentStyle[cssTransformOffset[0]] = cssTransformOffset[1];
   } else {
-    resetCssTransform(this.textareaParentStyle);
+    resetCssTransform(this.TEXTAREA_PARENT);
   }
   this.textareaParentStyle.top = editTop + 'px';
   this.textareaParentStyle.left = editLeft + 'px';
@@ -8614,7 +8850,7 @@ TextEditor.prototype.destroy = function() {
 registerEditor('text', TextEditor);
 
 //# 
-},{"_baseEditor":30,"autoResize":"autoResize","editors":29,"eventManager":41,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/unicode":53}],41:[function(require,module,exports){
+},{"_baseEditor":30,"autoResize":"autoResize","editors":29,"eventManager":41,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/unicode":54}],41:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   EventManager: {get: function() {
@@ -8626,11 +8862,13 @@ Object.defineProperties(exports, {
   __esModule: {value: true}
 });
 var $__helpers_47_dom_47_element__,
-    $__helpers_47_browser__;
+    $__helpers_47_feature__,
+    $__helpers_47_dom_47_event__;
 var $__0 = ($__helpers_47_dom_47_element__ = require("helpers/dom/element"), $__helpers_47_dom_47_element__ && $__helpers_47_dom_47_element__.__esModule && $__helpers_47_dom_47_element__ || {default: $__helpers_47_dom_47_element__}),
     polymerWrap = $__0.polymerWrap,
     closest = $__0.closest;
-var isWebComponentSupportedNatively = ($__helpers_47_browser__ = require("helpers/browser"), $__helpers_47_browser__ && $__helpers_47_browser__.__esModule && $__helpers_47_browser__ || {default: $__helpers_47_browser__}).isWebComponentSupportedNatively;
+var isWebComponentSupportedNatively = ($__helpers_47_feature__ = require("helpers/feature"), $__helpers_47_feature__ && $__helpers_47_feature__.__esModule && $__helpers_47_feature__ || {default: $__helpers_47_feature__}).isWebComponentSupportedNatively;
+var _stopImmediatePropagation = ($__helpers_47_dom_47_event__ = require("helpers/dom/event"), $__helpers_47_dom_47_event__ && $__helpers_47_dom_47_event__.__esModule && $__helpers_47_dom_47_event__ || {default: $__helpers_47_dom_47_event__}).stopImmediatePropagation;
 var EventManager = function EventManager() {
   var context = arguments[0] !== (void 0) ? arguments[0] : null;
   this.context = context || this;
@@ -8640,7 +8878,7 @@ var EventManager = function EventManager() {
 };
 ($traceurRuntime.createClass)(EventManager, {
   addEventListener: function(element, eventName, callback) {
-    var $__2 = this;
+    var $__3 = this;
     var context = this.context;
     function callbackProxy(event) {
       if (event.target == void 0 && event.srcElement != void 0) {
@@ -8677,7 +8915,7 @@ var EventManager = function EventManager() {
     }
     Handsontable.countEventManagerListeners++;
     return (function() {
-      $__2.removeEventListener(element, eventName, callback);
+      $__3.removeEventListener(element, eventName, callback);
     });
   },
   removeEventListener: function(element, eventName, callback) {
@@ -8756,8 +8994,14 @@ function extendEvent(context, event) {
   var realTarget;
   var target;
   var len;
+  var nativeStopImmediatePropagation;
   event.isTargetWebComponent = false;
   event.realTarget = event.target;
+  nativeStopImmediatePropagation = event.stopImmediatePropagation;
+  event.stopImmediatePropagation = function() {
+    nativeStopImmediatePropagation.apply(this);
+    _stopImmediatePropagation(this);
+  };
   if (!Handsontable.eventManager.isHotTableEnv) {
     return event;
   }
@@ -8811,7 +9055,7 @@ function eventManager(context) {
 }
 
 //# 
-},{"helpers/browser":43,"helpers/dom/element":45}],42:[function(require,module,exports){
+},{"helpers/dom/element":45,"helpers/dom/event":46,"helpers/feature":47}],42:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   to2dArray: {get: function() {
@@ -8988,15 +9232,6 @@ Object.defineProperties(exports, {
   isMobileBrowser: {get: function() {
       return isMobileBrowser;
     }},
-  isTouchSupported: {get: function() {
-      return isTouchSupported;
-    }},
-  isWebComponentSupportedNatively: {get: function() {
-      return isWebComponentSupportedNatively;
-    }},
-  hasCaptionProblem: {get: function() {
-      return hasCaptionProblem;
-    }},
   __esModule: {value: true}
 });
 var _isIE8 = !(document.createTextNode('test').textContent);
@@ -9020,39 +9255,6 @@ function isMobileBrowser(userAgent) {
     userAgent = navigator.userAgent;
   }
   return (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent));
-}
-function isTouchSupported() {
-  return ('ontouchstart' in window);
-}
-function isWebComponentSupportedNatively() {
-  var test = document.createElement('div');
-  return test.createShadowRoot && test.createShadowRoot.toString().match(/\[native code\]/) ? true : false;
-}
-var _hasCaptionProblem;
-function detectCaptionProblem() {
-  var TABLE = document.createElement('TABLE');
-  TABLE.style.borderSpacing = 0;
-  TABLE.style.borderWidth = 0;
-  TABLE.style.padding = 0;
-  var TBODY = document.createElement('TBODY');
-  TABLE.appendChild(TBODY);
-  TBODY.appendChild(document.createElement('TR'));
-  TBODY.firstChild.appendChild(document.createElement('TD'));
-  TBODY.firstChild.firstChild.innerHTML = '<tr><td>t<br>t</td></tr>';
-  var CAPTION = document.createElement('CAPTION');
-  CAPTION.innerHTML = 'c<br>c<br>c<br>c';
-  CAPTION.style.padding = 0;
-  CAPTION.style.margin = 0;
-  TABLE.insertBefore(CAPTION, TBODY);
-  document.body.appendChild(TABLE);
-  _hasCaptionProblem = (TABLE.offsetHeight < 2 * TABLE.lastChild.offsetHeight);
-  document.body.removeChild(TABLE);
-}
-function hasCaptionProblem() {
-  if (_hasCaptionProblem === void 0) {
-    detectCaptionProblem();
-  }
-  return _hasCaptionProblem;
 }
 
 //# 
@@ -9185,7 +9387,7 @@ function cellMethodLookupFactory(methodName, allowUndefined) {
 }
 
 //# 
-},{"object":50}],45:[function(require,module,exports){
+},{"object":51}],45:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   closest: {get: function() {
@@ -9317,20 +9519,15 @@ Object.defineProperties(exports, {
   isOutsideInput: {get: function() {
       return isOutsideInput;
     }},
-  requestAnimationFrame: {get: function() {
-      return requestAnimationFrame;
-    }},
-  cancelAnimationFrame: {get: function() {
-      return cancelAnimationFrame;
-    }},
   __esModule: {value: true}
 });
-var $___46__46__47_browser__;
+var $___46__46__47_browser__,
+    $___46__46__47_feature__;
 var $__0 = ($___46__46__47_browser__ = require("../browser"), $___46__46__47_browser__ && $___46__46__47_browser__.__esModule && $___46__46__47_browser__ || {default: $___46__46__47_browser__}),
     isIE8 = $__0.isIE8,
     isIE9 = $__0.isIE9,
-    isSafari = $__0.isSafari,
-    hasCaptionProblem = $__0.hasCaptionProblem;
+    isSafari = $__0.isSafari;
+var hasCaptionProblem = ($___46__46__47_feature__ = require("../feature"), $___46__46__47_feature__ && $___46__46__47_feature__.__esModule && $___46__46__47_feature__ || {default: $___46__46__47_feature__}).hasCaptionProblem;
 function closest(element, nodes, until) {
   while (element != null && element !== until) {
     if (element.nodeType === Node.ELEMENT_NODE && (nodes.indexOf(element.nodeName) > -1 || nodes.indexOf(element) > -1)) {
@@ -9856,52 +10053,22 @@ function getCssTransform(element) {
   return -1;
 }
 function resetCssTransform(element) {
-  if (element.transform && element.transform !== '') {
-    element.transform = '';
-  } else if (element['-webkit-transform'] && element['-webkit-transform'] !== '') {
-    element['-webkit-transform'] = '';
+  if (element.style.transform && element.style.transform !== '') {
+    element.style.transform = '';
+  } else if (element.style['-webkit-transform'] && element.style['-webkit-transform'] !== '') {
+    element.style['-webkit-transform'] = '';
   }
 }
 function isInput(element) {
   var inputs = ['INPUT', 'SELECT', 'TEXTAREA'];
-  return inputs.indexOf(element.nodeName) > -1 || element.contentEditable === 'true';
+  return element && (inputs.indexOf(element.nodeName) > -1 || element.contentEditable === 'true');
 }
 function isOutsideInput(element) {
   return isInput(element) && element.className.indexOf('handsontableInput') == -1 && element.className.indexOf('copyPaste') == -1;
 }
-var lastTime = 0;
-var vendors = ['ms', 'moz', 'webkit', 'o'];
-var _requestAnimationFrame = window.requestAnimationFrame;
-var _cancelAnimationFrame = window.cancelAnimationFrame;
-for (var x = 0; x < vendors.length && !_requestAnimationFrame; ++x) {
-  _requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
-  _cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'] || window[vendors[x] + 'CancelRequestAnimationFrame'];
-}
-if (!_requestAnimationFrame) {
-  _requestAnimationFrame = function(callback) {
-    var currTime = new Date().getTime();
-    var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-    var id = window.setTimeout(function() {
-      callback(currTime + timeToCall);
-    }, timeToCall);
-    lastTime = currTime + timeToCall;
-    return id;
-  };
-}
-if (!_cancelAnimationFrame) {
-  _cancelAnimationFrame = function(id) {
-    clearTimeout(id);
-  };
-}
-function requestAnimationFrame(callback) {
-  return _requestAnimationFrame.call(window, callback);
-}
-function cancelAnimationFrame(id) {
-  _cancelAnimationFrame.call(window, id);
-}
 
 //# 
-},{"../browser":43}],46:[function(require,module,exports){
+},{"../browser":43,"../feature":47}],46:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   stopImmediatePropagation: {get: function() {
@@ -9956,6 +10123,116 @@ function pageY(event) {
 },{"element":45}],47:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
+  requestAnimationFrame: {get: function() {
+      return requestAnimationFrame;
+    }},
+  cancelAnimationFrame: {get: function() {
+      return cancelAnimationFrame;
+    }},
+  isTouchSupported: {get: function() {
+      return isTouchSupported;
+    }},
+  isWebComponentSupportedNatively: {get: function() {
+      return isWebComponentSupportedNatively;
+    }},
+  hasCaptionProblem: {get: function() {
+      return hasCaptionProblem;
+    }},
+  getComparisonFunction: {get: function() {
+      return getComparisonFunction;
+    }},
+  __esModule: {value: true}
+});
+var lastTime = 0;
+var vendors = ['ms', 'moz', 'webkit', 'o'];
+var _requestAnimationFrame = window.requestAnimationFrame;
+var _cancelAnimationFrame = window.cancelAnimationFrame;
+for (var x = 0; x < vendors.length && !_requestAnimationFrame; ++x) {
+  _requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+  _cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'] || window[vendors[x] + 'CancelRequestAnimationFrame'];
+}
+if (!_requestAnimationFrame) {
+  _requestAnimationFrame = function(callback) {
+    var currTime = new Date().getTime();
+    var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+    var id = window.setTimeout(function() {
+      callback(currTime + timeToCall);
+    }, timeToCall);
+    lastTime = currTime + timeToCall;
+    return id;
+  };
+}
+if (!_cancelAnimationFrame) {
+  _cancelAnimationFrame = function(id) {
+    clearTimeout(id);
+  };
+}
+function requestAnimationFrame(callback) {
+  return _requestAnimationFrame.call(window, callback);
+}
+function cancelAnimationFrame(id) {
+  _cancelAnimationFrame.call(window, id);
+}
+function isTouchSupported() {
+  return ('ontouchstart' in window);
+}
+function isWebComponentSupportedNatively() {
+  var test = document.createElement('div');
+  return test.createShadowRoot && test.createShadowRoot.toString().match(/\[native code\]/) ? true : false;
+}
+var _hasCaptionProblem;
+function detectCaptionProblem() {
+  var TABLE = document.createElement('TABLE');
+  TABLE.style.borderSpacing = 0;
+  TABLE.style.borderWidth = 0;
+  TABLE.style.padding = 0;
+  var TBODY = document.createElement('TBODY');
+  TABLE.appendChild(TBODY);
+  TBODY.appendChild(document.createElement('TR'));
+  TBODY.firstChild.appendChild(document.createElement('TD'));
+  TBODY.firstChild.firstChild.innerHTML = '<tr><td>t<br>t</td></tr>';
+  var CAPTION = document.createElement('CAPTION');
+  CAPTION.innerHTML = 'c<br>c<br>c<br>c';
+  CAPTION.style.padding = 0;
+  CAPTION.style.margin = 0;
+  TABLE.insertBefore(CAPTION, TBODY);
+  document.body.appendChild(TABLE);
+  _hasCaptionProblem = (TABLE.offsetHeight < 2 * TABLE.lastChild.offsetHeight);
+  document.body.removeChild(TABLE);
+}
+function hasCaptionProblem() {
+  if (_hasCaptionProblem === void 0) {
+    detectCaptionProblem();
+  }
+  return _hasCaptionProblem;
+}
+var comparisonFunction;
+function getComparisonFunction(language) {
+  var options = arguments[1] !== (void 0) ? arguments[1] : {};
+  if (comparisonFunction) {
+    return comparisonFunction;
+  }
+  if (typeof Intl === 'object') {
+    comparisonFunction = new Intl.Collator(language, options).compare;
+  } else if (typeof String.prototype.localeCompare === 'function') {
+    comparisonFunction = (function(a, b) {
+      return (a + '').localeCompare(b);
+    });
+  } else {
+    comparisonFunction = (function(a, b) {
+      if (a === b) {
+        return 0;
+      }
+      return a > b ? -1 : 1;
+    });
+  }
+  return comparisonFunction;
+}
+
+//# 
+},{}],48:[function(require,module,exports){
+"use strict";
+Object.defineProperties(exports, {
   proxy: {get: function() {
       return proxy;
     }},
@@ -9968,8 +10245,22 @@ Object.defineProperties(exports, {
   debounce: {get: function() {
       return debounce;
     }},
+  pipe: {get: function() {
+      return pipe;
+    }},
+  partial: {get: function() {
+      return partial;
+    }},
+  curry: {get: function() {
+      return curry;
+    }},
+  curryRight: {get: function() {
+      return curryRight;
+    }},
   __esModule: {value: true}
 });
+var $__array__;
+var arrayReduce = ($__array__ = require("array"), $__array__ && $__array__.__esModule && $__array__ || {default: $__array__}).arrayReduce;
 function proxy(func, context) {
   return function() {
     return func.apply(context, arguments);
@@ -9981,7 +10272,7 @@ function throttle(func) {
   var result = {lastCallThrottled: true};
   var lastTimer = null;
   function _throttle() {
-    var $__0 = this;
+    var $__1 = this;
     var args = arguments;
     var stamp = Date.now();
     var needCall = false;
@@ -10000,7 +10291,7 @@ function throttle(func) {
       }
       lastTimer = setTimeout((function() {
         result.lastCallThrottled = false;
-        func.apply($__0, args);
+        func.apply($__1, args);
         lastCalled = 0;
         lastTimer = void 0;
       }), remaining);
@@ -10029,25 +10320,86 @@ function throttleAfterHits(func) {
 }
 function debounce(func) {
   var wait = arguments[1] !== (void 0) ? arguments[1] : 200;
-  var needCall = false;
   var lastTimer = null;
   var result;
   function _debounce() {
-    var $__0 = this;
+    var $__1 = this;
     var args = arguments;
     if (lastTimer) {
       clearTimeout(lastTimer);
     }
     lastTimer = setTimeout((function() {
-      result = func.apply($__0, args);
+      result = func.apply($__1, args);
     }), wait);
     return result;
   }
   return _debounce;
 }
+function pipe() {
+  for (var functions = [],
+      $__2 = 0; $__2 < arguments.length; $__2++)
+    functions[$__2] = arguments[$__2];
+  var $__5 = functions,
+      firstFunc = $__5[0],
+      restFunc = Array.prototype.slice.call($__5, 1);
+  return function _pipe() {
+    return arrayReduce(restFunc, (function(acc, fn) {
+      return fn(acc);
+    }), firstFunc.apply(this, arguments));
+  };
+}
+function partial(func) {
+  for (var params = [],
+      $__3 = 1; $__3 < arguments.length; $__3++)
+    params[$__3 - 1] = arguments[$__3];
+  return function _partial() {
+    for (var restParams = [],
+        $__4 = 0; $__4 < arguments.length; $__4++)
+      restParams[$__4] = arguments[$__4];
+    return func.apply(this, params.concat(restParams));
+  };
+}
+function curry(func) {
+  var argsLength = func.length;
+  function given(argsSoFar) {
+    return function _curry() {
+      for (var params = [],
+          $__4 = 0; $__4 < arguments.length; $__4++)
+        params[$__4] = arguments[$__4];
+      var passedArgsSoFar = argsSoFar.concat(params);
+      var result;
+      if (passedArgsSoFar.length >= argsLength) {
+        result = func.apply(this, passedArgsSoFar);
+      } else {
+        result = given(passedArgsSoFar);
+      }
+      return result;
+    };
+  }
+  return given([]);
+}
+function curryRight(func) {
+  var argsLength = func.length;
+  function given(argsSoFar) {
+    return function _curry() {
+      for (var params = [],
+          $__4 = 0; $__4 < arguments.length; $__4++)
+        params[$__4] = arguments[$__4];
+      var passedArgsSoFar = argsSoFar.concat(params.reverse());
+      var result;
+      if (passedArgsSoFar.length >= argsLength) {
+        result = func.apply(this, passedArgsSoFar);
+      } else {
+        result = given(passedArgsSoFar);
+      }
+      return result;
+    };
+  }
+  return given([]);
+}
 
 //# 
-},{}],48:[function(require,module,exports){
+},{"array":42}],49:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   stringify: {get: function() {
@@ -10075,7 +10427,7 @@ function stringify(value) {
 }
 
 //# 
-},{}],49:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   isNumeric: {get: function() {
@@ -10129,7 +10481,7 @@ function valueAccordingPercent(value, percent) {
 }
 
 //# 
-},{}],50:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   duckSchema: {get: function() {
@@ -10215,6 +10567,8 @@ function deepExtend(target, extension) {
       if (!target[key]) {
         if (Array.isArray(extension[key])) {
           target[key] = [];
+        } else if (Object.prototype.toString.call(extension[key]) === '[object Date]') {
+          target[key] = extension[key];
         } else {
           target[key] = {};
         }
@@ -10340,7 +10694,7 @@ function getProperty(object, name) {
 }
 
 //# 
-},{"array":42}],51:[function(require,module,exports){
+},{"array":42}],52:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   columnFactory: {get: function() {
@@ -10362,7 +10716,7 @@ function columnFactory(GridSettings, conflictList) {
 }
 
 //# 
-},{"object":50}],52:[function(require,module,exports){
+},{"object":51}],53:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   toUpperCaseFirst: {get: function() {
@@ -10477,7 +10831,7 @@ function padStart(string, maxLength) {
 ;
 
 //# 
-},{"mixed":48,"number":49}],53:[function(require,module,exports){
+},{"mixed":49,"number":50}],54:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   KEY_CODES: {get: function() {
@@ -10566,7 +10920,7 @@ function isKey(keyCode, baseCode) {
 }
 
 //# 
-},{"array":42}],54:[function(require,module,exports){
+},{"array":42}],55:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   arrayMapper: {get: function() {
@@ -10668,7 +11022,7 @@ Handsontable.utils = Handsontable.utils || {};
 Handsontable.utils.arrayMapper = arrayMapper;
 
 //# 
-},{"helpers/array":42,"helpers/number":49,"helpers/object":50}],55:[function(require,module,exports){
+},{"helpers/array":42,"helpers/number":50,"helpers/object":51}],56:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   localHooks: {get: function() {
@@ -10713,8 +11067,9 @@ Handsontable.utils = Handsontable.utils || {};
 Handsontable.utils.localHooks = localHooks;
 
 //# 
-},{"helpers/array":42,"helpers/object":50}],56:[function(require,module,exports){
+},{"helpers/array":42,"helpers/object":51}],57:[function(require,module,exports){
 "use strict";
+var $__2;
 Object.defineProperties(exports, {
   stateSaver: {get: function() {
       return stateSaver;
@@ -10727,18 +11082,68 @@ var arrayEach = ($___46__46__47_helpers_47_array__ = require("helpers/array"), $
 var defineGetter = ($___46__46__47_helpers_47_object__ = require("helpers/object"), $___46__46__47_helpers_47_object__ && $___46__46__47_helpers_47_object__.__esModule && $___46__46__47_helpers_47_object__ || {default: $___46__46__47_helpers_47_object__}).defineGetter;
 var MIXIN_NAME = 'stateSaver';
 var STATE_PREFIX = 'state_';
-var stateSaver = {
-  _states: {},
-  saveState: function(stateId) {
-    this._states[STATE_PREFIX + stateId] = this.getState();
-  },
-  restoreState: function(stateId) {
-    this.setState(this._states[STATE_PREFIX + stateId]);
-  },
-  hasSavedState: function(stateId) {
-    return this._states[STATE_PREFIX + stateId] !== void 0;
-  }
+var PROP_PREFIX = '_states';
+var getState = function(object, stateId) {
+  return object[PROP_PREFIX][STATE_PREFIX + stateId];
 };
+var setState = function(object, stateId, value) {
+  object[PROP_PREFIX][STATE_PREFIX + stateId] = value;
+};
+var stateSaver = ($__2 = {}, Object.defineProperty($__2, PROP_PREFIX, {
+  value: {},
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__2, "getCachedState", {
+  value: function(stateId) {
+    return getState(this, stateId);
+  },
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__2, "setCachedState", {
+  value: function(stateId, value) {
+    setState(this, stateId, value);
+  },
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__2, "saveState", {
+  value: function(stateId) {
+    setState(this, stateId, this.getState());
+  },
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__2, "restoreState", {
+  value: function(stateId) {
+    this.setState(getState(this, stateId));
+  },
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__2, "hasSavedState", {
+  value: function(stateId) {
+    return getState(this, stateId) !== void 0;
+  },
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__2, "clearState", {
+  value: function(stateId) {
+    setState(this, stateId);
+  },
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__2, "clearStates", {
+  value: function() {
+    this[PROP_PREFIX] = {};
+  },
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), $__2);
 defineGetter(stateSaver, 'MIXIN_NAME', MIXIN_NAME, {
   writable: false,
   enumerable: false
@@ -10748,7 +11153,7 @@ Handsontable.utils = Handsontable.utils || {};
 Handsontable.utils.stateSaver = stateSaver;
 
 //# 
-},{"helpers/array":42,"helpers/object":50}],57:[function(require,module,exports){
+},{"helpers/array":42,"helpers/object":51}],58:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   MultiMap: {get: function() {
@@ -10800,7 +11205,7 @@ function MultiMap() {
 }
 
 //# 
-},{}],58:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Hooks: {get: function() {
@@ -10810,7 +11215,7 @@ Object.defineProperties(exports, {
 });
 var $__helpers_47_array__,
     $__helpers_47_object__;
-var REGISTERED_HOOKS = ['afterCellMetaReset', 'afterChange', 'afterChangesObserved', 'afterContextMenuDefaultOptions', 'afterContextMenuHide', 'afterContextMenuShow', 'afterCopyLimit', 'afterCreateCol', 'afterCreateRow', 'afterDeselect', 'afterDestroy', 'afterDocumentKeyDown', 'afterGetCellMeta', 'afterGetColHeader', 'afterGetRowHeader', 'afterInit', 'afterLoadData', 'afterMomentumScroll', 'afterOnCellCornerMouseDown', 'afterOnCellMouseDown', 'afterOnCellMouseOver', 'afterRemoveCol', 'afterRemoveRow', 'afterRender', 'afterRenderer', 'afterScrollHorizontally', 'afterScrollVertically', 'afterSelection', 'afterSelectionByProp', 'afterSelectionEnd', 'afterSelectionEndByProp', 'afterSetCellMeta', 'afterUpdateSettings', 'afterValidate', 'beforeAutofill', 'beforeCellAlignment', 'beforeChange', 'beforeChangeRender', 'beforeDrawBorders', 'beforeGetCellMeta', 'beforeInit', 'beforeInitWalkontable', 'beforeKeyDown', 'beforeOnCellMouseDown', 'beforeRemoveCol', 'beforeRemoveRow', 'beforeRender', 'beforeSetRangeEnd', 'beforeTouchScroll', 'beforeValidate', 'construct', 'init', 'modifyCol', 'modifyColHeader', 'modifyColWidth', 'modifyRow', 'modifyRowHeader', 'modifyRowHeight', 'persistentStateLoad', 'persistentStateReset', 'persistentStateSave', 'beforeColumnSort', 'afterColumnSort', 'afterAutofillApplyValues', 'modifyCopyableRange', 'beforeColumnMove', 'afterColumnMove', 'beforeRowMove', 'afterRowMove', 'beforeColumnResize', 'afterColumnResize', 'beforeRowResize', 'afterRowResize', 'afterGetColumnHeaderRenderers', 'afterGetRowHeaderRenderers', 'beforeStretchingColumnWidth'];
+var REGISTERED_HOOKS = ['afterCellMetaReset', 'afterChange', 'afterChangesObserved', 'afterContextMenuDefaultOptions', 'afterContextMenuHide', 'afterContextMenuShow', 'afterCopyLimit', 'afterCreateCol', 'afterCreateRow', 'afterDeselect', 'afterDestroy', 'afterDocumentKeyDown', 'afterGetCellMeta', 'afterGetColHeader', 'afterGetRowHeader', 'afterInit', 'afterLoadData', 'afterMomentumScroll', 'afterOnCellCornerMouseDown', 'afterOnCellMouseDown', 'afterOnCellMouseOver', 'afterRemoveCol', 'afterRemoveRow', 'afterRender', 'afterRenderer', 'afterScrollHorizontally', 'afterScrollVertically', 'afterSelection', 'afterSelectionByProp', 'afterSelectionEnd', 'afterSelectionEndByProp', 'afterSetCellMeta', 'afterUpdateSettings', 'afterValidate', 'beforeAutofill', 'beforeCellAlignment', 'beforeChange', 'beforeChangeRender', 'beforeDrawBorders', 'beforeGetCellMeta', 'beforeInit', 'beforeInitWalkontable', 'beforeKeyDown', 'beforeOnCellMouseDown', 'beforeRemoveCol', 'beforeRemoveRow', 'beforeRender', 'beforeSetRangeEnd', 'beforeTouchScroll', 'beforeValidate', 'construct', 'init', 'modifyCol', 'unmodifyCol', 'modifyColHeader', 'modifyColWidth', 'modifyRow', 'modifyRowHeader', 'modifyRowHeight', 'persistentStateLoad', 'persistentStateReset', 'persistentStateSave', 'beforeColumnSort', 'afterColumnSort', 'afterAutofillApplyValues', 'modifyCopyableRange', 'beforeColumnMove', 'afterColumnMove', 'beforeRowMove', 'afterRowMove', 'beforeColumnResize', 'afterColumnResize', 'beforeRowResize', 'afterRowResize', 'afterGetColumnHeaderRenderers', 'afterGetRowHeaderRenderers', 'beforeStretchingColumnWidth'];
 var arrayEach = ($__helpers_47_array__ = require("helpers/array"), $__helpers_47_array__ && $__helpers_47_array__.__esModule && $__helpers_47_array__ || {default: $__helpers_47_array__}).arrayEach;
 var objectEach = ($__helpers_47_object__ = require("helpers/object"), $__helpers_47_object__ && $__helpers_47_object__.__esModule && $__helpers_47_object__ || {default: $__helpers_47_object__}).objectEach;
 var Hooks = function Hooks() {
@@ -10839,7 +11244,7 @@ var Hooks = function Hooks() {
     var $__2 = this;
     if (Array.isArray(callback)) {
       arrayEach(callback, (function(c) {
-        return ($__2.add(key, c, context));
+        return $__2.add(key, c, context);
       }));
     } else {
       var bucket = this.getBucket(context);
@@ -10859,7 +11264,7 @@ var Hooks = function Hooks() {
     var $__2 = this;
     if (Array.isArray(callback)) {
       arrayEach(callback, (function(c) {
-        return ($__2.once(key, c, context));
+        return $__2.once(key, c, context);
       }));
     } else {
       callback.runOnce = true;
@@ -10951,7 +11356,7 @@ Handsontable.utils = Handsontable.utils || {};
 Handsontable.utils.Hooks = Hooks;
 
 //# 
-},{"helpers/array":42,"helpers/object":50}],59:[function(require,module,exports){
+},{"helpers/array":42,"helpers/object":51}],60:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   registerPlugin: {get: function() {
@@ -11023,7 +11428,7 @@ function getPluginName(hotInstance, plugin) {
 ;
 
 //# 
-},{"helpers/object":50,"helpers/string":52}],60:[function(require,module,exports){
+},{"helpers/object":51,"helpers/string":53}],61:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   default: {get: function() {
@@ -11156,7 +11561,7 @@ var $__default = BasePlugin;
 Handsontable.plugins.BasePlugin = BasePlugin;
 
 //# 
-},{"helpers/array":42,"helpers/object":50,"plugins":59}],61:[function(require,module,exports){
+},{"helpers/array":42,"helpers/object":51,"plugins":60}],62:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   AutoColumnSize: {get: function() {
@@ -11166,6 +11571,7 @@ Object.defineProperties(exports, {
 });
 var $___46__46__47__95_base__,
     $___46__46__47__46__46__47_helpers_47_array__,
+    $___46__46__47__46__46__47_helpers_47_feature__,
     $___46__46__47__46__46__47_helpers_47_dom_47_element__,
     $___46__46__47__46__46__47_utils_47_ghostTable__,
     $___46__46__47__46__46__47_helpers_47_object__,
@@ -11178,33 +11584,33 @@ var BasePlugin = ($___46__46__47__95_base__ = require("_base"), $___46__46__47__
 var $__1 = ($___46__46__47__46__46__47_helpers_47_array__ = require("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}),
     arrayEach = $__1.arrayEach,
     arrayFilter = $__1.arrayFilter;
-var $__2 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = require("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}),
+var $__2 = ($___46__46__47__46__46__47_helpers_47_feature__ = require("helpers/feature"), $___46__46__47__46__46__47_helpers_47_feature__ && $___46__46__47__46__46__47_helpers_47_feature__.__esModule && $___46__46__47__46__46__47_helpers_47_feature__ || {default: $___46__46__47__46__46__47_helpers_47_feature__}),
     cancelAnimationFrame = $__2.cancelAnimationFrame,
-    requestAnimationFrame = $__2.requestAnimationFrame,
-    isVisible = $__2.isVisible;
+    requestAnimationFrame = $__2.requestAnimationFrame;
+var isVisible = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = require("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}).isVisible;
 var GhostTable = ($___46__46__47__46__46__47_utils_47_ghostTable__ = require("utils/ghostTable"), $___46__46__47__46__46__47_utils_47_ghostTable__ && $___46__46__47__46__46__47_utils_47_ghostTable__.__esModule && $___46__46__47__46__46__47_utils_47_ghostTable__ || {default: $___46__46__47__46__46__47_utils_47_ghostTable__}).GhostTable;
-var $__4 = ($___46__46__47__46__46__47_helpers_47_object__ = require("helpers/object"), $___46__46__47__46__46__47_helpers_47_object__ && $___46__46__47__46__46__47_helpers_47_object__.__esModule && $___46__46__47__46__46__47_helpers_47_object__ || {default: $___46__46__47__46__46__47_helpers_47_object__}),
-    isObject = $__4.isObject,
-    objectEach = $__4.objectEach;
-var $__5 = ($___46__46__47__46__46__47_helpers_47_number__ = require("helpers/number"), $___46__46__47__46__46__47_helpers_47_number__ && $___46__46__47__46__46__47_helpers_47_number__.__esModule && $___46__46__47__46__46__47_helpers_47_number__ || {default: $___46__46__47__46__46__47_helpers_47_number__}),
-    valueAccordingPercent = $__5.valueAccordingPercent,
-    rangeEach = $__5.rangeEach;
+var $__5 = ($___46__46__47__46__46__47_helpers_47_object__ = require("helpers/object"), $___46__46__47__46__46__47_helpers_47_object__ && $___46__46__47__46__46__47_helpers_47_object__.__esModule && $___46__46__47__46__46__47_helpers_47_object__ || {default: $___46__46__47__46__46__47_helpers_47_object__}),
+    isObject = $__5.isObject,
+    objectEach = $__5.objectEach;
+var $__6 = ($___46__46__47__46__46__47_helpers_47_number__ = require("helpers/number"), $___46__46__47__46__46__47_helpers_47_number__ && $___46__46__47__46__46__47_helpers_47_number__.__esModule && $___46__46__47__46__46__47_helpers_47_number__ || {default: $___46__46__47__46__46__47_helpers_47_number__}),
+    valueAccordingPercent = $__6.valueAccordingPercent,
+    rangeEach = $__6.rangeEach;
 var registerPlugin = ($___46__46__47__46__46__47_plugins__ = require("plugins"), $___46__46__47__46__46__47_plugins__ && $___46__46__47__46__46__47_plugins__.__esModule && $___46__46__47__46__46__47_plugins__ || {default: $___46__46__47__46__46__47_plugins__}).registerPlugin;
 var SamplesGenerator = ($___46__46__47__46__46__47_utils_47_samplesGenerator__ = require("utils/samplesGenerator"), $___46__46__47__46__46__47_utils_47_samplesGenerator__ && $___46__46__47__46__46__47_utils_47_samplesGenerator__.__esModule && $___46__46__47__46__46__47_utils_47_samplesGenerator__ || {default: $___46__46__47__46__46__47_utils_47_samplesGenerator__}).SamplesGenerator;
 var isPercentValue = ($___46__46__47__46__46__47_helpers_47_string__ = require("helpers/string"), $___46__46__47__46__46__47_helpers_47_string__ && $___46__46__47__46__46__47_helpers_47_string__.__esModule && $___46__46__47__46__46__47_helpers_47_string__ || {default: $___46__46__47__46__46__47_helpers_47_string__}).isPercentValue;
 var WalkontableViewportColumnsCalculator = ($___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_calculator_47_viewportColumns__ = require("3rdparty/walkontable/src/calculator/viewportColumns"), $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_calculator_47_viewportColumns__ && $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_calculator_47_viewportColumns__.__esModule && $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_calculator_47_viewportColumns__ || {default: $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_calculator_47_viewportColumns__}).WalkontableViewportColumnsCalculator;
 var AutoColumnSize = function AutoColumnSize(hotInstance) {
-  var $__10 = this;
+  var $__11 = this;
   $traceurRuntime.superConstructor($AutoColumnSize).call(this, hotInstance);
   this.widths = [];
   this.ghostTable = new GhostTable(this.hot);
   this.samplesGenerator = new SamplesGenerator((function(row, col) {
-    return $__10.hot.getDataAtCell(row, col);
+    return $__11.hot.getDataAtCell(row, col);
   }));
   this.firstCalculation = true;
   this.inProgress = false;
   this.addHook('beforeColumnResize', (function(col, size, isDblClick) {
-    return $__10.onBeforeColumnResize(col, size, isDblClick);
+    return $__11.onBeforeColumnResize(col, size, isDblClick);
   }));
 };
 var $AutoColumnSize = AutoColumnSize;
@@ -11213,7 +11619,7 @@ var $AutoColumnSize = AutoColumnSize;
     return this.hot.getSettings().autoColumnSize !== false && !this.hot.getSettings().colWidths;
   },
   enablePlugin: function() {
-    var $__10 = this;
+    var $__11 = this;
     if (this.enabled) {
       return;
     }
@@ -11223,16 +11629,16 @@ var $AutoColumnSize = AutoColumnSize;
       this.samplesGenerator.customSampleCount = parseInt(samplingRatio, 10);
     }
     this.addHook('afterLoadData', (function() {
-      return $__10.onAfterLoadData();
+      return $__11.onAfterLoadData();
     }));
     this.addHook('beforeChange', (function(changes) {
-      return $__10.onBeforeChange(changes);
+      return $__11.onBeforeChange(changes);
     }));
     this.addHook('beforeRender', (function(force) {
-      return $__10.onBeforeRender(force);
+      return $__11.onBeforeRender(force);
     }));
     this.addHook('modifyColWidth', (function(width, col) {
-      return $__10.getColumnWidth(col, width);
+      return $__11.getColumnWidth(col, width);
     }));
     $traceurRuntime.superGet(this, $AutoColumnSize.prototype, "enablePlugin").call(this);
   },
@@ -11249,7 +11655,7 @@ var $AutoColumnSize = AutoColumnSize;
       to: this.hot.countRows() - 1
     };
     var force = arguments[2] !== (void 0) ? arguments[2] : false;
-    var $__10 = this;
+    var $__11 = this;
     if (typeof colRange === 'number') {
       colRange = {
         from: colRange,
@@ -11263,16 +11669,16 @@ var $AutoColumnSize = AutoColumnSize;
       };
     }
     rangeEach(colRange.from, colRange.to, (function(col) {
-      if (force || ($__10.widths[col] === void 0 && !$__10.hot._getColWidthFromSettings(col))) {
-        var samples = $__10.samplesGenerator.generateColumnSamples(col, rowRange);
+      if (force || ($__11.widths[col] === void 0 && !$__11.hot._getColWidthFromSettings(col))) {
+        var samples = $__11.samplesGenerator.generateColumnSamples(col, rowRange);
         samples.forEach((function(sample, col) {
-          return $__10.ghostTable.addColumn(col, sample);
+          return $__11.ghostTable.addColumn(col, sample);
         }));
       }
     }));
     if (this.ghostTable.columns.length) {
       this.ghostTable.getWidths((function(col, width) {
-        return $__10.widths[col] = width;
+        return $__11.widths[col] = width;
       }));
       this.ghostTable.clean();
     }
@@ -11282,18 +11688,18 @@ var $AutoColumnSize = AutoColumnSize;
       from: 0,
       to: this.hot.countRows() - 1
     };
-    var $__10 = this;
+    var $__11 = this;
     var current = 0;
     var length = this.hot.countCols() - 1;
     var timer = null;
     this.inProgress = true;
     var loop = (function() {
-      if (!$__10.hot) {
+      if (!$__11.hot) {
         cancelAnimationFrame(timer);
-        $__10.inProgress = false;
+        $__11.inProgress = false;
         return;
       }
-      $__10.calculateColumnsWidth({
+      $__11.calculateColumnsWidth({
         from: current,
         to: Math.min(current + $AutoColumnSize.CALCULATION_STEP, length)
       }, rowRange);
@@ -11302,10 +11708,10 @@ var $AutoColumnSize = AutoColumnSize;
         timer = requestAnimationFrame(loop);
       } else {
         cancelAnimationFrame(timer);
-        $__10.inProgress = false;
-        $__10.hot.view.wt.wtOverlays.adjustElementsSize(true);
-        if ($__10.hot.view.wt.wtOverlays.leftOverlay.needFullRender) {
-          $__10.hot.view.wt.wtOverlays.leftOverlay.clone.draw();
+        $__11.inProgress = false;
+        $__11.hot.view.wt.wtOverlays.adjustElementsSize(true);
+        if ($__11.hot.view.wt.wtOverlays.leftOverlay.needFullRender) {
+          $__11.hot.view.wt.wtOverlays.leftOverlay.clone.draw();
         }
       }
     });
@@ -11384,6 +11790,10 @@ var $AutoColumnSize = AutoColumnSize;
   },
   onBeforeRender: function() {
     var force = this.hot.renderCall;
+    var rowsCount = this.hot.countRows();
+    if (!rowsCount) {
+      return;
+    }
     this.calculateColumnsWidth({
       from: this.getFirstVisibleColumn(),
       to: this.getLastVisibleColumn()
@@ -11393,21 +11803,21 @@ var $AutoColumnSize = AutoColumnSize;
     }
   },
   onAfterLoadData: function() {
-    var $__10 = this;
+    var $__11 = this;
     if (this.hot.view) {
       this.recalculateAllColumnsWidth();
     } else {
       setTimeout((function() {
-        if ($__10.hot) {
-          $__10.recalculateAllColumnsWidth();
+        if ($__11.hot) {
+          $__11.recalculateAllColumnsWidth();
         }
       }), 0);
     }
   },
   onBeforeChange: function(changes) {
-    var $__10 = this;
+    var $__11 = this;
     arrayEach(changes, (function(data) {
-      return $__10.widths[data[1]] = void 0;
+      return $__11.widths[$__11.hot.propToCol(data[1])] = void 0;
     }));
   },
   onBeforeColumnResize: function(col, size, isDblClick) {
@@ -11433,7 +11843,7 @@ var $AutoColumnSize = AutoColumnSize;
 registerPlugin('autoColumnSize', AutoColumnSize);
 
 //# 
-},{"3rdparty/walkontable/src/calculator/viewportColumns":3,"_base":60,"helpers/array":42,"helpers/dom/element":45,"helpers/number":49,"helpers/object":50,"helpers/string":52,"plugins":59,"utils/ghostTable":100,"utils/samplesGenerator":101}],62:[function(require,module,exports){
+},{"3rdparty/walkontable/src/calculator/viewportColumns":3,"_base":61,"helpers/array":42,"helpers/dom/element":45,"helpers/feature":47,"helpers/number":50,"helpers/object":51,"helpers/string":53,"plugins":60,"utils/ghostTable":103,"utils/samplesGenerator":105}],63:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   AutoRowSize: {get: function() {
@@ -11443,6 +11853,7 @@ Object.defineProperties(exports, {
 });
 var $___46__46__47__95_base__,
     $___46__46__47__46__46__47_helpers_47_array__,
+    $___46__46__47__46__46__47_helpers_47_feature__,
     $___46__46__47__46__46__47_helpers_47_dom_47_element__,
     $___46__46__47__46__46__47_utils_47_ghostTable__,
     $___46__46__47__46__46__47_helpers_47_object__,
@@ -11454,32 +11865,32 @@ var BasePlugin = ($___46__46__47__95_base__ = require("_base"), $___46__46__47__
 var $__1 = ($___46__46__47__46__46__47_helpers_47_array__ = require("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}),
     arrayEach = $__1.arrayEach,
     arrayFilter = $__1.arrayFilter;
-var $__2 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = require("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}),
+var $__2 = ($___46__46__47__46__46__47_helpers_47_feature__ = require("helpers/feature"), $___46__46__47__46__46__47_helpers_47_feature__ && $___46__46__47__46__46__47_helpers_47_feature__.__esModule && $___46__46__47__46__46__47_helpers_47_feature__ || {default: $___46__46__47__46__46__47_helpers_47_feature__}),
     cancelAnimationFrame = $__2.cancelAnimationFrame,
-    requestAnimationFrame = $__2.requestAnimationFrame,
-    isVisible = $__2.isVisible;
+    requestAnimationFrame = $__2.requestAnimationFrame;
+var isVisible = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = require("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}).isVisible;
 var GhostTable = ($___46__46__47__46__46__47_utils_47_ghostTable__ = require("utils/ghostTable"), $___46__46__47__46__46__47_utils_47_ghostTable__ && $___46__46__47__46__46__47_utils_47_ghostTable__.__esModule && $___46__46__47__46__46__47_utils_47_ghostTable__ || {default: $___46__46__47__46__46__47_utils_47_ghostTable__}).GhostTable;
-var $__4 = ($___46__46__47__46__46__47_helpers_47_object__ = require("helpers/object"), $___46__46__47__46__46__47_helpers_47_object__ && $___46__46__47__46__46__47_helpers_47_object__.__esModule && $___46__46__47__46__46__47_helpers_47_object__ || {default: $___46__46__47__46__46__47_helpers_47_object__}),
-    isObject = $__4.isObject,
-    objectEach = $__4.objectEach;
-var $__5 = ($___46__46__47__46__46__47_helpers_47_number__ = require("helpers/number"), $___46__46__47__46__46__47_helpers_47_number__ && $___46__46__47__46__46__47_helpers_47_number__.__esModule && $___46__46__47__46__46__47_helpers_47_number__ || {default: $___46__46__47__46__46__47_helpers_47_number__}),
-    valueAccordingPercent = $__5.valueAccordingPercent,
-    rangeEach = $__5.rangeEach;
+var $__5 = ($___46__46__47__46__46__47_helpers_47_object__ = require("helpers/object"), $___46__46__47__46__46__47_helpers_47_object__ && $___46__46__47__46__46__47_helpers_47_object__.__esModule && $___46__46__47__46__46__47_helpers_47_object__ || {default: $___46__46__47__46__46__47_helpers_47_object__}),
+    isObject = $__5.isObject,
+    objectEach = $__5.objectEach;
+var $__6 = ($___46__46__47__46__46__47_helpers_47_number__ = require("helpers/number"), $___46__46__47__46__46__47_helpers_47_number__ && $___46__46__47__46__46__47_helpers_47_number__.__esModule && $___46__46__47__46__46__47_helpers_47_number__ || {default: $___46__46__47__46__46__47_helpers_47_number__}),
+    valueAccordingPercent = $__6.valueAccordingPercent,
+    rangeEach = $__6.rangeEach;
 var registerPlugin = ($___46__46__47__46__46__47_plugins__ = require("plugins"), $___46__46__47__46__46__47_plugins__ && $___46__46__47__46__46__47_plugins__.__esModule && $___46__46__47__46__46__47_plugins__ || {default: $___46__46__47__46__46__47_plugins__}).registerPlugin;
 var SamplesGenerator = ($___46__46__47__46__46__47_utils_47_samplesGenerator__ = require("utils/samplesGenerator"), $___46__46__47__46__46__47_utils_47_samplesGenerator__ && $___46__46__47__46__46__47_utils_47_samplesGenerator__.__esModule && $___46__46__47__46__46__47_utils_47_samplesGenerator__ || {default: $___46__46__47__46__46__47_utils_47_samplesGenerator__}).SamplesGenerator;
 var isPercentValue = ($___46__46__47__46__46__47_helpers_47_string__ = require("helpers/string"), $___46__46__47__46__46__47_helpers_47_string__ && $___46__46__47__46__46__47_helpers_47_string__.__esModule && $___46__46__47__46__46__47_helpers_47_string__ || {default: $___46__46__47__46__46__47_helpers_47_string__}).isPercentValue;
 var AutoRowSize = function AutoRowSize(hotInstance) {
-  var $__9 = this;
+  var $__10 = this;
   $traceurRuntime.superConstructor($AutoRowSize).call(this, hotInstance);
   this.heights = [];
   this.ghostTable = new GhostTable(this.hot);
   this.samplesGenerator = new SamplesGenerator((function(row, col) {
-    return $__9.hot.getDataAtCell(row, col);
+    return $__10.hot.getDataAtCell(row, col);
   }));
   this.firstCalculation = true;
   this.inProgress = false;
   this.addHook('beforeRowResize', (function(row, size, isDblClick) {
-    return $__9.onBeforeRowResize(row, size, isDblClick);
+    return $__10.onBeforeRowResize(row, size, isDblClick);
   }));
 };
 var $AutoRowSize = AutoRowSize;
@@ -11488,7 +11899,7 @@ var $AutoRowSize = AutoRowSize;
     return this.hot.getSettings().autoRowSize === true || isObject(this.hot.getSettings().autoRowSize);
   },
   enablePlugin: function() {
-    var $__9 = this;
+    var $__10 = this;
     if (this.enabled) {
       return;
     }
@@ -11498,28 +11909,28 @@ var $AutoRowSize = AutoRowSize;
       this.samplesGenerator.customSampleCount = parseInt(samplingRatio, 10);
     }
     this.addHook('afterLoadData', (function() {
-      return $__9.onAfterLoadData();
+      return $__10.onAfterLoadData();
     }));
     this.addHook('beforeChange', (function(changes) {
-      return $__9.onBeforeChange(changes);
+      return $__10.onBeforeChange(changes);
     }));
     this.addHook('beforeColumnMove', (function() {
-      return $__9.recalculateAllRowsHeight();
+      return $__10.recalculateAllRowsHeight();
     }));
     this.addHook('beforeColumnResize', (function() {
-      return $__9.recalculateAllRowsHeight();
+      return $__10.recalculateAllRowsHeight();
     }));
     this.addHook('beforeColumnSort', (function() {
-      return $__9.clearCache();
+      return $__10.clearCache();
     }));
     this.addHook('beforeRender', (function(force) {
-      return $__9.onBeforeRender(force);
+      return $__10.onBeforeRender(force);
     }));
     this.addHook('beforeRowMove', (function(rowStart, rowEnd) {
-      return $__9.onBeforeRowMove(rowStart, rowEnd);
+      return $__10.onBeforeRowMove(rowStart, rowEnd);
     }));
     this.addHook('modifyRowHeight', (function(height, row) {
-      return $__9.getRowHeight(row, height);
+      return $__10.getRowHeight(row, height);
     }));
     $traceurRuntime.superGet(this, $AutoRowSize.prototype, "enablePlugin").call(this);
   },
@@ -11536,7 +11947,7 @@ var $AutoRowSize = AutoRowSize;
       to: this.hot.countCols() - 1
     };
     var force = arguments[2] !== (void 0) ? arguments[2] : false;
-    var $__9 = this;
+    var $__10 = this;
     if (typeof rowRange === 'number') {
       rowRange = {
         from: rowRange,
@@ -11550,16 +11961,16 @@ var $AutoRowSize = AutoRowSize;
       };
     }
     rangeEach(rowRange.from, rowRange.to, (function(row) {
-      if (force || $__9.heights[row] === void 0) {
-        var samples = $__9.samplesGenerator.generateRowSamples(row, colRange);
+      if (force || $__10.heights[row] === void 0) {
+        var samples = $__10.samplesGenerator.generateRowSamples(row, colRange);
         samples.forEach((function(sample, row) {
-          return $__9.ghostTable.addRow(row, sample);
+          return $__10.ghostTable.addRow(row, sample);
         }));
       }
     }));
     if (this.ghostTable.rows.length) {
       this.ghostTable.getHeights((function(row, height) {
-        return $__9.heights[row] = height;
+        return $__10.heights[row] = height;
       }));
       this.ghostTable.clean();
     }
@@ -11569,18 +11980,18 @@ var $AutoRowSize = AutoRowSize;
       from: 0,
       to: this.hot.countCols() - 1
     };
-    var $__9 = this;
+    var $__10 = this;
     var current = 0;
     var length = this.hot.countRows() - 1;
     var timer = null;
     this.inProgress = true;
     var loop = (function() {
-      if (!$__9.hot) {
+      if (!$__10.hot) {
         cancelAnimationFrame(timer);
-        $__9.inProgress = false;
+        $__10.inProgress = false;
         return;
       }
-      $__9.calculateRowsHeight({
+      $__10.calculateRowsHeight({
         from: current,
         to: Math.min(current + $AutoRowSize.CALCULATION_STEP, length)
       }, colRange);
@@ -11589,10 +12000,10 @@ var $AutoRowSize = AutoRowSize;
         timer = requestAnimationFrame(loop);
       } else {
         cancelAnimationFrame(timer);
-        $__9.inProgress = false;
-        $__9.hot.view.wt.wtOverlays.adjustElementsSize(true);
-        if ($__9.hot.view.wt.wtOverlays.leftOverlay.needFullRender) {
-          $__9.hot.view.wt.wtOverlays.leftOverlay.clone.draw();
+        $__10.inProgress = false;
+        $__10.hot.view.wt.wtOverlays.adjustElementsSize(true);
+        if ($__10.hot.view.wt.wtOverlays.leftOverlay.needFullRender) {
+          $__10.hot.view.wt.wtOverlays.leftOverlay.clone.draw();
         }
       }
     });
@@ -11661,7 +12072,7 @@ var $AutoRowSize = AutoRowSize;
     this.heights.length = 0;
   },
   clearCacheByRange: function(range) {
-    var $__9 = this;
+    var $__10 = this;
     if (typeof range === 'number') {
       range = {
         from: range,
@@ -11669,7 +12080,7 @@ var $AutoRowSize = AutoRowSize;
       };
     }
     rangeEach(Math.min(range.from, range.to), Math.max(range.from, range.to), (function(row) {
-      return $__9.heights[row] = void 0;
+      return $__10.heights[row] = void 0;
     }));
   },
   isNeedRecalculate: function() {
@@ -11710,13 +12121,13 @@ var $AutoRowSize = AutoRowSize;
     return size;
   },
   onAfterLoadData: function() {
-    var $__9 = this;
+    var $__10 = this;
     if (this.hot.view) {
       this.recalculateAllRowsHeight();
     } else {
       setTimeout((function() {
-        if ($__9.hot) {
-          $__9.recalculateAllRowsHeight();
+        if ($__10.hot) {
+          $__10.recalculateAllRowsHeight();
         }
       }), 0);
     }
@@ -11751,7 +12162,7 @@ var $AutoRowSize = AutoRowSize;
 registerPlugin('autoRowSize', AutoRowSize);
 
 //# 
-},{"_base":60,"helpers/array":42,"helpers/dom/element":45,"helpers/number":49,"helpers/object":50,"helpers/string":52,"plugins":59,"utils/ghostTable":100,"utils/samplesGenerator":101}],63:[function(require,module,exports){
+},{"_base":61,"helpers/array":42,"helpers/dom/element":45,"helpers/feature":47,"helpers/number":50,"helpers/object":51,"helpers/string":53,"plugins":60,"utils/ghostTable":103,"utils/samplesGenerator":105}],64:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Autofill: {get: function() {
@@ -11839,7 +12250,7 @@ function Autofill(instance) {
     } else {
       _this.instance.mouseDragOutside = false;
     }
-    if (_this.instance.mouseDragOutside) {
+    if (_this.instance.mouseDragOutside && settings('autoInsertRow')) {
       setTimeout(function() {
         _this.addingStarted = false;
         _this.instance.alter('insert_row');
@@ -11958,9 +12369,9 @@ Autofill.prototype.apply = function() {
 Autofill.prototype.showBorder = function(coords) {
   var topLeft = this.instance.getSelectedRange().getTopLeftCorner(),
       bottomRight = this.instance.getSelectedRange().getBottomRightCorner();
-  if (this.instance.getSettings().fillHandle !== 'horizontal' && (bottomRight.row < coords.row || topLeft.row > coords.row)) {
+  if (settings('direction') !== 'horizontal' && (bottomRight.row < coords.row || topLeft.row > coords.row)) {
     coords = new WalkontableCellCoords(coords.row, bottomRight.col);
-  } else if (this.instance.getSettings().fillHandle !== 'vertical') {
+  } else if (settings('direction') !== 'vertical') {
     coords = new WalkontableCellCoords(bottomRight.row, coords.col);
   } else {
     return;
@@ -11976,7 +12387,7 @@ Autofill.prototype.checkIfNewRowNeeded = function() {
       selection,
       tableRows = this.instance.countRows(),
       that = this;
-  if (this.instance.view.wt.selections.fill.cellRange && this.addingStarted === false) {
+  if (this.instance.view.wt.selections.fill.cellRange && this.addingStarted === false && settings('autoInsertRow')) {
     selection = this.instance.getSelected();
     fillCorners = this.instance.view.wt.selections.fill.getCorners();
     if (selection[2] < tableRows - 1 && fillCorners[2] === tableRows - 1) {
@@ -11990,19 +12401,44 @@ Autofill.prototype.checkIfNewRowNeeded = function() {
 };
 Handsontable.hooks.add('afterInit', function() {
   var autofill = new Autofill(this);
-  if (typeof this.getSettings().fillHandle !== 'undefined') {
-    if (autofill.handle && this.getSettings().fillHandle === false) {
+  settings = settingsFactory(this.getSettings().fillHandle);
+  if (settings('fillHandle') !== void 0) {
+    if (autofill.handle && settings('fillHandle') === false) {
       autofill.disable();
-    } else if (!autofill.handle && this.getSettings().fillHandle !== false) {
+    } else if (!autofill.handle && settings('fillHandle') !== false) {
       this.autofill = autofill;
       this.autofill.init();
     }
   }
 });
+var settings;
+function settingsFactory(settings) {
+  return function(key) {
+    var result;
+    if (key === 'direction') {
+      if (typeof settings === 'string') {
+        result = settings;
+      } else if (typeof settings === 'object' && settings[key] !== void 0) {
+        result = settings[key];
+      } else {
+        result = true;
+      }
+    } else if (key === 'autoInsertRow') {
+      if (typeof settings === 'object' && settings[key] !== void 0) {
+        result = settings[key];
+      } else {
+        result = true;
+      }
+    } else if (key === 'fillHandle') {
+      result = settings ? true : false;
+    }
+    return result;
+  };
+}
 Handsontable.Autofill = Autofill;
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":5,"eventManager":41,"helpers/dom/element":45,"plugins":59}],64:[function(require,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":5,"eventManager":41,"helpers/dom/element":45,"plugins":60}],65:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ColumnSorting: {get: function() {
@@ -12033,6 +12469,7 @@ Handsontable.hooks.register('afterColumnSort');
 var ColumnSorting = function ColumnSorting(hotInstance) {
   $traceurRuntime.superConstructor($ColumnSorting).call(this, hotInstance);
   this.sortIndicators = [];
+  this.lastSortedColumn = null;
 };
 var $ColumnSorting = ColumnSorting;
 ($traceurRuntime.createClass)(ColumnSorting, {
@@ -12109,6 +12546,7 @@ var $ColumnSorting = ColumnSorting;
       sortingOrder = loadedSortingState.sortOrder;
     }
     if (typeof sortingColumn === 'number') {
+      this.lastSortedColumn = sortingColumn;
       this.sortByColumn(sortingColumn, sortingOrder);
     }
   },
@@ -12137,6 +12575,7 @@ var $ColumnSorting = ColumnSorting;
     if (allowSorting !== false) {
       this.sort();
     }
+    this.updateOrderClass();
     this.updateSortIndicator();
     this.hot.render();
     this.saveSortingState();
@@ -12159,34 +12598,33 @@ var $ColumnSorting = ColumnSorting;
     Handsontable.hooks.run(this.hot, 'persistentStateLoad', 'columnSorting', storedState);
     return storedState.value;
   },
+  updateOrderClass: function() {
+    var orderClass;
+    if (this.hot.sortOrder === true) {
+      orderClass = 'ascending';
+    } else if (this.hot.sortOrder === false) {
+      orderClass = 'descending';
+    }
+    this.sortOrderClass = orderClass;
+  },
   bindColumnSortingAfterClick: function() {
+    var $__5 = this;
     if (this.bindedSortEvent) {
       return;
     }
     var eventManager = eventManagerObject(this.hot),
         _this = this;
     this.bindedSortEvent = true;
-    eventManager.addEventListener(this.hot.rootElement, 'click', function(e) {
+    eventManager.addEventListener(this.hot.rootElement, 'click', (function(e) {
       if (hasClass(e.target, 'columnSorting')) {
         var col = getColumn(e.target);
-        if (col === this.lastSortedColumn) {
-          switch (_this.hot.sortOrder) {
-            case void 0:
-              _this.sortOrderClass = 'ascending';
-              break;
-            case true:
-              _this.sortOrderClass = 'descending';
-              break;
-            case false:
-              _this.sortOrderClass = void 0;
-          }
-        } else {
-          _this.sortOrderClass = 'ascending';
+        if (col !== $__5.lastSortedColumn) {
+          $__5.hot.sortOrder = true;
         }
-        this.lastSortedColumn = col;
-        _this.sortByColumn(col);
+        $__5.lastSortedColumn = col;
+        $__5.sortByColumn(col);
       }
-    });
+    }));
     function countRowHeaders() {
       var tr = _this.hot.view.TBODY.querySelector('tr');
       var length = 1;
@@ -12259,6 +12697,27 @@ var $ColumnSorting = ColumnSorting;
       return 0;
     };
   },
+  numericSort: function(sortOrder) {
+    return function(a, b) {
+      var parsedA = parseFloat(a[1]);
+      var parsedB = parseFloat(b[1]);
+      if (parsedA === parsedB || (isNaN(parsedA) && isNaN(parsedB))) {
+        return 0;
+      }
+      if (isNaN(parsedA)) {
+        return 1;
+      }
+      if (isNaN(parsedB)) {
+        return -1;
+      }
+      if (parsedA < parsedB) {
+        return sortOrder ? -1 : 1;
+      } else if (parsedA > parsedB) {
+        return sortOrder ? 1 : -1;
+      }
+      return 0;
+    };
+  },
   sort: function() {
     if (typeof this.hot.sortOrder == 'undefined') {
       this.hot.sortIndex.length = 0;
@@ -12273,13 +12732,19 @@ var $ColumnSorting = ColumnSorting;
       this.hot.sortIndex.push([i, this.hot.getDataAtCell(i, this.hot.sortColumn)]);
     }
     colMeta = this.hot.getCellMeta(0, this.hot.sortColumn);
-    this.updateSortIndicator();
-    switch (colMeta.type) {
-      case 'date':
-        sortFunction = this.dateSort;
-        break;
-      default:
-        sortFunction = this.defaultSort;
+    if (colMeta.sortFunction) {
+      sortFunction = colMeta.sortFunction;
+    } else {
+      switch (colMeta.type) {
+        case 'date':
+          sortFunction = this.dateSort;
+          break;
+        case 'numeric':
+          sortFunction = this.numericSort;
+          break;
+        default:
+          sortFunction = this.defaultSort;
+      }
     }
     this.hot.sortIndex.sort(sortFunction(this.hot.sortOrder));
     for (var i$__7 = this.hot.sortIndex.length; i$__7 < this.hot.countRows(); i$__7++) {
@@ -12380,7 +12845,7 @@ var $ColumnSorting = ColumnSorting;
 registerPlugin('columnSorting', ColumnSorting);
 
 //# 
-},{"_base":60,"eventManager":41,"helpers/array":42,"helpers/dom/element":45,"plugins":59}],65:[function(require,module,exports){
+},{"_base":61,"eventManager":41,"helpers/array":42,"helpers/dom/element":45,"plugins":60}],66:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   CommentEditor: {get: function() {
@@ -12468,7 +12933,7 @@ var $CommentEditor = CommentEditor;
 ;
 
 //# 
-},{"helpers/dom/element":45}],66:[function(require,module,exports){
+},{"helpers/dom/element":45}],67:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Comments: {get: function() {
@@ -12763,7 +13228,7 @@ var $Comments = Comments;
 registerPlugin('comments', Comments);
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":5,"_base":60,"commentEditor":65,"eventManager":41,"helpers/dom/element":45,"plugins":59}],67:[function(require,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":5,"_base":61,"commentEditor":66,"eventManager":41,"helpers/dom/element":45,"plugins":60}],68:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   CommandExecutor: {get: function() {
@@ -12836,7 +13301,7 @@ function findSubCommand(subCommandName, subCommands) {
 ;
 
 //# 
-},{"helpers/array":42}],68:[function(require,module,exports){
+},{"helpers/array":42}],69:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ContextMenu: {get: function() {
@@ -12938,6 +13403,11 @@ var $ContextMenu = ContextMenu;
       }));
     }));
   },
+  updatePlugin: function() {
+    this.disablePlugin();
+    this.enablePlugin();
+    $traceurRuntime.superGet(this, $ContextMenu.prototype, "updatePlugin").call(this);
+  },
   disablePlugin: function() {
     this.close();
     if (this.menu) {
@@ -13025,7 +13495,7 @@ Handsontable.hooks.register('afterContextMenuExecute');
 registerPlugin('contextMenu', ContextMenu);
 
 //# 
-},{"_base":60,"commandExecutor":67,"eventManager":41,"helpers/array":42,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/object":50,"itemsFactory":70,"menu":71,"plugins":59,"predefinedItems":72}],69:[function(require,module,exports){
+},{"_base":61,"commandExecutor":68,"eventManager":41,"helpers/array":42,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/object":51,"itemsFactory":71,"menu":72,"plugins":60,"predefinedItems":73}],70:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Cursor: {get: function() {
@@ -13105,7 +13575,7 @@ Handsontable.plugins.utils = Handsontable.plugins.utils || {};
 Handsontable.plugins.utils.Cursor = Cursor;
 
 //# 
-},{"helpers/dom/element":45,"helpers/dom/event":46}],70:[function(require,module,exports){
+},{"helpers/dom/element":45,"helpers/dom/event":46}],71:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ItemsFactory: {get: function() {
@@ -13224,7 +13694,7 @@ function getItems() {
 ;
 
 //# 
-},{"helpers/array":42,"helpers/object":50,"predefinedItems":72}],71:[function(require,module,exports){
+},{"helpers/array":42,"helpers/object":51,"predefinedItems":73}],72:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Menu: {get: function() {
@@ -13254,7 +13724,9 @@ var $__0 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = require("he
     hasClass = $__0.hasClass,
     isChildOf = $__0.isChildOf,
     removeClass = $__0.removeClass;
-var arrayEach = ($___46__46__47__46__46__47_helpers_47_array__ = require("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}).arrayEach;
+var $__1 = ($___46__46__47__46__46__47_helpers_47_array__ = require("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}),
+    arrayEach = $__1.arrayEach,
+    arrayReduce = $__1.arrayReduce;
 var Cursor = ($__cursor__ = require("cursor"), $__cursor__ && $__cursor__.__esModule && $__cursor__ || {default: $__cursor__}).Cursor;
 var EventManager = ($___46__46__47__46__46__47_eventManager__ = require("eventManager"), $___46__46__47__46__46__47_eventManager__ && $___46__46__47__46__46__47_eventManager__.__esModule && $___46__46__47__46__46__47_eventManager__ || {default: $___46__46__47__46__46__47_eventManager__}).EventManager;
 var $__4 = ($___46__46__47__46__46__47_helpers_47_object__ = require("helpers/object"), $___46__46__47__46__46__47_helpers_47_object__ && $___46__46__47__46__46__47_helpers_47_object__.__esModule && $___46__46__47__46__46__47_helpers_47_object__ || {default: $___46__46__47__46__46__47_helpers_47_object__}),
@@ -13279,15 +13751,15 @@ var $__10 = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = require("hel
     stopImmediatePropagation = $__10.stopImmediatePropagation,
     pageX = $__10.pageX,
     pageY = $__10.pageY;
-var Menu = function Menu(hotInstance) {
-  var options = arguments[1] !== (void 0) ? arguments[1] : {
+var Menu = function Menu(hotInstance, options) {
+  this.hot = hotInstance;
+  this.options = options || {
     parent: null,
     name: null,
     className: '',
-    keepInViewport: true
+    keepInViewport: true,
+    standalone: false
   };
-  this.hot = hotInstance;
-  this.options = options;
   this.eventManager = new EventManager(this);
   this.container = this.createContainer(this.options.name);
   this.hotMenu = null;
@@ -13344,13 +13816,11 @@ var $Menu = Menu;
       }],
       renderAllRows: true,
       fragmentSelection: 'cell',
+      disableVisualSelection: 'area',
       beforeKeyDown: (function(event) {
         return $__11.onBeforeKeyDown(event);
       }),
       afterOnCellMouseOver: (function(event, coords, TD) {
-        if (!TD.textContent) {
-          return;
-        }
         if ($__11.isAllSubMenusClosed()) {
           delayedOpenSubMenu(coords.row);
         } else {
@@ -13388,7 +13858,7 @@ var $Menu = Menu;
   },
   openSubMenu: function(row) {
     if (!this.hotMenu) {
-      return;
+      return false;
     }
     var cell = this.hotMenu.getCell(row, 0);
     this.closeAllSubMenus();
@@ -13440,7 +13910,7 @@ var $Menu = Menu;
     }
     var selectedItem = this.hotMenu.getSourceDataAtRow(this.hotMenu.getSelected()[0]);
     this.runLocalHooks('select', selectedItem, event);
-    if (selectedItem.isCommand === false) {
+    if (selectedItem.isCommand === false || selectedItem.name === SEPARATOR) {
       return;
     }
     var selRange = this.hot.getSelectedRange();
@@ -13449,7 +13919,9 @@ var $Menu = Menu;
     if (this.isSubMenu()) {
       this.parentMenu.runLocalHooks('executeCommand', selectedItem.key, normalizedSelection, event);
     }
-    this.close(true);
+    if (!(selectedItem.disabled === true || typeof selectedItem.disabled === 'function' && selectedItem.disabled.call(this.hot) === true || selectedItem.submenu)) {
+      this.close(true);
+    }
   },
   setPosition: function(coords) {
     var cursor = new Cursor(coords);
@@ -13579,22 +14051,22 @@ var $Menu = Menu;
       }
     } else if (itemIsDisabled(item)) {
       addClass(TD, 'htDisabled');
-      this.eventManager.addEventListener(wrapper, 'mouseenter', (function() {
+      this.eventManager.addEventListener(TD, 'mouseenter', (function() {
         return hot.deselectCell();
       }));
     } else if (itemIsSelectionDisabled(item)) {
       addClass(TD, 'htSelectionDisabled');
-      this.eventManager.addEventListener(wrapper, 'mouseenter', (function() {
+      this.eventManager.addEventListener(TD, 'mouseenter', (function() {
         return hot.deselectCell();
       }));
     } else if (isSubMenu(item)) {
       addClass(TD, 'htSubmenu');
       if (itemIsSelectionDisabled(item)) {
-        this.eventManager.addEventListener(wrapper, 'mouseenter', (function() {
+        this.eventManager.addEventListener(TD, 'mouseenter', (function() {
           return hot.deselectCell();
         }));
       } else {
-        this.eventManager.addEventListener(wrapper, 'mouseenter', (function() {
+        this.eventManager.addEventListener(TD, 'mouseenter', (function() {
           return hot.selectCell(row, col, void 0, void 0, void 0, false);
         }));
       }
@@ -13602,11 +14074,11 @@ var $Menu = Menu;
       removeClass(TD, 'htSubmenu');
       removeClass(TD, 'htDisabled');
       if (itemIsSelectionDisabled(item)) {
-        this.eventManager.addEventListener(wrapper, 'mouseenter', (function() {
+        this.eventManager.addEventListener(TD, 'mouseenter', (function() {
           return hot.deselectCell();
         }));
       } else {
-        this.eventManager.addEventListener(wrapper, 'mouseenter', (function() {
+        this.eventManager.addEventListener(TD, 'mouseenter', (function() {
           return hot.selectCell(row, col, void 0, void 0, void 0, false);
         }));
       }
@@ -13709,10 +14181,9 @@ var $Menu = Menu;
     var hiderStyle = this.hotMenu.view.wt.wtTable.hider.style;
     var holderStyle = this.hotMenu.view.wt.wtTable.holder.style;
     var currentHiderWidth = parseInt(hiderStyle.width, 10);
-    var realHeight = 0;
-    arrayEach(data, (function(value) {
-      return realHeight += value.name === SEPARATOR ? 1 : 26;
-    }));
+    var realHeight = arrayReduce(data, (function(accumulator, value) {
+      return accumulator + (value.name === SEPARATOR ? 1 : 26);
+    }), 0);
     holderStyle.width = currentHiderWidth + 22 + 'px';
     holderStyle.height = realHeight + 4 + 'px';
   },
@@ -13723,7 +14194,9 @@ var $Menu = Menu;
     if (this.container && isChildOf(event.target, this.container)) {
       this.executeCommand(event);
     }
-    if ((this.isAllSubMenusClosed() || this.isSubMenu()) && (!isChildOf(event.target, '.htMenu') && isChildOf(event.target, document))) {
+    if (this.options.standalone && this.hotMenu && !isChildOf(event.target, this.hotMenu.rootElement)) {
+      this.close(true);
+    } else if ((this.isAllSubMenusClosed() || this.isSubMenu()) && (!isChildOf(event.target, '.htMenu') && isChildOf(event.target, document))) {
       this.close(true);
     }
   }
@@ -13732,7 +14205,7 @@ mixin(Menu, localHooks);
 ;
 
 //# 
-},{"cursor":69,"eventManager":41,"helpers/array":42,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/function":47,"helpers/object":50,"helpers/unicode":53,"mixins/localHooks":55,"predefinedItems":72,"utils":73}],72:[function(require,module,exports){
+},{"cursor":70,"eventManager":41,"helpers/array":42,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/function":48,"helpers/object":51,"helpers/unicode":54,"mixins/localHooks":56,"predefinedItems":73,"utils":74}],73:[function(require,module,exports){
 "use strict";
 var $__4;
 Object.defineProperties(exports, {
@@ -13889,7 +14362,8 @@ var _predefinedItems = ($__4 = {}, Object.defineProperty($__4, SEPARATOR, {
       }
       var entireRowSelection = [selected[0], 0, selected[0], this.countCols() - 1];
       var rowSelected = entireRowSelection.join(',') == selected.join(',');
-      return selected[1] < 0 || this.countCols() >= this.getSettings().maxCols || rowSelected;
+      var onlyOneColumn = this.countCols() == 1;
+      return selected[1] < 0 || this.countCols() >= this.getSettings().maxCols || (!onlyOneColumn && rowSelected);
     },
     hidden: function() {
       return !this.getSettings().allowInsertColumn;
@@ -13915,7 +14389,8 @@ var _predefinedItems = ($__4 = {}, Object.defineProperty($__4, SEPARATOR, {
       }
       var entireRowSelection = [selected[0], 0, selected[0], this.countCols() - 1];
       var rowSelected = entireRowSelection.join(',') == selected.join(',');
-      return selected[1] < 0 || this.countCols() >= this.getSettings().maxCols || rowSelected;
+      var onlyOneColumn = this.countCols() == 1;
+      return selected[1] < 0 || this.countCols() >= this.getSettings().maxCols || (!onlyOneColumn && rowSelected);
     },
     hidden: function() {
       return !this.getSettings().allowInsertColumn;
@@ -14289,7 +14764,7 @@ var _predefinedItems = ($__4 = {}, Object.defineProperty($__4, SEPARATOR, {
 }), $__4);
 
 //# 
-},{"helpers/number":49,"helpers/object":50,"utils":73}],73:[function(require,module,exports){
+},{"helpers/number":50,"helpers/object":51,"utils":74}],74:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   normalizeSelection: {get: function() {
@@ -14428,7 +14903,7 @@ function markLabelAsSelected(label) {
 }
 
 //# 
-},{"helpers/dom/element":45}],74:[function(require,module,exports){
+},{"helpers/dom/element":45}],75:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ContextMenuCopyPaste: {get: function() {
@@ -14560,7 +15035,7 @@ var $ContextMenuCopyPaste = ContextMenuCopyPaste;
 registerPlugin('contextMenuCopyPaste', ContextMenuCopyPaste);
 
 //# 
-},{"_base":60,"eventManager":41,"helpers/array":42,"helpers/dom/element":45,"plugins":59,"zeroclipboard":undefined}],75:[function(require,module,exports){
+},{"_base":61,"eventManager":41,"helpers/array":42,"helpers/dom/element":45,"plugins":60,"zeroclipboard":undefined}],76:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   CopyPastePlugin: {get: function() {
@@ -14763,7 +15238,7 @@ Handsontable.hooks.register('modifyCopyableRange');
 ;
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":5,"3rdparty/walkontable/src/cell/range":6,"SheetClip":"SheetClip","copyPaste":"copyPaste","helpers/array":42,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/function":47,"helpers/number":49,"helpers/unicode":53,"plugins":59}],76:[function(require,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":5,"3rdparty/walkontable/src/cell/range":6,"SheetClip":"SheetClip","copyPaste":"copyPaste","helpers/array":42,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/function":48,"helpers/number":50,"helpers/unicode":54,"plugins":60}],77:[function(require,module,exports){
 "use strict";
 var $___46__46__47__46__46__47_plugins__,
     $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_range__,
@@ -15100,7 +15575,7 @@ Handsontable.hooks.add('afterInit', function() {
 Handsontable.CustomBorders = CustomBorders;
 
 //# 
-},{"3rdparty/walkontable/src/cell/range":6,"3rdparty/walkontable/src/selection":18,"plugins":59}],77:[function(require,module,exports){
+},{"3rdparty/walkontable/src/cell/range":6,"3rdparty/walkontable/src/selection":18,"plugins":60}],78:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DragToScroll: {get: function() {
@@ -15188,7 +15663,7 @@ Handsontable.hooks.add('afterOnCellCornerMouseDown', function() {
 Handsontable.plugins.DragToScroll = DragToScroll;
 
 //# 
-},{"eventManager":41,"plugins":59}],78:[function(require,module,exports){
+},{"eventManager":41,"plugins":60}],79:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ManualColumnFreeze: {get: function() {
@@ -15202,6 +15677,8 @@ var BasePlugin = ($___46__46__47__95_base__ = require("_base"), $___46__46__47__
 var registerPlugin = ($___46__46__47__46__46__47_plugins__ = require("plugins"), $___46__46__47__46__46__47_plugins__ && $___46__46__47__46__46__47_plugins__.__esModule && $___46__46__47__46__46__47_plugins__ || {default: $___46__46__47__46__46__47_plugins__}).registerPlugin;
 var ManualColumnFreeze = function ManualColumnFreeze(hotInstance) {
   $traceurRuntime.superConstructor($ManualColumnFreeze).call(this, hotInstance);
+  this.manualColumnMovePlugin = null;
+  this.frozenColumnsBasePositions = [];
 };
 var $ManualColumnFreeze = ManualColumnFreeze;
 ($traceurRuntime.createClass)(ManualColumnFreeze, {
@@ -15221,26 +15698,21 @@ var $ManualColumnFreeze = ManualColumnFreeze;
     }));
     $traceurRuntime.superGet(this, $ManualColumnFreeze.prototype, "enablePlugin").call(this);
   },
-  disablePlugin: function() {
-    $traceurRuntime.superGet(this, $ManualColumnFreeze.prototype, "disablePlugin").call(this);
-  },
   init: function() {
     $traceurRuntime.superGet(this, $ManualColumnFreeze.prototype, "init").call(this);
-    if (typeof this.hot.manualColumnPositionsPluginUsages === 'undefined') {
-      this.hot.manualColumnPositionsPluginUsages = ['manualColumnFreeze'];
-    } else {
-      this.hot.manualColumnPositionsPluginUsages.push('manualColumnFreeze');
-    }
     this.fixedColumnsCount = this.hot.getSettings().fixedColumnsLeft;
   },
+  getManualColumnMovePlugin: function() {
+    if (!this.manualColumnMovePlugin) {
+      this.manualColumnMovePlugin = this.hot.getPlugin('manualColumnMove');
+    }
+    return this.manualColumnMovePlugin;
+  },
   onModifyCol: function(column) {
-    if (this.hot.manualColumnPositionsPluginUsages.length > 1) {
+    if (this.getManualColumnMovePlugin().isEnabled()) {
       return column;
     }
-    return this.getModifiedColumnIndex(column);
-  },
-  getModifiedColumnIndex: function(column) {
-    return this.hot.manualColumnPositions[column];
+    return this.getLogicalColumnIndex(column);
   },
   addContextMenuEntry: function(defaultOptions) {
     var _this = this;
@@ -15272,9 +15744,10 @@ var $ManualColumnFreeze = ManualColumnFreeze;
     if (column <= this.fixedColumnsCount - 1) {
       return;
     }
-    var modifiedColumn = this.getModifiedColumnIndex(column) || column;
-    this.checkPositionData(modifiedColumn);
-    this.modifyColumnOrder(modifiedColumn, column, null, 'freeze');
+    if (column !== this.getLogicalColumnIndex(column)) {
+      this.frozenColumnsBasePositions[this.fixedColumnsCount] = column;
+    }
+    this.changeColumnPositions(column, this.fixedColumnsCount);
     this.addFixedColumn();
     this.hot.view.wt.wtOverlays.leftOverlay.refresh();
     this.hot.view.wt.wtOverlays.adjustElementsSize();
@@ -15284,9 +15757,7 @@ var $ManualColumnFreeze = ManualColumnFreeze;
       return;
     }
     var returnCol = this.getBestColumnReturnPosition(column);
-    var modifiedColumn = this.getModifiedColumnIndex(column) || column;
-    this.checkPositionData(modifiedColumn);
-    this.modifyColumnOrder(modifiedColumn, column, returnCol, 'unfreeze');
+    this.changeColumnPositions(column, returnCol);
     this.removeFixedColumn();
     this.hot.view.wt.wtOverlays.leftOverlay.refresh();
     this.hot.view.wt.wtOverlays.adjustElementsSize();
@@ -15299,53 +15770,42 @@ var $ManualColumnFreeze = ManualColumnFreeze;
     this.hot.updateSettings({fixedColumnsLeft: this.fixedColumnsCount - 1});
     this.fixedColumnsCount--;
   },
-  checkPositionData: function(column) {
-    if (!this.hot.manualColumnPositions || this.hot.manualColumnPositions.length === 0) {
-      if (!this.hot.manualColumnPositions) {
-        this.hot.manualColumnPositions = [];
-      }
-    }
-    if (column) {
-      if (!this.hot.manualColumnPositions[column]) {
-        this.createPositionData(column + 1);
-      }
-    } else {
-      this.createPositionData(this.hot.countCols());
-    }
-  },
-  createPositionData: function(length) {
-    if (this.hot.manualColumnPositions.length < length) {
-      for (var i = this.hot.manualColumnPositions.length; i < length; i++) {
-        this.hot.manualColumnPositions[i] = i;
-      }
-    }
-  },
-  modifyColumnOrder: function(column, actualColumn, returnColumn, action) {
-    if (returnColumn == null) {
-      returnColumn = column;
-    }
-    if (action === 'freeze') {
-      this.hot.manualColumnPositions.splice(this.fixedColumnsCount, 0, this.hot.manualColumnPositions.splice(actualColumn, 1)[0]);
-    } else if (action === 'unfreeze') {
-      this.hot.manualColumnPositions.splice(returnColumn, 0, this.hot.manualColumnPositions.splice(actualColumn, 1)[0]);
-    }
-  },
   getBestColumnReturnPosition: function(column) {
     var i = this.fixedColumnsCount;
-    var j = this.getModifiedColumnIndex(i);
-    var initialCol = this.getModifiedColumnIndex(column);
-    while (j < initialCol) {
-      i++;
-      j = this.getModifiedColumnIndex(i);
+    var j = this.getLogicalColumnIndex(i);
+    var initialCol;
+    if (this.frozenColumnsBasePositions[column] == null) {
+      initialCol = this.getLogicalColumnIndex(column);
+      while (j < initialCol) {
+        i++;
+        j = this.getLogicalColumnIndex(i);
+      }
+    } else {
+      initialCol = this.frozenColumnsBasePositions[column];
+      this.frozenColumnsBasePositions[column] = void 0;
+      while (j <= initialCol) {
+        i++;
+        j = this.getLogicalColumnIndex(i);
+      }
+      i = j;
     }
     return i - 1;
+  },
+  getVisibleColumnIndex: function(column) {
+    return this.getManualColumnMovePlugin().getVisibleColumnIndex(column);
+  },
+  getLogicalColumnIndex: function(column) {
+    return this.getManualColumnMovePlugin().getLogicalColumnIndex(column);
+  },
+  changeColumnPositions: function(sourceColumn, destinationColumn) {
+    this.getManualColumnMovePlugin().changeColumnPositions(sourceColumn, destinationColumn);
   }
 }, {}, BasePlugin);
 ;
 registerPlugin('manualColumnFreeze', ManualColumnFreeze);
 
 //# 
-},{"_base":60,"plugins":59}],79:[function(require,module,exports){
+},{"_base":61,"plugins":60}],80:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ManualColumnMove: {get: function() {
@@ -15353,267 +15813,336 @@ Object.defineProperties(exports, {
     }},
   __esModule: {value: true}
 });
-var $___46__46__47__46__46__47_helpers_47_dom_47_element__,
+var $___46__46__47__95_base_46_js__,
+    $___46__46__47__46__46__47_helpers_47_dom_47_element__,
+    $___46__46__47__46__46__47_helpers_47_array__,
+    $___46__46__47__46__46__47_helpers_47_number__,
     $___46__46__47__46__46__47_eventManager__,
     $___46__46__47__46__46__47_helpers_47_dom_47_event__,
     $___46__46__47__46__46__47_plugins__;
-var $__0 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = require("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}),
-    addClass = $__0.addClass,
-    hasClass = $__0.hasClass,
-    removeClass = $__0.removeClass;
+var BasePlugin = ($___46__46__47__95_base_46_js__ = require("_base.js"), $___46__46__47__95_base_46_js__ && $___46__46__47__95_base_46_js__.__esModule && $___46__46__47__95_base_46_js__ || {default: $___46__46__47__95_base_46_js__}).default;
+var $__1 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = require("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}),
+    addClass = $__1.addClass,
+    hasClass = $__1.hasClass,
+    removeClass = $__1.removeClass;
+var $__2 = ($___46__46__47__46__46__47_helpers_47_array__ = require("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}),
+    arrayEach = $__2.arrayEach,
+    arrayMap = $__2.arrayMap;
+var rangeEach = ($___46__46__47__46__46__47_helpers_47_number__ = require("helpers/number"), $___46__46__47__46__46__47_helpers_47_number__ && $___46__46__47__46__46__47_helpers_47_number__.__esModule && $___46__46__47__46__46__47_helpers_47_number__ || {default: $___46__46__47__46__46__47_helpers_47_number__}).rangeEach;
 var eventManagerObject = ($___46__46__47__46__46__47_eventManager__ = require("eventManager"), $___46__46__47__46__46__47_eventManager__ && $___46__46__47__46__46__47_eventManager__.__esModule && $___46__46__47__46__46__47_eventManager__ || {default: $___46__46__47__46__46__47_eventManager__}).eventManager;
-var $__2 = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = require("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}),
-    pageX = $__2.pageX,
-    pageY = $__2.pageY;
+var $__5 = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = require("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}),
+    pageX = $__5.pageX,
+    pageY = $__5.pageY;
 var registerPlugin = ($___46__46__47__46__46__47_plugins__ = require("plugins"), $___46__46__47__46__46__47_plugins__ && $___46__46__47__46__46__47_plugins__.__esModule && $___46__46__47__46__46__47_plugins__ || {default: $___46__46__47__46__46__47_plugins__}).registerPlugin;
-;
-function ManualColumnMove() {
-  var startCol,
-      endCol,
-      startX,
-      startOffset,
-      currentCol,
-      instance,
-      currentTH,
-      handle = document.createElement('DIV'),
-      guide = document.createElement('DIV'),
-      eventManager = eventManagerObject(this);
-  handle.className = 'manualColumnMover';
-  guide.className = 'manualColumnMoverGuide';
-  var saveManualColumnPositions = function() {
-    var instance = this;
-    Handsontable.hooks.run(instance, 'persistentStateSave', 'manualColumnPositions', instance.manualColumnPositions);
-  };
-  var loadManualColumnPositions = function() {
-    var instance = this;
-    var storedState = {};
-    Handsontable.hooks.run(instance, 'persistentStateLoad', 'manualColumnPositions', storedState);
-    return storedState.value;
-  };
-  function setupHandlePosition(TH) {
-    instance = this;
-    currentTH = TH;
-    var col = this.view.wt.wtTable.getCoords(TH).col;
-    if (col >= 0) {
-      currentCol = col;
-      var box = currentTH.getBoundingClientRect();
-      startOffset = box.left;
-      handle.style.top = box.top + 'px';
-      handle.style.left = startOffset + 'px';
-      instance.rootElement.appendChild(handle);
+var privatePool = new WeakMap();
+var ManualColumnMove = function ManualColumnMove(hotInstance) {
+  var $__7 = this;
+  $traceurRuntime.superConstructor($ManualColumnMove).call(this, hotInstance);
+  privatePool.set(this, {
+    guideClassName: 'manualColumnMoverGuide',
+    handleClassName: 'manualColumnMover',
+    startOffset: null,
+    pressed: null,
+    startCol: null,
+    endCol: null,
+    currentCol: null,
+    startX: null,
+    startY: null
+  });
+  this.guideElement = null;
+  this.handleElement = null;
+  this.currentTH = null;
+  this.columnPositions = [];
+  this.eventManager = eventManagerObject(this);
+  this.addHook('init', (function() {
+    return $__7.onInit();
+  }));
+};
+var $ManualColumnMove = ManualColumnMove;
+($traceurRuntime.createClass)(ManualColumnMove, {
+  isEnabled: function() {
+    return !!this.hot.getSettings().manualColumnMove;
+  },
+  enablePlugin: function() {
+    var $__7 = this;
+    var priv = privatePool.get(this);
+    var initialSettings = this.hot.getSettings().manualColumnMove;
+    var loadedManualColumnPositions = this.loadManualColumnPositions();
+    this.handleElement = document.createElement('DIV');
+    this.handleElement.className = priv.handleClassName;
+    this.guideElement = document.createElement('DIV');
+    this.guideElement.className = priv.guideClassName;
+    this.addHook('modifyCol', (function(col) {
+      return $__7.onModifyCol(col);
+    }));
+    this.addHook('unmodifyCol', (function(col) {
+      return $__7.onUnmodifyCol(col);
+    }));
+    this.addHook('afterRemoveCol', (function(index, amount) {
+      return $__7.onAfterRemoveCol(index, amount);
+    }));
+    this.addHook('afterCreateCol', (function(index, amount) {
+      return $__7.onAfterCreateCol(index, amount);
+    }));
+    this.registerEvents();
+    if (typeof loadedManualColumnPositions != 'undefined') {
+      this.columnPositions = loadedManualColumnPositions;
+    } else if (Array.isArray(initialSettings)) {
+      this.columnPositions = initialSettings;
+    } else if (!initialSettings || this.columnPositions === void 0) {
+      this.columnPositions = [];
     }
-  }
-  function refreshHandlePosition(TH, delta) {
+    $traceurRuntime.superGet(this, $ManualColumnMove.prototype, "enablePlugin").call(this);
+  },
+  updatePlugin: function() {
+    this.disablePlugin();
+    this.enablePlugin();
+    $traceurRuntime.superGet(this, $ManualColumnMove.prototype, "updatePlugin").call(this);
+  },
+  disablePlugin: function() {
+    var pluginSetting = this.hot.getSettings().manualColumnMove;
+    if (Array.isArray(pluginSetting)) {
+      this.unregisterEvents();
+      this.columnPositions = [];
+    }
+    $traceurRuntime.superGet(this, $ManualColumnMove.prototype, "disablePlugin").call(this);
+  },
+  registerEvents: function() {
+    var $__7 = this;
+    this.eventManager.addEventListener(this.hot.rootElement, 'mouseover', (function(event) {
+      return $__7.onMouseOver(event);
+    }));
+    this.eventManager.addEventListener(this.hot.rootElement, 'mousedown', (function(event) {
+      return $__7.onMouseDown(event);
+    }));
+    this.eventManager.addEventListener(window, 'mousemove', (function(event) {
+      return $__7.onMouseMove(event);
+    }));
+    this.eventManager.addEventListener(window, 'mouseup', (function(event) {
+      return $__7.onMouseUp(event);
+    }));
+  },
+  unregisterEvents: function() {
+    this.eventManager.clear();
+  },
+  saveManualColumnPositions: function() {
+    Handsontable.hooks.run(this.hot, 'persistentStateSave', 'manualColumnPositions', this.columnPositions);
+  },
+  loadManualColumnPositions: function() {
+    var storedState = {};
+    Handsontable.hooks.run(this.hot, 'persistentStateLoad', 'manualColumnPositions', storedState);
+    return storedState.value;
+  },
+  completeSettingsArray: function() {
+    var $__7 = this;
+    var columnCount = this.hot.countCols();
+    if (this.columnPositions.length === columnCount) {
+      return;
+    }
+    rangeEach(0, columnCount - 1, (function(i) {
+      if ($__7.columnPositions.indexOf(i) === -1) {
+        $__7.columnPositions.push(i);
+      }
+    }));
+  },
+  setupHandlePosition: function(TH) {
+    var priv = privatePool.get(this);
+    var col = this.hot.view.wt.wtTable.getCoords(TH).col;
+    this.currentTH = TH;
+    if (col >= 0) {
+      var box = this.currentTH.getBoundingClientRect();
+      priv.currentCol = col;
+      priv.startOffset = box.left;
+      this.handleElement.style.top = box.top + 'px';
+      this.handleElement.style.left = priv.startOffset + 'px';
+      this.hot.rootElement.appendChild(this.handleElement);
+    }
+  },
+  refreshHandlePosition: function(TH, delta) {
     var box = TH.getBoundingClientRect();
     var handleWidth = 6;
     if (delta > 0) {
-      handle.style.left = (box.left + box.width - handleWidth) + 'px';
+      this.handleElement.style.left = (box.left + box.width - handleWidth) + 'px';
     } else {
-      handle.style.left = box.left + 'px';
+      this.handleElement.style.left = box.left + 'px';
     }
-  }
-  function setupGuidePosition() {
-    var instance = this;
-    addClass(handle, 'active');
-    addClass(guide, 'active');
-    var box = currentTH.getBoundingClientRect();
-    guide.style.width = box.width + 'px';
-    guide.style.height = instance.view.maximumVisibleElementHeight(0) + 'px';
-    guide.style.top = handle.style.top;
-    guide.style.left = startOffset + 'px';
-    instance.rootElement.appendChild(guide);
-  }
-  function refreshGuidePosition(diff) {
-    guide.style.left = startOffset + diff + 'px';
-  }
-  function hideHandleAndGuide() {
-    removeClass(handle, 'active');
-    removeClass(guide, 'active');
-  }
-  var checkColumnHeader = function(element) {
-    if (element != this.rootElement) {
+  },
+  setupGuidePosition: function() {
+    var box = this.currentTH.getBoundingClientRect();
+    var priv = privatePool.get(this);
+    addClass(this.handleElement, 'active');
+    addClass(this.guideElement, 'active');
+    this.guideElement.style.width = box.width + 'px';
+    this.guideElement.style.height = this.hot.view.maximumVisibleElementHeight(0) + 'px';
+    this.guideElement.style.top = this.handleElement.style.top;
+    this.guideElement.style.left = priv.startOffset + 'px';
+    this.hot.rootElement.appendChild(this.guideElement);
+  },
+  refreshGuidePosition: function(diff) {
+    var priv = privatePool.get(this);
+    this.guideElement.style.left = priv.startOffset + diff + 'px';
+  },
+  hideHandleAndGuide: function() {
+    removeClass(this.handleElement, 'active');
+    removeClass(this.guideElement, 'active');
+  },
+  checkColumnHeader: function(element) {
+    if (element != this.hot.rootElement) {
       var parent = element.parentNode;
       if (parent.tagName === 'THEAD') {
         return true;
       }
-      return checkColumnHeader.call(this, parent);
+      return this.checkColumnHeader(parent);
     }
     return false;
-  };
-  var getTHFromTargetElement = function(element) {
+  },
+  createPositionData: function(len) {
+    var positionArr = this.columnPositions;
+    if (positionArr.length < len) {
+      rangeEach(positionArr.length, len - 1, (function(i) {
+        positionArr[i] = i;
+      }));
+    }
+  },
+  getTHFromTargetElement: function(element) {
     if (element.tagName != 'TABLE') {
       if (element.tagName == 'TH') {
         return element;
       } else {
-        return getTHFromTargetElement(element.parentNode);
+        return this.getTHFromTargetElement(element.parentNode);
       }
     }
     return null;
-  };
-  var bindEvents = function() {
-    var instance = this;
-    var pressed;
-    eventManager.addEventListener(instance.rootElement, 'mouseover', function(e) {
-      if (checkColumnHeader.call(instance, e.target)) {
-        var th = getTHFromTargetElement(e.target);
-        if (th) {
-          if (pressed) {
-            var col = instance.view.wt.wtTable.getCoords(th).col;
-            if (col >= 0) {
-              endCol = col;
-              refreshHandlePosition(e.target, endCol - startCol);
-            }
-          } else {
-            setupHandlePosition.call(instance, th);
+  },
+  changeColumnPositions: function(columnIndex, destinationIndex) {
+    var maxLength = Math.max(columnIndex, destinationIndex);
+    if (maxLength > this.columnPositions.length - 1) {
+      this.createPositionData(maxLength + 1);
+    }
+    this.columnPositions.splice(destinationIndex, 0, this.columnPositions.splice(columnIndex, 1)[0]);
+  },
+  getVisibleColumnIndex: function(column) {
+    if (column > this.columnPositions.length - 1) {
+      this.createPositionData(column);
+    }
+    return this.columnPositions.indexOf(column);
+  },
+  getLogicalColumnIndex: function(column) {
+    return this.columnPositions[column];
+  },
+  onMouseOver: function(event) {
+    var priv = privatePool.get(this);
+    if (this.checkColumnHeader(event.target)) {
+      var th = this.getTHFromTargetElement(event.target);
+      if (th) {
+        if (priv.pressed) {
+          var col = this.hot.view.wt.wtTable.getCoords(th).col;
+          if (col >= 0) {
+            priv.endCol = col;
+            this.refreshHandlePosition(th, priv.endCol - priv.startCol);
           }
-        }
-      }
-    });
-    eventManager.addEventListener(instance.rootElement, 'mousedown', function(e) {
-      if (hasClass(e.target, 'manualColumnMover')) {
-        startX = pageX(e);
-        setupGuidePosition.call(instance);
-        pressed = instance;
-        startCol = currentCol;
-        endCol = currentCol;
-      }
-    });
-    eventManager.addEventListener(window, 'mousemove', function(e) {
-      if (pressed) {
-        refreshGuidePosition(pageX(e) - startX);
-      }
-    });
-    eventManager.addEventListener(window, 'mouseup', function(e) {
-      if (pressed) {
-        hideHandleAndGuide();
-        pressed = false;
-        createPositionData(instance.manualColumnPositions, instance.countCols());
-        instance.manualColumnPositions.splice(endCol, 0, instance.manualColumnPositions.splice(startCol, 1)[0]);
-        Handsontable.hooks.run(instance, 'beforeColumnMove', startCol, endCol);
-        instance.forceFullRender = true;
-        instance.view.render();
-        saveManualColumnPositions.call(instance);
-        Handsontable.hooks.run(instance, 'afterColumnMove', startCol, endCol);
-        setupHandlePosition.call(instance, currentTH);
-      }
-    });
-    instance.addHook('afterDestroy', unbindEvents);
-  };
-  var unbindEvents = function() {
-    eventManager.clear();
-  };
-  var createPositionData = function(positionArr, len) {
-    if (positionArr.length < len) {
-      for (var i = positionArr.length; i < len; i++) {
-        positionArr[i] = i;
-      }
-    }
-  };
-  this.beforeInit = function() {
-    this.manualColumnPositions = [];
-  };
-  this.init = function(source) {
-    var instance = this;
-    var manualColMoveEnabled = !!(this.getSettings().manualColumnMove);
-    if (manualColMoveEnabled) {
-      var initialManualColumnPositions = this.getSettings().manualColumnMove;
-      var loadedManualColumnPositions = loadManualColumnPositions.call(instance);
-      if (typeof loadedManualColumnPositions != 'undefined') {
-        this.manualColumnPositions = loadedManualColumnPositions;
-      } else if (Array.isArray(initialManualColumnPositions)) {
-        this.manualColumnPositions = initialManualColumnPositions;
-      } else if (!initialManualColumnPositions || this.manualColumnPositions === void 0) {
-        this.manualColumnPositions = [];
-      }
-      if (source === 'afterInit' || source === 'afterUpdateSettings' && eventManager.context.eventListeners.length === 0) {
-        if (typeof instance.manualColumnPositionsPluginUsages === 'undefined') {
-          instance.manualColumnPositionsPluginUsages = ['manualColumnMove'];
         } else {
-          instance.manualColumnPositionsPluginUsages.push('manualColumnMove');
-        }
-        unbindEvents.call(this);
-        bindEvents.call(this);
-        if (this.manualColumnPositions && this.manualColumnPositions.length > 0) {
-          this.forceFullRender = true;
-          this.render();
+          this.setupHandlePosition(th);
         }
       }
-    } else {
-      var pluginUsagesIndex = instance.manualColumnPositionsPluginUsages ? instance.manualColumnPositionsPluginUsages.indexOf('manualColumnMove') : -1;
-      if (pluginUsagesIndex > -1) {
-        unbindEvents.call(this);
-        this.manualColumnPositions = [];
-        instance.manualColumnPositionsPluginUsages[pluginUsagesIndex] = void 0;
-      }
     }
-  };
-  this.modifyCol = function(col) {
-    if (this.getSettings().manualColumnMove) {
-      if (typeof this.manualColumnPositions[col] === 'undefined') {
-        createPositionData(this.manualColumnPositions, col + 1);
-      }
-      return this.manualColumnPositions[col];
+  },
+  onMouseDown: function(event) {
+    var priv = privatePool.get(this);
+    if (hasClass(event.target, priv.handleClassName)) {
+      priv.startX = pageX(event);
+      this.setupGuidePosition();
+      priv.pressed = this.hot;
+      priv.startCol = priv.currentCol;
+      priv.endCol = priv.currentCol;
     }
-    return col;
-  };
-  this.afterRemoveCol = function(index, amount) {
-    if (!this.getSettings().manualColumnMove) {
+  },
+  onMouseMove: function(event) {
+    var priv = privatePool.get(this);
+    if (priv.pressed) {
+      this.refreshGuidePosition(pageX(event) - priv.startX);
+    }
+  },
+  onMouseUp: function(event) {
+    var priv = privatePool.get(this);
+    if (priv.pressed) {
+      this.hideHandleAndGuide();
+      priv.pressed = false;
+      this.createPositionData(this.hot.countCols());
+      this.changeColumnPositions(priv.startCol, priv.endCol);
+      Handsontable.hooks.run(this.hot, 'beforeColumnMove', priv.startCol, priv.endCol);
+      this.hot.forceFullRender = true;
+      this.hot.view.render();
+      this.saveManualColumnPositions();
+      Handsontable.hooks.run(this.hot, 'afterColumnMove', priv.startCol, priv.endCol);
+      this.setupHandlePosition(this.currentTH);
+    }
+  },
+  onModifyCol: function(col) {
+    if (typeof this.getVisibleColumnIndex(col) == -1) {
+      this.createPositionData(col + 1);
+    }
+    return this.getLogicalColumnIndex(col);
+  },
+  onUnmodifyCol: function(col) {
+    if (typeof this.getVisibleColumnIndex(col) == -1) {
+      this.createPositionData(col + 1);
+    }
+    return this.getVisibleColumnIndex(col);
+  },
+  onAfterRemoveCol: function(index, amount) {
+    if (!this.isEnabled()) {
       return;
     }
-    var rmindx,
-        colpos = this.manualColumnPositions;
+    var rmindx;
+    var colpos = this.columnPositions;
     rmindx = colpos.splice(index, amount);
-    colpos = colpos.map(function(colpos) {
+    colpos = arrayMap(colpos, function(value, index) {
       var i,
-          newpos = colpos;
-      for (i = 0; i < rmindx.length; i++) {
-        if (colpos > rmindx[i]) {
+          newpos = value;
+      arrayEach(rmindx, (function(elem, index) {
+        if (value > elem) {
           newpos--;
         }
-      }
+      }));
       return newpos;
     });
-    this.manualColumnPositions = colpos;
-  };
-  this.afterCreateCol = function(index, amount) {
-    if (!this.getSettings().manualColumnMove) {
+    this.columnPositions = colpos;
+  },
+  onAfterCreateCol: function(index, amount) {
+    if (!this.isEnabled()) {
       return;
     }
-    var colpos = this.manualColumnPositions;
+    var colpos = this.columnPositions;
     if (!colpos.length) {
       return;
     }
     var addindx = [];
-    for (var i = 0; i < amount; i++) {
+    rangeEach(0, amount - 1, (function(i) {
       addindx.push(index + i);
-    }
+    }));
     if (index >= colpos.length) {
       colpos.concat(addindx);
     } else {
-      colpos = colpos.map(function(colpos) {
-        return (colpos >= index) ? (colpos + amount) : colpos;
+      colpos = arrayMap(colpos, function(value, ind) {
+        return (value >= index) ? (value + amount) : value;
       });
       colpos.splice.apply(colpos, [index, 0].concat(addindx));
     }
-    this.manualColumnPositions = colpos;
-  };
-}
-var htManualColumnMove = new ManualColumnMove();
-Handsontable.hooks.add('beforeInit', htManualColumnMove.beforeInit);
-Handsontable.hooks.add('afterInit', function() {
-  htManualColumnMove.init.call(this, 'afterInit');
-});
-Handsontable.hooks.add('afterUpdateSettings', function() {
-  htManualColumnMove.init.call(this, 'afterUpdateSettings');
-});
-Handsontable.hooks.add('modifyCol', htManualColumnMove.modifyCol);
-Handsontable.hooks.add('afterRemoveCol', htManualColumnMove.afterRemoveCol);
-Handsontable.hooks.add('afterCreateCol', htManualColumnMove.afterCreateCol);
+    this.columnPositions = colpos;
+  },
+  onInit: function() {
+    this.completeSettingsArray();
+  }
+}, {}, BasePlugin);
+;
+registerPlugin('manualColumnMove', ManualColumnMove);
 Handsontable.hooks.register('beforeColumnMove');
 Handsontable.hooks.register('afterColumnMove');
+Handsontable.hooks.register('unmodifyCol');
 
 //# 
-},{"eventManager":41,"helpers/dom/element":45,"helpers/dom/event":46,"plugins":59}],80:[function(require,module,exports){
+},{"_base.js":61,"eventManager":41,"helpers/array":42,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/number":50,"plugins":60}],81:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ManualColumnResize: {get: function() {
@@ -15874,7 +16403,7 @@ var $ManualColumnResize = ManualColumnResize;
 registerPlugin('manualColumnResize', ManualColumnResize);
 
 //# 
-},{"_base.js":60,"eventManager":41,"helpers/dom/element":45,"helpers/dom/event":46,"plugins":59}],81:[function(require,module,exports){
+},{"_base.js":61,"eventManager":41,"helpers/dom/element":45,"helpers/dom/event":46,"plugins":60}],82:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ManualRowMove: {get: function() {
@@ -15882,221 +16411,321 @@ Object.defineProperties(exports, {
     }},
   __esModule: {value: true}
 });
-var $___46__46__47__46__46__47_helpers_47_dom_47_element__,
+var $___46__46__47__95_base_46_js__,
+    $___46__46__47__46__46__47_helpers_47_dom_47_element__,
+    $___46__46__47__46__46__47_helpers_47_array__,
+    $___46__46__47__46__46__47_helpers_47_number__,
     $___46__46__47__46__46__47_eventManager__,
     $___46__46__47__46__46__47_helpers_47_dom_47_event__,
     $___46__46__47__46__46__47_plugins__;
-var $__0 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = require("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}),
-    addClass = $__0.addClass,
-    hasClass = $__0.hasClass,
-    removeClass = $__0.removeClass;
+var BasePlugin = ($___46__46__47__95_base_46_js__ = require("_base.js"), $___46__46__47__95_base_46_js__ && $___46__46__47__95_base_46_js__.__esModule && $___46__46__47__95_base_46_js__ || {default: $___46__46__47__95_base_46_js__}).default;
+var $__1 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = require("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}),
+    addClass = $__1.addClass,
+    hasClass = $__1.hasClass,
+    removeClass = $__1.removeClass;
+var $__2 = ($___46__46__47__46__46__47_helpers_47_array__ = require("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}),
+    arrayEach = $__2.arrayEach,
+    arrayMap = $__2.arrayMap;
+var rangeEach = ($___46__46__47__46__46__47_helpers_47_number__ = require("helpers/number"), $___46__46__47__46__46__47_helpers_47_number__ && $___46__46__47__46__46__47_helpers_47_number__.__esModule && $___46__46__47__46__46__47_helpers_47_number__ || {default: $___46__46__47__46__46__47_helpers_47_number__}).rangeEach;
 var eventManagerObject = ($___46__46__47__46__46__47_eventManager__ = require("eventManager"), $___46__46__47__46__46__47_eventManager__ && $___46__46__47__46__46__47_eventManager__.__esModule && $___46__46__47__46__46__47_eventManager__ || {default: $___46__46__47__46__46__47_eventManager__}).eventManager;
-var $__2 = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = require("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}),
-    pageX = $__2.pageX,
-    pageY = $__2.pageY;
+var $__5 = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = require("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}),
+    pageX = $__5.pageX,
+    pageY = $__5.pageY;
 var registerPlugin = ($___46__46__47__46__46__47_plugins__ = require("plugins"), $___46__46__47__46__46__47_plugins__ && $___46__46__47__46__46__47_plugins__.__esModule && $___46__46__47__46__46__47_plugins__ || {default: $___46__46__47__46__46__47_plugins__}).registerPlugin;
-;
-function ManualRowMove() {
-  var startRow,
-      endRow,
-      startY,
-      startOffset,
-      currentRow,
-      currentTH,
-      handle = document.createElement('DIV'),
-      guide = document.createElement('DIV'),
-      eventManager = eventManagerObject(this);
-  handle.className = 'manualRowMover';
-  guide.className = 'manualRowMoverGuide';
-  var saveManualRowPositions = function() {
-    var instance = this;
-    Handsontable.hooks.run(instance, 'persistentStateSave', 'manualRowPositions', instance.manualRowPositions);
-  };
-  var loadManualRowPositions = function() {
-    var instance = this,
-        storedState = {};
-    Handsontable.hooks.run(instance, 'persistentStateLoad', 'manualRowPositions', storedState);
-    return storedState.value;
-  };
-  function setupHandlePosition(TH) {
-    var instance = this;
-    currentTH = TH;
-    var row = this.view.wt.wtTable.getCoords(TH).row;
-    if (row >= 0) {
-      currentRow = row;
-      var box = currentTH.getBoundingClientRect();
-      startOffset = box.top;
-      handle.style.top = startOffset + 'px';
-      handle.style.left = box.left + 'px';
-      instance.rootElement.appendChild(handle);
+var privatePool = new WeakMap();
+var ManualRowMove = function ManualRowMove(hotInstance) {
+  $traceurRuntime.superConstructor($ManualRowMove).call(this, hotInstance);
+  privatePool.set(this, {
+    guideClassName: 'manualRowMoverGuide',
+    handleClassName: 'manualRowMover',
+    startOffset: null,
+    pressed: null,
+    startRow: null,
+    endRow: null,
+    currentRow: null,
+    startX: null,
+    startY: null
+  });
+  this.guideElement = null;
+  this.handleElement = null;
+  this.currentTH = null;
+  this.rowPositions = [];
+  this.eventManager = eventManagerObject(this);
+};
+var $ManualRowMove = ManualRowMove;
+($traceurRuntime.createClass)(ManualRowMove, {
+  isEnabled: function() {
+    return !!this.hot.getSettings().manualRowMove;
+  },
+  enablePlugin: function() {
+    var $__7 = this;
+    var priv = privatePool.get(this);
+    var initialSettings = this.hot.getSettings().manualRowMove;
+    var loadedManualRowPositions = this.loadManualRowPositions();
+    this.handleElement = document.createElement('DIV');
+    this.handleElement.className = priv.handleClassName;
+    this.guideElement = document.createElement('DIV');
+    this.guideElement.className = priv.guideClassName;
+    this.addHook('modifyRow', (function(row) {
+      return $__7.onModifyRow(row);
+    }));
+    this.addHook('afterRemoveRow', (function(index, amount) {
+      return $__7.onAfterRemoveRow(index, amount);
+    }));
+    this.addHook('afterCreateRow', (function(index, amount) {
+      return $__7.onAfterCreateRow(index, amount);
+    }));
+    this.addHook('init', (function() {
+      return $__7.onInit();
+    }));
+    this.registerEvents();
+    if (typeof loadedManualRowPositions != 'undefined') {
+      this.rowPositions = loadedManualRowPositions;
+    } else if (Array.isArray(initialSettings)) {
+      this.rowPositions = initialSettings;
+    } else if (!initialSettings || this.rowPositions === void 0) {
+      this.rowPositions = [];
     }
-  }
-  function refreshHandlePosition(TH, delta) {
+    $traceurRuntime.superGet(this, $ManualRowMove.prototype, "enablePlugin").call(this);
+  },
+  updatePlugin: function() {
+    this.disablePlugin();
+    this.enablePlugin();
+    $traceurRuntime.superGet(this, $ManualRowMove.prototype, "updatePlugin").call(this);
+  },
+  disablePlugin: function() {
+    var pluginSetting = this.hot.getSettings().manualRowMove;
+    if (Array.isArray(pluginSetting)) {
+      this.unregisterEvents();
+      this.rowPositions = [];
+    }
+    $traceurRuntime.superGet(this, $ManualRowMove.prototype, "disablePlugin").call(this);
+  },
+  registerEvents: function() {
+    var $__7 = this;
+    this.eventManager.addEventListener(this.hot.rootElement, 'mouseover', (function(event) {
+      return $__7.onMouseOver(event);
+    }));
+    this.eventManager.addEventListener(this.hot.rootElement, 'mousedown', (function(event) {
+      return $__7.onMouseDown(event);
+    }));
+    this.eventManager.addEventListener(window, 'mousemove', (function(event) {
+      return $__7.onMouseMove(event);
+    }));
+    this.eventManager.addEventListener(window, 'mouseup', (function(event) {
+      return $__7.onMouseUp(event);
+    }));
+  },
+  unregisterEvents: function() {
+    this.eventManager.clear();
+  },
+  saveManualRowPositions: function() {
+    Handsontable.hooks.run(this.hot, 'persistentStateSave', 'manualRowPositions', this.rowPositions);
+  },
+  loadManualRowPositions: function() {
+    var storedState = {};
+    Handsontable.hooks.run(this.hot, 'persistentStateLoad', 'manualRowPositions', storedState);
+    return storedState.value;
+  },
+  completeSettingsArray: function() {
+    var $__7 = this;
+    var rowCount = this.hot.countRows();
+    if (this.rowPositions.length === rowCount) {
+      return;
+    }
+    rangeEach(0, rowCount - 1, (function(i) {
+      if ($__7.rowPositions.indexOf(i) === -1) {
+        $__7.rowPositions.push(i);
+      }
+    }));
+  },
+  setupHandlePosition: function(TH) {
+    var priv = privatePool.get(this);
+    var row = this.hot.view.wt.wtTable.getCoords(TH).row;
+    this.currentTH = TH;
+    if (row >= 0) {
+      var box = this.currentTH.getBoundingClientRect();
+      priv.currentRow = row;
+      priv.startOffset = box.top;
+      this.handleElement.style.top = priv.startOffset + 'px';
+      this.handleElement.style.left = box.left + 'px';
+      this.hot.rootElement.appendChild(this.handleElement);
+    }
+  },
+  refreshHandlePosition: function(TH, delta) {
     var box = TH.getBoundingClientRect();
     var handleHeight = 6;
     if (delta > 0) {
-      handle.style.top = (box.top + box.height - handleHeight) + 'px';
+      this.handleElement.style.top = (box.top + box.height - handleHeight) + 'px';
     } else {
-      handle.style.top = box.top + 'px';
+      this.handleElement.style.top = box.top + 'px';
     }
-  }
-  function setupGuidePosition() {
-    var instance = this;
-    addClass(handle, 'active');
-    addClass(guide, 'active');
-    var box = currentTH.getBoundingClientRect();
-    guide.style.width = instance.view.maximumVisibleElementWidth(0) + 'px';
-    guide.style.height = box.height + 'px';
-    guide.style.top = startOffset + 'px';
-    guide.style.left = handle.style.left;
-    instance.rootElement.appendChild(guide);
-  }
-  function refreshGuidePosition(diff) {
-    guide.style.top = startOffset + diff + 'px';
-  }
-  function hideHandleAndGuide() {
-    removeClass(handle, 'active');
-    removeClass(guide, 'active');
-  }
-  var checkRowHeader = function(element) {
-    if (element != this.rootElement) {
+  },
+  setupGuidePosition: function() {
+    var box = this.currentTH.getBoundingClientRect();
+    var priv = privatePool.get(this);
+    addClass(this.handleElement, 'active');
+    addClass(this.guideElement, 'active');
+    this.guideElement.style.height = box.height + 'px';
+    this.guideElement.style.width = this.hot.view.maximumVisibleElementWidth(0) + 'px';
+    this.guideElement.style.top = priv.startOffset + 'px';
+    this.guideElement.style.left = this.handleElement.style.left;
+    this.hot.rootElement.appendChild(this.guideElement);
+  },
+  refreshGuidePosition: function(diff) {
+    var priv = privatePool.get(this);
+    this.guideElement.style.top = priv.startOffset + diff + 'px';
+  },
+  hideHandleAndGuide: function() {
+    removeClass(this.handleElement, 'active');
+    removeClass(this.guideElement, 'active');
+  },
+  checkRowHeader: function(element) {
+    if (element != this.hot.rootElement) {
       var parent = element.parentNode;
-      if (parent.tagName == 'TBODY') {
+      if (parent.tagName === 'TBODY') {
         return true;
       }
-      return checkRowHeader.call(this, parent);
+      return this.checkRowHeader(parent);
     }
     return false;
-  };
-  var getTHFromTargetElement = function(element) {
+  },
+  createPositionData: function(len) {
+    var positionArr = this.rowPositions;
+    if (positionArr.length < len) {
+      rangeEach(positionArr.length, len - 1, (function(i) {
+        positionArr[i] = i;
+      }));
+    }
+  },
+  getTHFromTargetElement: function(element) {
     if (element.tagName != 'TABLE') {
       if (element.tagName == 'TH') {
         return element;
       } else {
-        return getTHFromTargetElement(element.parentNode);
+        return this.getTHFromTargetElement(element.parentNode);
       }
     }
     return null;
-  };
-  var bindEvents = function() {
-    var instance = this;
-    var pressed;
-    eventManager.addEventListener(instance.rootElement, 'mouseover', function(e) {
-      if (checkRowHeader.call(instance, e.target)) {
-        var th = getTHFromTargetElement(e.target);
-        if (th) {
-          if (pressed) {
-            endRow = instance.view.wt.wtTable.getCoords(th).row;
-            refreshHandlePosition(th, endRow - startRow);
-          } else {
-            setupHandlePosition.call(instance, th);
-          }
+  },
+  changeRowPositions: function(rowIndex, destinationIndex) {
+    var maxLength = Math.max(rowIndex, destinationIndex);
+    if (maxLength > this.rowPositions.length - 1) {
+      this.createPositionData(maxLength + 1);
+    }
+    this.rowPositions.splice(destinationIndex, 0, this.rowPositions.splice(rowIndex, 1)[0]);
+  },
+  getVisibleRowIndex: function(row) {
+    if (row > this.rowPositions.length - 1) {
+      this.createPositionData(row);
+    }
+    return this.rowPositions.indexOf(row);
+  },
+  getLogicalRowIndex: function(row) {
+    return this.rowPositions[row];
+  },
+  onMouseOver: function(event) {
+    var priv = privatePool.get(this);
+    if (this.checkRowHeader(event.target)) {
+      var th = this.getTHFromTargetElement(event.target);
+      if (th) {
+        if (priv.pressed) {
+          priv.endRow = this.hot.view.wt.wtTable.getCoords(th).row;
+          this.refreshHandlePosition(th, priv.endRow - priv.startRow);
+        } else {
+          this.setupHandlePosition(th);
         }
-      }
-    });
-    eventManager.addEventListener(instance.rootElement, 'mousedown', function(e) {
-      if (hasClass(e.target, 'manualRowMover')) {
-        startY = pageY(e);
-        setupGuidePosition.call(instance);
-        pressed = instance;
-        startRow = currentRow;
-        endRow = currentRow;
-      }
-    });
-    eventManager.addEventListener(window, 'mousemove', function(e) {
-      if (pressed) {
-        refreshGuidePosition(pageY(e) - startY);
-      }
-    });
-    eventManager.addEventListener(window, 'mouseup', function(e) {
-      if (pressed) {
-        hideHandleAndGuide();
-        pressed = false;
-        createPositionData(instance.manualRowPositions, instance.countRows());
-        instance.manualRowPositions.splice(endRow, 0, instance.manualRowPositions.splice(startRow, 1)[0]);
-        Handsontable.hooks.run(instance, 'beforeRowMove', startRow, endRow);
-        instance.forceFullRender = true;
-        instance.view.render();
-        saveManualRowPositions.call(instance);
-        Handsontable.hooks.run(instance, 'afterRowMove', startRow, endRow);
-        setupHandlePosition.call(instance, currentTH);
-      }
-    });
-    instance.addHook('afterDestroy', unbindEvents);
-  };
-  var unbindEvents = function() {
-    eventManager.clear();
-  };
-  var createPositionData = function(positionArr, len) {
-    if (positionArr.length < len) {
-      for (var i = positionArr.length; i < len; i++) {
-        positionArr[i] = i;
       }
     }
-  };
-  this.beforeInit = function() {
-    this.manualRowPositions = [];
-  };
-  this.init = function(source) {
-    var instance = this;
-    var manualRowMoveEnabled = !!(instance.getSettings().manualRowMove);
-    if (manualRowMoveEnabled) {
-      var initialManualRowPositions = instance.getSettings().manualRowMove;
-      var loadedManualRowPostions = loadManualRowPositions.call(instance);
-      if (typeof instance.manualRowPositionsPluginUsages === 'undefined') {
-        instance.manualRowPositionsPluginUsages = ['manualColumnMove'];
-      } else {
-        instance.manualRowPositionsPluginUsages.push('manualColumnMove');
-      }
-      if (typeof loadedManualRowPostions != 'undefined') {
-        this.manualRowPositions = loadedManualRowPostions;
-      } else if (Array.isArray(initialManualRowPositions)) {
-        this.manualRowPositions = initialManualRowPositions;
-      } else if (!initialManualRowPositions || this.manualRowPositions === void 0) {
-        this.manualRowPositions = [];
-      }
-      if (source === 'afterInit' || source === 'afterUpdateSettings' && eventManager.context.eventListeners.length === 0) {
-        unbindEvents.call(this);
-        bindEvents.call(this);
-        if (this.manualRowPositions && this.manualRowPositions.length > 0) {
-          instance.forceFullRender = true;
-          instance.render();
+  },
+  onMouseDown: function(event) {
+    var priv = privatePool.get(this);
+    if (hasClass(event.target, priv.handleClassName)) {
+      priv.startY = pageY(event);
+      this.setupGuidePosition();
+      priv.pressed = this.hot;
+      priv.startRow = priv.currentRow;
+      priv.endRow = priv.currentRow;
+    }
+  },
+  onMouseMove: function(event) {
+    var priv = privatePool.get(this);
+    if (priv.pressed) {
+      this.refreshGuidePosition(pageY(event) - priv.startY);
+    }
+  },
+  onMouseUp: function(event) {
+    var priv = privatePool.get(this);
+    if (priv.pressed) {
+      this.hideHandleAndGuide();
+      priv.pressed = false;
+      this.createPositionData(this.hot.countRows());
+      this.changeRowPositions(priv.startRow, priv.endRow);
+      Handsontable.hooks.run(this.hot, 'beforeRowMove', priv.startRow, priv.endRow);
+      this.hot.forceFullRender = true;
+      this.hot.view.render();
+      this.saveManualRowPositions();
+      Handsontable.hooks.run(this.hot, 'afterRowMove', priv.startRow, priv.endRow);
+      this.setupHandlePosition(this.currentTH);
+    }
+  },
+  onModifyRow: function(row) {
+    if (typeof this.getVisibleRowIndex(row) === 'undefined') {
+      this.createPositionData(row + 1);
+    }
+    return this.getLogicalRowIndex(row);
+  },
+  onAfterRemoveRow: function(index, amount) {
+    if (!this.isEnabled()) {
+      return;
+    }
+    var rmindx;
+    var rowpos = this.rowPositions;
+    rmindx = rowpos.splice(index, amount);
+    rowpos = arrayMap(rowpos, function(value, index) {
+      var newpos = value;
+      arrayEach(rmindx, (function(elem, index) {
+        if (value > elem) {
+          newpos--;
         }
-      }
+      }));
+      return newpos;
+    });
+    this.rowPositions = rowpos;
+  },
+  onAfterCreateRow: function(index, amount) {
+    if (!this.isEnabled()) {
+      return;
+    }
+    var rowpos = this.rowPositions;
+    if (!rowpos.length) {
+      return;
+    }
+    var addindx = [];
+    for (var i = 0; i < amount; i++) {
+      addindx.push(index + i);
+    }
+    if (index >= rowpos.length) {
+      rowpos.concat(addindx);
     } else {
-      var pluginUsagesIndex = instance.manualRowPositionsPluginUsages ? instance.manualRowPositionsPluginUsages.indexOf('manualColumnMove') : -1;
-      if (pluginUsagesIndex > -1) {
-        unbindEvents.call(this);
-        instance.manualRowPositions = [];
-        instance.manualRowPositionsPluginUsages[pluginUsagesIndex] = void 0;
-      }
+      rowpos = arrayMap(rowpos, function(value, ind) {
+        return (value >= index) ? (value + amount) : value;
+      });
+      rowpos.splice.apply(rowpos, [index, 0].concat(addindx));
     }
-  };
-  this.modifyRow = function(row) {
-    var instance = this;
-    if (instance.getSettings().manualRowMove) {
-      if (typeof instance.manualRowPositions[row] === 'undefined') {
-        createPositionData(this.manualRowPositions, row + 1);
-      }
-      return instance.manualRowPositions[row];
-    }
-    return row;
-  };
-}
-var htManualRowMove = new ManualRowMove();
-Handsontable.hooks.add('beforeInit', htManualRowMove.beforeInit);
-Handsontable.hooks.add('afterInit', function() {
-  htManualRowMove.init.call(this, 'afterInit');
-});
-Handsontable.hooks.add('afterUpdateSettings', function() {
-  htManualRowMove.init.call(this, 'afterUpdateSettings');
-});
-Handsontable.hooks.add('modifyRow', htManualRowMove.modifyRow);
+    this.rowPositions = rowpos;
+  },
+  onInit: function() {
+    this.completeSettingsArray();
+  }
+}, {}, BasePlugin);
+;
+registerPlugin('ManualRowMove', ManualRowMove);
 Handsontable.hooks.register('beforeRowMove');
 Handsontable.hooks.register('afterRowMove');
 
 //# 
-},{"eventManager":41,"helpers/dom/element":45,"helpers/dom/event":46,"plugins":59}],82:[function(require,module,exports){
+},{"_base.js":61,"eventManager":41,"helpers/array":42,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/number":50,"plugins":60}],83:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ManualRowResize: {get: function() {
@@ -16337,7 +16966,7 @@ var $ManualRowResize = ManualRowResize;
 registerPlugin('manualRowResize', ManualRowResize);
 
 //# 
-},{"_base.js":60,"eventManager":41,"helpers/dom/element":45,"helpers/dom/event":46,"plugins":59}],83:[function(require,module,exports){
+},{"_base.js":61,"eventManager":41,"helpers/dom/element":45,"helpers/dom/event":46,"plugins":60}],84:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   MergeCells: {get: function() {
@@ -16875,7 +17504,7 @@ Handsontable.hooks.add('afterRemoveRow', onAfterRemoveRow);
 Handsontable.MergeCells = MergeCells;
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":5,"3rdparty/walkontable/src/cell/range":6,"3rdparty/walkontable/src/table":20,"helpers/dom/event":46,"plugins":59}],84:[function(require,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":5,"3rdparty/walkontable/src/cell/range":6,"3rdparty/walkontable/src/table":20,"helpers/dom/event":46,"plugins":60}],85:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   MultipleSelectionHandles: {get: function() {
@@ -17162,7 +17791,62 @@ var $MultipleSelectionHandles = MultipleSelectionHandles;
 registerPlugin('multipleSelectionHandles', MultipleSelectionHandles);
 
 //# 
-},{"_base":60,"eventManager":41,"helpers/dom/element":45,"plugins":59}],85:[function(require,module,exports){
+},{"_base":61,"eventManager":41,"helpers/dom/element":45,"plugins":60}],86:[function(require,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  DataObserver: {get: function() {
+      return DataObserver;
+    }},
+  __esModule: {value: true}
+});
+var $__jsonpatch__,
+    $___46__46__47__46__46__47_mixins_47_localHooks__,
+    $___46__46__47__46__46__47_helpers_47_object__,
+    $__utils__;
+var jsonpatch = ($__jsonpatch__ = require("jsonpatch"), $__jsonpatch__ && $__jsonpatch__.__esModule && $__jsonpatch__ || {default: $__jsonpatch__}).default;
+var localHooks = ($___46__46__47__46__46__47_mixins_47_localHooks__ = require("../../mixins/localHooks"), $___46__46__47__46__46__47_mixins_47_localHooks__ && $___46__46__47__46__46__47_mixins_47_localHooks__.__esModule && $___46__46__47__46__46__47_mixins_47_localHooks__ || {default: $___46__46__47__46__46__47_mixins_47_localHooks__}).localHooks;
+var mixin = ($___46__46__47__46__46__47_helpers_47_object__ = require("../../helpers/object"), $___46__46__47__46__46__47_helpers_47_object__ && $___46__46__47__46__46__47_helpers_47_object__.__esModule && $___46__46__47__46__46__47_helpers_47_object__ || {default: $___46__46__47__46__46__47_helpers_47_object__}).mixin;
+var cleanPatches = ($__utils__ = require("utils"), $__utils__ && $__utils__.__esModule && $__utils__ || {default: $__utils__}).cleanPatches;
+var DataObserver = function DataObserver(observedData) {
+  this.observedData = null;
+  this.observer = null;
+  this.paused = false;
+  this.setObservedData(observedData);
+};
+($traceurRuntime.createClass)(DataObserver, {
+  setObservedData: function(observedData) {
+    var $__4 = this;
+    if (this.observer) {
+      jsonpatch.unobserve(this.observedData, this.observer);
+    }
+    this.observedData = observedData;
+    this.observer = jsonpatch.observe(this.observedData, (function(patches) {
+      return $__4.onChange(patches);
+    }));
+  },
+  isPaused: function() {
+    return this.paused;
+  },
+  pause: function() {
+    this.paused = true;
+  },
+  resume: function() {
+    this.paused = false;
+  },
+  onChange: function(patches) {
+    this.runLocalHooks('change', cleanPatches(patches));
+  },
+  destroy: function() {
+    jsonpatch.unobserve(this.observedData, this.observer);
+    this.observedData = null;
+    this.observer = null;
+  }
+}, {});
+mixin(DataObserver, localHooks);
+;
+
+//# 
+},{"../../helpers/object":51,"../../mixins/localHooks":56,"jsonpatch":"jsonpatch","utils":88}],87:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ObserveChanges: {get: function() {
@@ -17170,161 +17854,202 @@ Object.defineProperties(exports, {
     }},
   __esModule: {value: true}
 });
-var $___46__46__47__46__46__47_plugins__,
-    $__jsonpatch__;
-var registerPlugin = ($___46__46__47__46__46__47_plugins__ = require("plugins"), $___46__46__47__46__46__47_plugins__ && $___46__46__47__46__46__47_plugins__.__esModule && $___46__46__47__46__46__47_plugins__ || {default: $___46__46__47__46__46__47_plugins__}).registerPlugin;
+var $___46__46__47__95_base__,
+    $__jsonpatch__,
+    $__dataObserver__,
+    $___46__46__47__46__46__47_helpers_47_array__,
+    $___46__46__47__46__46__47_plugins__;
+var BasePlugin = ($___46__46__47__95_base__ = require("_base"), $___46__46__47__95_base__ && $___46__46__47__95_base__.__esModule && $___46__46__47__95_base__ || {default: $___46__46__47__95_base__}).default;
 var jsonpatch = ($__jsonpatch__ = require("jsonpatch"), $__jsonpatch__ && $__jsonpatch__.__esModule && $__jsonpatch__ || {default: $__jsonpatch__}).default;
-;
-function ObserveChanges() {}
-Handsontable.hooks.add('afterLoadData', init);
-Handsontable.hooks.add('afterUpdateSettings', init);
+var DataObserver = ($__dataObserver__ = require("dataObserver"), $__dataObserver__ && $__dataObserver__.__esModule && $__dataObserver__ || {default: $__dataObserver__}).DataObserver;
+var arrayEach = ($___46__46__47__46__46__47_helpers_47_array__ = require("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}).arrayEach;
+var registerPlugin = ($___46__46__47__46__46__47_plugins__ = require("plugins"), $___46__46__47__46__46__47_plugins__ && $___46__46__47__46__46__47_plugins__.__esModule && $___46__46__47__46__46__47_plugins__ || {default: $___46__46__47__46__46__47_plugins__}).registerPlugin;
 Handsontable.hooks.register('afterChangesObserved');
-function init() {
-  var instance = this;
-  var pluginEnabled = instance.getSettings().observeChanges;
-  if (pluginEnabled) {
-    if (instance.observer) {
-      destroy.call(instance);
-    }
-    createObserver.call(instance);
-    bindEvents.call(instance);
-  } else if (!pluginEnabled) {
-    destroy.call(instance);
-  }
-}
-function createObserver() {
-  var instance = this;
-  instance.observeChangesActive = true;
-  instance.pauseObservingChanges = function() {
-    instance.observeChangesActive = false;
-  };
-  instance.resumeObservingChanges = function() {
-    instance.observeChangesActive = true;
-  };
-  instance.observedData = instance.getSourceData();
-  instance.observer = jsonpatch.observe(instance.observedData, function(patches) {
-    if (instance.observeChangesActive) {
-      runHookForOperation.call(instance, patches);
-      instance.render();
-    }
-    instance.runHooks('afterChangesObserved');
-  });
-}
-function runHookForOperation(rawPatches) {
-  var instance = this;
-  var patches = cleanPatches(rawPatches);
-  for (var i = 0,
-      len = patches.length; i < len; i++) {
-    var patch = patches[i];
-    var parsedPath = parsePath(patch.path);
-    if (!parsedPath) {
+var ObserveChanges = function ObserveChanges(hotInstance) {
+  $traceurRuntime.superConstructor($ObserveChanges).call(this, hotInstance);
+  this.observer = null;
+};
+var $ObserveChanges = ObserveChanges;
+($traceurRuntime.createClass)(ObserveChanges, {
+  isEnabled: function() {
+    return this.hot.getSettings().observeChanges;
+  },
+  enablePlugin: function() {
+    var $__5 = this;
+    if (this.enabled) {
       return;
     }
-    switch (patch.op) {
-      case 'add':
-        if (isNaN(parsedPath.col)) {
-          instance.runHooks('afterCreateRow', parsedPath.row);
-        } else {
-          instance.runHooks('afterCreateCol', parsedPath.col);
-        }
-        break;
-      case 'remove':
-        if (isNaN(parsedPath.col)) {
-          instance.runHooks('afterRemoveRow', parsedPath.row, 1);
-        } else {
-          instance.runHooks('afterRemoveCol', parsedPath.col, 1);
-        }
-        break;
-      case 'replace':
-        instance.runHooks('afterChange', [parsedPath.row, parsedPath.col, null, patch.value], 'external');
-        break;
+    if (!this.observer) {
+      this.observer = new DataObserver(this.hot.getSourceData());
+      this._exposePublicApi();
     }
-  }
-  function cleanPatches(rawPatches) {
-    var patches;
-    patches = removeLengthRelatedPatches(rawPatches);
-    patches = removeMultipleAddOrRemoveColPatches(patches);
-    return patches;
-  }
-  function removeMultipleAddOrRemoveColPatches(rawPatches) {
-    var newOrRemovedColumns = [];
-    return rawPatches.filter(function(patch) {
-      var parsedPath = parsePath(patch.path);
-      if (!parsedPath) {
-        return;
-      }
-      if (['add', 'remove'].indexOf(patch.op) != -1 && !isNaN(parsedPath.col)) {
-        if (newOrRemovedColumns.indexOf(parsedPath.col) !== -1) {
-          return false;
+    this.observer.addLocalHook('change', (function(patches) {
+      return $__5.onDataChange(patches);
+    }));
+    this.addHook('afterCreateRow', (function() {
+      return $__5.onAfterTableAlter();
+    }));
+    this.addHook('afterRemoveRow', (function() {
+      return $__5.onAfterTableAlter();
+    }));
+    this.addHook('afterCreateCol', (function() {
+      return $__5.onAfterTableAlter();
+    }));
+    this.addHook('afterRemoveCol', (function() {
+      return $__5.onAfterTableAlter();
+    }));
+    this.addHook('afterChange', (function(changes, source) {
+      return $__5.onAfterTableAlter(source);
+    }));
+    this.addHook('afterLoadData', (function(firstRun) {
+      return $__5.onAfterLoadData(firstRun);
+    }));
+    $traceurRuntime.superGet(this, $ObserveChanges.prototype, "enablePlugin").call(this);
+  },
+  disablePlugin: function() {
+    if (this.observer) {
+      this.observer.destroy();
+      this.observer = null;
+      this._deletePublicApi();
+    }
+    $traceurRuntime.superGet(this, $ObserveChanges.prototype, "disablePlugin").call(this);
+  },
+  onDataChange: function(patches) {
+    var $__5 = this;
+    if (!this.observer.isPaused()) {
+      var actions = {
+        add: (function(patch) {
+          if (isNaN(patch.col)) {
+            $__5.hot.runHooks('afterCreateRow', patch.row);
+          } else {
+            $__5.hot.runHooks('afterCreateCol', patch.col);
+          }
+        }),
+        remove: (function(patch) {
+          if (isNaN(patch.col)) {
+            $__5.hot.runHooks('afterRemoveRow', patch.row, 1);
+          } else {
+            $__5.hot.runHooks('afterRemoveCol', patch.col, 1);
+          }
+        }),
+        replace: (function(patch) {
+          $__5.hot.runHooks('afterChange', [patch.row, patch.col, null, patch.value], 'external');
+        })
+      };
+      arrayEach(patches, (function(patch) {
+        if (actions[patch.op]) {
+          actions[patch.op](patch);
         }
-        newOrRemovedColumns.push(parsedPath.col);
-      }
-      return true;
+      }));
+      this.hot.render();
+    }
+    this.hot.runHooks('afterChangesObserved');
+  },
+  onAfterTableAlter: function(source) {
+    var $__5 = this;
+    if (source !== 'loadData') {
+      this.observer.pause();
+      this.hot.addHookOnce('afterChangesObserved', (function() {
+        return $__5.observer.resume();
+      }));
+    }
+  },
+  onAfterLoadData: function(firstRun) {
+    if (!firstRun) {
+      this.observer.setObservedData(this.hot.getSourceData());
+    }
+  },
+  destroy: function() {
+    if (this.observer) {
+      this.observer.destroy();
+      this._deletePublicApi();
+    }
+    $traceurRuntime.superGet(this, $ObserveChanges.prototype, "destroy").call(this);
+  },
+  _exposePublicApi: function() {
+    var $__5 = this;
+    var hot = this.hot;
+    hot.pauseObservingChanges = (function() {
+      return $__5.observer.pause();
     });
-  }
-  function removeLengthRelatedPatches(rawPatches) {
-    return rawPatches.filter(function(patch) {
-      return !/[/]length/ig.test(patch.path);
+    hot.resumeObservingChanges = (function() {
+      return $__5.observer.resume();
     });
+    hot.isPausedObservingChanges = (function() {
+      return $__5.observer.isPaused();
+    });
+  },
+  _deletePublicApi: function() {
+    var hot = this.hot;
+    delete hot.pauseObservingChanges;
+    delete hot.resumeObservingChanges;
+    delete hot.isPausedObservingChanges;
   }
-  function parsePath(path) {
-    var match = path.match(/^\/(\d+)\/?(.*)?$/);
-    if (!match) {
-      return;
+}, {}, BasePlugin);
+;
+registerPlugin('observeChanges', ObserveChanges);
+
+//# 
+},{"_base":61,"dataObserver":86,"helpers/array":42,"jsonpatch":"jsonpatch","plugins":60}],88:[function(require,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  cleanPatches: {get: function() {
+      return cleanPatches;
+    }},
+  parsePath: {get: function() {
+      return parsePath;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47__46__46__47_helpers_47_array__;
+var $__0 = ($___46__46__47__46__46__47_helpers_47_array__ = require("../../helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}),
+    arrayFilter = $__0.arrayFilter,
+    arrayMap = $__0.arrayMap;
+function cleanPatches(patches) {
+  var newOrRemovedColumns = [];
+  patches = arrayFilter(patches, (function(patch) {
+    if (/[/]length/ig.test(patch.path)) {
+      return false;
     }
-    return {
-      row: parseInt(match[1], 10),
-      col: /^\d*$/.test(match[2]) ? parseInt(match[2], 10) : match[2]
-    };
-  }
-}
-function destroy() {
-  var instance = this;
-  if (instance.observer) {
-    destroyObserver.call(instance);
-    unbindEvents.call(instance);
-  }
-}
-function destroyObserver() {
-  var instance = this;
-  jsonpatch.unobserve(instance.observedData, instance.observer);
-  delete instance.observedData;
-  delete instance.observeChangesActive;
-  delete instance.pauseObservingChanges;
-  delete instance.resumeObservingChanges;
-}
-function bindEvents() {
-  var instance = this;
-  instance.addHook('afterDestroy', destroy);
-  instance.addHook('afterCreateRow', afterTableAlter);
-  instance.addHook('afterRemoveRow', afterTableAlter);
-  instance.addHook('afterCreateCol', afterTableAlter);
-  instance.addHook('afterRemoveCol', afterTableAlter);
-  instance.addHook('afterChange', function(changes, source) {
-    if (source != 'loadData') {
-      afterTableAlter.call(this);
+    if (!parsePath(patch.path)) {
+      return false;
     }
+    return true;
+  }));
+  patches = arrayMap(patches, (function(patch) {
+    var coords = parsePath(patch.path);
+    patch.row = coords.row;
+    patch.col = coords.col;
+    return patch;
+  }));
+  patches = arrayFilter(patches, function(patch) {
+    if (['add', 'remove'].indexOf(patch.op) !== -1 && !isNaN(patch.col)) {
+      if (newOrRemovedColumns.indexOf(patch.col) !== -1) {
+        return false;
+      }
+      newOrRemovedColumns.push(patch.col);
+    }
+    return true;
   });
+  newOrRemovedColumns.length = 0;
+  return patches;
 }
-function unbindEvents() {
-  var instance = this;
-  instance.removeHook('afterDestroy', destroy);
-  instance.removeHook('afterCreateRow', afterTableAlter);
-  instance.removeHook('afterRemoveRow', afterTableAlter);
-  instance.removeHook('afterCreateCol', afterTableAlter);
-  instance.removeHook('afterRemoveCol', afterTableAlter);
-  instance.removeHook('afterChange', afterTableAlter);
-}
-function afterTableAlter() {
-  var instance = this;
-  instance.pauseObservingChanges();
-  instance.addHookOnce('afterChangesObserved', function() {
-    instance.resumeObservingChanges();
-  });
+function parsePath(path) {
+  var match = path.match(/^\/(\d+)\/?(.*)?$/);
+  if (!match) {
+    return null;
+  }
+  var $__1 = match,
+      row = $__1[1],
+      column = $__1[2];
+  return {
+    row: parseInt(row, 10),
+    col: /^\d*$/.test(column) ? parseInt(column, 10) : column
+  };
 }
 
 //# 
-},{"jsonpatch":"jsonpatch","plugins":59}],86:[function(require,module,exports){
+},{"../../helpers/array":42}],89:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   HandsontablePersistentState: {get: function() {
@@ -17436,7 +18161,7 @@ Handsontable.hooks.add('beforeInit', htPersistentState.init);
 Handsontable.hooks.add('afterUpdateSettings', htPersistentState.init);
 
 //# 
-},{"plugins":59}],87:[function(require,module,exports){
+},{"plugins":60}],90:[function(require,module,exports){
 "use strict";
 var $___46__46__47__46__46__47_helpers_47_dom_47_element__,
     $___46__46__47__46__46__47_renderers__;
@@ -17544,7 +18269,7 @@ Handsontable.hooks.add('afterInit', init);
 Handsontable.hooks.add('afterUpdateSettings', init);
 
 //# 
-},{"helpers/dom/element":45,"renderers":90}],88:[function(require,module,exports){
+},{"helpers/dom/element":45,"renderers":93}],91:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   TouchScroll: {get: function() {
@@ -17657,13 +18382,19 @@ var $TouchScroll = TouchScroll;
 registerPlugin('touchScroll', TouchScroll);
 
 //# 
-},{"_base":60,"helpers/dom/element":45,"plugins":59}],89:[function(require,module,exports){
+},{"_base":61,"helpers/dom/element":45,"plugins":60}],92:[function(require,module,exports){
 "use strict";
-var $___46__46__47__46__46__47_helpers_47_object__,
+var $___46__46__47__46__46__47_helpers_47_array__,
+    $___46__46__47__46__46__47_helpers_47_number__,
+    $___46__46__47__46__46__47_helpers_47_object__,
     $___46__46__47__46__46__47_helpers_47_dom_47_event__;
-var $__0 = ($___46__46__47__46__46__47_helpers_47_object__ = require("helpers/object"), $___46__46__47__46__46__47_helpers_47_object__ && $___46__46__47__46__46__47_helpers_47_object__.__esModule && $___46__46__47__46__46__47_helpers_47_object__ || {default: $___46__46__47__46__46__47_helpers_47_object__}),
-    inherit = $__0.inherit,
-    deepClone = $__0.deepClone;
+var arrayMap = ($___46__46__47__46__46__47_helpers_47_array__ = require("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}).arrayMap;
+var $__1 = ($___46__46__47__46__46__47_helpers_47_number__ = require("helpers/number"), $___46__46__47__46__46__47_helpers_47_number__ && $___46__46__47__46__46__47_helpers_47_number__.__esModule && $___46__46__47__46__46__47_helpers_47_number__ || {default: $___46__46__47__46__46__47_helpers_47_number__}),
+    rangeEach = $__1.rangeEach,
+    rangeEachReverse = $__1.rangeEachReverse;
+var $__2 = ($___46__46__47__46__46__47_helpers_47_object__ = require("helpers/object"), $___46__46__47__46__46__47_helpers_47_object__ && $___46__46__47__46__46__47_helpers_47_object__.__esModule && $___46__46__47__46__46__47_helpers_47_object__ || {default: $___46__46__47__46__46__47_helpers_47_object__}),
+    inherit = $__2.inherit,
+    deepClone = $__2.deepClone;
 var stopImmediatePropagation = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = require("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}).stopImmediatePropagation;
 Handsontable.UndoRedo = function(instance) {
   var plugin = this;
@@ -17699,23 +18430,32 @@ Handsontable.UndoRedo = function(instance) {
     plugin.done(action);
   });
   instance.addHook('beforeRemoveCol', function(index, amount) {
-    var originalData = plugin.instance.getSourceData();
+    var originalData = plugin.instance.getData();
     index = (plugin.instance.countCols() + index) % plugin.instance.countCols();
     var removedData = [];
-    for (var i = 0,
-        len = originalData.length; i < len; i++) {
+    var headers = [];
+    var indexes = [];
+    rangeEach(0, originalData.length - 1, (function(i) {
       removedData[i] = originalData[i].slice(index, index + amount);
-    }
-    var headers;
+    }));
+    rangeEach(0, amount - 1, (function(i) {
+      indexes.push(instance.runHooks('modifyCol', index + i));
+    }));
     if (Array.isArray(instance.getSettings().colHeaders)) {
-      headers = instance.getSettings().colHeaders.slice(index, index + removedData.length);
+      rangeEach(0, amount - 1, (function(i) {
+        headers.push(instance.getSettings().colHeaders[instance.runHooks('modifyCol', index + i)] || null);
+      }));
     }
-    var action = new Handsontable.UndoRedo.RemoveColumnAction(index, removedData, headers);
+    var manualColumnMovePlugin = plugin.instance.getPlugin('manualColumnMove');
+    var action = new Handsontable.UndoRedo.RemoveColumnAction(indexes, removedData, headers, manualColumnMovePlugin ? manualColumnMovePlugin.columnPositions : []);
     plugin.done(action);
   });
   instance.addHook('beforeCellAlignment', function(stateBefore, range, type, alignment) {
     var action = new Handsontable.UndoRedo.CellAlignmentAction(stateBefore, range, type, alignment);
     plugin.done(action);
+  });
+  instance.addHook('beforeFilter', function(formulaStacks) {
+    plugin.done(new Handsontable.UndoRedo.FiltersAction(formulaStacks));
   });
 };
 Handsontable.UndoRedo.prototype.done = function(action) {
@@ -17868,34 +18608,63 @@ Handsontable.UndoRedo.CellAlignmentAction.prototype.redo = function(instance, un
   instance.addHookOnce('afterRender', undoneCallback);
   instance.render();
 };
-Handsontable.UndoRedo.RemoveColumnAction = function(index, data, headers) {
-  this.index = index;
+Handsontable.UndoRedo.RemoveColumnAction = function(indexes, data, headers, columnPositions) {
+  this.indexes = indexes;
   this.data = data;
   this.amount = this.data[0].length;
   this.headers = headers;
+  this.columnPositions = columnPositions.slice(0);
 };
 inherit(Handsontable.UndoRedo.RemoveColumnAction, Handsontable.UndoRedo.Action);
 Handsontable.UndoRedo.RemoveColumnAction.prototype.undo = function(instance, undoneCallback) {
-  var row,
-      spliceArgs;
-  for (var i = 0,
-      len = instance.getSourceData().length; i < len; i++) {
+  var $__4 = this;
+  var row;
+  var ascendingIndexes = this.indexes.slice(0).sort();
+  var sortByIndexes = (function(elem, j, arr) {
+    return arr[$__4.indexes.indexOf(ascendingIndexes[j])];
+  });
+  var sortedData = [];
+  rangeEach(0, this.data.length - 1, (function(i) {
+    sortedData[i] = arrayMap($__4.data[i], sortByIndexes);
+  }));
+  var sortedHeaders = [];
+  sortedHeaders = arrayMap(this.headers, sortByIndexes);
+  rangeEach(0, this.data.length - 1, (function(i) {
     row = instance.getSourceDataAtRow(i);
-    spliceArgs = [this.index, 0];
-    Array.prototype.push.apply(spliceArgs, this.data[i]);
-    Array.prototype.splice.apply(row, spliceArgs);
-  }
+    rangeEach(0, ascendingIndexes.length - 1, (function(j) {
+      row.splice(ascendingIndexes[j], 0, sortedData[i][j]);
+    }));
+  }));
   if (typeof this.headers != 'undefined') {
-    spliceArgs = [this.index, 0];
-    Array.prototype.push.apply(spliceArgs, this.headers);
-    Array.prototype.splice.apply(instance.getSettings().colHeaders, spliceArgs);
+    rangeEach(0, sortedHeaders.length - 1, (function(j) {
+      instance.getSettings().colHeaders.splice(ascendingIndexes[j], 0, sortedHeaders[j]);
+    }));
+  }
+  if (instance.getPlugin('manualColumnMove')) {
+    instance.getPlugin('manualColumnMove').columnPositions = this.columnPositions;
   }
   instance.addHookOnce('afterRender', undoneCallback);
   instance.render();
 };
 Handsontable.UndoRedo.RemoveColumnAction.prototype.redo = function(instance, redoneCallback) {
   instance.addHookOnce('afterRemoveCol', redoneCallback);
-  instance.alter('remove_col', this.index, this.amount);
+  instance.alter('remove_col', instance.runHooks('unmodifyCol', this.indexes[0]), this.amount);
+};
+Handsontable.UndoRedo.FiltersAction = function(formulaStacks) {
+  this.formulaStacks = formulaStacks;
+};
+inherit(Handsontable.UndoRedo.FiltersAction, Handsontable.UndoRedo.Action);
+Handsontable.UndoRedo.FiltersAction.prototype.undo = function(instance, undoneCallback) {
+  var filters = instance.getPlugin('filters');
+  instance.addHookOnce('afterRender', undoneCallback);
+  filters.formulaCollection.importAllFormulas(this.formulaStacks.slice(0, this.formulaStacks.length - 1));
+  filters.filter();
+};
+Handsontable.UndoRedo.FiltersAction.prototype.redo = function(instance, redoneCallback) {
+  var filters = instance.getPlugin('filters');
+  instance.addHookOnce('afterRender', redoneCallback);
+  filters.formulaCollection.importAllFormulas(this.formulaStacks);
+  filters.filter();
 };
 function init() {
   var instance = this;
@@ -17963,7 +18732,7 @@ Handsontable.hooks.add('afterInit', init);
 Handsontable.hooks.add('afterUpdateSettings', init);
 
 //# 
-},{"helpers/dom/event":46,"helpers/object":50}],90:[function(require,module,exports){
+},{"helpers/array":42,"helpers/dom/event":46,"helpers/number":50,"helpers/object":51}],93:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   registerRenderer: {get: function() {
@@ -18008,7 +18777,7 @@ function hasRenderer(rendererName) {
 ;
 
 //# 
-},{"helpers/string":52}],91:[function(require,module,exports){
+},{"helpers/string":53}],94:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   cellDecorator: {get: function() {
@@ -18050,7 +18819,7 @@ function cellDecorator(instance, TD, row, col, prop, value, cellProperties) {
 }
 
 //# 
-},{"helpers/dom/element":45,"renderers":90}],92:[function(require,module,exports){
+},{"helpers/dom/element":45,"renderers":93}],95:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   autocompleteRenderer: {get: function() {
@@ -18107,7 +18876,7 @@ function autocompleteRenderer(instance, TD, row, col, prop, value, cellPropertie
 registerRenderer('autocomplete', autocompleteRenderer);
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":5,"eventManager":41,"helpers/dom/element":45,"renderers":90}],93:[function(require,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":5,"eventManager":41,"helpers/dom/element":45,"renderers":93}],96:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   checkboxRenderer: {get: function() {
@@ -18182,8 +18951,9 @@ function checkboxRenderer(instance, TD, row, col, prop, value, cellProperties) {
   if (cellProperties.readOnly) {
     eventManager.addEventListener(input, 'click', preventDefault);
   } else {
-    eventManager.addEventListener(input, 'mousedown', stopPropagation);
-    eventManager.addEventListener(input, 'mouseup', stopPropagation);
+    eventManager.addEventListener(input, 'mouseup', (function() {
+      return setTimeout(instance.listen, 10);
+    }));
     eventManager.addEventListener(input, 'change', (function(event) {
       instance.setDataAtRowProp(row, prop, event.target.checked ? cellProperties.checkedTemplate : cellProperties.uncheckedTemplate);
     }));
@@ -18251,6 +19021,7 @@ function createInput() {
   input.className = 'htCheckboxRendererInput';
   input.type = 'checkbox';
   input.setAttribute('autocomplete', 'off');
+  input.setAttribute('tabindex', '-1');
   return input.cloneNode(false);
 }
 function createLabel(text) {
@@ -18264,7 +19035,7 @@ function preventDefault(event) {
 }
 
 //# 
-},{"eventManager":41,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/string":52,"helpers/unicode":53,"renderers":90}],94:[function(require,module,exports){
+},{"eventManager":41,"helpers/dom/element":45,"helpers/dom/event":46,"helpers/string":53,"helpers/unicode":54,"renderers":93}],97:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   htmlRenderer: {get: function() {
@@ -18289,7 +19060,7 @@ function htmlRenderer(instance, TD, row, col, prop, value, cellProperties) {
 registerRenderer('html', htmlRenderer);
 
 //# 
-},{"helpers/dom/element":45,"renderers":90}],95:[function(require,module,exports){
+},{"helpers/dom/element":45,"renderers":93}],98:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   numericRenderer: {get: function() {
@@ -18321,7 +19092,7 @@ function numericRenderer(instance, TD, row, col, prop, value, cellProperties) {
 registerRenderer('numeric', numericRenderer);
 
 //# 
-},{"helpers/dom/element":45,"helpers/number":49,"numeral":"numeral","renderers":90}],96:[function(require,module,exports){
+},{"helpers/dom/element":45,"helpers/number":50,"numeral":"numeral","renderers":93}],99:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   passwordRenderer: {get: function() {
@@ -18348,7 +19119,7 @@ function passwordRenderer(instance, TD, row, col, prop, value, cellProperties) {
 registerRenderer('password', passwordRenderer);
 
 //# 
-},{"helpers/dom/element":45,"renderers":90}],97:[function(require,module,exports){
+},{"helpers/dom/element":45,"renderers":93}],100:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   textRenderer: {get: function() {
@@ -18391,7 +19162,7 @@ function textRenderer(instance, TD, row, col, prop, value, cellProperties) {
 registerRenderer('text', textRenderer);
 
 //# 
-},{"helpers/dom/element":45,"helpers/mixed":48,"renderers":90}],98:[function(require,module,exports){
+},{"helpers/dom/element":45,"helpers/mixed":49,"renderers":93}],101:[function(require,module,exports){
 "use strict";
 (function(global) {
   'use strict';
@@ -18659,7 +19430,20 @@ registerRenderer('text', textRenderer);
     for (var i = 0; i < arguments.length; i++) {
       var valueToSpread = $traceurRuntime.checkObjectCoercible(arguments[i]);
       if (typeof valueToSpread[$toProperty(Symbol.iterator)] !== 'function') {
-        throw new TypeError('Cannot spread non-iterable object.');
+        valueToSpread[$toProperty(Symbol.iterator)] = function() {
+          var value = this;
+          var length = value.length;
+          var index = 0;
+          return {next: function() {
+              var result = {done: true};
+              if (index < length) {
+                result.done = false;
+                result.value = value[index];
+                ++index;
+              }
+              return result;
+            }};
+        };
       }
       var iter = valueToSpread[$toProperty(Symbol.iterator)]();
       while (!(iterResult = iter.next()).done) {
@@ -18774,7 +19558,7 @@ registerRenderer('text', textRenderer);
 })();
 
 //# 
-},{}],99:[function(require,module,exports){
+},{}],102:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   TableView: {get: function() {
@@ -18961,7 +19745,9 @@ function TableView(instance) {
     preventOverflow: (function() {
       return $__6.settings.preventOverflow;
     }),
-    stretchH: this.settings.stretchH,
+    stretchH: function() {
+      return that.settings.stretchH;
+    },
     data: instance.getDataAtCell,
     totalRows: (function() {
       return instance.countRows();
@@ -19297,7 +20083,7 @@ TableView.prototype.destroy = function() {
 ;
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":5,"3rdparty/walkontable/src/core":7,"3rdparty/walkontable/src/selection":18,"eventManager":41,"helpers/dom/element":45,"helpers/dom/event":46}],100:[function(require,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":5,"3rdparty/walkontable/src/core":7,"3rdparty/walkontable/src/selection":18,"eventManager":41,"helpers/dom/element":45,"helpers/dom/event":46}],103:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   GhostTable: {get: function() {
@@ -19522,7 +20308,83 @@ Handsontable.utils = Handsontable.utils || {};
 Handsontable.utils.GhostTable = GhostTable;
 
 //# 
-},{"helpers/array":42,"helpers/dom/element":45,"helpers/mixed":48,"helpers/number":49,"helpers/object":50}],101:[function(require,module,exports){
+},{"helpers/array":42,"helpers/dom/element":45,"helpers/mixed":49,"helpers/number":50,"helpers/object":51}],104:[function(require,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  Interval: {get: function() {
+      return Interval;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_helpers_47_feature__,
+    $___46__46__47_helpers_47_array__,
+    $___46__46__47_helpers_47_object__,
+    $___46__46__47_helpers_47_number__,
+    $___46__46__47_helpers_47_mixed__;
+var $__0 = ($___46__46__47_helpers_47_feature__ = require("helpers/feature"), $___46__46__47_helpers_47_feature__ && $___46__46__47_helpers_47_feature__.__esModule && $___46__46__47_helpers_47_feature__ || {default: $___46__46__47_helpers_47_feature__}),
+    requestAnimationFrame = $__0.requestAnimationFrame,
+    cancelAnimationFrame = $__0.cancelAnimationFrame;
+var arrayEach = ($___46__46__47_helpers_47_array__ = require("helpers/array"), $___46__46__47_helpers_47_array__ && $___46__46__47_helpers_47_array__.__esModule && $___46__46__47_helpers_47_array__ || {default: $___46__46__47_helpers_47_array__}).arrayEach;
+var objectEach = ($___46__46__47_helpers_47_object__ = require("helpers/object"), $___46__46__47_helpers_47_object__ && $___46__46__47_helpers_47_object__.__esModule && $___46__46__47_helpers_47_object__ || {default: $___46__46__47_helpers_47_object__}).objectEach;
+var rangeEach = ($___46__46__47_helpers_47_number__ = require("helpers/number"), $___46__46__47_helpers_47_number__ && $___46__46__47_helpers_47_number__.__esModule && $___46__46__47_helpers_47_number__ || {default: $___46__46__47_helpers_47_number__}).rangeEach;
+var stringify = ($___46__46__47_helpers_47_mixed__ = require("helpers/mixed"), $___46__46__47_helpers_47_mixed__ && $___46__46__47_helpers_47_mixed__.__esModule && $___46__46__47_helpers_47_mixed__ || {default: $___46__46__47_helpers_47_mixed__}).stringify;
+var Interval = function Interval(func, delay) {
+  var $__5 = this;
+  this.timer = null;
+  this.func = func;
+  this.delay = parseDelay(delay);
+  this.stopped = true;
+  this._then = null;
+  this._callback = (function() {
+    return $__5.__callback();
+  });
+};
+var $Interval = Interval;
+($traceurRuntime.createClass)(Interval, {
+  start: function() {
+    if (this.stopped) {
+      this._then = Date.now();
+      this.stopped = false;
+      this.timer = requestAnimationFrame(this._callback);
+    }
+    return this;
+  },
+  stop: function() {
+    if (!this.stopped) {
+      this.stopped = true;
+      cancelAnimationFrame(this.timer);
+      this.timer = null;
+    }
+    return this;
+  },
+  __callback: function() {
+    this.timer = requestAnimationFrame(this._callback);
+    if (this.delay) {
+      var now = Date.now();
+      var elapsed = now - this._then;
+      if (elapsed > this.delay) {
+        this._then = now - (elapsed % this.delay);
+        this.func();
+      }
+    } else {
+      this.func();
+    }
+  }
+}, {create: function(func, delay) {
+    return new $Interval(func, delay);
+  }});
+;
+function parseDelay(delay) {
+  if (typeof delay === 'string' && /fps$/.test(delay)) {
+    delay = 1000 / parseInt(delay.replace('fps', '') || 0, 10);
+  }
+  return delay;
+}
+Handsontable.utils = Handsontable.utils || {};
+Handsontable.utils.Interval = Interval;
+
+//# 
+},{"helpers/array":42,"helpers/feature":47,"helpers/mixed":49,"helpers/number":50,"helpers/object":51}],105:[function(require,module,exports){
 "use strict";
 var $__7;
 Object.defineProperties(exports, {
@@ -19541,7 +20403,9 @@ var $__0 = ($___46__46__47_helpers_47_dom_47_element__ = require("helpers/dom/el
     outerHeight = $__0.outerHeight,
     outerWidth = $__0.outerWidth;
 var arrayEach = ($___46__46__47_helpers_47_array__ = require("helpers/array"), $___46__46__47_helpers_47_array__ && $___46__46__47_helpers_47_array__.__esModule && $___46__46__47_helpers_47_array__ || {default: $___46__46__47_helpers_47_array__}).arrayEach;
-var objectEach = ($___46__46__47_helpers_47_object__ = require("helpers/object"), $___46__46__47_helpers_47_object__ && $___46__46__47_helpers_47_object__.__esModule && $___46__46__47_helpers_47_object__ || {default: $___46__46__47_helpers_47_object__}).objectEach;
+var $__2 = ($___46__46__47_helpers_47_object__ = require("helpers/object"), $___46__46__47_helpers_47_object__ && $___46__46__47_helpers_47_object__.__esModule && $___46__46__47_helpers_47_object__ || {default: $___46__46__47_helpers_47_object__}),
+    objectEach = $__2.objectEach,
+    isObject = $__2.isObject;
 var rangeEach = ($___46__46__47_helpers_47_number__ = require("helpers/number"), $___46__46__47_helpers_47_number__ && $___46__46__47_helpers_47_number__.__esModule && $___46__46__47_helpers_47_number__ || {default: $___46__46__47_helpers_47_number__}).rangeEach;
 var stringify = ($___46__46__47_helpers_47_mixed__ = require("helpers/mixed"), $___46__46__47_helpers_47_mixed__ && $___46__46__47_helpers_47_mixed__.__esModule && $___46__46__47_helpers_47_mixed__ || {default: $___46__46__47_helpers_47_mixed__}).stringify;
 var SamplesGenerator = function SamplesGenerator(dataFactory) {
@@ -19598,6 +20462,7 @@ var $SamplesGenerator = SamplesGenerator;
     var $__5 = this;
     var samples = new Map();
     var sampledValues = [];
+    var length;
     rangeEach(range.from, range.to, (function(index) {
       var $__7;
       var value;
@@ -19608,17 +20473,20 @@ var $SamplesGenerator = SamplesGenerator;
       } else {
         throw new Error('Unsupported sample type');
       }
-      if (!Array.isArray(value)) {
-        value = stringify(value);
+      if (isObject(value)) {
+        length = Object.keys(value).length;
+      } else if (Array.isArray(value)) {
+        length = value.length;
+      } else {
+        length = stringify(value).length;
       }
-      var len = value.length;
-      if (!samples.has(len)) {
-        samples.set(len, {
+      if (!samples.has(length)) {
+        samples.set(length, {
           needed: $__5.getSampleCount(),
           strings: []
         });
       }
-      var sample = samples.get(len);
+      var sample = samples.get(length);
       if (sample.needed) {
         var duplicate = sampledValues.indexOf(value) > -1;
         if (!duplicate) {
@@ -19652,7 +20520,7 @@ Handsontable.utils = Handsontable.utils || {};
 Handsontable.utils.SamplesGenerator = SamplesGenerator;
 
 //# 
-},{"helpers/array":42,"helpers/dom/element":45,"helpers/mixed":48,"helpers/number":49,"helpers/object":50}],102:[function(require,module,exports){
+},{"helpers/array":42,"helpers/dom/element":45,"helpers/mixed":49,"helpers/number":50,"helpers/object":51}],106:[function(require,module,exports){
 "use strict";
 var $___46__46__47_helpers_47_mixed__;
 var stringify = ($___46__46__47_helpers_47_mixed__ = require("helpers/mixed"), $___46__46__47_helpers_47_mixed__ && $___46__46__47_helpers_47_mixed__.__esModule && $___46__46__47_helpers_47_mixed__ || {default: $___46__46__47_helpers_47_mixed__}).stringify;
@@ -19687,7 +20555,7 @@ function process(value, callback) {
 }
 
 //# 
-},{"helpers/mixed":48}],103:[function(require,module,exports){
+},{"helpers/mixed":49}],107:[function(require,module,exports){
 "use strict";
 var $__moment__,
     $___46__46__47_editors__;
@@ -19696,11 +20564,15 @@ var getEditor = ($___46__46__47_editors__ = require("editors"), $___46__46__47_e
 Handsontable.DateValidator = function(value, callback) {
   var valid = true;
   var dateEditor = getEditor('date', this.instance);
-  if (value === null) {
+  if (value == null) {
     value = '';
   }
   var isValidDate = moment(new Date(value)).isValid();
   var isValidFormat = moment(value, this.dateFormat || dateEditor.defaultDateFormat, true).isValid();
+  if (this.allowEmpty && value === '') {
+    isValidDate = true;
+    isValidFormat = true;
+  }
   if (!isValidDate) {
     valid = false;
   }
@@ -19733,17 +20605,70 @@ var correctFormat = function correctFormat(value, dateFormat) {
 };
 
 //# 
-},{"editors":29,"moment":undefined}],104:[function(require,module,exports){
+},{"editors":29,"moment":undefined}],108:[function(require,module,exports){
 "use strict";
 Handsontable.NumericValidator = function(value, callback) {
-  if (value === null) {
+  if (value == null) {
     value = '';
   }
-  callback(/^-?\d*(\.|\,)?\d*$/.test(value));
+  if (this.allowEmpty && value === '') {
+    callback(true);
+  } else if (value === '') {
+    callback(false);
+  } else {
+    callback(/^-?\d*(\.|\,)?\d*$/.test(value));
+  }
 };
 
 //# 
-},{}],105:[function(require,module,exports){
+},{}],109:[function(require,module,exports){
+"use strict";
+var $__moment__,
+    $___46__46__47_editors__;
+var moment = ($__moment__ = require("moment"), $__moment__ && $__moment__.__esModule && $__moment__ || {default: $__moment__}).default;
+var getEditor = ($___46__46__47_editors__ = require("editors"), $___46__46__47_editors__ && $___46__46__47_editors__.__esModule && $___46__46__47_editors__ || {default: $___46__46__47_editors__}).getEditor;
+var STRICT_FORMATS = ['YYYY-MM-DDTHH:mm:ss.SSSZ'];
+Handsontable.TimeValidator = function(value, callback) {
+  var valid = true;
+  var timeFormat = this.timeFormat || 'h:mm:ss a';
+  if (value === null) {
+    value = '';
+  }
+  if (typeof value === 'number') {
+    value = ("" + value);
+  }
+  if (/^\d{9,10}$/.test(value)) {
+    value = new Date(parseInt((value + "000"), 10));
+  } else if (/^\d{13}$/.test(value)) {
+    value = new Date(parseInt(value, 10));
+  }
+  var date = moment(value, STRICT_FORMATS, true).isValid() ? moment(new Date(value)) : moment(value, timeFormat);
+  var isValidTime = date.isValid();
+  var isValidFormat = moment(value, timeFormat, true).isValid();
+  if (this.allowEmpty && value === '') {
+    isValidTime = true;
+    isValidFormat = true;
+  }
+  if (!isValidTime) {
+    valid = false;
+  }
+  if (!isValidTime && isValidFormat) {
+    valid = true;
+  }
+  if (isValidTime && !isValidFormat) {
+    if (this.correctFormat === true) {
+      var correctedValue = date.format(timeFormat);
+      this.instance.setDataAtCell(this.row, this.col, correctedValue, 'timeValidator');
+      valid = true;
+    } else {
+      valid = false;
+    }
+  }
+  callback(valid);
+};
+
+//# 
+},{"editors":29,"moment":undefined}],110:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableBottomOverlay: {get: function() {
@@ -19762,7 +20687,8 @@ var $__0 = ($__handsontable_47_helpers_47_dom_47_element__ = require("../../../.
     outerHeight = $__0.outerHeight,
     innerHeight = $__0.innerHeight,
     removeClass = $__0.removeClass,
-    setOverlayPosition = $__0.setOverlayPosition;
+    setOverlayPosition = $__0.setOverlayPosition,
+    resetCssTransform = $__0.resetCssTransform;
 var WalkontableOverlay = ($__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__ = require("../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js"), $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__ && $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__.__esModule && $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__ || {default: $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__}).WalkontableOverlay;
 var WalkontableBottomOverlay = function WalkontableBottomOverlay(wotInstance) {
   $traceurRuntime.superConstructor($WalkontableBottomOverlay).call(this, wotInstance);
@@ -19809,6 +20735,7 @@ var $WalkontableBottomOverlay = WalkontableBottomOverlay;
       overlayRoot.style.bottom = finalBottom;
     } else {
       headerPosition = this.getScrollPosition();
+      resetCssTransform(overlayRoot);
       this.repositionOverlay();
     }
     this.adjustHeaderBordersPosition(headerPosition);
@@ -19835,6 +20762,7 @@ var $WalkontableBottomOverlay = WalkontableBottomOverlay;
   },
   adjustElementsSize: function() {
     var force = arguments[0] !== (void 0) ? arguments[0] : false;
+    this.updateTrimmingContainer();
     if (this.needFullRender || force) {
       this.adjustRootElementSize();
       this.adjustRootChildrenSize();
@@ -19849,7 +20777,9 @@ var $WalkontableBottomOverlay = WalkontableBottomOverlay;
     var overlayRoot = this.clone.wtTable.holder.parentNode;
     var overlayRootStyle = overlayRoot.style;
     var tableHeight;
-    if (this.trimmingContainer !== window) {
+    if (this.trimmingContainer === window) {
+      overlayRootStyle.width = '';
+    } else {
       overlayRootStyle.width = this.wot.wtViewport.getWorkspaceWidth() - scrollbarWidth + 'px';
     }
     this.clone.wtTable.holder.style.width = overlayRootStyle.width;
@@ -19942,7 +20872,7 @@ window.WalkontableBottomOverlay = WalkontableBottomOverlay;
 WalkontableOverlay.registerOverlay(WalkontableOverlay.CLONE_BOTTOM, WalkontableBottomOverlay);
 
 //# 
-},{"../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js":11,"../../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45}],106:[function(require,module,exports){
+},{"../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js":11,"../../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45}],111:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableBottomLeftCornerOverlay: {get: function() {
@@ -19956,7 +20886,8 @@ var $__0 = ($__handsontable_47_helpers_47_dom_47_element__ = require("../../../.
     getScrollbarWidth = $__0.getScrollbarWidth,
     outerHeight = $__0.outerHeight,
     outerWidth = $__0.outerWidth,
-    setOverlayPosition = $__0.setOverlayPosition;
+    setOverlayPosition = $__0.setOverlayPosition,
+    resetCssTransform = $__0.resetCssTransform;
 var WalkontableOverlay = ($__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__ = require("../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js"), $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__ && $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__.__esModule && $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__ || {default: $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__}).WalkontableOverlay;
 var WalkontableBottomLeftCornerOverlay = function WalkontableBottomLeftCornerOverlay(wotInstance) {
   $traceurRuntime.superConstructor($WalkontableBottomLeftCornerOverlay).call(this, wotInstance);
@@ -19977,6 +20908,7 @@ var $WalkontableBottomLeftCornerOverlay = WalkontableBottomLeftCornerOverlay;
     cloneRoot.style.bottom = scrollbarWidth + 'px';
   },
   resetFixedPosition: function() {
+    this.updateTrimmingContainer();
     if (!this.wot.wtTable.holder.parentNode) {
       return;
     }
@@ -20007,6 +20939,7 @@ var $WalkontableBottomLeftCornerOverlay = WalkontableBottomLeftCornerOverlay;
       overlayRoot.style.left = finalLeft;
       overlayRoot.style.bottom = finalBottom;
     } else {
+      resetCssTransform(overlayRoot);
       this.repositionOverlay();
     }
     overlayRoot.style.height = (tableHeight === 0 ? tableHeight : tableHeight) + 'px';
@@ -20018,7 +20951,7 @@ window.WalkontableBottomLeftCornerOverlay = WalkontableBottomLeftCornerOverlay;
 WalkontableOverlay.registerOverlay(WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER, WalkontableBottomLeftCornerOverlay);
 
 //# 
-},{"../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js":11,"../../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45}],107:[function(require,module,exports){
+},{"../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js":11,"../../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45}],112:[function(require,module,exports){
 "use strict";
 var $__3rdparty_47_walkontable_47_src_47_overlay_47_bottom_46_js__,
     $__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner_46_js__;
@@ -20026,7 +20959,7 @@ var WalkontableBottomOverlay = ($__3rdparty_47_walkontable_47_src_47_overlay_47_
 var WalkontableBottomLeftCornerOverlay = ($__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner_46_js__ = require("3rdparty/walkontable/src/overlay/bottomLeftCorner.js"), $__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner_46_js__ && $__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner_46_js__.__esModule && $__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner_46_js__ || {default: $__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner_46_js__}).WalkontableBottomLeftCornerOverlay;
 
 //# 
-},{"3rdparty/walkontable/src/overlay/bottom.js":105,"3rdparty/walkontable/src/overlay/bottomLeftCorner.js":106}],108:[function(require,module,exports){
+},{"3rdparty/walkontable/src/overlay/bottom.js":110,"3rdparty/walkontable/src/overlay/bottomLeftCorner.js":111}],113:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BindRowsWithHeaders: {get: function() {
@@ -20122,7 +21055,7 @@ var $BindRowsWithHeaders = BindRowsWithHeaders;
 registerPlugin('bindRowsWithHeaders', BindRowsWithHeaders);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60,"bindStrategy":109}],109:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":60,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":61,"bindStrategy":114}],114:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BindStrategy: {get: function() {
@@ -20196,7 +21129,7 @@ Handsontable.utils = Handsontable.utils || {};
 Handsontable.utils.BindStrategy = BindStrategy;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":54}],110:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":55}],115:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   LooseBindStrategy: {get: function() {
@@ -20229,7 +21162,7 @@ BindStrategy.registerStrategy(LooseBindStrategy.STRATEGY_NAME, LooseBindStrategy
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":54,"bindStrategy":109}],111:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":55,"bindStrategy":114}],116:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   StrictBindStrategy: {get: function() {
@@ -20262,7 +21195,7 @@ BindStrategy.registerStrategy(StrictBindStrategy.STRATEGY_NAME, StrictBindStrate
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":54,"bindStrategy":109}],112:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":55,"bindStrategy":114}],117:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   CollapsibleColumns: {get: function() {
@@ -20570,7 +21503,7 @@ var $CollapsibleColumns = CollapsibleColumns;
 registerPlugin('collapsibleColumns', CollapsibleColumns);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":41,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":46,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60}],113:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":41,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":46,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":60,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":61}],118:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ColumnSummary: {get: function() {
@@ -20937,7 +21870,7 @@ var $ColumnSummary = ColumnSummary;
 registerPlugin('columnSummary', ColumnSummary);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":60}],114:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":60,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":61}],119:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DropdownMenu: {get: function() {
@@ -21107,6 +22040,9 @@ var $DropdownMenu = DropdownMenu;
     }
     var button = document.createElement('button');
     button.className = BUTTON_CLASS_NAME;
+    button.onclick = function() {
+      return false;
+    };
     TH.firstChild.insertBefore(button, TH.firstChild.firstChild);
   },
   onMenuAfterOpen: function() {
@@ -21135,7 +22071,7 @@ Handsontable.hooks.register('afterDropdownMenuExecute');
 registerPlugin('dropdownMenu', DropdownMenu);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":41,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":46,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/commandExecutor":67,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/itemsFactory":70,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":71,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":72}],115:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":41,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":46,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":60,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/commandExecutor":68,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/itemsFactory":71,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":72,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":73}],120:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DataProvider: {get: function() {
@@ -21250,7 +22186,7 @@ var DataProvider = function DataProvider(hotInstance) {
 ;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50}],116:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51}],121:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ExportFile: {get: function() {
@@ -21330,7 +22266,7 @@ var $ExportFile = ExportFile;
 registerPlugin('exportFile', ExportFile);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60,"dataProvider":115,"typeFactory":117}],117:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":60,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":61,"dataProvider":120,"typeFactory":122}],122:[function(require,module,exports){
 "use strict";
 var $__1;
 Object.defineProperties(exports, {
@@ -21370,7 +22306,7 @@ function typeFactory(type, dataProvider, options) {
 }
 
 //# 
-},{"types/csv.js":119}],118:[function(require,module,exports){
+},{"types/csv.js":124}],123:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BaseType: {get: function() {
@@ -21423,7 +22359,7 @@ var $BaseType = BaseType;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":52}],119:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":53}],124:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Csv: {get: function() {
@@ -21499,7 +22435,7 @@ var $Csv = Csv;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":48,"_base.js":118}],120:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":49,"_base.js":123}],125:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BaseComponent: {get: function() {
@@ -21549,7 +22485,7 @@ mixin(BaseComponent, stateSaver);
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":55,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/stateSaver":56}],121:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":56,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/stateSaver":57}],126:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ActionBarComponent: {get: function() {
@@ -21636,7 +22572,7 @@ var $ActionBarComponent = ActionBarComponent;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"_base":120,"ui/input":151,"ui/select":153}],122:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"_base":125,"ui/input":157,"ui/select":159}],127:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ConditionComponent: {get: function() {
@@ -21647,23 +22583,28 @@ Object.defineProperties(exports, {
 var $__handsontable_47_helpers_47_dom_47_element__,
     $__handsontable_47_helpers_47_dom_47_event__,
     $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_helpers_47_object__,
     $__handsontable_47_helpers_47_unicode__,
     $___95_base__,
     $___46__46__47_constants__,
     $___46__46__47_ui_47_input__,
-    $___46__46__47_ui_47_select__;
+    $___46__46__47_ui_47_select__,
+    $___46__46__47_formulaRegisterer__;
 var addClass = ($__handsontable_47_helpers_47_dom_47_element__ = require("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).addClass;
 var stopImmediatePropagation = ($__handsontable_47_helpers_47_dom_47_event__ = require("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event"), $__handsontable_47_helpers_47_dom_47_event__ && $__handsontable_47_helpers_47_dom_47_event__.__esModule && $__handsontable_47_helpers_47_dom_47_event__ || {default: $__handsontable_47_helpers_47_dom_47_event__}).stopImmediatePropagation;
 var $__2 = ($__handsontable_47_helpers_47_array__ = require("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
     arrayEach = $__2.arrayEach,
-    arrayMap = $__2.arrayMap;
+    arrayFilter = $__2.arrayFilter;
+var extend = ($__handsontable_47_helpers_47_object__ = require("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).extend;
 var isKey = ($__handsontable_47_helpers_47_unicode__ = require("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode"), $__handsontable_47_helpers_47_unicode__ && $__handsontable_47_helpers_47_unicode__.__esModule && $__handsontable_47_helpers_47_unicode__ || {default: $__handsontable_47_helpers_47_unicode__}).isKey;
 var BaseComponent = ($___95_base__ = require("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseComponent;
-var $__5 = ($___46__46__47_constants__ = require("constants"), $___46__46__47_constants__ && $___46__46__47_constants__.__esModule && $___46__46__47_constants__ || {default: $___46__46__47_constants__}),
-    getOptionsList = $__5.getOptionsList,
-    FORMULA_NONE = $__5.FORMULA_NONE;
+var $__6 = ($___46__46__47_constants__ = require("constants"), $___46__46__47_constants__ && $___46__46__47_constants__.__esModule && $___46__46__47_constants__ || {default: $___46__46__47_constants__}),
+    getOptionsList = $__6.getOptionsList,
+    FORMULA_NONE = $__6.FORMULA_NONE,
+    FORMULA_BY_VALUE = $__6.FORMULA_BY_VALUE;
 var InputUI = ($___46__46__47_ui_47_input__ = require("ui/input"), $___46__46__47_ui_47_input__ && $___46__46__47_ui_47_input__.__esModule && $___46__46__47_ui_47_input__ || {default: $___46__46__47_ui_47_input__}).InputUI;
 var SelectUI = ($___46__46__47_ui_47_select__ = require("ui/select"), $___46__46__47_ui_47_select__ && $___46__46__47_ui_47_select__.__esModule && $___46__46__47_ui_47_select__ || {default: $___46__46__47_ui_47_select__}).SelectUI;
+var getFormulaDescriptor = ($___46__46__47_formulaRegisterer__ = require("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).getFormulaDescriptor;
 var ConditionComponent = function ConditionComponent(hotInstance) {
   $traceurRuntime.superConstructor($ConditionComponent).call(this, hotInstance);
   this.elements.push(new SelectUI(this.hot));
@@ -21674,30 +22615,35 @@ var ConditionComponent = function ConditionComponent(hotInstance) {
 var $ConditionComponent = ConditionComponent;
 ($traceurRuntime.createClass)(ConditionComponent, {
   registerHooks: function() {
-    var $__8 = this;
+    var $__10 = this;
     this.getSelectElement().addLocalHook('select', (function(command) {
-      return $__8.onConditionSelect(command);
+      return $__10.onConditionSelect(command);
     }));
     arrayEach(this.getInputElements(), (function(input) {
       input.addLocalHook('keydown', (function(event) {
-        return $__8.onInputKeydown(event);
+        return $__10.onInputKeydown(event);
       }));
     }));
   },
   setState: function(value) {
-    var $__8 = this;
+    var $__10 = this;
     this.reset();
     if (value) {
       this.getSelectElement().setValue(value.command);
       arrayEach(value.args, (function(arg, index) {
-        var element = $__8.getInputElement(index);
+        var element = $__10.getInputElement(index);
         element.setValue(arg);
         element[value.command.inputsCount > index ? 'show' : 'hide']();
+        if (!index) {
+          setTimeout((function() {
+            return element.focus();
+          }), 10);
+        }
       }));
     }
   },
   getState: function() {
-    var command = this.getSelectElement().getValue() || FORMULA_NONE;
+    var command = this.getSelectElement().getValue() || getFormulaDescriptor(FORMULA_NONE);
     var args = [];
     arrayEach(this.getInputElements(), (function(element, index) {
       if (command.inputsCount > index) {
@@ -21708,6 +22654,21 @@ var $ConditionComponent = ConditionComponent;
       command: command,
       args: args
     };
+  },
+  updateState: function($__12) {
+    var $__13 = $__12,
+        column = $__13.column,
+        currentFormulas = $__13.formulas;
+    var formula = arrayFilter(currentFormulas, (function(formula) {
+      return formula.name !== FORMULA_BY_VALUE;
+    }))[0];
+    if (formula && formula.name === FORMULA_BY_VALUE) {
+      return;
+    }
+    this.setCachedState(column, {
+      command: formula ? getFormulaDescriptor(formula.name) : getFormulaDescriptor(FORMULA_NONE),
+      args: formula ? formula.args : []
+    });
   },
   getSelectElement: function() {
     return this.elements.filter((function(element) {
@@ -21724,14 +22685,14 @@ var $ConditionComponent = ConditionComponent;
     }));
   },
   getMenuItemDescriptor: function() {
-    var $__8 = this;
+    var $__10 = this;
     return {
       key: 'filter_by_condition',
       name: '',
       isCommand: false,
       disableSelection: true,
       hidden: (function() {
-        return $__8.isHidden();
+        return $__10.isHidden();
       }),
       renderer: (function(hot, wrapper, row, col, prop, value) {
         addClass(wrapper.parentNode, 'htFiltersMenuCondition');
@@ -21739,7 +22700,7 @@ var $ConditionComponent = ConditionComponent;
         addClass(label, 'htFiltersMenuLabel');
         label.textContent = 'Filter by condition:';
         wrapper.appendChild(label);
-        arrayEach($__8.elements, (function(ui) {
+        arrayEach($__10.elements, (function(ui) {
           return wrapper.appendChild(ui.element);
         }));
         return wrapper;
@@ -21780,7 +22741,7 @@ var $ConditionComponent = ConditionComponent;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":46,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode":53,"_base":120,"constants":124,"ui/input":151,"ui/select":153}],123:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":46,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode":54,"_base":125,"constants":129,"formulaRegisterer":154,"ui/input":157,"ui/select":159}],128:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ValueComponent: {get: function() {
@@ -21790,24 +22751,27 @@ Object.defineProperties(exports, {
 });
 var $__handsontable_47_helpers_47_dom_47_element__,
     $__handsontable_47_helpers_47_array__,
+    $___46__46__47_utils__,
     $___95_base__,
     $___46__46__47_ui_47_input__,
     $___46__46__47_ui_47_select__,
     $___46__46__47_ui_47_multipleSelect__,
-    $___46__46__47_constants__;
+    $___46__46__47_constants__,
+    $___46__46__47_formulaRegisterer__;
 var addClass = ($__handsontable_47_helpers_47_dom_47_element__ = require("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).addClass;
 var $__1 = ($__handsontable_47_helpers_47_array__ = require("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
     arrayEach = $__1.arrayEach,
-    arrayMap = $__1.arrayMap,
     arrayUnique = $__1.arrayUnique,
     arrayFilter = $__1.arrayFilter;
+var sortComparison = ($___46__46__47_utils__ = require("utils"), $___46__46__47_utils__ && $___46__46__47_utils__.__esModule && $___46__46__47_utils__ || {default: $___46__46__47_utils__}).sortComparison;
 var BaseComponent = ($___95_base__ = require("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseComponent;
 var InputUI = ($___46__46__47_ui_47_input__ = require("ui/input"), $___46__46__47_ui_47_input__ && $___46__46__47_ui_47_input__.__esModule && $___46__46__47_ui_47_input__ || {default: $___46__46__47_ui_47_input__}).InputUI;
 var SelectUI = ($___46__46__47_ui_47_select__ = require("ui/select"), $___46__46__47_ui_47_select__ && $___46__46__47_ui_47_select__.__esModule && $___46__46__47_ui_47_select__ || {default: $___46__46__47_ui_47_select__}).SelectUI;
 var MultipleSelectUI = ($___46__46__47_ui_47_multipleSelect__ = require("ui/multipleSelect"), $___46__46__47_ui_47_multipleSelect__ && $___46__46__47_ui_47_multipleSelect__.__esModule && $___46__46__47_ui_47_multipleSelect__ || {default: $___46__46__47_ui_47_multipleSelect__}).MultipleSelectUI;
-var $__6 = ($___46__46__47_constants__ = require("constants"), $___46__46__47_constants__ && $___46__46__47_constants__.__esModule && $___46__46__47_constants__ || {default: $___46__46__47_constants__}),
-    FORMULA_BY_VALUE = $__6.FORMULA_BY_VALUE,
-    FORMULA_NONE = $__6.FORMULA_NONE;
+var $__7 = ($___46__46__47_constants__ = require("constants"), $___46__46__47_constants__ && $___46__46__47_constants__.__esModule && $___46__46__47_constants__ || {default: $___46__46__47_constants__}),
+    FORMULA_BY_VALUE = $__7.FORMULA_BY_VALUE,
+    FORMULA_NONE = $__7.FORMULA_NONE;
+var getFormulaDescriptor = ($___46__46__47_formulaRegisterer__ = require("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).getFormulaDescriptor;
 var ValueComponent = function ValueComponent(hotInstance) {
   $traceurRuntime.superConstructor($ValueComponent).call(this, hotInstance);
   this.elements.push(new MultipleSelectUI(this.hot));
@@ -21816,16 +22780,65 @@ var $ValueComponent = ValueComponent;
 ($traceurRuntime.createClass)(ValueComponent, {
   setState: function(value) {
     this.reset();
-    if (value) {
-      this.getMultipleSelectElement().setValue(value.args[0]);
+    if (value && value.command.key === FORMULA_BY_VALUE) {
+      var select = this.getMultipleSelectElement();
+      select.setItems(value.itemsSnapshot);
+      select.setValue(value.args[0]);
     }
   },
   getState: function() {
     var select = this.getMultipleSelectElement();
+    var availableItems = select.getItems();
     return {
-      command: {key: select.isSelectedAllValues() ? FORMULA_NONE : FORMULA_BY_VALUE},
-      args: [select.getValue()]
+      command: {key: select.isSelectedAllValues() || !availableItems.length ? FORMULA_NONE : FORMULA_BY_VALUE},
+      args: [select.getValue()],
+      itemsSnapshot: availableItems
     };
+  },
+  updateState: function(editedFormulaStack, dependentFormulaStacks, filteredRowsFactory) {
+    var $__9 = this;
+    var $__11 = editedFormulaStack,
+        column = $__11.column,
+        formulas = $__11.formulas;
+    var updateColumnState = (function(column, formulas, formulasStack) {
+      var formula = arrayFilter(formulas, (function(formula) {
+        return formula.name === FORMULA_BY_VALUE;
+      }))[0];
+      var state = {};
+      if (formula) {
+        var itemsSnapshot = [];
+        var values = [];
+        arrayEach(filteredRowsFactory(column, formulasStack), (function($__13) {
+          var value = $__13.value;
+          var checked = false;
+          if (formula.args[0].indexOf(value) >= 0) {
+            checked = true;
+            values.push(value);
+          }
+          itemsSnapshot.push({
+            checked: checked,
+            value: value
+          });
+        }));
+        itemsSnapshot = itemsSnapshot.sort((function(a, b) {
+          return sortComparison(a.value, b.value);
+        }));
+        state.args = [values];
+        state.command = getFormulaDescriptor(FORMULA_BY_VALUE);
+        state.itemsSnapshot = itemsSnapshot;
+      } else {
+        state.args = [];
+        state.command = getFormulaDescriptor(FORMULA_NONE);
+      }
+      $__9.setCachedState(column, state);
+    });
+    updateColumnState(column, formulas);
+    if (dependentFormulaStacks.length) {
+      var $__12 = dependentFormulaStacks[0],
+          column$__15 = $__12.column,
+          formulas$__16 = $__12.formulas;
+      updateColumnState(column$__15, formulas$__16, editedFormulaStack);
+    }
   },
   getMultipleSelectElement: function() {
     return this.elements.filter((function(element) {
@@ -21833,14 +22846,14 @@ var $ValueComponent = ValueComponent;
     }))[0];
   },
   getMenuItemDescriptor: function() {
-    var $__7 = this;
+    var $__9 = this;
     return {
       key: 'filter_by_value',
       name: '',
       isCommand: false,
       disableSelection: true,
       hidden: (function() {
-        return $__7.isHidden();
+        return $__9.isHidden();
       }),
       renderer: (function(hot, wrapper, row, col, prop, value) {
         addClass(wrapper.parentNode, 'htFiltersMenuValue');
@@ -21848,7 +22861,7 @@ var $ValueComponent = ValueComponent;
         addClass(label, 'htFiltersMenuLabel');
         label.textContent = 'Filter by value:';
         wrapper.appendChild(label);
-        arrayEach($__7.elements, (function(ui) {
+        arrayEach($__9.elements, (function(ui) {
           return wrapper.appendChild(ui.element);
         }));
         return wrapper;
@@ -21856,34 +22869,38 @@ var $ValueComponent = ValueComponent;
     };
   },
   reset: function() {
-    if (!this.hot.getSelectedRange()) {
-      return;
-    }
-    var values = this.hot.getSourceDataAtCol(this.hot.getSelectedRange().from.col);
-    var items = [];
+    var values = this._getColumnVisibleValues();
+    var transformToItems = function(values) {
+      var result = [];
+      arrayEach(values, (function(value) {
+        return result.push({
+          checked: true,
+          value: value
+        });
+      }));
+      return result;
+    };
     values = arrayUnique(values);
     values = arrayFilter(values, (function(value) {
       return !(value === null || value === void 0);
     }));
-    values = values.sort();
-    arrayEach(values, (function(value) {
-      return items.push({
-        checked: true,
-        value: value
-      });
-    }));
+    values = values.sort(sortComparison);
+    var items = transformToItems(values);
     this.getMultipleSelectElement().setItems(items);
     $traceurRuntime.superGet(this, $ValueComponent.prototype, "reset").call(this);
     this.getMultipleSelectElement().setValue(values);
+  },
+  _getColumnVisibleValues: function() {
+    var lastSelectedColumn = this.hot.getPlugin('filters').getSelectedColumn();
+    return this.hot.getDataAtCol(lastSelectedColumn);
   }
 }, {}, BaseComponent);
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"_base":120,"constants":124,"ui/input":151,"ui/multipleSelect":152,"ui/select":153}],124:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"_base":125,"constants":129,"formulaRegisterer":154,"ui/input":157,"ui/multipleSelect":158,"ui/select":159,"utils":160}],129:[function(require,module,exports){
 "use strict";
-var $__24,
-    $__25;
+var $__25;
 Object.defineProperties(exports, {
   FORMULA_NONE: {get: function() {
       return FORMULA_NONE;
@@ -21968,6 +22985,7 @@ Object.defineProperties(exports, {
 var $__handsontable_47_helpers_47_object__,
     $__handsontable_47_helpers_47_array__,
     $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__,
+    $__formulaRegisterer__,
     $__formula_47_none__,
     $__formula_47_empty__,
     $__formula_47_notEmpty__,
@@ -21992,6 +23010,7 @@ var $__handsontable_47_helpers_47_object__,
 var clone = ($__handsontable_47_helpers_47_object__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).clone;
 var arrayEach = ($__handsontable_47_helpers_47_array__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
 var SEPARATOR = ($__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems"), $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ || {default: $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__}).SEPARATOR;
+var getFormulaDescriptor = ($__formulaRegisterer__ = require("formulaRegisterer"), $__formulaRegisterer__ && $__formulaRegisterer__.__esModule && $__formulaRegisterer__ || {default: $__formulaRegisterer__}).getFormulaDescriptor;
 var FORMULA_NONE = ($__formula_47_none__ = require("formula/none"), $__formula_47_none__ && $__formula_47_none__.__esModule && $__formula_47_none__ || {default: $__formula_47_none__}).FORMULA_NAME;
 var FORMULA_EMPTY = ($__formula_47_empty__ = require("formula/empty"), $__formula_47_empty__ && $__formula_47_empty__.__esModule && $__formula_47_empty__ || {default: $__formula_47_empty__}).FORMULA_NAME;
 var FORMULA_NOT_EMPTY = ($__formula_47_notEmpty__ = require("formula/notEmpty"), $__formula_47_notEmpty__ && $__formula_47_notEmpty__.__esModule && $__formula_47_notEmpty__ || {default: $__formula_47_notEmpty__}).FORMULA_NAME;
@@ -22017,222 +23036,41 @@ var FORMULA_BY_VALUE = ($__formula_47_byValue__ = require("formula/byValue"), $_
 var TYPE_NUMERIC = 'numeric';
 var TYPE_TEXT = 'text';
 var TYPE_DATE = 'date';
-var TYPES = ($__24 = {}, Object.defineProperty($__24, TYPE_NUMERIC, {
+var TYPES = ($__25 = {}, Object.defineProperty($__25, TYPE_NUMERIC, {
   value: [FORMULA_NONE, SEPARATOR, FORMULA_EMPTY, FORMULA_NOT_EMPTY, SEPARATOR, FORMULA_EQUAL, FORMULA_NOT_EQUAL, SEPARATOR, FORMULA_GREATER_THAN, FORMULA_GREATER_THAN_OR_EQUAL, FORMULA_LESS_THAN, FORMULA_LESS_THAN_OR_EQUAL, FORMULA_BETWEEN, FORMULA_NOT_BETWEEN],
   configurable: true,
   enumerable: true,
   writable: true
-}), Object.defineProperty($__24, TYPE_TEXT, {
+}), Object.defineProperty($__25, TYPE_TEXT, {
   value: [FORMULA_NONE, SEPARATOR, FORMULA_EMPTY, FORMULA_NOT_EMPTY, SEPARATOR, FORMULA_EQUAL, FORMULA_NOT_EQUAL, SEPARATOR, FORMULA_BEGINS_WITH, FORMULA_ENDS_WITH, SEPARATOR, FORMULA_CONTAINS, FORMULA_NOT_CONTAINS],
   configurable: true,
   enumerable: true,
   writable: true
-}), Object.defineProperty($__24, TYPE_DATE, {
+}), Object.defineProperty($__25, TYPE_DATE, {
   value: [FORMULA_NONE, SEPARATOR, FORMULA_EMPTY, FORMULA_NOT_EMPTY, SEPARATOR, FORMULA_EQUAL, FORMULA_NOT_EQUAL, SEPARATOR, FORMULA_DATE_BEFORE, FORMULA_DATE_AFTER, FORMULA_BETWEEN, SEPARATOR, FORMULA_TOMORROW, FORMULA_TODAY, FORMULA_YESTERDAY],
   configurable: true,
   enumerable: true,
   writable: true
-}), $__24);
+}), $__25);
 function getOptionsList(type) {
   var items = [];
   if (!TYPES[type]) {
     type = TYPE_TEXT;
   }
   arrayEach(TYPES[type], (function(type) {
-    var option = clone(_selectOptions[type]);
+    var option;
+    if (type === SEPARATOR) {
+      option = {name: SEPARATOR};
+    } else {
+      option = clone(getFormulaDescriptor(type));
+    }
     items.push(option);
   }));
   return items;
 }
-var _selectOptions = ($__25 = {}, Object.defineProperty($__25, SEPARATOR, {
-  value: {name: SEPARATOR},
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, FORMULA_NONE, {
-  value: {
-    key: FORMULA_NONE,
-    name: 'None',
-    inputsCount: 0
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, FORMULA_EMPTY, {
-  value: {
-    key: FORMULA_EMPTY,
-    name: 'Is empty',
-    inputsCount: 0
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, FORMULA_NOT_EMPTY, {
-  value: {
-    key: FORMULA_NOT_EMPTY,
-    name: 'Is not empty',
-    inputsCount: 0
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, FORMULA_EQUAL, {
-  value: {
-    key: FORMULA_EQUAL,
-    name: 'Is equal to',
-    inputsCount: 1
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, FORMULA_NOT_EQUAL, {
-  value: {
-    key: FORMULA_NOT_EQUAL,
-    name: 'Is not equal to',
-    inputsCount: 1
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, FORMULA_GREATER_THAN, {
-  value: {
-    key: FORMULA_GREATER_THAN,
-    name: 'Greater than',
-    inputsCount: 1
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, FORMULA_GREATER_THAN_OR_EQUAL, {
-  value: {
-    key: FORMULA_GREATER_THAN_OR_EQUAL,
-    name: 'Greater than or equal to',
-    inputsCount: 1
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, FORMULA_LESS_THAN, {
-  value: {
-    key: FORMULA_LESS_THAN,
-    name: 'Less than',
-    inputsCount: 1
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, FORMULA_LESS_THAN_OR_EQUAL, {
-  value: {
-    key: FORMULA_LESS_THAN_OR_EQUAL,
-    name: 'Less than or equal to',
-    inputsCount: 1
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, FORMULA_BETWEEN, {
-  value: {
-    key: FORMULA_BETWEEN,
-    name: 'Is between',
-    inputsCount: 2
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, FORMULA_NOT_BETWEEN, {
-  value: {
-    key: FORMULA_NOT_BETWEEN,
-    name: 'Is not between',
-    inputsCount: 2
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, FORMULA_BEGINS_WITH, {
-  value: {
-    key: FORMULA_BEGINS_WITH,
-    name: 'Begins with',
-    inputsCount: 1
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, FORMULA_ENDS_WITH, {
-  value: {
-    key: FORMULA_ENDS_WITH,
-    name: 'Ends with',
-    inputsCount: 1
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, FORMULA_CONTAINS, {
-  value: {
-    key: FORMULA_CONTAINS,
-    name: 'Contains',
-    inputsCount: 1
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, FORMULA_NOT_CONTAINS, {
-  value: {
-    key: FORMULA_NOT_CONTAINS,
-    name: 'Does not contain',
-    inputsCount: 1
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, FORMULA_DATE_BEFORE, {
-  value: {
-    key: FORMULA_DATE_BEFORE,
-    name: 'Before',
-    inputsCount: 1
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, FORMULA_DATE_AFTER, {
-  value: {
-    key: FORMULA_DATE_AFTER,
-    name: 'After',
-    inputsCount: 1
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, FORMULA_TOMORROW, {
-  value: {
-    key: FORMULA_TOMORROW,
-    name: 'Tomorrow',
-    inputsCount: 0
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, FORMULA_TODAY, {
-  value: {
-    key: FORMULA_TODAY,
-    name: 'Today',
-    inputsCount: 0
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, FORMULA_YESTERDAY, {
-  value: {
-    key: FORMULA_YESTERDAY,
-    name: 'Yesterday',
-    inputsCount: 0
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), $__25);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":72,"formula/beginsWith":127,"formula/between":128,"formula/byValue":129,"formula/contains":130,"formula/date/after":131,"formula/date/before":132,"formula/date/today":133,"formula/date/tomorrow":134,"formula/date/yesterday":135,"formula/empty":136,"formula/endsWith":137,"formula/equal":138,"formula/greaterThan":139,"formula/greaterThanOrEqual":140,"formula/lessThan":141,"formula/lessThanOrEqual":142,"formula/none":143,"formula/notBetween":144,"formula/notContains":145,"formula/notEmpty":146,"formula/notEqual":147}],125:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":73,"formula/beginsWith":132,"formula/between":133,"formula/byValue":134,"formula/contains":135,"formula/date/after":136,"formula/date/before":137,"formula/date/today":138,"formula/date/tomorrow":139,"formula/date/yesterday":140,"formula/empty":141,"formula/endsWith":142,"formula/equal":143,"formula/greaterThan":144,"formula/greaterThanOrEqual":145,"formula/lessThan":146,"formula/lessThanOrEqual":147,"formula/none":148,"formula/notBetween":149,"formula/notContains":150,"formula/notEmpty":151,"formula/notEqual":152,"formulaRegisterer":154}],130:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DataFilter: {get: function() {
@@ -22291,7 +23129,7 @@ Handsontable.utils = Handsontable.utils || {};
 Handsontable.utils.FiltersDataFilter = DataFilter;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42}],126:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42}],131:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Filters: {get: function() {
@@ -22310,7 +23148,10 @@ var $__handsontable_47_plugins_47__95_base__,
     $__component_47_actionBar__,
     $__formulaCollection__,
     $__dataFilter__,
-    $__constants__;
+    $__formulaUpdateObserver__,
+    $__formulaRegisterer__,
+    $__constants__,
+    $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__;
 var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
 var $__1 = ($__handsontable_47_helpers_47_array__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
     arrayEach = $__1.arrayEach,
@@ -22327,20 +23168,24 @@ var ValueComponent = ($__component_47_value__ = require("component/value"), $__c
 var ActionBarComponent = ($__component_47_actionBar__ = require("component/actionBar"), $__component_47_actionBar__ && $__component_47_actionBar__.__esModule && $__component_47_actionBar__ || {default: $__component_47_actionBar__}).ActionBarComponent;
 var FormulaCollection = ($__formulaCollection__ = require("formulaCollection"), $__formulaCollection__ && $__formulaCollection__.__esModule && $__formulaCollection__ || {default: $__formulaCollection__}).FormulaCollection;
 var DataFilter = ($__dataFilter__ = require("dataFilter"), $__dataFilter__ && $__dataFilter__.__esModule && $__dataFilter__ || {default: $__dataFilter__}).DataFilter;
+var FormulaUpdateObserver = ($__formulaUpdateObserver__ = require("formulaUpdateObserver"), $__formulaUpdateObserver__ && $__formulaUpdateObserver__.__esModule && $__formulaUpdateObserver__ || {default: $__formulaUpdateObserver__}).FormulaUpdateObserver;
+var getFormulaDescriptor = ($__formulaRegisterer__ = require("formulaRegisterer"), $__formulaRegisterer__ && $__formulaRegisterer__.__esModule && $__formulaRegisterer__ || {default: $__formulaRegisterer__}).getFormulaDescriptor;
 var FORMULA_NONE = ($__constants__ = require("constants"), $__constants__ && $__constants__.__esModule && $__constants__ || {default: $__constants__}).FORMULA_NONE;
+var SEPARATOR = ($__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems"), $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ || {default: $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__}).SEPARATOR;
 var Filters = function Filters(hotInstance) {
-  var $__12 = this;
+  var $__15 = this;
   $traceurRuntime.superConstructor($Filters).call(this, hotInstance);
   this.eventManager = new EventManager(this);
   this.trimRowsPlugin = null;
   this.dropdownMenuPlugin = null;
   this.formulaCollection = null;
+  this.formulaUpdateObserver = null;
   this.conditionComponent = null;
   this.valueComponent = null;
   this.actionBarComponent = null;
   this.lastSelectedColumn = null;
   this.hot.addHook('afterGetColHeader', (function(col, TH) {
-    return $__12.onAfterGetColHeader(col, TH);
+    return $__15.onAfterGetColHeader(col, TH);
   }));
 };
 var $Filters = Filters;
@@ -22349,22 +23194,19 @@ var $Filters = Filters;
     return this.hot.getSettings().filters ? true : false;
   },
   enablePlugin: function() {
-    var $__12 = this;
+    var $__15 = this;
     if (this.enabled) {
       return;
     }
     this.trimRowsPlugin = this.hot.getPlugin('trimRows');
     this.dropdownMenuPlugin = this.hot.getPlugin('dropdownMenu');
-    if (!this.formulaCollection) {
-      this.formulaCollection = new FormulaCollection();
-    }
     if (!this.conditionComponent) {
       this.conditionComponent = new ConditionComponent(this.hot);
       this.conditionComponent.addLocalHook('accept', (function() {
-        return $__12.onActionBarSubmit('accept');
+        return $__15.onActionBarSubmit('accept');
       }));
       this.conditionComponent.addLocalHook('cancel', (function() {
-        return $__12.onActionBarSubmit('cancel');
+        return $__15.onActionBarSubmit('cancel');
       }));
     }
     if (!this.valueComponent) {
@@ -22373,10 +23215,32 @@ var $Filters = Filters;
     if (!this.actionBarComponent) {
       this.actionBarComponent = new ActionBarComponent(this.hot);
       this.actionBarComponent.addLocalHook('accept', (function() {
-        return $__12.onActionBarSubmit('accept');
+        return $__15.onActionBarSubmit('accept');
       }));
       this.actionBarComponent.addLocalHook('cancel', (function() {
-        return $__12.onActionBarSubmit('cancel');
+        return $__15.onActionBarSubmit('cancel');
+      }));
+    }
+    if (!this.formulaCollection) {
+      this.formulaCollection = new FormulaCollection();
+    }
+    if (!this.formulaUpdateObserver) {
+      this.formulaUpdateObserver = new FormulaUpdateObserver(this.formulaCollection, (function(column) {
+        return $__15.getDataMapAtColumn(column);
+      }));
+      this.formulaUpdateObserver.addLocalHook('update', (function() {
+        var $__20;
+        for (var params = [],
+            $__17 = 0; $__17 < arguments.length; $__17++)
+          params[$__17] = arguments[$__17];
+        return ($__20 = $__15.conditionComponent).updateState.apply($__20, $traceurRuntime.spread(params));
+      }));
+      this.formulaUpdateObserver.addLocalHook('update', (function() {
+        var $__20;
+        for (var params = [],
+            $__18 = 0; $__18 < arguments.length; $__18++)
+          params[$__18] = arguments[$__18];
+        return ($__20 = $__15.valueComponent).updateState.apply($__20, $traceurRuntime.spread(params));
       }));
     }
     this.conditionComponent.show();
@@ -22384,13 +23248,13 @@ var $Filters = Filters;
     this.actionBarComponent.show();
     this.registerEvents();
     this.addHook('afterDropdownMenuDefaultOptions', (function(defaultOptions) {
-      return $__12.onAfterDropdownMenuDefaultOptions(defaultOptions);
+      return $__15.onAfterDropdownMenuDefaultOptions(defaultOptions);
     }));
     this.addHook('afterDropdownMenuShow', (function() {
-      return $__12.onAfterDropdownMenuShow();
+      return $__15.onAfterDropdownMenuShow();
     }));
     this.addHook('afterDropdownMenuHide', (function() {
-      return $__12.onAfterDropdownMenuHide();
+      return $__15.onAfterDropdownMenuHide();
     }));
     this.hot.getSettings().trimRows = true;
     this.trimRowsPlugin.enablePlugin();
@@ -22401,9 +23265,9 @@ var $Filters = Filters;
     $traceurRuntime.superGet(this, $Filters.prototype, "enablePlugin").call(this);
   },
   registerEvents: function() {
-    var $__12 = this;
+    var $__15 = this;
     this.eventManager.addEventListener(this.hot.rootElement, 'click', (function(event) {
-      return $__12.onTableClick(event);
+      return $__15.onTableClick(event);
     }));
   },
   disablePlugin: function() {
@@ -22411,7 +23275,7 @@ var $Filters = Filters;
       this.conditionComponent.hide();
       this.valueComponent.hide();
       this.actionBarComponent.hide();
-      this.formulaCollection.clear();
+      this.formulaCollection.clean();
       this.trimRowsPlugin.untrimAll();
     }
     $traceurRuntime.superGet(this, $Filters.prototype, "disablePlugin").call(this);
@@ -22427,17 +23291,14 @@ var $Filters = Filters;
   },
   clearFormulas: function(column) {
     if (column === void 0) {
-      this.formulaCollection.clear();
+      this.formulaCollection.clean();
     } else {
       this.formulaCollection.clearFormulas(column);
     }
   },
   filter: function() {
-    var $__12 = this;
-    var dataFilter = new DataFilter(this.formulaCollection, (function(column) {
-      return $__12.getDataMapAtColumn(column);
-    }));
-    var needToFilter = this.formulaCollection.isEmpty() ? false : true;
+    var dataFilter = this._createDataFilter();
+    var needToFilter = !this.formulaCollection.isEmpty();
     var filteredRows = [];
     var allowFiltering = this.hot.runHooks('beforeFilter', this.formulaCollection.exportAllFormulas());
     if (allowFiltering !== false) {
@@ -22468,25 +23329,25 @@ var $Filters = Filters;
     return this.lastSelectedColumn;
   },
   clearColumnSelection: function() {
-    var $__14 = this.hot.getSelected() || [],
-        row = $__14[0],
-        col = $__14[1];
+    var $__19 = this.hot.getSelected() || [],
+        row = $__19[0],
+        col = $__19[1];
     if (row !== void 0 && col !== void 0) {
       this.hot.selectCell(row, col);
     }
   },
   getDataMapAtColumn: function(column) {
-    var $__12 = this;
+    var $__15 = this;
     var data = [];
     arrayEach(this.hot.getSourceDataAtCol(column), (function(value, rowIndex) {
-      var $__14 = $__12.hot.getCellMeta(rowIndex, column),
-          row = $__14.row,
-          col = $__14.col,
-          visualCol = $__14.visualCol,
-          visualRow = $__14.visualRow,
-          type = $__14.type,
-          instance = $__14.instance,
-          dateFormat = $__14.dateFormat;
+      var $__19 = $__15.hot.getCellMeta(rowIndex, column),
+          row = $__19.row,
+          col = $__19.col,
+          visualCol = $__19.visualCol,
+          visualRow = $__19.visualRow,
+          type = $__19.type,
+          instance = $__19.instance,
+          dateFormat = $__19.dateFormat;
       data.push({
         meta: {
           row: row,
@@ -22511,8 +23372,9 @@ var $Filters = Filters;
     this.conditionComponent.getSelectElement().closeOptions();
   },
   onAfterDropdownMenuDefaultOptions: function(defaultOptions) {
-    defaultOptions.items.push(Handsontable.plugins.DropdownMenu.SEPARATOR);
+    defaultOptions.items.push({name: SEPARATOR});
     defaultOptions.items.push(this.conditionComponent.getMenuItemDescriptor());
+    defaultOptions.items.push(this.valueComponent.getMenuItemDescriptor());
     defaultOptions.items.push(this.actionBarComponent.getMenuItemDescriptor());
   },
   onActionBarSubmit: function(submitType) {
@@ -22520,6 +23382,7 @@ var $Filters = Filters;
       var column = this.getSelectedColumn();
       var byConditionState = this.conditionComponent.getState();
       var byValueState = this.valueComponent.getState();
+      this.formulaUpdateObserver.groupChanges();
       this.formulaCollection.clearFormulas(column);
       if (byConditionState.command.key === FORMULA_NONE && byValueState.command.key === FORMULA_NONE) {
         this.formulaCollection.removeFormulas(column);
@@ -22530,6 +23393,7 @@ var $Filters = Filters;
       if (byValueState.command.key !== FORMULA_NONE) {
         this.formulaCollection.addFormula(column, byValueState);
       }
+      this.formulaUpdateObserver.flush();
       this.conditionComponent.saveState(column);
       this.valueComponent.saveState(column);
     }
@@ -22555,15 +23419,23 @@ var $Filters = Filters;
       this.valueComponent.destroy();
       this.actionBarComponent.destroy();
       this.formulaCollection.destroy();
+      this.formulaUpdateObserver.destroy();
     }
     $traceurRuntime.superGet(this, $Filters.prototype, "destroy").call(this);
+  },
+  _createDataFilter: function() {
+    var formulaCollection = arguments[0] !== (void 0) ? arguments[0] : this.formulaCollection;
+    var $__15 = this;
+    return new DataFilter(formulaCollection, (function(column) {
+      return $__15.getDataMapAtColumn(column);
+    }));
   }
 }, {}, BasePlugin);
 ;
 registerPlugin('filters', Filters);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":41,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60,"component/actionBar":121,"component/condition":122,"component/value":123,"constants":124,"dataFilter":125,"formulaCollection":148}],127:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":41,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":60,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":73,"component/actionBar":126,"component/condition":127,"component/value":128,"constants":129,"dataFilter":130,"formulaCollection":153,"formulaRegisterer":154,"formulaUpdateObserver":155}],132:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22582,10 +23454,13 @@ function formula(dataRow) {
   var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
   return startsWith(stringify(dataRow.value).toLowerCase(), stringify(value));
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Begins with',
+  inputsCount: 1
+});
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":48,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":52,"formulaRegisterer":149}],128:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":49,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":53,"formulaRegisterer":154}],133:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22618,10 +23493,13 @@ function formula(dataRow) {
   }
   return dataRow.value >= from && dataRow.value <= to;
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Is between',
+  inputsCount: 2
+});
 
 //# 
-},{"date/after":131,"date/before":132,"formulaRegisterer":149}],129:[function(require,module,exports){
+},{"date/after":136,"date/before":137,"formulaRegisterer":154}],134:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22636,10 +23514,13 @@ function formula(dataRow) {
   var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
   return value.indexOf(dataRow.value) >= 0;
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'By value',
+  inputsCount: 0
+});
 
 //# 
-},{"formulaRegisterer":149}],130:[function(require,module,exports){
+},{"formulaRegisterer":154}],135:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22656,10 +23537,13 @@ function formula(dataRow) {
   var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
   return stringify(dataRow.value).toLowerCase().indexOf(stringify(value)) >= 0;
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Contains',
+  inputsCount: 1
+});
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":48,"formulaRegisterer":149}],131:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":49,"formulaRegisterer":154}],136:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22681,10 +23565,13 @@ function formula(dataRow) {
   }
   return date.diff(inputDate) >= 0;
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'After',
+  inputsCount: 1
+});
 
 //# 
-},{"formulaRegisterer":149,"moment":undefined}],132:[function(require,module,exports){
+},{"formulaRegisterer":154,"moment":undefined}],137:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22706,10 +23593,13 @@ function formula(dataRow) {
   }
   return date.diff(inputDate) <= 0;
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Before',
+  inputsCount: 1
+});
 
 //# 
-},{"formulaRegisterer":149,"moment":undefined}],133:[function(require,module,exports){
+},{"formulaRegisterer":154,"moment":undefined}],138:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22729,10 +23619,13 @@ function formula(dataRow) {
   }
   return date.isSame(moment().startOf('day'), 'd');
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Today',
+  inputsCount: 0
+});
 
 //# 
-},{"formulaRegisterer":149,"moment":undefined}],134:[function(require,module,exports){
+},{"formulaRegisterer":154,"moment":undefined}],139:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22752,10 +23645,13 @@ function formula(dataRow) {
   }
   return date.isSame(moment().subtract(-1, 'days').startOf('day'), 'd');
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Tomorrow',
+  inputsCount: 0
+});
 
 //# 
-},{"formulaRegisterer":149,"moment":undefined}],135:[function(require,module,exports){
+},{"formulaRegisterer":154,"moment":undefined}],140:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22775,10 +23671,13 @@ function formula(dataRow) {
   }
   return date.isSame(moment().subtract(1, 'days').startOf('day'), 'd');
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Yesterday',
+  inputsCount: 0
+});
 
 //# 
-},{"formulaRegisterer":149,"moment":undefined}],136:[function(require,module,exports){
+},{"formulaRegisterer":154,"moment":undefined}],141:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22792,10 +23691,13 @@ var FORMULA_NAME = 'empty';
 function formula(dataRow) {
   return dataRow.value === '' || dataRow.value === null || dataRow.value === void 0;
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Is empty',
+  inputsCount: 0
+});
 
 //# 
-},{"formulaRegisterer":149}],137:[function(require,module,exports){
+},{"formulaRegisterer":154}],142:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22814,10 +23716,13 @@ function formula(dataRow) {
   var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
   return endsWith(stringify(dataRow.value).toLowerCase(), stringify(value));
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Ends with',
+  inputsCount: 1
+});
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":48,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":52,"formulaRegisterer":149}],138:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":49,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":53,"formulaRegisterer":154}],143:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22834,10 +23739,13 @@ function formula(dataRow) {
   var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
   return stringify(dataRow.value).toLowerCase() === stringify(value);
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Is equal to',
+  inputsCount: 1
+});
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":48,"formulaRegisterer":149}],139:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":49,"formulaRegisterer":154}],144:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22855,10 +23763,13 @@ function formula(dataRow) {
   }
   return dataRow.value > value;
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Greater than',
+  inputsCount: 1
+});
 
 //# 
-},{"formulaRegisterer":149}],140:[function(require,module,exports){
+},{"formulaRegisterer":154}],145:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22876,10 +23787,13 @@ function formula(dataRow) {
   }
   return dataRow.value >= value;
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Greater than or equal to',
+  inputsCount: 1
+});
 
 //# 
-},{"formulaRegisterer":149}],141:[function(require,module,exports){
+},{"formulaRegisterer":154}],146:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22897,10 +23811,13 @@ function formula(dataRow) {
   }
   return dataRow.value < value;
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Less than',
+  inputsCount: 1
+});
 
 //# 
-},{"formulaRegisterer":149}],142:[function(require,module,exports){
+},{"formulaRegisterer":154}],147:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22918,10 +23835,13 @@ function formula(dataRow) {
   }
   return dataRow.value <= value;
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Less than or equal to',
+  inputsCount: 1
+});
 
 //# 
-},{"formulaRegisterer":149}],143:[function(require,module,exports){
+},{"formulaRegisterer":154}],148:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22935,10 +23855,13 @@ var FORMULA_NAME = 'none';
 function formula() {
   return true;
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'None',
+  inputsCount: 0
+});
 
 //# 
-},{"formulaRegisterer":149}],144:[function(require,module,exports){
+},{"formulaRegisterer":154}],149:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22956,10 +23879,13 @@ var FORMULA_NAME = 'not_between';
 function formula(dataRow, inputValues) {
   return !getFormula(FORMULA_BETWEEN, inputValues)(dataRow);
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Is not between',
+  inputsCount: 2
+});
 
 //# 
-},{"between":128,"formulaRegisterer":149}],145:[function(require,module,exports){
+},{"between":133,"formulaRegisterer":154}],150:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22977,10 +23903,13 @@ var FORMULA_NAME = 'not_contains';
 function formula(dataRow, inputValues) {
   return !getFormula(FORMULA_CONTAINS, inputValues)(dataRow);
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Does not contain',
+  inputsCount: 1
+});
 
 //# 
-},{"contains":130,"formulaRegisterer":149}],146:[function(require,module,exports){
+},{"contains":135,"formulaRegisterer":154}],151:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -22998,10 +23927,13 @@ var FORMULA_NAME = 'not_empty';
 function formula(dataRow, inputValues) {
   return !getFormula(FORMULA_EMPTY, inputValues)(dataRow);
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Is not empty',
+  inputsCount: 0
+});
 
 //# 
-},{"empty":136,"formulaRegisterer":149}],147:[function(require,module,exports){
+},{"empty":141,"formulaRegisterer":154}],152:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -23019,10 +23951,13 @@ var FORMULA_NAME = 'neq';
 function formula(dataRow, inputValues) {
   return !getFormula(FORMULA_EQUAL, inputValues)(dataRow);
 }
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Is not equal to',
+  inputsCount: 1
+});
 
 //# 
-},{"equal":138,"formulaRegisterer":149}],148:[function(require,module,exports){
+},{"equal":143,"formulaRegisterer":154}],153:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FormulaCollection: {get: function() {
@@ -23032,13 +23967,17 @@ Object.defineProperties(exports, {
 });
 var $__handsontable_47_helpers_47_array__,
     $__handsontable_47_helpers_47_object__,
-    $__formulaRegisterer__;
+    $__formulaRegisterer__,
+    $__handsontable_47_mixins_47_localHooks__;
 var $__0 = ($__handsontable_47_helpers_47_array__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
     arrayEach = $__0.arrayEach,
     arrayMap = $__0.arrayMap,
     arrayFilter = $__0.arrayFilter;
-var objectEach = ($__handsontable_47_helpers_47_object__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).objectEach;
+var $__1 = ($__handsontable_47_helpers_47_object__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
+    objectEach = $__1.objectEach,
+    mixin = $__1.mixin;
 var getFormula = ($__formulaRegisterer__ = require("formulaRegisterer"), $__formulaRegisterer__ && $__formulaRegisterer__.__esModule && $__formulaRegisterer__ || {default: $__formulaRegisterer__}).getFormula;
+var localHooks = ($__handsontable_47_mixins_47_localHooks__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks"), $__handsontable_47_mixins_47_localHooks__ && $__handsontable_47_mixins_47_localHooks__.__esModule && $__handsontable_47_mixins_47_localHooks__ || {default: $__handsontable_47_mixins_47_localHooks__}).localHooks;
 var FormulaCollection = function FormulaCollection() {
   this.formulas = Object.create(null);
   this.orderStack = [];
@@ -23048,11 +23987,11 @@ var FormulaCollection = function FormulaCollection() {
     return !this.orderStack.length;
   },
   isMatch: function(value, column) {
-    var $__3 = this;
+    var $__4 = this;
     var result = true;
     if (column === void 0) {
       objectEach(this.formulas, (function(formulas) {
-        result = $__3.isMatchInFormulas(formulas, value);
+        result = $__4.isMatchInFormulas(formulas, value);
         return result;
       }));
     } else {
@@ -23062,16 +24001,21 @@ var FormulaCollection = function FormulaCollection() {
   },
   isMatchInFormulas: function(formulas, value) {
     var result = false;
-    arrayEach(formulas, (function(formula) {
-      return result = formula.func(value);
-    }));
+    if (formulas.length) {
+      arrayEach(formulas, (function(formula) {
+        return result = formula.func(value);
+      }));
+    } else {
+      result = true;
+    }
     return result;
   },
   addFormula: function(column, formulaDefinition) {
     var args = arrayMap(formulaDefinition.args, (function(v) {
       return typeof v === 'string' ? v.toLowerCase() : v;
     }));
-    var name = formulaDefinition.command.key;
+    var name = formulaDefinition.name || formulaDefinition.command.key;
+    this.runLocalHooks('beforeAdd', column);
     if (this.orderStack.indexOf(column) === -1) {
       this.orderStack.push(column);
     }
@@ -23079,6 +24023,7 @@ var FormulaCollection = function FormulaCollection() {
       arrayEach(this.getFormulas(column), (function(formula) {
         if (formula.name === name) {
           formula.func = getFormula(formula.name, args);
+          formula.args = args;
           return false;
         }
       }));
@@ -23089,6 +24034,7 @@ var FormulaCollection = function FormulaCollection() {
         func: getFormula(name, args)
       });
     }
+    this.runLocalHooks('afterAdd', column);
   },
   getFormulas: function(column) {
     if (!this.formulas[column]) {
@@ -23097,13 +24043,13 @@ var FormulaCollection = function FormulaCollection() {
     return this.formulas[column];
   },
   exportAllFormulas: function() {
-    var $__3 = this;
+    var $__4 = this;
     var result = [];
     arrayEach(this.orderStack, (function(column) {
-      var formulas = arrayMap($__3.getFormulas(column), (function() {
-        var $__5 = arguments[0] !== (void 0) ? arguments[0] : formula,
-            name = $__5.name,
-            args = $__5.args;
+      var formulas = arrayMap($__4.getFormulas(column), (function() {
+        var $__6 = arguments[0] !== (void 0) ? arguments[0] : formula,
+            name = $__6.name,
+            args = $__6.args;
         return {
           name: name,
           args: args
@@ -23116,14 +24062,28 @@ var FormulaCollection = function FormulaCollection() {
     }));
     return result;
   },
+  importAllFormulas: function(formulas) {
+    var $__4 = this;
+    this.clean();
+    arrayEach(formulas, (function(stack) {
+      $__4.orderStack.push(stack.column);
+      arrayEach(stack.formulas, (function(formula) {
+        return $__4.addFormula(stack.column, formula);
+      }));
+    }));
+  },
   removeFormulas: function(column) {
+    this.runLocalHooks('beforeRemove', column);
     if (this.orderStack.indexOf(column) >= 0) {
       this.orderStack.splice(this.orderStack.indexOf(column), 1);
     }
     this.clearFormulas(column);
+    this.runLocalHooks('afterRemove', column);
   },
   clearFormulas: function(column) {
+    this.runLocalHooks('beforeClear', column);
     this.getFormulas(column).length = 0;
+    this.runLocalHooks('afterClear', column);
   },
   hasFormulas: function(column, name) {
     var result = false;
@@ -23137,23 +24097,30 @@ var FormulaCollection = function FormulaCollection() {
     }
     return result;
   },
-  clear: function() {
+  clean: function() {
+    this.runLocalHooks('beforeClean');
     this.formulas = Object.create(null);
     this.orderStack.length = 0;
+    this.runLocalHooks('afterClean');
   },
   destroy: function() {
+    this.clearLocalHooks();
     this.formulas = null;
     this.orderStack = null;
   }
 }, {});
+mixin(FormulaCollection, localHooks);
 ;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"formulaRegisterer":149}],149:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":56,"formulaRegisterer":154}],154:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   getFormula: {get: function() {
       return getFormula;
+    }},
+  getFormulaDescriptor: {get: function() {
+      return getFormulaDescriptor;
     }},
   registerFormula: {get: function() {
       return registerFormula;
@@ -23164,23 +24131,173 @@ var formulas = {};
 function getFormula(name, args) {
   return function(dataRow) {
     if (!formulas[name]) {
-      throw new Error(("Filter formula \"" + name + "\" does not exist."));
+      throw Error(("Filter formula \"" + name + "\" does not exist."));
     }
-    return formulas[name].apply(dataRow.meta.instance, [].concat([dataRow], [args]));
+    return formulas[name].formula.apply(dataRow.meta.instance, [].concat([dataRow], [args]));
   };
 }
-function registerFormula(name, formula) {
-  formulas[name] = formula;
+function getFormulaDescriptor(name) {
+  if (!formulas[name]) {
+    throw Error(("Filter formula \"" + name + "\" does not exist."));
+  }
+  return formulas[name].descriptor;
+}
+function registerFormula(name, formula, descriptor) {
+  descriptor.key = name;
+  formulas[name] = {
+    formula: formula,
+    descriptor: descriptor
+  };
 }
 Handsontable.utils = Handsontable.utils || {};
 Handsontable.utils.FiltersFormulaRegisterer = {
   getFormula: getFormula,
   registerFormula: registerFormula,
+  getFormulaDescriptor: getFormulaDescriptor,
   formulas: formulas
 };
 
 //# 
-},{}],150:[function(require,module,exports){
+},{}],155:[function(require,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FormulaUpdateObserver: {get: function() {
+      return FormulaUpdateObserver;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_array__,
+    $__formulaCollection__,
+    $__dataFilter__,
+    $__utils__,
+    $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_helpers_47_function__,
+    $__handsontable_47_mixins_47_localHooks__,
+    $__constants__;
+var $__0 = ($__handsontable_47_helpers_47_array__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
+    arrayEach = $__0.arrayEach,
+    arrayMap = $__0.arrayMap,
+    arrayFilter = $__0.arrayFilter;
+var FormulaCollection = ($__formulaCollection__ = require("formulaCollection"), $__formulaCollection__ && $__formulaCollection__.__esModule && $__formulaCollection__ || {default: $__formulaCollection__}).FormulaCollection;
+var DataFilter = ($__dataFilter__ = require("dataFilter"), $__dataFilter__ && $__dataFilter__.__esModule && $__dataFilter__ || {default: $__dataFilter__}).DataFilter;
+var sortComparison = ($__utils__ = require("utils"), $__utils__ && $__utils__.__esModule && $__utils__ || {default: $__utils__}).sortComparison;
+var $__4 = ($__handsontable_47_helpers_47_object__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
+    mixin = $__4.mixin,
+    objectEach = $__4.objectEach;
+var $__5 = ($__handsontable_47_helpers_47_function__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/function"), $__handsontable_47_helpers_47_function__ && $__handsontable_47_helpers_47_function__.__esModule && $__handsontable_47_helpers_47_function__ || {default: $__handsontable_47_helpers_47_function__}),
+    curry = $__5.curry,
+    debounce = $__5.debounce;
+var localHooks = ($__handsontable_47_mixins_47_localHooks__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks"), $__handsontable_47_mixins_47_localHooks__ && $__handsontable_47_mixins_47_localHooks__.__esModule && $__handsontable_47_mixins_47_localHooks__ || {default: $__handsontable_47_mixins_47_localHooks__}).localHooks;
+var FORMULA_BY_VALUE = ($__constants__ = require("constants"), $__constants__ && $__constants__.__esModule && $__constants__ || {default: $__constants__}).FORMULA_BY_VALUE;
+var FormulaUpdateObserver = function FormulaUpdateObserver(formulaCollection) {
+  var columnDataFactory = arguments[1] !== (void 0) ? arguments[1] : (function(column) {
+    return [];
+  });
+  var $__8 = this;
+  this.formulaCollection = formulaCollection;
+  this.columnDataFactory = columnDataFactory;
+  this.changes = [];
+  this.grouping = false;
+  this.latestEditedColumnPosition = -1;
+  this.latestOrderStack = [];
+  this.formulaCollection.addLocalHook('beforeRemove', (function(column) {
+    return $__8._onFormulaBeforeModify(column);
+  }));
+  this.formulaCollection.addLocalHook('afterAdd', (function(column) {
+    return $__8._onFormulaAfterModify(column);
+  }));
+  this.formulaCollection.addLocalHook('afterClear', (function(column) {
+    return $__8._onFormulaAfterModify(column);
+  }));
+  this.formulaCollection.addLocalHook('beforeClean', (function() {
+    return $__8._onFormulaBeforeClean();
+  }));
+  this.formulaCollection.addLocalHook('afterClean', (function() {
+    return $__8._onFormulaAfterClean();
+  }));
+};
+($traceurRuntime.createClass)(FormulaUpdateObserver, {
+  groupChanges: function() {
+    this.grouping = true;
+  },
+  flush: function() {
+    var $__8 = this;
+    this.grouping = false;
+    arrayEach(this.changes, (function(column) {
+      return $__8._onFormulaAfterModify(column);
+    }));
+    this.changes.length = 0;
+  },
+  _onFormulaBeforeModify: function(column) {
+    this.latestEditedColumnPosition = this.formulaCollection.orderStack.indexOf(column);
+  },
+  _onFormulaAfterModify: function(column) {
+    var $__8 = this;
+    if (this.grouping) {
+      if (this.changes.indexOf(column) === -1) {
+        this.changes.push(column);
+      }
+      return;
+    }
+    var allFormulas = this.formulaCollection.exportAllFormulas();
+    var editedColumnPosition = this.formulaCollection.orderStack.indexOf(column);
+    if (editedColumnPosition === -1) {
+      editedColumnPosition = this.latestEditedColumnPosition;
+    }
+    var formulasBefore = allFormulas.slice(0, editedColumnPosition);
+    var formulasAfter = allFormulas.slice(editedColumnPosition);
+    if (formulasAfter.length && formulasAfter[0].column === column) {
+      formulasAfter.shift();
+    }
+    var visibleDataFactory = curry((function(formulasBefore, column) {
+      var formulasStack = arguments[2] !== (void 0) ? arguments[2] : [];
+      var splitFormulaCollection = new FormulaCollection();
+      formulasBefore = [].concat(formulasBefore, formulasStack);
+      splitFormulaCollection.importAllFormulas(formulasBefore);
+      var allRows = $__8.columnDataFactory(column);
+      var visibleRows;
+      if (splitFormulaCollection.isEmpty()) {
+        visibleRows = allRows;
+      } else {
+        visibleRows = (new DataFilter(splitFormulaCollection, (function(column) {
+          return $__8.columnDataFactory(column);
+        }))).filter();
+      }
+      visibleRows = arrayMap(visibleRows, (function(rowData) {
+        return rowData.meta.visualRow;
+      }));
+      return arrayFilter(allRows, (function(rowData) {
+        return visibleRows.indexOf(rowData.meta.visualRow) >= 0;
+      }));
+    }))(formulasBefore);
+    var editedFormulas = [].concat(this.formulaCollection.getFormulas(column));
+    this.runLocalHooks('update', {
+      column: column,
+      formulas: editedFormulas
+    }, formulasAfter, visibleDataFactory);
+  },
+  _onFormulaBeforeClean: function() {
+    this.latestOrderStack = [].concat(this.formulaCollection.orderStack);
+  },
+  _onFormulaAfterClean: function() {
+    var $__8 = this;
+    arrayEach(this.latestOrderStack, (function(column) {
+      return $__8._onFormulaAfterModify(column);
+    }));
+  },
+  destroy: function() {
+    var $__8 = this;
+    this.clearLocalHooks();
+    objectEach(this, (function(value, property) {
+      return $__8[property] = null;
+    }));
+  }
+}, {});
+mixin(FormulaUpdateObserver, localHooks);
+;
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/function":48,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":56,"constants":129,"dataFilter":130,"formulaCollection":153,"utils":160}],156:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BaseUI: {get: function() {
@@ -23267,7 +24384,7 @@ mixin(BaseUI, localHooks);
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":41,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":55}],151:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":41,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":56}],157:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   InputUI: {get: function() {
@@ -23277,12 +24394,14 @@ Object.defineProperties(exports, {
 });
 var $___95_base__,
     $__handsontable_47_helpers_47_dom_47_element__,
-    $__handsontable_47_helpers_47_object__;
+    $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_helpers_47_array__;
 var BaseUI = ($___95_base__ = require("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseUI;
 var addClass = ($__handsontable_47_helpers_47_dom_47_element__ = require("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).addClass;
 var $__2 = ($__handsontable_47_helpers_47_object__ = require("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
     clone = $__2.clone,
     extend = $__2.extend;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = require("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
 var privatePool = new WeakMap();
 var InputUI = function InputUI(hotInstance, options) {
   privatePool.set(this, {});
@@ -23292,16 +24411,16 @@ var InputUI = function InputUI(hotInstance, options) {
 var $InputUI = InputUI;
 ($traceurRuntime.createClass)(InputUI, {
   registerHooks: function() {
-    var $__3 = this;
+    var $__4 = this;
     this.addLocalHook('click', (function(event) {
-      return $__3.onClick(event);
+      return $__4.onClick(event);
     }));
     this.addLocalHook('keyup', (function(event) {
-      return $__3.onKeyup(event);
+      return $__4.onKeyup(event);
     }));
   },
   build: function() {
-    var $__3 = this;
+    var $__4 = this;
     $traceurRuntime.superGet(this, $InputUI.prototype, "build").call(this);
     var priv = privatePool.get(this);
     var input = priv.input = document.createElement('input');
@@ -23316,14 +24435,10 @@ var $InputUI = InputUI;
     }
     this._element.appendChild(input);
     this._element.appendChild(icon);
-    this.eventManager.addEventListener(this._element, 'click', (function(event) {
-      return $__3.runLocalHooks('click', event, $__3);
-    }));
-    this.eventManager.addEventListener(this._element, 'keyup', (function(event) {
-      return $__3.runLocalHooks('keyup', event, $__3);
-    }));
-    this.eventManager.addEventListener(this._element, 'keydown', (function(event) {
-      return $__3.runLocalHooks('keydown', event, $__3);
+    arrayEach(['click', 'keydown', 'keyup', 'focus', 'blur'], (function(eventName) {
+      $__4.eventManager.addEventListener(input, eventName, (function(event) {
+        return $__4.runLocalHooks(eventName, event, $__4);
+      }));
     }));
     this.update();
   },
@@ -23353,7 +24468,7 @@ var $InputUI = InputUI;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"_base":150}],152:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"_base":156}],158:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   MultipleSelectUI: {get: function() {
@@ -23399,12 +24514,18 @@ var $MultipleSelectUI = MultipleSelectUI;
     this.searchInput.addLocalHook('keyup', (function(event) {
       return $__7.onInputKeyUp(event);
     }));
+    this.searchInput.addLocalHook('blur', (function(event) {
+      return $__7.onInputBlur(event);
+    }));
   },
   setItems: function(items) {
     this.items = items;
     if (this.itemsBox) {
       this.itemsBox.loadData(this.items);
     }
+  },
+  getItems: function() {
+    return $traceurRuntime.spread(this.items);
   },
   getValue: function() {
     return itemsToValue(this.items);
@@ -23420,6 +24541,9 @@ var $MultipleSelectUI = MultipleSelectUI;
     this._element.appendChild(this.searchInput.element);
     this._element.appendChild(itemsBoxWrapper);
     var hotInitializer = (function(wrapper) {
+      if (!$__7._element) {
+        return;
+      }
       if ($__7.itemsBox) {
         $__7.itemsBox.destroy();
       }
@@ -23435,7 +24559,15 @@ var $MultipleSelectUI = MultipleSelectUI;
         }],
         colWidths: 150,
         height: 110,
-        width: 168
+        width: 168,
+        copyPaste: false,
+        disableVisualSelection: 'area',
+        fillHandle: false,
+        fragmentSelection: 'cell',
+        tabMoves: {
+          row: 1,
+          col: 0
+        }
       });
     });
     hotInitializer(itemsBoxWrapper);
@@ -23464,17 +24596,20 @@ var $MultipleSelectUI = MultipleSelectUI;
     $traceurRuntime.superGet(this, $MultipleSelectUI.prototype, "destroy").call(this);
   },
   onInputKeyUp: function(event) {
-    var $__7 = this;
-    var value = this.searchInput.getValue();
+    var value = this.searchInput.getValue().toLowerCase();
     var filteredItems;
     if (value === '') {
       filteredItems = $traceurRuntime.spread(this.items);
     } else {
       filteredItems = arrayFilter(this.items, (function(item) {
-        return startsWith((item.value + '').toLowerCase(), $__7.searchInput.getValue().toLowerCase());
+        return (item.value + '').toLowerCase().indexOf(value) >= 0;
       }));
     }
     this.itemsBox.loadData(filteredItems);
+  },
+  onInputBlur: function() {
+    this.itemsBox.listen();
+    this.itemsBox.selectCell(0, 0);
   }
 }, {get DEFAULTS() {
     return clone({value: []});
@@ -23497,7 +24632,7 @@ function itemsToValue(availableItems) {
 }
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":52,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":71,"_base":150,"input":151}],153:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":53,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":72,"_base":156,"input":157}],159:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   SelectUI: {get: function() {
@@ -23508,7 +24643,8 @@ Object.defineProperties(exports, {
 var $___95_base__,
     $__handsontable_47_helpers_47_dom_47_element__,
     $__handsontable_47_plugins_47_contextMenu_47_menu__,
-    $__handsontable_47_helpers_47_object__;
+    $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__;
 var BaseUI = ($___95_base__ = require("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseUI;
 var $__1 = ($__handsontable_47_helpers_47_dom_47_element__ = require("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
     addClass = $__1.addClass,
@@ -23518,6 +24654,7 @@ var Menu = ($__handsontable_47_plugins_47_contextMenu_47_menu__ = require("../..
 var $__3 = ($__handsontable_47_helpers_47_object__ = require("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
     clone = $__3.clone,
     extend = $__3.extend;
+var SEPARATOR = ($__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ = require("../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems"), $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ || {default: $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__}).SEPARATOR;
 var privatePool = new WeakMap();
 var SelectUI = function SelectUI(hotInstance, options) {
   privatePool.set(this, {});
@@ -23529,9 +24666,9 @@ var SelectUI = function SelectUI(hotInstance, options) {
 var $SelectUI = SelectUI;
 ($traceurRuntime.createClass)(SelectUI, {
   registerHooks: function() {
-    var $__4 = this;
+    var $__5 = this;
     this.addLocalHook('click', (function(event) {
-      return $__4.onClick(event);
+      return $__5.onClick(event);
     }));
   },
   setItems: function(items) {
@@ -23541,11 +24678,12 @@ var $SelectUI = SelectUI;
     }
   },
   build: function() {
-    var $__4 = this;
+    var $__5 = this;
     $traceurRuntime.superGet(this, $SelectUI.prototype, "build").call(this);
     this.menu = new Menu(this.hot, {
       className: 'htSelectUI htFiltersConditionsMenu',
-      keepInViewport: false
+      keepInViewport: false,
+      standalone: true
     });
     this.menu.setMenuItems(this.items);
     var caption = privatePool.get(this).caption = document.createElement('div');
@@ -23558,10 +24696,10 @@ var $SelectUI = SelectUI;
     this._element.appendChild(caption);
     this._element.appendChild(dropdown);
     this.menu.addLocalHook('select', (function(command) {
-      return $__4.onMenuSelect(command);
+      return $__5.onMenuSelect(command);
     }));
     this.eventManager.addEventListener(this._element, 'click', (function(event) {
-      return $__4.runLocalHooks('click', event, $__4);
+      return $__5.runLocalHooks('click', event, $__5);
     }));
     this.update();
   },
@@ -23590,10 +24728,12 @@ var $SelectUI = SelectUI;
     }
   },
   onMenuSelect: function(command) {
-    this.options.value = command;
-    this.closeOptions();
-    this.update();
-    this.runLocalHooks('select', this.options.value);
+    if (command.name !== SEPARATOR) {
+      this.options.value = command;
+      this.closeOptions();
+      this.update();
+      this.runLocalHooks('select', this.options.value);
+    }
   },
   onClick: function(event) {
     this.openOptions();
@@ -23611,7 +24751,26 @@ var $SelectUI = SelectUI;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":71,"_base":150}],154:[function(require,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":72,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":73,"_base":156}],160:[function(require,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  sortComparison: {get: function() {
+      return sortComparison;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_feature__;
+var getComparisonFunction = ($__handsontable_47_helpers_47_feature__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/feature"), $__handsontable_47_helpers_47_feature__ && $__handsontable_47_helpers_47_feature__.__esModule && $__handsontable_47_helpers_47_feature__ || {default: $__handsontable_47_helpers_47_feature__}).getComparisonFunction;
+var sortCompare = getComparisonFunction();
+function sortComparison(a, b) {
+  if (typeof a === 'number' && typeof b === 'number') {
+    return a - b;
+  }
+  return sortCompare(a, b);
+}
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/feature":47}],161:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DateCalculator: {get: function() {
@@ -23802,7 +24961,7 @@ var DateCalculator = function DateCalculator(year) {
 ;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50}],155:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51}],162:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   GanttChart: {get: function() {
@@ -23927,14 +25086,14 @@ var $GanttChart = GanttChart;
     if (this.settings.dataSource) {
       var source = this.settings.dataSource;
       if (source.instance) {
-        this.loadData(source.instance, source.startDateColumn, source.endDateColumn, source.additionalData);
+        this.loadData(source.instance, source.startDateColumn, source.endDateColumn, source.additionalData, source.asyncUpdates);
       } else {
         this.loadData(source);
       }
     }
   },
-  loadData: function(data, startDateColumn, endDateColumn, additionalData) {
-    this.dataFeed = new GanttChartDataFeed(this.hot, data, startDateColumn, endDateColumn, additionalData);
+  loadData: function(data, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
+    this.dataFeed = new GanttChartDataFeed(this.hot, data, startDateColumn, endDateColumn, additionalData, asyncUpdates);
   },
   clearRangeBars: function() {
     this.rangeBars = {};
@@ -24054,7 +25213,7 @@ var $GanttChart = GanttChart;
     var rowCount = this.hot.countRows();
     if (!this.dateCalculator.isValidRangeBarData(startDate, endDate) || startDateColumn === false || endDateColumn === false) {
       if (row > rowCount - 1) {
-        this.hot.alter('insert_row', rowCount - 1, row - rowCount + 1);
+        this.hot.alter('insert_row', rowCount, row - rowCount + 1);
       }
       return false;
     }
@@ -24101,7 +25260,7 @@ var $GanttChart = GanttChart;
     var currentBar = this.rangeBars[row][startDateColumn];
     var rowCount = this.hot.countRows();
     if (row > rowCount - 1) {
-      this.hot.alter('insert_row', rowCount - 1, row - rowCount + 1);
+      this.hot.alter('insert_row', rowCount, row - rowCount + 1);
     }
     for (var i = startDateColumn; i <= endDateColumn; i++) {
       var cellMeta = this.hot.getCellMeta(row, i);
@@ -24214,7 +25373,7 @@ var $GanttChart = GanttChart;
 registerPlugin('ganttChart', GanttChart);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/data":44,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":60,"dateCalculator":154,"ganttChartDataFeed":156}],156:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/data":44,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":60,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":61,"dateCalculator":161,"ganttChartDataFeed":163}],163:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   GanttChartDataFeed: {get: function() {
@@ -24230,31 +25389,51 @@ var $__0 = ($__handsontable_47_helpers_47_object__ = require("../../../node_modu
     deepClone = $__0.deepClone;
 var arrayEach = ($__handsontable_47_helpers_47_array__ = require("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
 var DateCalculator = ($__dateCalculator__ = require("dateCalculator"), $__dateCalculator__ && $__dateCalculator__.__esModule && $__dateCalculator__ || {default: $__dateCalculator__}).DateCalculator;
-var GanttChartDataFeed = function GanttChartDataFeed(chartInstance, data, startDateColumn, endDateColumn, additionalData) {
+var GanttChartDataFeed = function GanttChartDataFeed(chartInstance, data, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
   this.data = data;
   this.chartInstance = chartInstance;
   this.chartPlugin = this.chartInstance.getPlugin('ganttChart');
   this.hotSource = null;
   this.sourceHooks = {};
-  this.applyData(data, startDateColumn, endDateColumn, additionalData);
+  this.ongoingAsync = false;
+  this.applyData(data, startDateColumn, endDateColumn, additionalData, asyncUpdates || false);
 };
 ($traceurRuntime.createClass)(GanttChartDataFeed, {
-  applyData: function(data, startDateColumn, endDateColumn, additionalData) {
+  applyData: function(data, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
     if (Object.prototype.toString.call(data) === '[object Array]') {
       this.loadData(data);
     } else if (data.guid) {
-      this.bindWithHotInstance(data, startDateColumn, endDateColumn, additionalData);
+      this.bindWithHotInstance(data, startDateColumn, endDateColumn, additionalData, asyncUpdates);
     }
   },
-  bindWithHotInstance: function(instance, startDateColumn, endDateColumn, additionalData) {
+  bindWithHotInstance: function(instance, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
     this.hotSource = {
       instance: instance,
       startColumn: startDateColumn,
       endColumn: endDateColumn,
-      additionalData: additionalData
+      additionalData: additionalData,
+      asyncUpdates: asyncUpdates
     };
     this.addSourceHotHooks();
-    this.updateFromSource();
+    this.asyncCall(this.updateFromSource);
+  },
+  asyncCall: function(func) {
+    var $__3 = this;
+    if (!this.hotSource.asyncUpdates) {
+      func.call(this);
+      return;
+    }
+    this.asyncStart();
+    setTimeout((function() {
+      func.call($__3);
+      $__3.asyncEnd();
+    }), 0);
+  },
+  asyncStart: function() {
+    this.ongoingAsync = true;
+  },
+  asyncEnd: function() {
+    this.ongoingAsync = false;
   },
   addSourceHotHooks: function() {
     var $__3 = this;
@@ -24354,41 +25533,49 @@ var GanttChartDataFeed = function GanttChartDataFeed(chartInstance, data, startD
   },
   onAfterSourceChange: function(changes, source) {
     var $__3 = this;
-    if (!changes) {
-      return;
-    }
-    var changesByRows = {};
-    for (var i = 0,
-        changesLength = changes.length; i < changesLength; i++) {
-      var currentChange = changes[i];
-      var row = parseInt(currentChange[0], 10);
-      var col = parseInt(currentChange[1], 10);
-      if (!changesByRows[row]) {
-        changesByRows[row] = {};
+    this.asyncCall((function() {
+      if (!changes) {
+        return;
       }
-      changesByRows[row][col] = [currentChange[2], currentChange[3]];
-    }
-    objectEach(changesByRows, (function(prop, i) {
-      i = parseInt(i, 10);
-      if ($__3.chartPlugin.getRangeBarCoordinates(i)) {
-        $__3.chartPlugin.removeRangeBarByColumn(i, $__3.chartPlugin.rangeList[i][1]);
+      var changesByRows = {};
+      for (var i = 0,
+          changesLength = changes.length; i < changesLength; i++) {
+        var currentChange = changes[i];
+        var row = parseInt(currentChange[0], 10);
+        var col = parseInt(currentChange[1], 10);
+        if (!changesByRows[row]) {
+          changesByRows[row] = {};
+        }
+        changesByRows[row][col] = [currentChange[2], currentChange[3]];
       }
-      $__3.updateFromSource(i);
+      objectEach(changesByRows, (function(prop, i) {
+        i = parseInt(i, 10);
+        if ($__3.chartPlugin.getRangeBarCoordinates(i)) {
+          $__3.chartPlugin.removeRangeBarByColumn(i, $__3.chartPlugin.rangeList[i][1]);
+        }
+        $__3.updateFromSource(i);
+      }));
     }));
   },
   onAfterSourceLoadData: function(firstRun) {
-    this.chartPlugin.removeAllRangeBars();
-    this.updateFromSource();
+    var $__3 = this;
+    this.asyncCall((function(firstRun) {
+      $__3.chartPlugin.removeAllRangeBars();
+      $__3.updateFromSource();
+    }));
   },
   onAfterColumnSort: function(column, order) {
-    this.chartPlugin.removeAllRangeBars();
-    this.updateFromSource();
+    var $__3 = this;
+    this.asyncCall((function() {
+      $__3.chartPlugin.removeAllRangeBars();
+      $__3.updateFromSource();
+    }));
   }
 }, {});
 ;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"dateCalculator":154}],157:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"dateCalculator":161}],164:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   HeaderTooltips: {get: function() {
@@ -24484,7 +25671,7 @@ var $HeaderTooltips = HeaderTooltips;
 registerPlugin('headerTooltips', HeaderTooltips);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element.js":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":60}],158:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element.js":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":60,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":61}],165:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   HiddenColumns: {get: function() {
@@ -24608,10 +25795,13 @@ var $HiddenColumns = HiddenColumns;
       }
     }));
   },
+  getLogicalColumnIndex: function(col) {
+    return this.hot.runHooks('modifyCol', col);
+  },
   onModifyColWidth: function(width, col) {
-    if (this.isHidden(col)) {
+    if (this.isHidden(this.getLogicalColumnIndex(col))) {
       return 0.1;
-    } else if (this.settings.indicators && (this.isHidden(col + 1) || this.isHidden(col - 1))) {
+    } else if (this.settings.indicators && (this.isHidden(this.getLogicalColumnIndex(col + 1)) || this.isHidden(this.getLogicalColumnIndex(col - 1)))) {
       return width + (this.hot.hasColHeaders() ? 15 : 0);
     }
   },
@@ -24680,13 +25870,13 @@ var $HiddenColumns = HiddenColumns;
     return newRanges;
   },
   onAfterGetColHeader: function(col, TH) {
-    if (!this.settings.indicators || this.isHidden(col)) {
+    if (!this.settings.indicators || this.isHidden(this.getLogicalColumnIndex(col))) {
       return;
     }
-    if (this.isHidden(col - 1)) {
+    if (this.isHidden(this.getLogicalColumnIndex(col - 1))) {
       addClass(TH, 'afterHiddenColumn');
     }
-    if (this.isHidden(col + 1)) {
+    if (this.isHidden(this.getLogicalColumnIndex(col + 1))) {
       addClass(TH, 'beforeHiddenColumn');
     }
   },
@@ -24697,7 +25887,8 @@ var $HiddenColumns = HiddenColumns;
     }
     var columnCount = this.hot.countCols();
     var getNextColumn = (function(col) {
-      if ($__5.isHidden(col)) {
+      var logicalCol = $__5.hot.runHooks('modifyCol', col);
+      if ($__5.isHidden(logicalCol)) {
         if ($__5.lastSelectedColumn > col || coords.col === columnCount - 1) {
           col = getNextColumn(--col);
         } else {
@@ -24720,7 +25911,7 @@ function hiddenRenderer(hotInstance, td) {
 registerPlugin('hiddenColumns', HiddenColumns);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60}],159:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":60,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":61}],166:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   HiddenRows: {get: function() {
@@ -24938,7 +26129,7 @@ var $HiddenRows = HiddenRows;
 registerPlugin('hiddenRows', HiddenRows);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60}],160:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":60,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":61}],167:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   NestedHeaders: {get: function() {
@@ -25262,7 +26453,7 @@ var $NestedHeaders = NestedHeaders;
 registerPlugin('nestedHeaders', NestedHeaders);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60}],161:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":60,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":61}],168:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   RowsMapper: {get: function() {
@@ -25303,7 +26494,7 @@ Handsontable.utils = Handsontable.utils || {};
 Handsontable.utils.TrimRowsRowsMapper = RowsMapper;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":54}],162:[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":55}],169:[function(require,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   TrimRows: {get: function() {
@@ -25445,7 +26636,7 @@ var $TrimRows = TrimRows;
 registerPlugin('trimRows', TrimRows);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":59,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":60,"rowsMapper":161}],"SheetClip":[function(require,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":60,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":61,"rowsMapper":168}],"SheetClip":[function(require,module,exports){
 "use strict";
 (function(global) {
   "use strict";
@@ -25741,7 +26932,7 @@ CopyPasteClass.prototype.init = function() {
           clipboardContents = temp.join('\n');
         }
         this.value = clipboardContents;
-        return false;
+        event.preventDefault();
       }
     };
     style = this.elTextarea.style;
@@ -27036,5 +28227,5 @@ if (typeof exports !== "undefined") {
 }).call(window);
 
 //# 
-},{}]},{},[23,107,61,63,62,64,85,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,86,87,88,89,102,103,104,92,93,94,95,96,97,31,35,32,33,40,34,36,37,38,39,108,109,110,111,112,160,158,113,114,115,116,117,119,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,151,152,153,154,155,156,157,159,161,162])("numeral")
+},{}]},{},[23,112,62,64,63,65,86,87,88,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,89,90,91,92,106,107,108,109,95,96,97,98,99,100,31,35,32,33,40,34,36,37,38,39,113,114,115,116,117,167,165,118,119,120,121,122,124,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,157,158,159,160,161,162,163,164,166,168,169])("numeral")
 });

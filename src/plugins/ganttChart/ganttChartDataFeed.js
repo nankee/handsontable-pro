@@ -8,14 +8,15 @@ import {DateCalculator} from './dateCalculator';
  * @plugin GanttChart
  */
 class GanttChartDataFeed {
-  constructor(chartInstance, data, startDateColumn, endDateColumn, additionalData) {
+  constructor(chartInstance, data, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
     this.data = data;
     this.chartInstance = chartInstance;
     this.chartPlugin = this.chartInstance.getPlugin('ganttChart');
     this.hotSource = null;
     this.sourceHooks = {};
+    this.ongoingAsync = false;
 
-    this.applyData(data, startDateColumn, endDateColumn, additionalData);
+    this.applyData(data, startDateColumn, endDateColumn, additionalData, asyncUpdates || false);
   }
 
   /**
@@ -25,14 +26,15 @@ class GanttChartDataFeed {
    * @param {Number} startDateColumn Index of the column containing the start dates.
    * @param {Number} endDateColumn Index of the column containing the end dates.
    * @param {Object} additionalData Object containing column and label information about additional data passed to the Gantt Plugin.
+   * @param {Boolean} asyncUpdates If set to true, the source instance updates will be applied asynchronously.
    */
-  applyData(data, startDateColumn, endDateColumn, additionalData) {
+  applyData(data, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
     if (Object.prototype.toString.call(data) === '[object Array]') {
       this.loadData(data);
 
       // if data is a Handsontable instance (probably not the best way to recognize it)
     } else if (data.guid) {
-      this.bindWithHotInstance(data, startDateColumn, endDateColumn, additionalData);
+      this.bindWithHotInstance(data, startDateColumn, endDateColumn, additionalData, asyncUpdates);
     }
   }
 
@@ -44,6 +46,7 @@ class GanttChartDataFeed {
    * @param {Number} endDateColumn Index of the column containing the end dates.
    * @param {Object} additionalData Object containing column and label information about additional data passed to the
    * Gantt Plugin. See the example for more details.
+   * @param {Boolean} asyncUpdates If set to true, the source instance updates will be applied asynchronously.
    *
    * @example
    * ```js
@@ -54,17 +57,48 @@ class GanttChartDataFeed {
    * });
    * ```
    */
-  bindWithHotInstance(instance, startDateColumn, endDateColumn, additionalData) {
+  bindWithHotInstance(instance, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
     this.hotSource = {
       instance: instance,
       startColumn: startDateColumn,
       endColumn: endDateColumn,
-      additionalData: additionalData
+      additionalData: additionalData,
+      asyncUpdates: asyncUpdates
     };
 
     this.addSourceHotHooks();
 
-    this.updateFromSource();
+    this.asyncCall(this.updateFromSource);
+  }
+
+  /**
+   * Run the provided function asynchronously.
+   *
+   * @param {Function} func
+   */
+  asyncCall(func) {
+
+    if (!this.hotSource.asyncUpdates) {
+      func.call(this);
+
+      return;
+    }
+
+    this.asyncStart();
+
+    setTimeout(() => {
+      func.call(this);
+
+      this.asyncEnd();
+    }, 0);
+  }
+
+  asyncStart() {
+    this.ongoingAsync = true;
+  }
+
+  asyncEnd() {
+    this.ongoingAsync = false;
   }
 
   /**
@@ -227,32 +261,34 @@ class GanttChartDataFeed {
    * @param {String} source Change source.
    */
   onAfterSourceChange(changes, source) {
-    if (!changes) {
-      return;
-    }
-
-    let changesByRows = {};
-
-    for (let i = 0, changesLength = changes.length; i < changesLength; i++) {
-      let currentChange = changes[i];
-      let row = parseInt(currentChange[0], 10);
-      let col = parseInt(currentChange[1], 10);
-
-      if (!changesByRows[row]) {
-        changesByRows[row] = {};
+    this.asyncCall(() => {
+      if (!changes) {
+        return;
       }
 
-      changesByRows[row][col] = [currentChange[2], currentChange[3]];
-    }
+      let changesByRows = {};
 
-    objectEach(changesByRows, (prop, i) => {
-      i = parseInt(i, 10);
+      for (let i = 0, changesLength = changes.length; i < changesLength; i++) {
+        let currentChange = changes[i];
+        let row = parseInt(currentChange[0], 10);
+        let col = parseInt(currentChange[1], 10);
 
-      if (this.chartPlugin.getRangeBarCoordinates(i)) {
-        this.chartPlugin.removeRangeBarByColumn(i, this.chartPlugin.rangeList[i][1]);
+        if (!changesByRows[row]) {
+          changesByRows[row] = {};
+        }
+
+        changesByRows[row][col] = [currentChange[2], currentChange[3]];
       }
 
-      this.updateFromSource(i);
+      objectEach(changesByRows, (prop, i) => {
+        i = parseInt(i, 10);
+
+        if (this.chartPlugin.getRangeBarCoordinates(i)) {
+          this.chartPlugin.removeRangeBarByColumn(i, this.chartPlugin.rangeList[i][1]);
+        }
+
+        this.updateFromSource(i);
+      });
     });
   }
 
@@ -263,8 +299,10 @@ class GanttChartDataFeed {
    * @param firstRun
    */
   onAfterSourceLoadData(firstRun) {
-    this.chartPlugin.removeAllRangeBars();
-    this.updateFromSource();
+    this.asyncCall((firstRun) => {
+      this.chartPlugin.removeAllRangeBars();
+      this.updateFromSource();
+    });
   }
 
   /**
@@ -275,8 +313,10 @@ class GanttChartDataFeed {
    * @param order
    */
   onAfterColumnSort(column, order) {
-    this.chartPlugin.removeAllRangeBars();
-    this.updateFromSource();
+    this.asyncCall(() => {
+      this.chartPlugin.removeAllRangeBars();
+      this.updateFromSource();
+    });
   }
 }
 

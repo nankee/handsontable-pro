@@ -6,4 +6,7 @@ function formula() {
   return true;
 }
 
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'None',
+  inputsCount: 0
+});

@@ -7,4 +7,7 @@ function formula(dataRow, [value] = inputValues) {
   return stringify(dataRow.value).toLowerCase() === stringify(value);
 }
 
-registerFormula(FORMULA_NAME, formula);
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Is equal to',
+  inputsCount: 1
+});
