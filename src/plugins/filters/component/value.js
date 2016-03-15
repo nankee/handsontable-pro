@@ -1,8 +1,10 @@
 import {addClass} from 'handsontable/helpers/dom/element';
+import {stopImmediatePropagation} from 'handsontable/helpers/dom/event';
 import {arrayEach, arrayUnique, arrayFilter} from 'handsontable/helpers/array';
 import {sortComparison} from './../utils';
 import {BaseComponent} from './_base';
 import {InputUI} from './../ui/input';
+import {isKey} from 'handsontable/helpers/unicode';
 import {SelectUI} from './../ui/select';
 import {MultipleSelectUI} from './../ui/multipleSelect';
 import {FORMULA_BY_VALUE, FORMULA_NONE} from './../constants';
@@ -17,6 +19,17 @@ class ValueComponent extends BaseComponent {
     super(hotInstance);
 
     this.elements.push(new MultipleSelectUI(this.hot));
+
+    this.registerHooks();
+  }
+
+  /**
+   * Register all necessary hooks.
+   *
+   * @private
+   */
+  registerHooks() {
+    this.getMultipleSelectElement().addLocalHook('keydown', (event) => this.onInputKeyDown(event));
   }
 
   /**
@@ -165,6 +178,19 @@ class ValueComponent extends BaseComponent {
     this.getMultipleSelectElement().setItems(items);
     super.reset();
     this.getMultipleSelectElement().setValue(values);
+  }
+
+  /**
+   * Key down listener.
+   *
+   * @private
+   * @param {Event} event DOM event object.
+   */
+  onInputKeyDown(event) {
+    if (isKey(event.keyCode, 'ESCAPE')) {
+      this.runLocalHooks('cancel');
+      stopImmediatePropagation(event);
+    }
   }
 
   /**
