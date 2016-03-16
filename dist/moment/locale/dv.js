@@ -50,7 +50,7 @@
         },
         meridiemParse: /މކ|މފ/,
         isPM : function (input) {
-            return 'މފ' === input;
+            return '' === input;
         },
         meridiem : function (hour, minute, isLower) {
             if (hour < 12) {
@@ -96,4 +96,4 @@
 
     return dv;
 
-}));
+}));}));
