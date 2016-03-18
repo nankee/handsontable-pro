@@ -4205,9 +4205,9 @@ var domHelpers = ($__helpers_47_dom_47_element__ = require("helpers/dom/element"
 var domEventHelpers = ($__helpers_47_dom_47_event__ = require("helpers/dom/event"), $__helpers_47_dom_47_event__ && $__helpers_47_dom_47_event__.__esModule && $__helpers_47_dom_47_event__ || {default: $__helpers_47_dom_47_event__});
 var HELPERS = [arrayHelpers, browserHelpers, dataHelpers, featureHelpers, functionHelpers, mixedHelpers, numberHelpers, objectHelpers, settingHelpers, stringHelpers, unicodeHelpers];
 var DOM = [domHelpers, domEventHelpers];
-Handsontable.buildDate = 'Wed Mar 16 2016 12:27:07 GMT+0100 (CET)';
+Handsontable.buildDate = 'Fri Mar 18 2016 10:24:18 GMT+0100 (CET)';
 Handsontable.packageName = 'handsontable-pro';
-Handsontable.version = '1.3.1';
+Handsontable.version = '1.3.2';
 var baseVersion = '0.24.1';
 if (!/^@@/.test(baseVersion)) {
   Handsontable.baseVersion = baseVersion;
