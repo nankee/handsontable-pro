@@ -8,7 +8,8 @@ describe('Filters formula (`date_after`)', function() {
     expect(formula(data('12/05/2015'), ['11/05/2015'])).toBe(true);
     expect(formula(data('12/05/2015'), ['11/05/1999'])).toBe(true);
     expect(formula(data('12/05/2015'), ['11-05-1999'])).toBe(true);
-    expect(formula(data('12/05/2015'), ['2012'])).toBe(true);
+    // Invalid format
+    expect(formula(data('12/05/2015'), ['2012'])).toBe(false);
   });
 
   it('should filter not matching values', function() {

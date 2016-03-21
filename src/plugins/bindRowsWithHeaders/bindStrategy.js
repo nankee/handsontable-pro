@@ -1,3 +1,4 @@
+import Handsontable from '../../browser';
 import {arrayMapper} from 'handsontable/mixins/arrayMapper';
 import {mixin} from 'handsontable/helpers/object';
 import {rangeEach} from 'handsontable/helpers/number';
@@ -111,5 +112,4 @@ class BindStrategy {
 export {BindStrategy};
 
 // For tests only!
-Handsontable.utils = Handsontable.utils || {};
 Handsontable.utils.BindStrategy = BindStrategy;

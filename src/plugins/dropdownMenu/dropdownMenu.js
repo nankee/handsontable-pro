@@ -1,4 +1,4 @@
-
+import Handsontable from '../../browser';
 import BasePlugin from 'handsontable/plugins/_base';
 import {arrayEach} from 'handsontable/helpers/array';
 import {objectEach} from 'handsontable/helpers/object';
