@@ -156,9 +156,9 @@ module.exports = function(grunt) {
           keepRunner: true
         }
       },
-      pro: {
+      proStandalone: {
         src: [
-          'dist/handsontable.min.js',
+          'dist/handsontable.js',
           nodeHandsontablePath + 'demo/js/numeral.de-de.js',
           nodeHandsontablePath + 'demo/js/backbone/lodash.underscore.js',
           nodeHandsontablePath + 'demo/js/backbone/backbone.js',
@@ -200,6 +200,48 @@ module.exports = function(grunt) {
           template: 'test/jasmine/templates/SpecRunner.tmpl',
           keepRunner: true
         }
+      },
+      proFull: {
+        src: [
+          'dist/handsontable.full.min.js',
+          nodeHandsontablePath + 'demo/js/numeral.de-de.js',
+          nodeHandsontablePath + 'demo/js/backbone/lodash.underscore.js',
+          nodeHandsontablePath + 'demo/js/backbone/backbone.js',
+          nodeHandsontablePath + 'demo/js/backbone/backbone-relational/backbone-relational.js',
+          nodeHandsontablePath + 'demo/js/jquery-ui/js/jquery-ui.custom.js',
+          nodeHandsontablePath + 'plugins/removeRow/handsontable.removeRow.js'
+        ],
+        options: {
+          specs: [
+            'src/plugins/*/test/**/*.spec.js',
+            'src/3rdparty/walkontable/test/jasmine/spec/**/*.spec.js',
+          ],
+          styles: [
+            nodeHandsontablePath + 'test/jasmine/css/SpecRunner.css',
+            'dist/handsontable.min.css',
+            nodeHandsontablePath + 'plugins/removeRow/handsontable.removeRow.css',
+            nodeHandsontablePath + 'demo/js/jquery-ui/css/ui-bootstrap/jquery-ui.custom.css',
+            nodeHandsontablePath + 'demo/js/pikaday/css/pikaday.css'
+          ],
+          vendor: [
+            nodeHandsontablePath + 'demo/js/jquery.min.js',
+            nodeHandsontablePath + 'lib/autoResize/autoResize.js',
+            nodeHandsontablePath + 'lib/copyPaste/copyPaste.js',
+            nodeHandsontablePath + 'lib/SheetClip/SheetClip.js',
+            nodeHandsontablePath + 'lib/jsonpatch/json-patch-duplex.js',
+            nodeHandsontablePath + 'demo/js/moment/moment.js',
+            nodeHandsontablePath + 'test/jasmine/lib/jasmine-extensions.js'
+          ],
+          helpers: [
+            nodeHandsontablePath + 'test/jasmine/spec/SpecHelper.js',
+            nodeHandsontablePath + 'test/jasmine/lib/nodeShim.js',
+            nodeHandsontablePath + 'test/jasmine/spec/test-init.js',
+            'src/plugins/*/test/helpers/*.js'
+          ],
+          outfile: 'test/jasmine/SpecRunner.html',
+          template: 'test/jasmine/templates/SpecRunner.tmpl',
+          keepRunner: true
+        }
       }
     },
   });
@@ -210,8 +252,10 @@ module.exports = function(grunt) {
   grunt.registerTask('build-dev', ['hotBuilder:handsontableProDev']);
   grunt.registerTask('build-custom', ['hotBuilder:handsontableProCustom']);
   grunt.registerTask('test-free', ['default', 'jasmine:free']);
-  grunt.registerTask('test-pro', ['default', 'jasmine:pro']);
-  grunt.registerTask('test', ['default', 'jasmine:free', 'jasmine:pro']);
+  grunt.registerTask('test-pro-standalone', ['default', 'jasmine:proStandalone']);
+  grunt.registerTask('test-pro-full', ['default', 'jasmine:proFull']);
+  grunt.registerTask('test-pro', ['test-pro-standalone']);
+  grunt.registerTask('test', ['default', 'jasmine:free', 'jasmine:proStandalone', 'jasmine:proFull']);
 
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
