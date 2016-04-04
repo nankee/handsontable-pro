@@ -237,7 +237,8 @@ class Filters extends BasePlugin {
     let needToFilter = !this.formulaCollection.isEmpty();
     let filteredRows = [];
 
-    let allowFiltering = this.hot.runHooks('beforeFilter', this.formulaCollection.exportAllFormulas());
+    const formulas = this.formulaCollection.exportAllFormulas();
+    let allowFiltering = this.hot.runHooks('beforeFilter', formulas);
 
     if (allowFiltering !== false) {
       if (needToFilter) {
@@ -264,6 +265,8 @@ class Filters extends BasePlugin {
     this.hot.view.wt.wtOverlays.adjustElementsSize(true);
     this.hot.render();
     this.clearColumnSelection();
+
+    this.hot.runHooks('afterFilter', formulas);
   }
 
   /**
