@@ -54,8 +54,8 @@ class MultipleSelectUI extends BaseUI {
    * Register all necessary hooks.
    */
   registerHooks() {
-    this.searchInput.addLocalHook('keyup', (event) => this.onInputKeyUp(event));
     this.searchInput.addLocalHook('keydown', (event) => this.onInputKeyDown(event));
+    this.searchInput.addLocalHook('input', (event) => this.onInput(event));
   }
 
   /**
@@ -174,13 +174,13 @@ class MultipleSelectUI extends BaseUI {
   }
 
   /**
-   * 'keyup' event listener for input element.
+   * 'input' event listener for input element.
    *
    * @private
    * @param {Event} event DOM event.
    */
-  onInputKeyUp(event) {
-    let value = this.searchInput.getValue().toLowerCase();
+  onInput(event) {
+    let value = event.target.value.toLowerCase();
     let filteredItems;
 
     if (value === '') {

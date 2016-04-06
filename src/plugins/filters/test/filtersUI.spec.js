@@ -27,6 +27,21 @@ describe('Filters UI', function() {
     expect(dropdownMenuRootElement().querySelector('.htFiltersMenuCondition .htFiltersMenuLabel').textContent).toBe('Filter by condition:');
   });
 
+  it('should display "by value" filter component under dropdown menu', function() {
+    var hot = handsontable({
+      data: getDataForFilters(),
+      columns: getColumnsForFilters(),
+      filters: true,
+      dropdownMenu: true,
+      width: 500,
+      height: 300
+    });
+
+    dropdownMenu(1);
+
+    expect(byValueMultipleSelect().element.parentNode.querySelector('.htFiltersMenuLabel').textContent).toBe('Filter by value:');
+  });
+
   it('should appear conditional options menu after UISelect element click', function() {
     var hot = handsontable({
       data: getDataForFilters(),
