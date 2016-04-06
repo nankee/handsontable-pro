@@ -33,7 +33,7 @@ class ConditionComponent extends BaseComponent {
     this.getSelectElement().addLocalHook('select', (command) => this.onConditionSelect(command));
 
     arrayEach(this.getInputElements(), (input) => {
-      input.addLocalHook('keydown', (event) => this.onInputKeydown(event));
+      input.addLocalHook('keydown', (event) => this.onInputKeyDown(event));
     });
   }
 
@@ -193,7 +193,7 @@ class ConditionComponent extends BaseComponent {
    * @private
    * @param {Event} event DOM event object.
    */
-  onInputKeydown(event) {
+  onInputKeyDown(event) {
     if (isKey(event.keyCode, 'ENTER')) {
       this.runLocalHooks('accept');
       stopImmediatePropagation(event);

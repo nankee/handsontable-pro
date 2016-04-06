@@ -104,18 +104,21 @@ class Filters extends BasePlugin {
     this.trimRowsPlugin = this.hot.getPlugin('trimRows');
     this.dropdownMenuPlugin = this.hot.getPlugin('dropdownMenu');
 
+    let addConfirmationHooks = (component) => {
+      component.addLocalHook('accept', () => this.onActionBarSubmit('accept'));
+      component.addLocalHook('cancel', () => this.onActionBarSubmit('cancel'));
+
+      return component;
+    };
+
     if (!this.conditionComponent) {
-      this.conditionComponent = new ConditionComponent(this.hot);
-      this.conditionComponent.addLocalHook('accept', () => this.onActionBarSubmit('accept'));
-      this.conditionComponent.addLocalHook('cancel', () => this.onActionBarSubmit('cancel'));
+      this.conditionComponent = addConfirmationHooks(new ConditionComponent(this.hot));
     }
     if (!this.valueComponent) {
-      this.valueComponent = new ValueComponent(this.hot);
+      this.valueComponent = addConfirmationHooks(new ValueComponent(this.hot));
     }
     if (!this.actionBarComponent) {
-      this.actionBarComponent = new ActionBarComponent(this.hot);
-      this.actionBarComponent.addLocalHook('accept', () => this.onActionBarSubmit('accept'));
-      this.actionBarComponent.addLocalHook('cancel', () => this.onActionBarSubmit('cancel'));
+      this.actionBarComponent = addConfirmationHooks(new ActionBarComponent(this.hot));
     }
     if (!this.formulaCollection) {
       this.formulaCollection = new FormulaCollection();
