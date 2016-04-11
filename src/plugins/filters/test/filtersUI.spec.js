@@ -27,6 +27,21 @@ describe('Filters UI', function() {
     expect(dropdownMenuRootElement().querySelector('.htFiltersMenuCondition .htFiltersMenuLabel').textContent).toBe('Filter by condition:');
   });
 
+  it('should display "by value" filter component under dropdown menu', function() {
+    var hot = handsontable({
+      data: getDataForFilters(),
+      columns: getColumnsForFilters(),
+      filters: true,
+      dropdownMenu: true,
+      width: 500,
+      height: 300
+    });
+
+    dropdownMenu(1);
+
+    expect(byValueMultipleSelect().element.parentNode.querySelector('.htFiltersMenuLabel').textContent).toBe('Filter by value:');
+  });
+
   it('should appear conditional options menu after UISelect element click', function() {
     var hot = handsontable({
       data: getDataForFilters(),
@@ -311,6 +326,79 @@ describe('Filters UI', function() {
     $(dropdownMenuRootElement().querySelector('tbody :nth-child(6) td')).simulate('mousedown');
 
     expect($(dropdownMenuRootElement()).is(':visible')).toBe(false);
+  });
+
+  it('should disappear dropdown menu after hitting ESC key in conditional component', function() {
+    var hot = handsontable({
+      data: getDataForFilters(),
+      columns: getColumnsForFilters(),
+      filters: true,
+      dropdownMenu: true,
+      width: 500,
+      height: 300
+    });
+
+    dropdownMenu(1);
+    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+    $(conditionMenuRootElement().querySelector('tbody :nth-child(6) td')).simulate('mousedown');
+
+    waitsFor(function() {
+      return document.activeElement.nodeName === 'INPUT';
+    });
+    runs(function() {
+      keyDownUp('esc');
+
+      expect($(conditionMenuRootElement()).is(':visible')).toBe(false);
+      expect($(dropdownMenuRootElement()).is(':visible')).toBe(false);
+    });
+  });
+
+  it('should disappear dropdown menu after hitting ESC key in by value component (search input)', function() {
+    var hot = handsontable({
+      data: getDataForFilters(),
+      columns: getColumnsForFilters(),
+      filters: true,
+      dropdownMenu: true,
+      width: 500,
+      height: 300
+    });
+
+    dropdownMenu(1);
+    byValueMultipleSelect().element.querySelector('input').focus();
+
+    waitsFor(function() {
+      return document.activeElement.nodeName === 'INPUT';
+    });
+    runs(function() {
+      keyDownUp('esc');
+
+      expect($(conditionMenuRootElement()).is(':visible')).toBe(false);
+      expect($(dropdownMenuRootElement()).is(':visible')).toBe(false);
+    });
+  });
+
+  it('should disappear dropdown menu after hitting ESC key in "by value" component (items box)', function() {
+    var hot = handsontable({
+      data: getDataForFilters(),
+      columns: getColumnsForFilters(),
+      filters: true,
+      dropdownMenu: true,
+      width: 500,
+      height: 300
+    });
+
+    dropdownMenu(1);
+    byValueMultipleSelect().itemsBox.listen();
+
+    waitsFor(function() {
+      return byValueMultipleSelect().itemsBox.isListening();
+    });
+    runs(function() {
+      keyDownUp('esc');
+
+      expect($(conditionMenuRootElement()).is(':visible')).toBe(false);
+      expect($(dropdownMenuRootElement()).is(':visible')).toBe(false);
+    });
   });
 
   it('shouldn\'t disappear dropdown menu after conditional options menu click', function() {

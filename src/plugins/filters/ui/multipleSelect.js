@@ -4,6 +4,9 @@ import {Menu} from 'handsontable/plugins/contextMenu/menu';
 import {clone, extend} from 'handsontable/helpers/object';
 import {arrayFilter, arrayMap, arrayEach} from 'handsontable/helpers/array';
 import {startsWith} from 'handsontable/helpers/string';
+import {isKey} from 'handsontable/helpers/unicode';
+import {partial} from 'handsontable/helpers/function';
+import {stopImmediatePropagation} from 'handsontable/helpers/dom/event';
 import {InputUI} from './input';
 
 const privatePool = new WeakMap();
@@ -51,8 +54,8 @@ class MultipleSelectUI extends BaseUI {
    * Register all necessary hooks.
    */
   registerHooks() {
-    this.searchInput.addLocalHook('keyup', (event) => this.onInputKeyUp(event));
-    this.searchInput.addLocalHook('blur', (event) => this.onInputBlur(event));
+    this.searchInput.addLocalHook('keydown', (event) => this.onInputKeyDown(event));
+    this.searchInput.addLocalHook('input', (event) => this.onInput(event));
   }
 
   /**
@@ -121,6 +124,7 @@ class MultipleSelectUI extends BaseUI {
         columns: [
           {data: 'checked', type: 'checkbox', label: {property: 'value', position: 'after'}}
         ],
+        autoWrapCol: true,
         colWidths: 150,
         height: 110,
         width: 168,
@@ -129,6 +133,7 @@ class MultipleSelectUI extends BaseUI {
         fillHandle: false,
         fragmentSelection: 'cell',
         tabMoves: {row: 1, col: 0},
+        beforeKeyDown: (event) => this.onItemsBoxBeforeKeyDown(event)
       });
     };
     hotInitializer(itemsBoxWrapper);
@@ -169,13 +174,13 @@ class MultipleSelectUI extends BaseUI {
   }
 
   /**
-   * 'keyup' event listener for input element.
+   * 'input' event listener for input element.
    *
    * @private
    * @param {Event} event DOM event.
    */
-  onInputKeyUp(event) {
-    let value = this.searchInput.getValue().toLowerCase();
+  onInput(event) {
+    let value = event.target.value.toLowerCase();
     let filteredItems;
 
     if (value === '') {
@@ -187,13 +192,42 @@ class MultipleSelectUI extends BaseUI {
   }
 
   /**
-   * 'blur' event listener for input element.
+   * 'keydown' event listener for input element.
    *
    * @private
+   * @param {Event} event DOM event.
    */
-  onInputBlur() {
-    this.itemsBox.listen();
-    this.itemsBox.selectCell(0, 0);
+  onInputKeyDown(event) {
+    this.runLocalHooks('keydown', event, this);
+
+    const isKeyCode = partial(isKey, event.keyCode);
+
+    if (isKeyCode('ARROW_DOWN|TAB') && !this.itemsBox.isListening()) {
+      stopImmediatePropagation(event);
+      this.itemsBox.listen();
+      this.itemsBox.selectCell(0, 0);
+    }
+  }
+
+  /**
+   * On before key down listener (internal Handsontable).
+   *
+   * @private
+   * @param {Event} event DOM event.
+   */
+  onItemsBoxBeforeKeyDown(event) {
+    const isKeyCode = partial(isKey, event.keyCode);
+
+    if (isKeyCode('ESCAPE')) {
+      this.runLocalHooks('keydown', event, this);
+    }
+    // for keys different than below, unfocus Handsontable and focus search input
+    if (!isKeyCode('ARROW_UP|ARROW_DOWN|ARROW_LEFT|ARROW_RIGHT|TAB|SPACE|ENTER')) {
+      stopImmediatePropagation(event);
+      this.itemsBox.unlisten();
+      this.itemsBox.deselectCell();
+      this.searchInput.focus();
+    }
   }
 }
 

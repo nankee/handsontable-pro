@@ -1,3 +1,5 @@
+import Handsontable from '../../browser';
+
 const formulas = {};
 
 /**
@@ -46,5 +48,4 @@ export function registerFormula(name, formula, descriptor) {
 }
 
 // For tests only! TEMP solution!
-Handsontable.utils = Handsontable.utils || {};
 Handsontable.utils.FiltersFormulaRegisterer = {getFormula, registerFormula, getFormulaDescriptor, formulas};
