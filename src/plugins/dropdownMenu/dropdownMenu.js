@@ -98,7 +98,7 @@ class DropdownMenu extends BasePlugin {
 
     const settings = this.hot.getSettings().dropdownMenu;
     let predefinedItems = {
-      items: this.itemsFactory.getVisibleItems(settings)
+      items: this.itemsFactory.getItems(settings)
     };
     this.registerEvents();
 
@@ -111,7 +111,7 @@ class DropdownMenu extends BasePlugin {
       this.hot.runHooks('afterDropdownMenuDefaultOptions', predefinedItems);
 
       this.itemsFactory.setPredefinedItems(predefinedItems.items);
-      let menuItems = this.itemsFactory.getVisibleItems(settings);
+      let menuItems = this.itemsFactory.getItems(settings);
 
       this.menu = new Menu(this.hot, {
         className: 'htDropdownMenu',
