@@ -1,0 +1,28 @@
+.handsontable th.ht_levelIndicators {
+    text-align: left;
+    padding-left: 7px;
+}
+
+.handsontable th div.ht_levelIndicators {
+    display: inline-block;
+    position: absolute;
+    right: 10px;
+}
+
+.handsontable th span.ht_levelIndicator {
+    font-size: 9px;
+    display: inline-block;
+    position: relative;
+    bottom: 3px;
+}
+
+.handsontable th div.ht_levelIndicators span.ht_levelIndicator:first-child {
+    margin-left: 10px;
+}
+
+.handsontable th div.ht_nestedRowsButtons {
+    display: inline-block;
+    position: absolute;
+    right: 0;
+    cursor: pointer;
+}
