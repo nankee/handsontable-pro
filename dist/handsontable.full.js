@@ -4223,10 +4223,10 @@ var domHelpers = ($__helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"
 var domEventHelpers = ($__helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $__helpers_47_dom_47_event__ && $__helpers_47_dom_47_event__.__esModule && $__helpers_47_dom_47_event__ || {default: $__helpers_47_dom_47_event__});
 var HELPERS = [arrayHelpers, browserHelpers, dataHelpers, dateHelpers, featureHelpers, functionHelpers, mixedHelpers, numberHelpers, objectHelpers, settingHelpers, stringHelpers, unicodeHelpers];
 var DOM = [domHelpers, domEventHelpers];
-Handsontable.buildDate = 'Mon Apr 11 2016 14:14:14 GMT+0200 (CEST)';
+Handsontable.buildDate = 'Thu Apr 28 2016 15:10:46 GMT+0200 (CEST)';
 Handsontable.packageName = 'handsontable-pro';
-Handsontable.version = '1.3.3';
-var baseVersion = '0.24.2';
+Handsontable.version = '1.3.4';
+var baseVersion = '0.24.3';
 if (!/^@@/.test(baseVersion)) {
   Handsontable.baseVersion = baseVersion;
 }
@@ -5138,7 +5138,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
           datamap.createRow();
         }
       }
-      if (instance.dataType === 'array' && priv.settings.allowInsertColumn) {
+      if (instance.dataType === 'array' && (!priv.settings.columns || priv.settings.columns.length === 0) && priv.settings.allowInsertColumn) {
         while (datamap.propToCol(changes[i][1]) > instance.countCols() - 1) {
           datamap.createCol();
         }
@@ -5443,6 +5443,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       instance.rootElement.style.width = width + 'px';
     }
     if (!init) {
+      datamap.clearLengthCache();
       Handsontable.hooks.run(instance, 'afterUpdateSettings');
     }
     grid.adjustRowsAndCols();
@@ -5943,6 +5944,29 @@ Handsontable.Core = function Core(rootElement, userSettings) {
   this.deselectCell = function() {
     selection.deselect();
   };
+  this.scrollViewportTo = function(row, column) {
+    if (row !== void 0 && (row < 0 || row >= instance.countRows())) {
+      return false;
+    }
+    if (column !== void 0 && (column < 0 || column >= instance.countCols())) {
+      return false;
+    }
+    var result = false;
+    if (row !== void 0 && column !== void 0) {
+      instance.view.wt.scrollVertical(row);
+      instance.view.wt.scrollHorizontal(column);
+      result = true;
+    }
+    if (typeof row === 'number' && typeof column !== 'number') {
+      instance.view.wt.scrollVertical(row);
+      result = true;
+    }
+    if (typeof column === 'number' && typeof row !== 'number') {
+      instance.view.wt.scrollHorizontal(column);
+      result = true;
+    }
+    return result;
+  };
   this.destroy = function() {
     instance._clearTimeouts();
     if (instance.view) {
@@ -6353,6 +6377,9 @@ DataMap.prototype.createCol = function(index, amount, createdAutomatically) {
       currentIndex;
   if (!amount) {
     amount = 1;
+  }
+  if (typeof index !== 'number' || index >= this.instance.countCols()) {
+    index = this.instance.countCols();
   }
   currentIndex = index;
   var maxCols = this.instance.getSettings().maxCols;
@@ -7681,10 +7708,12 @@ var CheckboxEditor = function CheckboxEditor() {
 };
 var $CheckboxEditor = CheckboxEditor;
 ($traceurRuntime.createClass)(CheckboxEditor, {
-  beginEditing: function() {
-    var checkbox = this.TD.querySelector('input[type="checkbox"]');
-    if (!hasClass(checkbox, 'htBadValue')) {
-      checkbox.click();
+  beginEditing: function(initialValue, event) {
+    if (event === void 0) {
+      var checkbox = this.TD.querySelector('input[type="checkbox"]');
+      if (!hasClass(checkbox, 'htBadValue')) {
+        checkbox.click();
+      }
     }
   },
   finishEditing: function() {},
@@ -9008,24 +9037,6 @@ var EventManager = function EventManager() {
     var $__4 = this;
     var context = this.context;
     function callbackProxy(event) {
-      if (event.target == void 0 && event.srcElement != void 0) {
-        if (event.definePoperty) {
-          event.definePoperty('target', {value: event.srcElement});
-        } else {
-          event.target = event.srcElement;
-        }
-      }
-      if (event.preventDefault == void 0) {
-        if (event.definePoperty) {
-          event.definePoperty('preventDefault', {value: function() {
-              this.returnValue = false;
-            }});
-        } else {
-          event.preventDefault = function() {
-            this.returnValue = false;
-          };
-        }
-      }
       event = extendEvent(context, event);
       callback.call(this, event);
     }
@@ -13473,7 +13484,6 @@ var $___46__46__47__46__46__47_browser__,
     $___46__46__47__46__46__47_helpers_47_dom_47_element__,
     $__itemsFactory__,
     $__menu__,
-    $___46__46__47__46__46__47_helpers_47_object__,
     $___46__46__47__46__46__47_plugins__,
     $___46__46__47__46__46__47_helpers_47_dom_47_event__,
     $___46__46__47__46__46__47_helpers_47_dom_47_element__,
@@ -13486,30 +13496,26 @@ var EventManager = ($___46__46__47__46__46__47_eventManager__ = _dereq_("eventMa
 var hasClass = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}).hasClass;
 var ItemsFactory = ($__itemsFactory__ = _dereq_("itemsFactory"), $__itemsFactory__ && $__itemsFactory__.__esModule && $__itemsFactory__ || {default: $__itemsFactory__}).ItemsFactory;
 var Menu = ($__menu__ = _dereq_("menu"), $__menu__ && $__menu__.__esModule && $__menu__ || {default: $__menu__}).Menu;
-var $__8 = ($___46__46__47__46__46__47_helpers_47_object__ = _dereq_("helpers/object"), $___46__46__47__46__46__47_helpers_47_object__ && $___46__46__47__46__46__47_helpers_47_object__.__esModule && $___46__46__47__46__46__47_helpers_47_object__ || {default: $___46__46__47__46__46__47_helpers_47_object__}),
-    objectEach = $__8.objectEach,
-    mixin = $__8.mixin;
 var registerPlugin = ($___46__46__47__46__46__47_plugins__ = _dereq_("plugins"), $___46__46__47__46__46__47_plugins__ && $___46__46__47__46__46__47_plugins__.__esModule && $___46__46__47__46__46__47_plugins__ || {default: $___46__46__47__46__46__47_plugins__}).registerPlugin;
-var $__10 = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}),
-    stopPropagation = $__10.stopPropagation,
-    pageX = $__10.pageX,
-    pageY = $__10.pageY;
-var $__11 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}),
-    getWindowScrollLeft = $__11.getWindowScrollLeft,
-    getWindowScrollTop = $__11.getWindowScrollTop;
-var $__12 = ($__predefinedItems__ = _dereq_("predefinedItems"), $__predefinedItems__ && $__predefinedItems__.__esModule && $__predefinedItems__ || {default: $__predefinedItems__}),
-    ROW_ABOVE = $__12.ROW_ABOVE,
-    ROW_BELOW = $__12.ROW_BELOW,
-    COLUMN_LEFT = $__12.COLUMN_LEFT,
-    COLUMN_RIGHT = $__12.COLUMN_RIGHT,
-    REMOVE_ROW = $__12.REMOVE_ROW,
-    REMOVE_COLUMN = $__12.REMOVE_COLUMN,
-    UNDO = $__12.UNDO,
-    REDO = $__12.REDO,
-    READ_ONLY = $__12.READ_ONLY,
-    ALIGNMENT = $__12.ALIGNMENT,
-    SEPARATOR = $__12.SEPARATOR,
-    predefinedItems = $__12.predefinedItems;
+var $__9 = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}),
+    stopPropagation = $__9.stopPropagation,
+    pageX = $__9.pageX,
+    pageY = $__9.pageY;
+var $__10 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}),
+    getWindowScrollLeft = $__10.getWindowScrollLeft,
+    getWindowScrollTop = $__10.getWindowScrollTop;
+var $__11 = ($__predefinedItems__ = _dereq_("predefinedItems"), $__predefinedItems__ && $__predefinedItems__.__esModule && $__predefinedItems__ || {default: $__predefinedItems__}),
+    ROW_ABOVE = $__11.ROW_ABOVE,
+    ROW_BELOW = $__11.ROW_BELOW,
+    COLUMN_LEFT = $__11.COLUMN_LEFT,
+    COLUMN_RIGHT = $__11.COLUMN_RIGHT,
+    REMOVE_ROW = $__11.REMOVE_ROW,
+    REMOVE_COLUMN = $__11.REMOVE_COLUMN,
+    UNDO = $__11.UNDO,
+    REDO = $__11.REDO,
+    READ_ONLY = $__11.READ_ONLY,
+    ALIGNMENT = $__11.ALIGNMENT,
+    SEPARATOR = $__11.SEPARATOR;
 var ContextMenu = function ContextMenu(hotInstance) {
   $traceurRuntime.superConstructor($ContextMenu).call(this, hotInstance);
   this.eventManager = new EventManager(this);
@@ -13523,41 +13529,41 @@ var $ContextMenu = ContextMenu;
     return this.hot.getSettings().contextMenu;
   },
   enablePlugin: function() {
-    var $__13 = this;
+    var $__12 = this;
     if (this.enabled) {
       return;
     }
     this.itemsFactory = new ItemsFactory(this.hot, $ContextMenu.DEFAULT_ITEMS);
     var settings = this.hot.getSettings().contextMenu;
-    var predefinedItems = {items: this.itemsFactory.getVisibleItems(settings)};
+    var predefinedItems = {items: this.itemsFactory.getItems(settings)};
     this.registerEvents();
     if (typeof settings.callback === 'function') {
       this.commandExecutor.setCommonCallback(settings.callback);
     }
     $traceurRuntime.superGet(this, $ContextMenu.prototype, "enablePlugin").call(this);
     this.callOnPluginsReady((function() {
-      $__13.hot.runHooks('afterContextMenuDefaultOptions', predefinedItems);
-      $__13.itemsFactory.setPredefinedItems(predefinedItems.items);
-      var menuItems = $__13.itemsFactory.getVisibleItems(settings);
-      $__13.menu = new Menu($__13.hot, {
+      $__12.hot.runHooks('afterContextMenuDefaultOptions', predefinedItems);
+      $__12.itemsFactory.setPredefinedItems(predefinedItems.items);
+      var menuItems = $__12.itemsFactory.getItems(settings);
+      $__12.menu = new Menu($__12.hot, {
         className: 'htContextMenu',
         keepInViewport: true
       });
-      $__13.menu.setMenuItems(menuItems);
-      $__13.menu.addLocalHook('afterOpen', (function() {
-        return $__13.onMenuAfterOpen();
+      $__12.menu.setMenuItems(menuItems);
+      $__12.menu.addLocalHook('afterOpen', (function() {
+        return $__12.onMenuAfterOpen();
       }));
-      $__13.menu.addLocalHook('afterClose', (function() {
-        return $__13.onMenuAfterClose();
+      $__12.menu.addLocalHook('afterClose', (function() {
+        return $__12.onMenuAfterClose();
       }));
-      $__13.menu.addLocalHook('executeCommand', (function() {
+      $__12.menu.addLocalHook('executeCommand', (function() {
         for (var params = [],
-            $__15 = 0; $__15 < arguments.length; $__15++)
-          params[$__15] = arguments[$__15];
-        return $__13.executeCommand.apply($__13, params);
+            $__14 = 0; $__14 < arguments.length; $__14++)
+          params[$__14] = arguments[$__14];
+        return $__12.executeCommand.apply($__12, params);
       }));
       arrayEach(menuItems, (function(command) {
-        return $__13.commandExecutor.registerCommand(command.key, command);
+        return $__12.commandExecutor.registerCommand(command.key, command);
       }));
     }));
   },
@@ -13575,9 +13581,9 @@ var $ContextMenu = ContextMenu;
     $traceurRuntime.superGet(this, $ContextMenu.prototype, "disablePlugin").call(this);
   },
   registerEvents: function() {
-    var $__13 = this;
+    var $__12 = this;
     this.eventManager.addEventListener(this.hot.rootElement, 'contextmenu', (function(event) {
-      return $__13.onContextMenu(event);
+      return $__12.onContextMenu(event);
     }));
   },
   open: function(event) {
@@ -13600,8 +13606,8 @@ var $ContextMenu = ContextMenu;
   },
   executeCommand: function() {
     for (var params = [],
-        $__15 = 0; $__15 < arguments.length; $__15++)
-      params[$__15] = arguments[$__15];
+        $__14 = 0; $__14 < arguments.length; $__14++)
+      params[$__14] = arguments[$__14];
     this.commandExecutor.execute.apply(this.commandExecutor, params);
   },
   onContextMenu: function(event) {
@@ -13653,7 +13659,7 @@ Handsontable.hooks.register('afterContextMenuExecute');
 registerPlugin('contextMenu', ContextMenu);
 
 //# 
-},{"_base":62,"browser":23,"commandExecutor":69,"eventManager":41,"helpers/array":42,"helpers/dom/element":46,"helpers/dom/event":47,"helpers/object":52,"itemsFactory":72,"menu":73,"plugins":61,"predefinedItems":74}],71:[function(_dereq_,module,exports){
+},{"_base":62,"browser":23,"commandExecutor":69,"eventManager":41,"helpers/array":42,"helpers/dom/element":46,"helpers/dom/event":47,"itemsFactory":72,"menu":73,"plugins":61,"predefinedItems":74}],71:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Cursor: {get: function() {
@@ -13783,17 +13789,6 @@ var ItemsFactory = function ItemsFactory(hotInstance) {
     }));
     this.predefinedItems = items;
   },
-  getVisibleItems: function() {
-    var pattern = arguments[0] !== (void 0) ? arguments[0] : null;
-    var $__3 = this;
-    var visibleItems = {};
-    objectEach(this.predefinedItems, (function(value, key) {
-      if (!value.hidden || value.hidden && !value.hidden.apply($__3.hot)) {
-        visibleItems[key] = value;
-      }
-    }));
-    return getItems(pattern, this.defaultOrderPattern, visibleItems);
-  },
   getItems: function() {
     var pattern = arguments[0] !== (void 0) ? arguments[0] : null;
     return getItems(pattern, this.defaultOrderPattern, this.predefinedItems);
@@ -13846,9 +13841,6 @@ function getItems() {
       result.push(item);
     }));
   }
-  if (result[0].name === SEPARATOR) {
-    result.shift();
-  }
   return result;
 }
 ;
@@ -13879,40 +13871,29 @@ var $__1 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = _dereq_("he
     addClass = $__1.addClass,
     empty = $__1.empty,
     fastInnerHTML = $__1.fastInnerHTML,
-    getComputedStyle = $__1.getComputedStyle,
     getScrollbarWidth = $__1.getScrollbarWidth,
-    getWindowScrollLeft = $__1.getWindowScrollLeft,
-    getWindowScrollTop = $__1.getWindowScrollTop,
-    hasClass = $__1.hasClass,
     isChildOf = $__1.isChildOf,
     removeClass = $__1.removeClass;
 var $__2 = ($___46__46__47__46__46__47_helpers_47_array__ = _dereq_("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}),
     arrayEach = $__2.arrayEach,
+    arrayFilter = $__2.arrayFilter,
     arrayReduce = $__2.arrayReduce;
 var Cursor = ($__cursor__ = _dereq_("cursor"), $__cursor__ && $__cursor__.__esModule && $__cursor__ || {default: $__cursor__}).Cursor;
 var EventManager = ($___46__46__47__46__46__47_eventManager__ = _dereq_("eventManager"), $___46__46__47__46__46__47_eventManager__ && $___46__46__47__46__46__47_eventManager__.__esModule && $___46__46__47__46__46__47_eventManager__ || {default: $___46__46__47__46__46__47_eventManager__}).EventManager;
-var $__5 = ($___46__46__47__46__46__47_helpers_47_object__ = _dereq_("helpers/object"), $___46__46__47__46__46__47_helpers_47_object__ && $___46__46__47__46__46__47_helpers_47_object__.__esModule && $___46__46__47__46__46__47_helpers_47_object__ || {default: $___46__46__47__46__46__47_helpers_47_object__}),
-    extend = $__5.extend,
-    isObject = $__5.isObject,
-    objectEach = $__5.objectEach,
-    mixin = $__5.mixin;
+var mixin = ($___46__46__47__46__46__47_helpers_47_object__ = _dereq_("helpers/object"), $___46__46__47__46__46__47_helpers_47_object__ && $___46__46__47__46__46__47_helpers_47_object__.__esModule && $___46__46__47__46__46__47_helpers_47_object__ || {default: $___46__46__47__46__46__47_helpers_47_object__}).mixin;
 var debounce = ($___46__46__47__46__46__47_helpers_47_function__ = _dereq_("helpers/function"), $___46__46__47__46__46__47_helpers_47_function__ && $___46__46__47__46__46__47_helpers_47_function__.__esModule && $___46__46__47__46__46__47_helpers_47_function__ || {default: $___46__46__47__46__46__47_helpers_47_function__}).debounce;
 var $__7 = ($__utils__ = _dereq_("utils"), $__utils__ && $__utils__.__esModule && $__utils__ || {default: $__utils__}),
-    isSeparator = $__7.isSeparator,
-    isDisabled = $__7.isDisabled,
-    isSelectionDisabled = $__7.isSelectionDisabled,
+    filterSeparators = $__7.filterSeparators,
     hasSubMenu = $__7.hasSubMenu,
+    isDisabled = $__7.isDisabled,
+    isItemHidden = $__7.isItemHidden,
+    isSeparator = $__7.isSeparator,
+    isSelectionDisabled = $__7.isSelectionDisabled,
     normalizeSelection = $__7.normalizeSelection;
 var KEY_CODES = ($___46__46__47__46__46__47_helpers_47_unicode__ = _dereq_("helpers/unicode"), $___46__46__47__46__46__47_helpers_47_unicode__ && $___46__46__47__46__46__47_helpers_47_unicode__.__esModule && $___46__46__47__46__46__47_helpers_47_unicode__ || {default: $___46__46__47__46__46__47_helpers_47_unicode__}).KEY_CODES;
 var localHooks = ($___46__46__47__46__46__47_mixins_47_localHooks__ = _dereq_("mixins/localHooks"), $___46__46__47__46__46__47_mixins_47_localHooks__ && $___46__46__47__46__46__47_mixins_47_localHooks__.__esModule && $___46__46__47__46__46__47_mixins_47_localHooks__ || {default: $___46__46__47__46__46__47_mixins_47_localHooks__}).localHooks;
-var $__10 = ($__predefinedItems__ = _dereq_("predefinedItems"), $__predefinedItems__ && $__predefinedItems__.__esModule && $__predefinedItems__ || {default: $__predefinedItems__}),
-    SEPARATOR = $__10.SEPARATOR,
-    predefinedItems = $__10.predefinedItems;
-var $__11 = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}),
-    stopPropagation = $__11.stopPropagation,
-    stopImmediatePropagation = $__11.stopImmediatePropagation,
-    pageX = $__11.pageX,
-    pageY = $__11.pageY;
+var SEPARATOR = ($__predefinedItems__ = _dereq_("predefinedItems"), $__predefinedItems__ && $__predefinedItems__.__esModule && $__predefinedItems__ || {default: $__predefinedItems__}).SEPARATOR;
+var stopImmediatePropagation = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}).stopImmediatePropagation;
 var Menu = function Menu(hotInstance, options) {
   this.hot = hotInstance;
   this.options = options || {
@@ -13963,8 +13944,12 @@ var $Menu = Menu;
     var delayedOpenSubMenu = debounce((function(row) {
       return $__12.openSubMenu(row);
     }), 300);
+    var filteredItems = arrayFilter(this.menuItems, (function(item) {
+      return isItemHidden(item, $__12.hot);
+    }));
+    filteredItems = filterSeparators(filteredItems, SEPARATOR);
     var settings = {
-      data: this.menuItems,
+      data: filteredItems,
       colHeaders: false,
       colWidths: [200],
       autoRowSize: false,
@@ -14186,13 +14171,9 @@ var $Menu = Menu;
     var itemIsDisabled = (function(item) {
       return item.disabled === true || (typeof item.disabled == 'function' && item.disabled.call($__12.hot) === true);
     });
-    var itemIsHidden = (function(item) {
-      return typeof item.hidden == 'function' && item.hidden.call($__12.hot) === true;
-    });
     var itemIsSelectionDisabled = (function(item) {
       return item.disableSelection;
     });
-    var isHidden = itemIsHidden(item);
     if (typeof value === 'function') {
       value = value.call(this.hot);
     }
@@ -14201,17 +14182,13 @@ var $Menu = Menu;
     TD.appendChild(wrapper);
     if (itemIsSeparator(item)) {
       addClass(TD, 'htSeparator');
-    } else if (!isHidden && typeof item.renderer === 'function') {
+    } else if (typeof item.renderer === 'function') {
       addClass(TD, 'htCustomMenuRenderer');
       TD.appendChild(item.renderer(hot, wrapper, row, col, prop, value));
     } else {
       fastInnerHTML(wrapper, value);
     }
-    if (isHidden) {
-      if (TD.parentNode) {
-        addClass(TD.parentNode, 'htHidden');
-      }
-    } else if (itemIsDisabled(item)) {
+    if (itemIsDisabled(item)) {
       addClass(TD, 'htDisabled');
       this.eventManager.addEventListener(TD, 'mouseenter', (function() {
         return hot.deselectCell();
@@ -14594,7 +14571,7 @@ var _predefinedItems = ($__4 = {}, Object.defineProperty($__4, SEPARATOR, {
     },
     disabled: function() {
       var selected = getValidSelection(this);
-      if (!selected) {
+      if (!selected || this.selection.selectedHeader.cols) {
         return true;
       }
       var entireColumnSelection = [0, selected[1], this.countRows() - 1, selected[1]];
@@ -14617,7 +14594,7 @@ var _predefinedItems = ($__4 = {}, Object.defineProperty($__4, SEPARATOR, {
     },
     disabled: function() {
       var selected = getValidSelection(this);
-      if (!selected) {
+      if (!selected || this.selection.selectedHeader.rows) {
         return true;
       }
       if (!this.isColumnModificationAllowed()) {
@@ -14965,10 +14942,20 @@ Object.defineProperties(exports, {
   markLabelAsSelected: {get: function() {
       return markLabelAsSelected;
     }},
+  isItemHidden: {get: function() {
+      return isItemHidden;
+    }},
+  filterSeparators: {get: function() {
+      return filterSeparators;
+    }},
   __esModule: {value: true}
 });
-var $___46__46__47__46__46__47_helpers_47_dom_47_element__;
+var $___46__46__47__46__46__47_helpers_47_array__,
+    $___46__46__47__46__46__47_helpers_47_dom_47_element__,
+    $__predefinedItems__;
+var arrayEach = ($___46__46__47__46__46__47_helpers_47_array__ = _dereq_("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}).arrayEach;
 var hasClass = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}).hasClass;
+var SEPARATOR = ($__predefinedItems__ = _dereq_("predefinedItems"), $__predefinedItems__ && $__predefinedItems__.__esModule && $__predefinedItems__ || {default: $__predefinedItems__}).SEPARATOR;
 function normalizeSelection(selRange) {
   return {
     start: selRange.getTopLeftCorner(),
@@ -15063,9 +15050,51 @@ function checkSelectionConsistency(range, comparator) {
 function markLabelAsSelected(label) {
   return '<span class="selected">' + String.fromCharCode(10003) + '</span>' + label;
 }
+function isItemHidden(item, instance) {
+  return !item.hidden || !(typeof item.hidden == 'function' && item.hidden.call(instance));
+}
+function shiftSeparators(items, separator) {
+  var result = items.slice(0);
+  for (var i = 0; i < result.length; ) {
+    if (result[i].name === separator) {
+      result.shift();
+    } else {
+      break;
+    }
+  }
+  return result;
+}
+function popSeparators(items, separator) {
+  var result = items.slice(0);
+  result.reverse();
+  result = shiftSeparators(result, separator);
+  result.reverse();
+  return result;
+}
+function removeDuplicatedSeparators(items) {
+  var result = [];
+  arrayEach(items, (function(value, index) {
+    if (index > 0) {
+      if (result[result.length - 1].name !== value.name) {
+        result.push(value);
+      }
+    } else {
+      result.push(value);
+    }
+  }));
+  return result;
+}
+function filterSeparators(items) {
+  var separator = arguments[1] !== (void 0) ? arguments[1] : SEPARATOR;
+  var result = items.slice(0);
+  result = shiftSeparators(result, separator);
+  result = popSeparators(result, separator);
+  result = removeDuplicatedSeparators(result);
+  return result;
+}
 
 //# 
-},{"helpers/dom/element":46}],76:[function(_dereq_,module,exports){
+},{"helpers/array":42,"helpers/dom/element":46,"predefinedItems":74}],76:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ContextMenuCopyPaste: {get: function() {
@@ -19269,7 +19298,7 @@ function checkboxRenderer(instance, TD, row, col, prop, value, cellProperties) {
     badValue = true;
   }
   input.setAttribute('data-row', row);
-  input.setAttribute('data-prop', prop);
+  input.setAttribute('data-col', col);
   if (!badValue && labelOptions) {
     var labelText = '';
     if (labelOptions.value) {
@@ -19314,10 +19343,10 @@ function checkboxRenderer(instance, TD, row, col, prop, value, cellProperties) {
         event.preventDefault();
       });
     }
-    if (event.keyCode == KEY_CODES.SPACE || event.keyCode == KEY_CODES.ENTER) {
+    if (event.keyCode === KEY_CODES.SPACE || event.keyCode === KEY_CODES.ENTER) {
       toggleSelected();
     }
-    if (event.keyCode == KEY_CODES.DELETE || event.keyCode == KEY_CODES.BACKSPACE) {
+    if (event.keyCode === KEY_CODES.DELETE || event.keyCode === KEY_CODES.BACKSPACE) {
       toggleSelected(false);
     }
   }
@@ -19390,12 +19419,9 @@ function onChange(event, instance) {
     return false;
   }
   var row = parseInt(event.target.getAttribute('data-row'), 10);
-  var prop = event.target.getAttribute('data-prop');
-  var cellProperties = instance.getCellMeta(row, prop);
-  if (!isNaN(prop)) {
-    prop = parseInt(prop, 10);
-  }
-  instance.setDataAtRowProp(row, prop, event.target.checked ? (cellProperties.checkedTemplate || true) : (cellProperties.uncheckedTemplate || false));
+  var col = parseInt(event.target.getAttribute('data-col'), 10);
+  var cellProperties = instance.getCellMeta(row, col);
+  instance.setDataAtCell(row, col, event.target.checked ? (cellProperties.checkedTemplate || true) : (cellProperties.uncheckedTemplate || false));
 }
 function isCheckboxInput(element) {
   return element.tagName === 'INPUT' && element.getAttribute('type') === 'checkbox';
@@ -20192,7 +20218,6 @@ function TableView(instance) {
       that.activeWt = wt;
       isMouseDown = true;
       Handsontable.hooks.run(instance, 'beforeOnCellMouseDown', event, coords, TD);
-      instance.selection.setSelectedHeaders(false, false);
       if (!isImmediatePropagationStopped(event)) {
         if (event.button === 2 && instance.selection.inInSelection(coords)) {
           var nothing = 1;
@@ -20215,6 +20240,7 @@ function TableView(instance) {
           } else {
             coords.row = coords.row < 0 ? 0 : coords.row;
             coords.col = coords.col < 0 ? 0 : coords.col;
+            instance.selection.setSelectedHeaders(false, false);
             instance.selection.setRangeStart(coords);
           }
         }
@@ -21025,9 +21051,14 @@ Handsontable.TimeValidator = function(value, callback) {
   if (value === null) {
     value = '';
   }
+  value = /^\d{3,}$/.test(value) ? parseInt(value, 10) : value;
+  var twoDigitValue = /^\d{1,2}$/.test(value);
+  if (twoDigitValue) {
+    value = value + ':00';
+  }
   var date = moment(value, STRICT_FORMATS, true).isValid() ? moment(value) : moment(value, timeFormat);
   var isValidTime = date.isValid();
-  var isValidFormat = moment(value, timeFormat, true).isValid();
+  var isValidFormat = moment(value, timeFormat, true).isValid() && !twoDigitValue;
   if (this.allowEmpty && value === '') {
     isValidTime = true;
     isValidFormat = true;
@@ -22324,7 +22355,7 @@ var $DropdownMenu = DropdownMenu;
     }
     this.itemsFactory = new ItemsFactory(this.hot, $DropdownMenu.DEFAULT_ITEMS);
     var settings = this.hot.getSettings().dropdownMenu;
-    var predefinedItems = {items: this.itemsFactory.getVisibleItems(settings)};
+    var predefinedItems = {items: this.itemsFactory.getItems(settings)};
     this.registerEvents();
     if (typeof settings.callback === 'function') {
       this.commandExecutor.setCommonCallback(settings.callback);
@@ -22333,7 +22364,7 @@ var $DropdownMenu = DropdownMenu;
     this.callOnPluginsReady((function() {
       $__12.hot.runHooks('afterDropdownMenuDefaultOptions', predefinedItems);
       $__12.itemsFactory.setPredefinedItems(predefinedItems.items);
-      var menuItems = $__12.itemsFactory.getVisibleItems(settings);
+      var menuItems = $__12.itemsFactory.getItems(settings);
       $__12.menu = new Menu($__12.hot, {
         className: 'htDropdownMenu',
         keepInViewport: true
@@ -22922,7 +22953,7 @@ var $ActionBarComponent = ActionBarComponent;
     var $__5 = this;
     return {
       key: 'filter_action_bar',
-      name: '',
+      name: 'Action bar',
       isCommand: false,
       disableSelection: true,
       hidden: (function() {
@@ -23249,7 +23280,7 @@ var $ValueComponent = ValueComponent;
     var $__11 = this;
     return {
       key: 'filter_by_value',
-      name: '',
+      name: 'Filter by value',
       isCommand: false,
       disableSelection: true,
       hidden: (function() {
@@ -28423,7 +28454,7 @@ if (typeof exports !== "undefined") {
 
 },{}],"moment":[function(_dereq_,module,exports){
 //! moment.js
-//! version : 2.12.0
+//! version : 2.13.0
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
 //! license : MIT
 //! momentjs.com
@@ -28500,7 +28531,9 @@ if (typeof exports !== "undefined") {
             invalidMonth    : null,
             invalidFormat   : false,
             userInvalidated : false,
-            iso             : false
+            iso             : false,
+            parsedDateParts : [],
+            meridiem        : null
         };
     }
 
@@ -28511,9 +28544,30 @@ if (typeof exports !== "undefined") {
         return m._pf;
     }
 
+    var some;
+    if (Array.prototype.some) {
+        some = Array.prototype.some;
+    } else {
+        some = function (fun) {
+            var t = Object(this);
+            var len = t.length >>> 0;
+
+            for (var i = 0; i < len; i++) {
+                if (i in t && fun.call(this, t[i], i, t)) {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+    }
+
     function valid__isValid(m) {
         if (m._isValid == null) {
             var flags = getParsingFlags(m);
+            var parsedParts = some.call(flags.parsedDateParts, function (i) {
+                return i != null;
+            });
             m._isValid = !isNaN(m._d.getTime()) &&
                 flags.overflow < 0 &&
                 !flags.empty &&
@@ -28521,7 +28575,8 @@ if (typeof exports !== "undefined") {
                 !flags.invalidWeekday &&
                 !flags.nullInput &&
                 !flags.invalidFormat &&
-                !flags.userInvalidated;
+                !flags.userInvalidated &&
+                (!flags.meridiem || (flags.meridiem && parsedParts));
 
             if (m._strict) {
                 m._isValid = m._isValid &&
@@ -28664,6 +28719,9 @@ if (typeof exports !== "undefined") {
         var firstTime = true;
 
         return extend(function () {
+            if (utils_hooks__hooks.deprecationHandler != null) {
+                utils_hooks__hooks.deprecationHandler(null, msg);
+            }
             if (firstTime) {
                 warn(msg + '\nArguments: ' + Array.prototype.slice.call(arguments).join(', ') + '\n' + (new Error()).stack);
                 firstTime = false;
@@ -28675,6 +28733,9 @@ if (typeof exports !== "undefined") {
     var deprecations = {};
 
     function deprecateSimple(name, msg) {
+        if (utils_hooks__hooks.deprecationHandler != null) {
+            utils_hooks__hooks.deprecationHandler(name, msg);
+        }
         if (!deprecations[name]) {
             warn(msg);
             deprecations[name] = true;
@@ -28682,6 +28743,7 @@ if (typeof exports !== "undefined") {
     }
 
     utils_hooks__hooks.suppressDeprecationWarnings = false;
+    utils_hooks__hooks.deprecationHandler = null;
 
     function isFunction(input) {
         return input instanceof Function || Object.prototype.toString.call(input) === '[object Function]';
@@ -28729,6 +28791,22 @@ if (typeof exports !== "undefined") {
         if (config != null) {
             this.set(config);
         }
+    }
+
+    var keys;
+
+    if (Object.keys) {
+        keys = Object.keys;
+    } else {
+        keys = function (obj) {
+            var i, res = [];
+            for (i in obj) {
+                if (hasOwnProp(obj, i)) {
+                    res.push(i);
+                }
+            }
+            return res;
+        };
     }
 
     // internal storage for locale config files
@@ -28885,7 +28963,7 @@ if (typeof exports !== "undefined") {
     }
 
     function locale_locales__listLocales() {
-        return Object.keys(locales);
+        return keys(locales);
     }
 
     var aliases = {};
@@ -28964,7 +29042,7 @@ if (typeof exports !== "undefined") {
             Math.pow(10, Math.max(0, zerosToFill)).toString().substr(1) + absNumber;
     }
 
-    var formattingTokens = /(\[[^\[]*\])|(\\)?([Hh]mm(ss)?|Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Qo?|YYYYYY|YYYYY|YYYY|YY|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g;
+    var formattingTokens = /(\[[^\[]*\])|(\\)?([Hh]mm(ss)?|Mo|MM?M?M?|Do|DDDo|DD?D?D?|ddd?d?|do?|w[o|w]?|W[o|W]?|Qo?|YYYYYY|YYYYY|YYYY|YY|gg(ggg?)?|GG(GGG?)?|e|E|a|A|hh?|HH?|kk?|mm?|ss?|S{1,9}|x|X|zz?|ZZ?|.)/g;
 
     var localFormattingTokens = /(\[[^\[]*\])|(\\)?(LTS|LT|LL?L?L?|l{1,4})/g;
 
@@ -29017,7 +29095,7 @@ if (typeof exports !== "undefined") {
         }
 
         return function (mom) {
-            var output = '';
+            var output = '', i;
             for (i = 0; i < length; i++) {
                 output += array[i] instanceof Function ? array[i].call(mom, format) : array[i];
             }
@@ -29146,6 +29224,23 @@ if (typeof exports !== "undefined") {
     var WEEK = 7;
     var WEEKDAY = 8;
 
+    var indexOf;
+
+    if (Array.prototype.indexOf) {
+        indexOf = Array.prototype.indexOf;
+    } else {
+        indexOf = function (o) {
+            // I know
+            var i;
+            for (i = 0; i < this.length; ++i) {
+                if (this[i] === o) {
+                    return i;
+                }
+            }
+            return -1;
+        };
+    }
+
     function daysInMonth(year, month) {
         return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
     }
@@ -29208,8 +29303,53 @@ if (typeof exports !== "undefined") {
             this._monthsShort[MONTHS_IN_FORMAT.test(format) ? 'format' : 'standalone'][m.month()];
     }
 
+    function units_month__handleStrictParse(monthName, format, strict) {
+        var i, ii, mom, llc = monthName.toLocaleLowerCase();
+        if (!this._monthsParse) {
+            // this is not used
+            this._monthsParse = [];
+            this._longMonthsParse = [];
+            this._shortMonthsParse = [];
+            for (i = 0; i < 12; ++i) {
+                mom = create_utc__createUTC([2000, i]);
+                this._shortMonthsParse[i] = this.monthsShort(mom, '').toLocaleLowerCase();
+                this._longMonthsParse[i] = this.months(mom, '').toLocaleLowerCase();
+            }
+        }
+
+        if (strict) {
+            if (format === 'MMM') {
+                ii = indexOf.call(this._shortMonthsParse, llc);
+                return ii !== -1 ? ii : null;
+            } else {
+                ii = indexOf.call(this._longMonthsParse, llc);
+                return ii !== -1 ? ii : null;
+            }
+        } else {
+            if (format === 'MMM') {
+                ii = indexOf.call(this._shortMonthsParse, llc);
+                if (ii !== -1) {
+                    return ii;
+                }
+                ii = indexOf.call(this._longMonthsParse, llc);
+                return ii !== -1 ? ii : null;
+            } else {
+                ii = indexOf.call(this._longMonthsParse, llc);
+                if (ii !== -1) {
+                    return ii;
+                }
+                ii = indexOf.call(this._shortMonthsParse, llc);
+                return ii !== -1 ? ii : null;
+            }
+        }
+    }
+
     function localeMonthsParse (monthName, format, strict) {
         var i, mom, regex;
+
+        if (this._monthsParseExact) {
+            return units_month__handleStrictParse.call(this, monthName, format, strict);
+        }
 
         if (!this._monthsParse) {
             this._monthsParse = [];
@@ -29217,6 +29357,9 @@ if (typeof exports !== "undefined") {
             this._shortMonthsParse = [];
         }
 
+        // TODO: add sorting
+        // Sorting makes sure if one month (or abbr) is a prefix of another
+        // see sorting in computeMonthsParse
         for (i = 0; i < 12; i++) {
             // make the regex if we don't have it already
             mom = create_utc__createUTC([2000, i]);
@@ -29342,8 +29485,8 @@ if (typeof exports !== "undefined") {
 
         this._monthsRegex = new RegExp('^(' + mixedPieces.join('|') + ')', 'i');
         this._monthsShortRegex = this._monthsRegex;
-        this._monthsStrictRegex = new RegExp('^(' + longPieces.join('|') + ')$', 'i');
-        this._monthsShortStrictRegex = new RegExp('^(' + shortPieces.join('|') + ')$', 'i');
+        this._monthsStrictRegex = new RegExp('^(' + longPieces.join('|') + ')', 'i');
+        this._monthsShortStrictRegex = new RegExp('^(' + shortPieces.join('|') + ')', 'i');
     }
 
     function checkOverflow (m) {
@@ -29570,7 +29713,7 @@ if (typeof exports !== "undefined") {
 
     // MOMENTS
 
-    var getSetYear = makeGetSet('FullYear', false);
+    var getSetYear = makeGetSet('FullYear', true);
 
     function getIsLeapYear () {
         return isLeapYear(this.year());
@@ -29839,6 +29982,9 @@ if (typeof exports !== "undefined") {
                 config._a[HOUR] > 0) {
             getParsingFlags(config).bigHour = undefined;
         }
+
+        getParsingFlags(config).parsedDateParts = config._a.slice(0);
+        getParsingFlags(config).meridiem = config._meridiem;
         // handle meridiem
         config._a[HOUR] = meridiemFixWrap(config._locale, config._a[HOUR], config._meridiem);
 
@@ -29979,7 +30125,7 @@ if (typeof exports !== "undefined") {
         if (input === undefined) {
             config._d = new Date(utils_hooks__hooks.now());
         } else if (isDate(input)) {
-            config._d = new Date(+input);
+            config._d = new Date(input.valueOf());
         } else if (typeof input === 'string') {
             configFromString(config);
         } else if (isArray(input)) {
@@ -30099,7 +30245,7 @@ if (typeof exports !== "undefined") {
         this._milliseconds = +milliseconds +
             seconds * 1e3 + // 1000
             minutes * 6e4 + // 1000 * 60
-            hours * 36e5; // 1000 * 60 * 60
+            hours * 1000 * 60 * 60; //using 1000 * 60 * 60 instead of 36e5 to avoid floating point rounding errors https://github.com/moment/moment/issues/2978
         // Because of dateAddRemove treats 24 hours as different from a
         // day when working around DST, we need to store them separately
         this._days = +days +
@@ -30169,9 +30315,9 @@ if (typeof exports !== "undefined") {
         var res, diff;
         if (model._isUTC) {
             res = model.clone();
-            diff = (isMoment(input) || isDate(input) ? +input : +local__createLocal(input)) - (+res);
+            diff = (isMoment(input) || isDate(input) ? input.valueOf() : local__createLocal(input).valueOf()) - res.valueOf();
             // Use low-level api, because this fn is low-level api.
-            res._d.setTime(+res._d + diff);
+            res._d.setTime(res._d.valueOf() + diff);
             utils_hooks__hooks.updateOffset(res, false);
             return res;
         } else {
@@ -30332,7 +30478,7 @@ if (typeof exports !== "undefined") {
     // from http://docs.closure-library.googlecode.com/git/closure_goog_date_date.js.source.html
     // somewhat more in line with 4.4.3.2 2004 spec, but allows decimal anywhere
     // and further modified to allow for strings containing both week and day
-    var isoRegex = /^(-)?P(?:([0-9,.]*)Y)?(?:([0-9,.]*)M)?(?:([0-9,.]*)W)?(?:([0-9,.]*)D)?(?:T(?:([0-9,.]*)H)?(?:([0-9,.]*)M)?(?:([0-9,.]*)S)?)?$/;
+    var isoRegex = /^(-)?P(?:(-?[0-9,.]*)Y)?(?:(-?[0-9,.]*)M)?(?:(-?[0-9,.]*)W)?(?:(-?[0-9,.]*)D)?(?:T(?:(-?[0-9,.]*)H)?(?:(-?[0-9,.]*)M)?(?:(-?[0-9,.]*)S)?)?$/;
 
     function create__createDuration (input, key) {
         var duration = input,
@@ -30476,7 +30622,7 @@ if (typeof exports !== "undefined") {
         updateOffset = updateOffset == null ? true : updateOffset;
 
         if (milliseconds) {
-            mom._d.setTime(+mom._d + milliseconds * isAdding);
+            mom._d.setTime(mom._d.valueOf() + milliseconds * isAdding);
         }
         if (days) {
             get_set__set(mom, 'Date', get_set__get(mom, 'Date') + days * isAdding);
@@ -30521,9 +30667,9 @@ if (typeof exports !== "undefined") {
         }
         units = normalizeUnits(!isUndefined(units) ? units : 'millisecond');
         if (units === 'millisecond') {
-            return +this > +localInput;
+            return this.valueOf() > localInput.valueOf();
         } else {
-            return +localInput < +this.clone().startOf(units);
+            return localInput.valueOf() < this.clone().startOf(units).valueOf();
         }
     }
 
@@ -30534,14 +30680,16 @@ if (typeof exports !== "undefined") {
         }
         units = normalizeUnits(!isUndefined(units) ? units : 'millisecond');
         if (units === 'millisecond') {
-            return +this < +localInput;
+            return this.valueOf() < localInput.valueOf();
         } else {
-            return +this.clone().endOf(units) < +localInput;
+            return this.clone().endOf(units).valueOf() < localInput.valueOf();
         }
     }
 
-    function isBetween (from, to, units) {
-        return this.isAfter(from, units) && this.isBefore(to, units);
+    function isBetween (from, to, units, inclusivity) {
+        inclusivity = inclusivity || '()';
+        return (inclusivity[0] === '(' ? this.isAfter(from, units) : !this.isBefore(from, units)) &&
+            (inclusivity[1] === ')' ? this.isBefore(to, units) : !this.isAfter(to, units));
     }
 
     function isSame (input, units) {
@@ -30552,10 +30700,10 @@ if (typeof exports !== "undefined") {
         }
         units = normalizeUnits(units || 'millisecond');
         if (units === 'millisecond') {
-            return +this === +localInput;
+            return this.valueOf() === localInput.valueOf();
         } else {
-            inputMs = +localInput;
-            return +(this.clone().startOf(units)) <= inputMs && inputMs <= +(this.clone().endOf(units));
+            inputMs = localInput.valueOf();
+            return this.clone().startOf(units).valueOf() <= inputMs && inputMs <= this.clone().endOf(units).valueOf();
         }
     }
 
@@ -30622,10 +30770,12 @@ if (typeof exports !== "undefined") {
             adjust = (b - anchor) / (anchor2 - anchor);
         }
 
-        return -(wholeMonthDiff + adjust);
+        //check for negative zero, return zero if negative zero
+        return -(wholeMonthDiff + adjust) || 0;
     }
 
     utils_hooks__hooks.defaultFormat = 'YYYY-MM-DDTHH:mm:ssZ';
+    utils_hooks__hooks.defaultFormatUtc = 'YYYY-MM-DDTHH:mm:ss[Z]';
 
     function toString () {
         return this.clone().locale('en').format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ');
@@ -30646,7 +30796,10 @@ if (typeof exports !== "undefined") {
     }
 
     function format (inputString) {
-        var output = formatMoment(this, inputString || utils_hooks__hooks.defaultFormat);
+        if (!inputString) {
+            inputString = this.isUtc() ? utils_hooks__hooks.defaultFormatUtc : utils_hooks__hooks.defaultFormat;
+        }
+        var output = formatMoment(this, inputString);
         return this.localeData().postformat(output);
     }
 
@@ -30725,6 +30878,7 @@ if (typeof exports !== "undefined") {
         case 'week':
         case 'isoWeek':
         case 'day':
+        case 'date':
             this.hours(0);
             /* falls through */
         case 'hour':
@@ -30758,19 +30912,25 @@ if (typeof exports !== "undefined") {
         if (units === undefined || units === 'millisecond') {
             return this;
         }
+
+        // 'date' is an alias for 'day', so it should be considered as such.
+        if (units === 'date') {
+            units = 'day';
+        }
+
         return this.startOf(units).add(1, (units === 'isoWeek' ? 'week' : units)).subtract(1, 'ms');
     }
 
     function to_type__valueOf () {
-        return +this._d - ((this._offset || 0) * 60000);
+        return this._d.valueOf() - ((this._offset || 0) * 60000);
     }
 
     function unix () {
-        return Math.floor(+this / 1000);
+        return Math.floor(this.valueOf() / 1000);
     }
 
     function toDate () {
-        return this._offset ? new Date(+this) : this._d;
+        return this._offset ? new Date(this.valueOf()) : this._d;
     }
 
     function toArray () {
@@ -31039,9 +31199,15 @@ if (typeof exports !== "undefined") {
     addRegexToken('d',    match1to2);
     addRegexToken('e',    match1to2);
     addRegexToken('E',    match1to2);
-    addRegexToken('dd',   matchWord);
-    addRegexToken('ddd',  matchWord);
-    addRegexToken('dddd', matchWord);
+    addRegexToken('dd',   function (isStrict, locale) {
+        return locale.weekdaysMinRegex(isStrict);
+    });
+    addRegexToken('ddd',   function (isStrict, locale) {
+        return locale.weekdaysShortRegex(isStrict);
+    });
+    addRegexToken('dddd',   function (isStrict, locale) {
+        return locale.weekdaysRegex(isStrict);
+    });
 
     addWeekParseToken(['dd', 'ddd', 'dddd'], function (input, week, config, token) {
         var weekday = config._locale.weekdaysParse(input, token, config._strict);
@@ -31094,8 +31260,76 @@ if (typeof exports !== "undefined") {
         return this._weekdaysMin[m.day()];
     }
 
+    function day_of_week__handleStrictParse(weekdayName, format, strict) {
+        var i, ii, mom, llc = weekdayName.toLocaleLowerCase();
+        if (!this._weekdaysParse) {
+            this._weekdaysParse = [];
+            this._shortWeekdaysParse = [];
+            this._minWeekdaysParse = [];
+
+            for (i = 0; i < 7; ++i) {
+                mom = create_utc__createUTC([2000, 1]).day(i);
+                this._minWeekdaysParse[i] = this.weekdaysMin(mom, '').toLocaleLowerCase();
+                this._shortWeekdaysParse[i] = this.weekdaysShort(mom, '').toLocaleLowerCase();
+                this._weekdaysParse[i] = this.weekdays(mom, '').toLocaleLowerCase();
+            }
+        }
+
+        if (strict) {
+            if (format === 'dddd') {
+                ii = indexOf.call(this._weekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            } else if (format === 'ddd') {
+                ii = indexOf.call(this._shortWeekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            } else {
+                ii = indexOf.call(this._minWeekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            }
+        } else {
+            if (format === 'dddd') {
+                ii = indexOf.call(this._weekdaysParse, llc);
+                if (ii !== -1) {
+                    return ii;
+                }
+                ii = indexOf.call(this._shortWeekdaysParse, llc);
+                if (ii !== -1) {
+                    return ii;
+                }
+                ii = indexOf.call(this._minWeekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            } else if (format === 'ddd') {
+                ii = indexOf.call(this._shortWeekdaysParse, llc);
+                if (ii !== -1) {
+                    return ii;
+                }
+                ii = indexOf.call(this._weekdaysParse, llc);
+                if (ii !== -1) {
+                    return ii;
+                }
+                ii = indexOf.call(this._minWeekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            } else {
+                ii = indexOf.call(this._minWeekdaysParse, llc);
+                if (ii !== -1) {
+                    return ii;
+                }
+                ii = indexOf.call(this._weekdaysParse, llc);
+                if (ii !== -1) {
+                    return ii;
+                }
+                ii = indexOf.call(this._shortWeekdaysParse, llc);
+                return ii !== -1 ? ii : null;
+            }
+        }
+    }
+
     function localeWeekdaysParse (weekdayName, format, strict) {
         var i, mom, regex;
+
+        if (this._weekdaysParseExact) {
+            return day_of_week__handleStrictParse.call(this, weekdayName, format, strict);
+        }
 
         if (!this._weekdaysParse) {
             this._weekdaysParse = [];
@@ -31107,7 +31341,7 @@ if (typeof exports !== "undefined") {
         for (i = 0; i < 7; i++) {
             // make the regex if we don't have it already
 
-            mom = local__createLocal([2000, 1]).day(i);
+            mom = create_utc__createUTC([2000, 1]).day(i);
             if (strict && !this._fullWeekdaysParse[i]) {
                 this._fullWeekdaysParse[i] = new RegExp('^' + this.weekdays(mom, '').replace('.', '\.?') + '$', 'i');
                 this._shortWeekdaysParse[i] = new RegExp('^' + this.weekdaysShort(mom, '').replace('.', '\.?') + '$', 'i');
@@ -31163,6 +31397,99 @@ if (typeof exports !== "undefined") {
         return input == null ? this.day() || 7 : this.day(this.day() % 7 ? input : input - 7);
     }
 
+    var defaultWeekdaysRegex = matchWord;
+    function weekdaysRegex (isStrict) {
+        if (this._weekdaysParseExact) {
+            if (!hasOwnProp(this, '_weekdaysRegex')) {
+                computeWeekdaysParse.call(this);
+            }
+            if (isStrict) {
+                return this._weekdaysStrictRegex;
+            } else {
+                return this._weekdaysRegex;
+            }
+        } else {
+            return this._weekdaysStrictRegex && isStrict ?
+                this._weekdaysStrictRegex : this._weekdaysRegex;
+        }
+    }
+
+    var defaultWeekdaysShortRegex = matchWord;
+    function weekdaysShortRegex (isStrict) {
+        if (this._weekdaysParseExact) {
+            if (!hasOwnProp(this, '_weekdaysRegex')) {
+                computeWeekdaysParse.call(this);
+            }
+            if (isStrict) {
+                return this._weekdaysShortStrictRegex;
+            } else {
+                return this._weekdaysShortRegex;
+            }
+        } else {
+            return this._weekdaysShortStrictRegex && isStrict ?
+                this._weekdaysShortStrictRegex : this._weekdaysShortRegex;
+        }
+    }
+
+    var defaultWeekdaysMinRegex = matchWord;
+    function weekdaysMinRegex (isStrict) {
+        if (this._weekdaysParseExact) {
+            if (!hasOwnProp(this, '_weekdaysRegex')) {
+                computeWeekdaysParse.call(this);
+            }
+            if (isStrict) {
+                return this._weekdaysMinStrictRegex;
+            } else {
+                return this._weekdaysMinRegex;
+            }
+        } else {
+            return this._weekdaysMinStrictRegex && isStrict ?
+                this._weekdaysMinStrictRegex : this._weekdaysMinRegex;
+        }
+    }
+
+
+    function computeWeekdaysParse () {
+        function cmpLenRev(a, b) {
+            return b.length - a.length;
+        }
+
+        var minPieces = [], shortPieces = [], longPieces = [], mixedPieces = [],
+            i, mom, minp, shortp, longp;
+        for (i = 0; i < 7; i++) {
+            // make the regex if we don't have it already
+            mom = create_utc__createUTC([2000, 1]).day(i);
+            minp = this.weekdaysMin(mom, '');
+            shortp = this.weekdaysShort(mom, '');
+            longp = this.weekdays(mom, '');
+            minPieces.push(minp);
+            shortPieces.push(shortp);
+            longPieces.push(longp);
+            mixedPieces.push(minp);
+            mixedPieces.push(shortp);
+            mixedPieces.push(longp);
+        }
+        // Sorting makes sure if one weekday (or abbr) is a prefix of another it
+        // will match the longer piece.
+        minPieces.sort(cmpLenRev);
+        shortPieces.sort(cmpLenRev);
+        longPieces.sort(cmpLenRev);
+        mixedPieces.sort(cmpLenRev);
+        for (i = 0; i < 7; i++) {
+            shortPieces[i] = regexEscape(shortPieces[i]);
+            longPieces[i] = regexEscape(longPieces[i]);
+            mixedPieces[i] = regexEscape(mixedPieces[i]);
+        }
+
+        this._weekdaysRegex = new RegExp('^(' + mixedPieces.join('|') + ')', 'i');
+        this._weekdaysShortRegex = this._weekdaysRegex;
+        this._weekdaysMinRegex = this._weekdaysRegex;
+
+        this._weekdaysStrictRegex = new RegExp('^(' + longPieces.join('|') + ')', 'i');
+        this._weekdaysShortStrictRegex = new RegExp('^(' + shortPieces.join('|') + ')', 'i');
+        this._weekdaysMinStrictRegex = new RegExp('^(' + minPieces.join('|') + ')', 'i');
+    }
+
     // FORMATTING
 
     addFormatToken('DDD', ['DDDD', 3], 'DDDo', 'dayOfYear');
@@ -31194,8 +31521,13 @@ if (typeof exports !== "undefined") {
         return this.hours() % 12 || 12;
     }
 
+    function kFormat() {
+        return this.hours() || 24;
+    }
+
     addFormatToken('H', ['HH', 2], 0, 'hour');
     addFormatToken('h', ['hh', 2], 0, hFormat);
+    addFormatToken('k', ['kk', 2], 0, kFormat);
 
     addFormatToken('hmm', 0, 0, function () {
         return '' + hFormat.apply(this) + zeroFill(this.minutes(), 2);
@@ -31656,6 +31988,13 @@ if (typeof exports !== "undefined") {
     prototype__proto._weekdaysShort = defaultLocaleWeekdaysShort;
     prototype__proto.weekdaysParse  =        localeWeekdaysParse;
 
+    prototype__proto._weekdaysRegex      = defaultWeekdaysRegex;
+    prototype__proto.weekdaysRegex       =        weekdaysRegex;
+    prototype__proto._weekdaysShortRegex = defaultWeekdaysShortRegex;
+    prototype__proto.weekdaysShortRegex  =        weekdaysShortRegex;
+    prototype__proto._weekdaysMinRegex   = defaultWeekdaysMinRegex;
+    prototype__proto.weekdaysMinRegex    =        weekdaysMinRegex;
+
     // Hours
     prototype__proto.isPM = localeIsPM;
     prototype__proto._meridiemParse = defaultLocaleMeridiemParse;
@@ -31667,7 +32006,7 @@ if (typeof exports !== "undefined") {
         return locale[field](utc, format);
     }
 
-    function list (format, index, field, count, setter) {
+    function listMonthsImpl (format, index, field) {
         if (typeof format === 'number') {
             index = format;
             format = undefined;
@@ -31676,35 +32015,79 @@ if (typeof exports !== "undefined") {
         format = format || '';
 
         if (index != null) {
-            return lists__get(format, index, field, setter);
+            return lists__get(format, index, field, 'month');
         }
 
         var i;
         var out = [];
-        for (i = 0; i < count; i++) {
-            out[i] = lists__get(format, i, field, setter);
+        for (i = 0; i < 12; i++) {
+            out[i] = lists__get(format, i, field, 'month');
+        }
+        return out;
+    }
+
+    // ()
+    // (5)
+    // (fmt, 5)
+    // (fmt)
+    // (true)
+    // (true, 5)
+    // (true, fmt, 5)
+    // (true, fmt)
+    function listWeekdaysImpl (localeSorted, format, index, field) {
+        if (typeof localeSorted === 'boolean') {
+            if (typeof format === 'number') {
+                index = format;
+                format = undefined;
+            }
+
+            format = format || '';
+        } else {
+            format = localeSorted;
+            index = format;
+            localeSorted = false;
+
+            if (typeof format === 'number') {
+                index = format;
+                format = undefined;
+            }
+
+            format = format || '';
+        }
+
+        var locale = locale_locales__getLocale(),
+            shift = localeSorted ? locale._week.dow : 0;
+
+        if (index != null) {
+            return lists__get(format, (index + shift) % 7, field, 'day');
+        }
+
+        var i;
+        var out = [];
+        for (i = 0; i < 7; i++) {
+            out[i] = lists__get(format, (i + shift) % 7, field, 'day');
         }
         return out;
     }
 
     function lists__listMonths (format, index) {
-        return list(format, index, 'months', 12, 'month');
+        return listMonthsImpl(format, index, 'months');
     }
 
     function lists__listMonthsShort (format, index) {
-        return list(format, index, 'monthsShort', 12, 'month');
+        return listMonthsImpl(format, index, 'monthsShort');
     }
 
-    function lists__listWeekdays (format, index) {
-        return list(format, index, 'weekdays', 7, 'day');
+    function lists__listWeekdays (localeSorted, format, index) {
+        return listWeekdaysImpl(localeSorted, format, index, 'weekdays');
     }
 
-    function lists__listWeekdaysShort (format, index) {
-        return list(format, index, 'weekdaysShort', 7, 'day');
+    function lists__listWeekdaysShort (localeSorted, format, index) {
+        return listWeekdaysImpl(localeSorted, format, index, 'weekdaysShort');
     }
 
-    function lists__listWeekdaysMin (format, index) {
-        return list(format, index, 'weekdaysMin', 7, 'day');
+    function lists__listWeekdaysMin (localeSorted, format, index) {
+        return listWeekdaysImpl(localeSorted, format, index, 'weekdaysMin');
     }
 
     locale_locales__getSetGlobalLocale('en', {
@@ -32075,7 +32458,7 @@ if (typeof exports !== "undefined") {
     // Side effect imports
 
 
-    utils_hooks__hooks.version = '2.12.0';
+    utils_hooks__hooks.version = '2.13.0';
 
     setHookCallback(local__createLocal);
 
