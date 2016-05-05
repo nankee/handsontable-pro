@@ -86,7 +86,7 @@ class NestedHeaders extends BasePlugin {
     this.addHook('afterGetColumnHeaderRenderers', (array) => this.onAfterGetColumnHeaderRenderers(array));
     this.addHook('afterInit', () => this.onAfterInit());
     this.addHook('afterOnCellMouseDown', (event, coords, TD) => this.onAfterOnCellMouseDown(event, coords, TD));
-    this.addHook('beforeOnCellMouseOver', (event, coords, TD) => this.onBeforeOnCellMouseOver(event, coords, TD));
+    this.addHook('beforeOnCellMouseOver', (event, coords, TD, blockCalculations) => this.onBeforeOnCellMouseOver(event, coords, TD, blockCalculations));
     this.addHook('afterViewportColumnCalculatorOverride', (calc) => this.onAfterViewportColumnCalculatorOverride(calc));
 
     this.setupColspanArray();
@@ -467,20 +467,37 @@ class NestedHeaders extends BasePlugin {
    * @param {Object} coords Clicked cell coords.
    * @param {HTMLElement} TD
    */
-  onBeforeOnCellMouseOver(event, coords, TD) {
+  onBeforeOnCellMouseOver(event, coords, TD, blockCalculations) {
     if (coords.row < 0 && coords.col >= 0 && this.hot.view.isMouseDown()) {
       let {from, to} = this.hot.getSelectedRange();
       let colspan = this.getColspan(coords.row, coords.col);
       let lastColIndex = coords.col + colspan - 1;
+      let changeDirection = false;
 
-      if ((coords.col < to.col && from.col > to.col && lastColIndex > from.col) ||
-          (coords.col < from.col && from.col < to.col && lastColIndex > to.col) ||
-          (coords.col > from.col && from.col > to.col) ||
-          (coords.col <= to.col && from.col > to.col && lastColIndex > from.col)) {
+      if (from.col <= to.col) {
+        if ((coords.col < from.col && lastColIndex >= to.col) ||
+            (coords.col < from.col && lastColIndex < from.col) ||
+            (coords.col < from.col && lastColIndex >= from.col && lastColIndex < to.col)) {
+          changeDirection = true;
+        }
+      } else {
+        if ((coords.col < to.col && lastColIndex > from.col) ||
+            (coords.col > from.col) ||
+            (coords.col <= to.col && lastColIndex > from.col) ||
+            (coords.col > to.col && lastColIndex > from.col)) {
+          changeDirection = true;
+        }
+      }
+
+      if (changeDirection) {
         [from.col, to.col] = [to.col, from.col];
       }
+
       if (colspan > 1) {
-        coords.setUsed(true);
+        blockCalculations.column = true;
+
+        this.hot.selection.setSelectedHeaders(false, true);
+
         if (from.col === to.col) {
           if (lastColIndex <= from.col && coords.col < from.col) {
             this.hot.selectCell(from.row, to.col, to.row, coords.col);
