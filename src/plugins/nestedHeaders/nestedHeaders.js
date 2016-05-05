@@ -85,7 +85,8 @@ class NestedHeaders extends BasePlugin {
 
     this.addHook('afterGetColumnHeaderRenderers', (array) => this.onAfterGetColumnHeaderRenderers(array));
     this.addHook('afterInit', () => this.onAfterInit());
-    this.addHook('afterOnCellMouseOver', (event, coords, TD) => this.onAfterOnCellMouseOver(event, coords, TD));
+    this.addHook('afterOnCellMouseDown', (event, coords, TD) => this.onAfterOnCellMouseDown(event, coords, TD));
+    this.addHook('beforeOnCellMouseOver', (event, coords, TD) => this.onBeforeOnCellMouseOver(event, coords, TD));
     this.addHook('afterViewportColumnCalculatorOverride', (calc) => this.onAfterViewportColumnCalculatorOverride(calc));
 
     this.setupColspanArray();
@@ -439,6 +440,26 @@ class NestedHeaders extends BasePlugin {
   }
 
   /**
+   * Select all nested headers of clicked cell.
+   *
+   * @private
+   * @param {MouseEvent} event Mouse event.
+   * @param {Object} coords Clicked cell coords.
+   * @param {HTMLElement} TD
+   */
+  onAfterOnCellMouseDown(event, coords, TD) {
+    if (coords.row < 0) {
+      let colspan = this.getColspan(coords.row, coords.col);
+      let lastColIndex = coords.col + colspan - 1;
+
+      if (colspan > 1) {
+        let lastRowIndex = this.hot.countRows() - 1;
+        this.hot.selection.setRangeEnd(new WalkontableCellCoords(lastRowIndex, lastColIndex));
+      }
+    }
+  }
+
+  /**
    * Make the header-selection properly select the nested headers.
    *
    * @private
@@ -446,41 +467,39 @@ class NestedHeaders extends BasePlugin {
    * @param {Object} coords Clicked cell coords.
    * @param {HTMLElement} TD
    */
-  onAfterOnCellMouseOver(event, coords, TD) {
-    if (coords.row < 0 && this.hot.view.isMouseDown()) {
-      let currentColspan = this.colspanArray[this.rowCoordsToLevel(coords.row)][coords.col] ?
-        this.colspanArray[this.rowCoordsToLevel(coords.row)][coords.col].colspan : null;
+  onBeforeOnCellMouseOver(event, coords, TD) {
+    if (coords.row < 0 && coords.col >= 0 && this.hot.view.isMouseDown()) {
+      let {from, to} = this.hot.getSelectedRange();
+      let colspan = this.getColspan(coords.row, coords.col);
+      let lastColIndex = coords.col + colspan - 1;
 
-      if (currentColspan === null) {
-        return;
+      if ((coords.col < to.col && from.col > to.col && lastColIndex > from.col) ||
+          (coords.col < from.col && from.col < to.col && lastColIndex > to.col) ||
+          (coords.col > from.col && from.col > to.col) ||
+          (coords.col <= to.col && from.col > to.col && lastColIndex > from.col)) {
+        [from.col, to.col] = [to.col, from.col];
       }
-
-      let wot = this.hot.view.wt;
-      let fromCoords = wot.selections[1].cellRange ? wot.selections[1].cellRange.from : null;
-      let toCoords = wot.selections[1].cellRange ? wot.selections[1].cellRange.to : null;
-      let highlightCoords = wot.selections[1].cellRange ? wot.selections[1].cellRange.highlight : null;
-      let rowCount = this.hot.countRows();
-      let fromCoordsNestedParent = this.getNestedParent(this.rowCoordsToLevel(coords.row), fromCoords.col);
-      let rightColspan = this.getColspan(coords.row, toCoords.col);
-
-      if (fromCoords === null || toCoords === null || highlightCoords === null) {
-        return;
-      }
-
-      if (highlightCoords.col === toCoords.col && (toCoords.col !== fromCoords.col)) {
-        this.hot.selection.setRangeStart(new WalkontableCellCoords(0, toCoords.col + rightColspan - 1));
-        this.hot.selection.setRangeEnd(new WalkontableCellCoords(rowCount - 1, fromCoords.col));
-
-      } else if (highlightCoords.col === fromCoords.col && (fromCoords.col !== fromCoordsNestedParent) && (toCoords.col !== fromCoords.col)) {
-        let currentLevel = this.rowCoordsToLevel(coords.row);
-        let leftSectionNestedParent = this.getNestedParent(currentLevel, toCoords.col - 1);
-        let leftColspan = this.getColspan(coords.row, leftSectionNestedParent);
-
-        this.hot.selection.setRangeStart(new WalkontableCellCoords(0, fromCoords.col - leftColspan + 1));
-        this.hot.selection.setRangeEnd(new WalkontableCellCoords(rowCount - 1, toCoords.col + rightColspan - 1));
-
-      } else {
-        this.hot.selection.setRangeEnd(new WalkontableCellCoords(rowCount - 1, coords.col + currentColspan - 1));
+      if (colspan > 1) {
+        coords.setUsed(true);
+        if (from.col === to.col) {
+          if (lastColIndex <= from.col && coords.col < from.col) {
+            this.hot.selectCell(from.row, to.col, to.row, coords.col);
+          } else {
+            this.hot.selectCell(
+              from.row, coords.col < from.col ? coords.col : from.col,
+              to.row, lastColIndex > to.col ? lastColIndex : to.col
+            );
+          }
+        }
+        if (from.col < to.col) {
+          this.hot.selectCell(
+            from.row, coords.col < from.col ? coords.col : from.col,
+            to.row, lastColIndex
+          );
+        }
+        if (from.col > to.col) {
+          this.hot.selectCell(from.row, from.col, to.row, coords.col);
+        }
       }
     }
   }
