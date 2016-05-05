@@ -133,7 +133,7 @@ class ValueComponent extends BaseComponent {
   getMenuItemDescriptor() {
     return {
       key: 'filter_by_value',
-      name: '',
+      name: 'Filter by value',
       isCommand: false,
       disableSelection: true,
       hidden: () => this.isHidden(),
