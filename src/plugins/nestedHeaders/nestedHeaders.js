@@ -475,7 +475,7 @@ class NestedHeaders extends BasePlugin {
       let changeDirection = false;
 
       if (from.col <= to.col) {
-        if ((coords.col < from.col && lastColIndex >= to.col) ||
+        if ((coords.col < from.col && lastColIndex === to.col) ||
             (coords.col < from.col && lastColIndex < from.col) ||
             (coords.col < from.col && lastColIndex >= from.col && lastColIndex < to.col)) {
           changeDirection = true;
