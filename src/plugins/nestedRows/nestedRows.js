@@ -1,6 +1,7 @@
 import BasePlugin from 'handsontable/plugins/_base';
 import {registerPlugin} from 'handsontable/plugins';
 import {rangeEach} from 'handsontable/helpers/number';
+import {objectEach} from 'handsontable/helpers/object';
 import {arrayEach} from 'handsontable/helpers/array';
 import {
   addClass,
@@ -204,13 +205,17 @@ class NestedRows extends BasePlugin {
   /**
    * Count children of the provided parent.
    *
-   * @param {Object} parent Parent node.
+   * @param {Object|Number} parent Parent node.
    * @returns {Number} Children count.
    */
   countChildren(parent) {
     let rowCount = 0;
 
-    if (!parent.__children) {
+    if (!isNaN(parent)) {
+      parent = this.getVisualRowObject(parent);
+    }
+
+    if (!parent || !parent.__children) {
       return 0;
     }
 
@@ -244,9 +249,14 @@ class NestedRows extends BasePlugin {
   /**
    * Get the parent of the provided row object.
    *
+   * @private
    * @param {Object} rowObject The row object (tree node).
    */
   getRowObjectParent(rowObject) {
+    if (typeof rowObject !== 'object') {
+      return null;
+    }
+
     return this.parentReference.get(rowObject);
   }
 
@@ -257,7 +267,13 @@ class NestedRows extends BasePlugin {
    * @returns {Number|null} Row level or null, when row doesn't exist.
    */
   getRowLevel(row) {
-    let rowObject = this.getVisualRowObject(row);
+    let rowObject = null;
+
+    if (isNaN(row)) {
+      rowObject = row;
+    } else {
+      rowObject = this.getVisualRowObject(row);
+    }
 
     return rowObject ? this.getRowObjectLevel(rowObject) : null;
   }
@@ -265,6 +281,7 @@ class NestedRows extends BasePlugin {
   /**
    * Get the nesting level for the row with the provided row index.
    *
+   * @private
    * @param {Object} rowObject Row object.
    * @returns {Number} Row level.
    */
@@ -294,13 +311,17 @@ class NestedRows extends BasePlugin {
       parent.__children = [];
     }
 
-    if (element) {
-      parent.__children.push(element);
+    if (!element) {
+      element = {};
+      objectEach(parent, (val, prop) => {
+        element[prop] = null;
+      });
 
-    } else {
-      const newRowIndex = this.getRowIndex(parent.__children[0]) || this.getRowIndex(parent) + 1;
-      this.hot.alter('insert_row', newRowIndex);
     }
+
+    parent.__children.push(element);
+
+    this.hot.render();
   }
 
   /**
@@ -409,7 +430,9 @@ class NestedRows extends BasePlugin {
   }
 
   /**
-   * TODO: docs
+   * Check if all child rows are hidden.
+   *
+   * @param {Number|Object} row The parent row.
    * @private
    */
   areChildrenHidden(row) {
