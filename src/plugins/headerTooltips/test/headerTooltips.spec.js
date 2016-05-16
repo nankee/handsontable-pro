@@ -1,4 +1,4 @@
-describe('HiddenColumns', function() {
+describe('Header tooltips', function() {
   var id = 'testContainer';
 
   beforeEach(function() {
