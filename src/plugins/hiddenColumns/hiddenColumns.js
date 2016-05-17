@@ -3,6 +3,8 @@ import {addClass, removeClass} from 'handsontable/helpers/dom/element';
 import {rangeEach} from 'handsontable/helpers/number';
 import {arrayEach} from 'handsontable/helpers/array';
 import {registerPlugin, getPlugin} from 'handsontable/plugins';
+import {SEPARATOR} from 'handsontable/plugins/contextMenu/predefinedItems';
+import {ColumnsMapper} from './columnsMapper';
 
 /**
  * Plugin allowing hiding of certain columns.
@@ -25,6 +27,18 @@ class HiddenColumns extends BasePlugin {
      * @type {Boolean|Object}
      */
     this.hiddenColumns = [];
+    /**
+     * Object containing visual row indexes mapped to data source indexes.
+     *
+     * @type {ColumnsMapper}
+     */
+    this.columnsMapper = new ColumnsMapper(this);
+    /**
+     * List of last removed column indexes.
+     *
+     * @type {Array}
+     */
+    this.removedColumns = [];
     /**
      * Last selected column index.
      *
@@ -65,17 +79,24 @@ class HiddenColumns extends BasePlugin {
         this.addHook('modifyCopyableRange', (ranges) => this.onModifyCopyableRange(ranges));
       }
     }
+    if (this.hot.hasColHeaders()) {
+      this.addHook('afterGetColHeader', (col, TH) => this.onAfterGetColHeader(col, TH));
+    } else {
+      this.addHook('afterRenderer', (TD, row, col) => this.onAfterGetColHeader(col, TD));
+    }
+
+    this.columnsMapper.createMap(this.hot.countCols());
 
     this.addHook('afterContextMenuDefaultOptions', (options) => this.onAfterContextMenuDefaultOptions(options));
     this.addHook('afterGetCellMeta', (row, col, cellProperties) => this.onAfterGetCellMeta(row, col, cellProperties));
     this.addHook('modifyColWidth', (width, col) => this.onModifyColWidth(width, col));
-    this.addHook('afterGetColHeader', (col, TH) => this.onAfterGetColHeader(col, TH));
     this.addHook('beforeSetRangeEnd', (coords) => this.onBeforeSetRangeEnd(coords));
     this.addHook('hiddenColumn', (column) => this.isHidden(column));
-    this.addHook('beforeStretchingColumnWidth', (width, column) => this.onBeforeStrethingColumnWidth(width, column));
-
+    this.addHook('beforeStretchingColumnWidth', (width, column) => this.onBeforeStretchingColumnWidth(width, column));
     this.addHook('afterCreateCol', (index, amount) => this.onAfterCreateCol(index, amount));
+    this.addHook('beforeRemoveCol', (index, amount) => this.onBeforeRemoveCol(index, amount));
     this.addHook('afterRemoveCol', (index, amount) => this.onAfterRemoveCol(index, amount));
+    this.addHook('afterLoadData', (firstRun) => this.onAfterLoadData(firstRun));
 
     super.enablePlugin();
   }
@@ -117,6 +138,7 @@ class HiddenColumns extends BasePlugin {
       }
     });
 
+    this.columnsMapper.createMap(this.hot.countCols());
   }
 
   /**
@@ -141,6 +163,8 @@ class HiddenColumns extends BasePlugin {
         this.hiddenColumns.splice(this.hiddenColumns.indexOf(col), 1);
       }
     });
+
+    this.columnsMapper.createMap(this.hot.countCols());
   }
 
   /**
@@ -197,10 +221,11 @@ class HiddenColumns extends BasePlugin {
    * @param {Number} column Column index.
    * @returns {Number}
    */
-  onBeforeStrethingColumnWidth(width, column) {
+  onBeforeStretchingColumnWidth(width, column) {
     if (this.hiddenColumns.indexOf(column) > -1) {
       width = 0;
     }
+
     return width;
   }
 
@@ -269,22 +294,21 @@ class HiddenColumns extends BasePlugin {
       if (firstSectionHidden && cellProperties.className.indexOf('firstVisible') === -1) {
         cellProperties.className += ' firstVisible';
       }
-    } else {
-      if (cellProperties.className) {
-        let classArr = cellProperties.className.split(' ');
-        if (classArr.length) {
-          let containAfterHiddenColumn = classArr.indexOf('afterHiddenCsolumn');
-          let containFirstVisible = classArr.indexOf('firstVisible');
+    } else if (cellProperties.className) {
+      let classArr = cellProperties.className.split(' ');
 
-          if (containAfterHiddenColumn > -1) {
-            classArr.splice(containAfterHiddenColumn, 1);
-          }
-          if (containFirstVisible > -1) {
-            classArr.splice(containFirstVisible, 1);
-          }
+      if (classArr.length) {
+        let containAfterHiddenColumn = classArr.indexOf('afterHiddenColumn');
+        let containFirstVisible = classArr.indexOf('firstVisible');
 
-          cellProperties.className = classArr.join(' ');
+        if (containAfterHiddenColumn > -1) {
+          classArr.splice(containAfterHiddenColumn, 1);
         }
+        if (containFirstVisible > -1) {
+          classArr.splice(containFirstVisible, 1);
+        }
+
+        cellProperties.className = classArr.join(' ');
       }
     }
   }
@@ -395,7 +419,9 @@ class HiddenColumns extends BasePlugin {
     let afterHiddenColumns = [];
 
     options.items.push(
-      Handsontable.plugins.ContextMenu.SEPARATOR,
+      {
+        name: SEPARATOR
+      },
       {
         key: 'hiddenColumns_hide',
         name: 'Hide column',
@@ -521,39 +547,55 @@ class HiddenColumns extends BasePlugin {
   }
 
   /**
-   * Recalculate index of hidden columns after add column action
+   * On after create column listener.
    *
-   * @param {Number} index
-   * @param {Number} amount
+   * @private
+   * @param {Number} index Column index.
+   * @param {Number} amount Defines how many columns removed.
    */
   onAfterCreateCol(index, amount) {
-    let tempHidden = [];
-
-    arrayEach(this.hiddenColumns, (col) => {
-      if (col >= index) {
-        col += amount;
-      }
-      tempHidden.push(col);
-    });
-    this.hiddenColumns = tempHidden;
+    this.columnsMapper.shiftItems(index, amount);
   }
 
   /**
-   * Recalculate index of hidden columns after remove column action
+   * On before remove column.
    *
-   * @param {Number} index
-   * @param {Number} amount
+   * @private
+   * @param {Number} index Column index.
+   * @param {Number} amount Defines how many columns removed.
+   */
+  onBeforeRemoveCol(index, amount) {
+    this.removedColumns.length = 0;
+
+    if (index !== false) {
+      // Collect physical column index.
+      rangeEach(index, index + amount - 1, (removedIndex) => {
+        this.removedColumns.push(this.hot.runHooks('modifyCol', removedIndex, this.pluginName));
+      });
+    }
+  }
+
+  /**
+   * On after remove row listener.
+   *
+   * @private
+   * @param {Number} index Row index.
+   * @param {Number} amount Defines how many rows removed.
    */
   onAfterRemoveCol(index, amount) {
-    let tempHidden = [];
+    this.columnsMapper.unshiftItems(this.removedColumns);
+  }
 
-    arrayEach(this.hiddenColumns, (col) => {
-      if (col >= index) {
-        col -= amount;
-      }
-      tempHidden.push(col);
-    });
-    this.hiddenColumns = tempHidden;
+  /**
+   * On after load data listener.
+   *
+   * @private
+   * @param {Boolean} firstRun Indicates if hook was fired while Handsontable initialization.
+   */
+  onAfterLoadData(firstRun) {
+    if (!firstRun) {
+      this.columnsMapper.createMap(this.hot.countCols());
+    }
   }
 
   /**

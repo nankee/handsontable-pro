@@ -4,18 +4,18 @@ import {mixin} from 'handsontable/helpers/object';
 import {rangeEach} from 'handsontable/helpers/number';
 
 /**
- * @class RowsMapper
- * @plugin HiddenRows
+ * @class ColumnsMapper
+ * @plugin HiddenColumns
  * @pro
  */
-class RowsMapper {
-  constructor(hiddenRows) {
+class ColumnsMapper {
+  constructor(hiddenColumns) {
     /**
-     * Instance of hiddenRows plugin.
+     * Instance of hiddenColumns plugin.
      *
-     * @type {hiddenRows}
+     * @type {hiddenColumns}
      */
-    this.hiddenRows = hiddenRows;
+    this.hiddenColumns = hiddenColumns;
   }
 
   /**
@@ -42,9 +42,9 @@ class RowsMapper {
   }
 }
 
-mixin(RowsMapper, arrayMapper);
+mixin(ColumnsMapper, arrayMapper);
 
-export {RowsMapper};
+export {ColumnsMapper};
 
 // For tests only!
-Handsontable.utils.HiddenRowsRowsMapper = RowsMapper;
+Handsontable.utils.HiddenColumnsColumnMapper = ColumnsMapper;
