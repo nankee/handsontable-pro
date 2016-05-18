@@ -109,10 +109,15 @@ class HiddenRows extends BasePlugin {
     } else {
       this.addHook('afterRenderer', (TD, row) => this.onAfterGetRowHeader(row, TD));
     }
+
+    this.addHook('afterContextMenuDefaultOptions', (options) => this.onAfterContextMenuDefaultOptions(options));
     this.addHook('afterGetCellMeta', (row, col, cellProperties) => this.onAfterGetCellMeta(row, col, cellProperties));
     this.addHook('modifyRowHeight', (height, row) => this.onModifyRowHeight(height, row));
     this.addHook('beforeSetRangeEnd', (coords) => this.onBeforeSetRangeEnd(coords));
     this.addHook('hiddenRow', (row) => this.isHidden(row));
+    this.addHook('afterRowMove', (start, end) => this.onAfterRowMove(start, end));
+    this.addHook('afterCreateRow', (index, amount) => this.onAfterCreateRow(index, amount));
+    this.addHook('afterRemoveRow', (index, amount) => this.onAfterRemoveRow(index, amount));
 
     super.enablePlugin();
   }
@@ -329,6 +334,210 @@ class HiddenRows extends BasePlugin {
     };
     coords.row = getNextRow(coords.row);
     this.lastSelectedRow = coords.row;
+  }
+
+  /**
+   * Add Show-hide columns to context menu.
+   *
+   * @private
+   * @param {Object} options
+   */
+  onAfterContextMenuDefaultOptions(options) {
+    let beforeHiddenRows = [];
+    let afterHiddenRows = [];
+
+    options.items.push(
+      Handsontable.plugins.ContextMenu.SEPARATOR,
+      {
+        key: 'hiddenRows_hide',
+        name: 'Hide row',
+        callback: () => {
+          let {from, to} = this.hot.getSelectedRange();
+          let start = from.row;
+          let end = to.row;
+
+          if (end < start) {
+            start = to.row;
+            end = from.row;
+          }
+
+          rangeEach(start, end, (i) => this.hideRow(i));
+
+          this.hot.render();
+          this.hot.view.wt.wtOverlays.adjustElementsSize(true);
+
+          if (start < 1) {
+            this.hot.scrollViewportTo(start);
+
+          } else {
+            this.hot.scrollViewportTo(start - 1);
+          }
+        },
+        disabled: false,
+        hidden: () => {
+          return !this.hot.selection.selectedHeader.rows;
+        }
+      },
+      {
+        key: 'hiddenRows_show',
+        name: 'Show row',
+        callback: () => {
+          let {from, to} = this.hot.getSelectedRange();
+          let start = from.row;
+          let end = to.row;
+
+          if (end < start) {
+            start = to.row;
+            end = from.row;
+          }
+
+          if (start === end) {
+            if (beforeHiddenRows.length === start) {
+              this.showRows(beforeHiddenRows);
+              beforeHiddenRows = [];
+            }
+            if (afterHiddenRows.length === this.hot.countSourceRows() - (start + 1)) {
+              this.showRows(afterHiddenRows);
+              afterHiddenRows = [];
+            }
+
+          } else {
+            rangeEach(start, end, (i) => this.showRow(i));
+          }
+
+          this.hot.render();
+        },
+        disabled: false,
+        hidden: () => {
+          if (!this.hiddenRows.length) {
+            return true;
+          }
+
+          if (!this.hot.selection.selectedHeader.rows) {
+            return true;
+          }
+
+          beforeHiddenRows = [];
+          afterHiddenRows = [];
+
+          let {from, to} = this.hot.getSelectedRange();
+          let start = from.row;
+          let end = to.row;
+
+          let hiddenInSelection = false;
+
+          if (start === end) {
+            let totalRowsLength = this.hot.countSourceRows();
+
+            rangeEach(0, totalRowsLength, (i) => {
+              let partedHiddenLength = beforeHiddenRows.length + afterHiddenRows.length;
+
+              if (partedHiddenLength === this.hiddenRows.length) {
+                return false;
+              }
+
+              if (i < start) {
+                if (this.hiddenRows.indexOf(i) > -1) {
+                  beforeHiddenRows.push(i);
+                }
+              } else {
+                if (this.hiddenRows.indexOf(i) > -1) {
+                  afterHiddenRows.push(i);
+                }
+              }
+            });
+
+            totalRowsLength = totalRowsLength - 1;
+
+            if ((beforeHiddenRows.length === start && start > 0) ||
+              (afterHiddenRows.length === totalRowsLength - start && start < totalRowsLength)) {
+              hiddenInSelection = true;
+            }
+
+          } else {
+            if (end < start) {
+              start = to.row;
+              end = from.row;
+            }
+
+            rangeEach(start, end, (i) => {
+              if (this.isHidden(i)) {
+                hiddenInSelection = true;
+
+                return false;
+              }
+            });
+          }
+
+          return !hiddenInSelection;
+        }
+      }
+    );
+  }
+
+  /**
+   * On row move listener. Recalculate hidden index on change
+   *
+   * @private
+   * @param {Number} start
+   * @param {Number} end
+   */
+  onAfterRowMove(start, end) {
+    let tempHidden = [];
+
+    arrayEach(this.hiddenRows, (col) => {
+      if (end > start) {
+        if (col > start && col < end) {
+          col--;
+        }
+      } else {
+        if (col < start && col > end) {
+          col++;
+        }
+      }
+
+      tempHidden.push(col);
+    });
+
+    this.hiddenRows = tempHidden;
+
+    this.hot.render();
+  }
+
+  /**
+   * Recalculate index of hidden rows after add row action
+   *
+   * @param {Number} index
+   * @param {Number} amount
+   */
+  onAfterCreateRow(index, amount) {
+    let tempHidden = [];
+
+    arrayEach(this.hiddenRows, (col) => {
+      if (col >= index) {
+        col += amount;
+      }
+      tempHidden.push(col);
+    });
+    this.hiddenRows = tempHidden;
+  }
+
+  /**
+   * Recalculate index of hidden rows after remove row action
+   *
+   * @param {Number} index
+   * @param {Number} amount
+   */
+  onAfterRemoveRow(index, amount) {
+    let tempHidden = [];
+
+    arrayEach(this.hiddenRows, (col) => {
+      if (col >= index) {
+        col -= amount;
+      }
+      tempHidden.push(col);
+    });
+    this.hiddenRows = tempHidden;
   }
 
   /**
