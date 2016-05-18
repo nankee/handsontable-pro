@@ -3,7 +3,6 @@ import {addClass, removeClass} from 'handsontable/helpers/dom/element';
 import {rangeEach} from 'handsontable/helpers/number';
 import {arrayEach, arrayFilter} from 'handsontable/helpers/array';
 import {registerPlugin, getPlugin} from 'handsontable/plugins';
-import {RowsMapper} from './rowsMapper';
 
 /**
  * @plugin HiddenRows
@@ -66,18 +65,6 @@ class HiddenRows extends BasePlugin {
      */
     this.hiddenRows = [];
     /**
-     * Object containing visual row indexes mapped to data source indexes.
-     *
-     * @type {RowsMapper}
-     */
-    this.rowsMapper = new RowsMapper(this);
-    /**
-     * List of last removed row indexes.
-     *
-     * @type {Array}
-     */
-    this.removedRows = [];
-    /**
      * Last selected row index.
      *
      * @type {Number}
@@ -123,19 +110,14 @@ class HiddenRows extends BasePlugin {
       this.addHook('afterRenderer', (TD, row) => this.onAfterGetRowHeader(row, TD));
     }
 
-    this.rowsMapper.createMap(this.hot.countSourceRows());
-
     this.addHook('afterContextMenuDefaultOptions', (options) => this.onAfterContextMenuDefaultOptions(options));
     this.addHook('afterGetCellMeta', (row, col, cellProperties) => this.onAfterGetCellMeta(row, col, cellProperties));
     this.addHook('modifyRowHeight', (height, row) => this.onModifyRowHeight(height, row));
     this.addHook('beforeSetRangeEnd', (coords) => this.onBeforeSetRangeEnd(coords));
     this.addHook('hiddenRow', (row) => this.isHidden(row));
-    this.addHook('beforeRowMove', (start, end) => this.onBeforeRowMove(start, end));
-    this.addHook('modifyRow', (row, source) => this.onModifyRow(row, source));
+    this.addHook('afterRowMove', (start, end) => this.onAfterRowMove(start, end));
     this.addHook('afterCreateRow', (index, amount) => this.onAfterCreateRow(index, amount));
-    this.addHook('beforeRemoveRow', (index, amount) => this.onBeforeRemoveRow(index, amount));
     this.addHook('afterRemoveRow', (index, amount) => this.onAfterRemoveRow(index, amount));
-    this.addHook('afterLoadData', (firstRun) => this.onAfterLoadData(firstRun));
 
     super.enablePlugin();
   }
@@ -175,8 +157,6 @@ class HiddenRows extends BasePlugin {
         this.hiddenRows.splice(this.hiddenRows.indexOf(row), 1);
       }
     });
-
-    this.rowsMapper.createMap(this.hot.countSourceRows());
   }
 
   /**
@@ -201,8 +181,6 @@ class HiddenRows extends BasePlugin {
         this.hiddenRows.push(row);
       }
     });
-
-    this.rowsMapper.createMap(this.hot.countSourceRows());
   }
 
   /**
@@ -435,61 +413,63 @@ class HiddenRows extends BasePlugin {
             return true;
           }
 
+          if (!this.hot.selection.selectedHeader.rows) {
+            return true;
+          }
+
           beforeHiddenRows = [];
           afterHiddenRows = [];
 
-          if (this.hot.selection.selectedHeader.rows) {
-            let {from, to} = this.hot.getSelectedRange();
-            let start = from.row;
-            let end = to.row;
+          let {from, to} = this.hot.getSelectedRange();
+          let start = from.row;
+          let end = to.row;
 
-            let hiddenInSelection = false;
+          let hiddenInSelection = false;
 
-            if (start === end) {
-              let totalRowsLength = this.hot.countSourceRows();
+          if (start === end) {
+            let totalRowsLength = this.hot.countSourceRows();
 
-              rangeEach(0, totalRowsLength, (i) => {
-                let partedHiddenLength = beforeHiddenRows.length + afterHiddenRows.length;
+            rangeEach(0, totalRowsLength, (i) => {
+              let partedHiddenLength = beforeHiddenRows.length + afterHiddenRows.length;
 
-                if (partedHiddenLength === this.hiddenRows.length) {
-                  return false;
-                }
-
-                if (i < start) {
-                  if (this.hiddenRows.indexOf(i) > -1) {
-                    beforeHiddenRows.push(i);
-                  }
-                } else {
-                  if (this.hiddenRows.indexOf(i) > -1) {
-                    afterHiddenRows.push(i);
-                  }
-                }
-              });
-
-              totalRowsLength = totalRowsLength - 1;
-
-              if ((beforeHiddenRows.length === start && start > 0) ||
-                (afterHiddenRows.length === totalRowsLength - start && start < totalRowsLength)) {
-                hiddenInSelection = true;
+              if (partedHiddenLength === this.hiddenRows.length) {
+                return false;
               }
 
-            } else {
-              if (end < start) {
-                start = to.row;
-                end = from.row;
-              }
-
-              rangeEach(start, end, (i) => {
-                if (this.isHidden(i)) {
-                  hiddenInSelection = true;
+              if (i < start) {
+                if (this.hiddenRows.indexOf(i) > -1) {
+                  beforeHiddenRows.push(i);
                 }
-              });
+              } else {
+                if (this.hiddenRows.indexOf(i) > -1) {
+                  afterHiddenRows.push(i);
+                }
+              }
+            });
+
+            totalRowsLength = totalRowsLength - 1;
+
+            if ((beforeHiddenRows.length === start && start > 0) ||
+              (afterHiddenRows.length === totalRowsLength - start && start < totalRowsLength)) {
+              hiddenInSelection = true;
             }
 
-            return !hiddenInSelection;
+          } else {
+            if (end < start) {
+              start = to.row;
+              end = from.row;
+            }
+
+            rangeEach(start, end, (i) => {
+              if (this.isHidden(i)) {
+                hiddenInSelection = true;
+
+                return false;
+              }
+            });
           }
 
-          return true;
+          return !hiddenInSelection;
         }
       }
     );
@@ -502,7 +482,7 @@ class HiddenRows extends BasePlugin {
    * @param {Number} start
    * @param {Number} end
    */
-  onBeforeRowMove(start, end) {
+  onAfterRowMove(start, end) {
     let tempHidden = [];
 
     arrayEach(this.hiddenRows, (col) => {
@@ -521,75 +501,43 @@ class HiddenRows extends BasePlugin {
 
     this.hiddenRows = tempHidden;
 
-    this.rowsMapper.createMap(this.hot.countSourceRows());
+    this.hot.render();
   }
 
   /**
-   * On modify row listener.
+   * Recalculate index of hidden rows after add row action
    *
-   * @private
-   * @param {Number} row Row index.
-   * @param {String} source Source name.
-   * @returns {Number|null}
-   */
-  onModifyRow(row, source) {
-    if (source !== this.pluginName) {
-      row = this.rowsMapper.getValueByIndex(row);
-    }
-
-    return row;
-  }
-
-  /**
-   * On after create row listener.
-   *
-   * @private
-   * @param {Number} index Row index.
-   * @param {Number} amount Defines how many rows removed.
+   * @param {Number} index
+   * @param {Number} amount
    */
   onAfterCreateRow(index, amount) {
-    this.rowsMapper.shiftItems(index, amount);
+    let tempHidden = [];
+
+    arrayEach(this.hiddenRows, (col) => {
+      if (col >= index) {
+        col += amount;
+      }
+      tempHidden.push(col);
+    });
+    this.hiddenRows = tempHidden;
   }
 
   /**
-   * On before remove row listener.
+   * Recalculate index of hidden rows after remove row action
    *
-   * @private
-   * @param {Number} index Row index.
-   * @param {Number} amount Defines how many rows removed.
-   */
-  onBeforeRemoveRow(index, amount) {
-    this.removedRows.length = 0;
-
-    if (index !== false) {
-      // Collect physical row index.
-      rangeEach(index, index + amount - 1, (removedIndex) => {
-        this.removedRows.push(this.hot.runHooks('modifyRow', removedIndex, this.pluginName));
-      });
-    }
-  }
-
-  /**
-   * On after remove row listener.
-   *
-   * @private
-   * @param {Number} index Row index.
-   * @param {Number} amount Defines how many rows removed.
+   * @param {Number} index
+   * @param {Number} amount
    */
   onAfterRemoveRow(index, amount) {
-    this.rowsMapper.unshiftItems(this.removedRows);
-  }
+    let tempHidden = [];
 
-  /**
-   * On after load data listener.
-   *
-   * @private
-   * @param {Boolean} firstRun Indicates if hook was fired while Handsontable initialization.
-   */
-  onAfterLoadData(firstRun) {
-    if (!firstRun) {
-      this.rowsMapper.createMap(this.hot.countSourceRows());
-    }
+    arrayEach(this.hiddenRows, (col) => {
+      if (col >= index) {
+        col -= amount;
+      }
+      tempHidden.push(col);
+    });
+    this.hiddenRows = tempHidden;
   }
 
   /**

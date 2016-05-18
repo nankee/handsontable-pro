@@ -441,7 +441,7 @@ describe('HiddenRows', function() {
       expect(hot.getRowHeight(4)).toBe(0.1);
     });
 
-    it('should show hidden columns by context menu', function() {
+    it('should show hidden rows by context menu', function() {
       var hot = handsontable({
         data: Handsontable.helper.createSpreadsheetData(10, 10),
         hiddenRows: {
