@@ -380,7 +380,7 @@ describe('HiddenRows', function() {
         hiddenRows: true,
         width: 500,
         height: 300,
-        contextMenu: ['hiddenRows_hide', 'hiddenRows_show'],
+        contextMenu: ['hidden_rows_hide', 'hidden_rows_show'],
         rowHeaders: true
       });
 
@@ -401,7 +401,7 @@ describe('HiddenRows', function() {
         hiddenRows: true,
         width: 500,
         height: 300,
-        contextMenu: ['hiddenRows_hide', 'hiddenRows_show'],
+        contextMenu: ['hidden_rows_hide', 'hidden_rows_show'],
         rowHeaders: true
       });
 
@@ -420,7 +420,7 @@ describe('HiddenRows', function() {
         hiddenRows: true,
         width: 500,
         height: 300,
-        contextMenu: ['hiddenRows_hide', 'hiddenRows_show'],
+        contextMenu: ['hidden_rows_hide', 'hidden_rows_show'],
         rowHeaders: true
       });
 
@@ -450,7 +450,7 @@ describe('HiddenRows', function() {
         width: 500,
         height: 300,
         rowHeights: 30,
-        contextMenu: ['hiddenRows_show'],
+        contextMenu: ['hidden_rows_show'],
         rowHeaders: true
       });
 

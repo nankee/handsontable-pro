@@ -371,7 +371,7 @@ describe('HiddenColumns', function() {
         hiddenColumns: true,
         width: 500,
         height: 300,
-        contextMenu: ['hiddenColumns_hide', 'hiddenColumns_show'],
+        contextMenu: ['hidden_columns_hide', 'hidden_columns_show'],
         colHeaders: true
       });
 
@@ -391,7 +391,7 @@ describe('HiddenColumns', function() {
         hiddenColumns: true,
         width: 500,
         height: 300,
-        contextMenu: ['hiddenColumns_hide', 'hiddenColumns_show'],
+        contextMenu: ['hidden_columns_hide', 'hidden_columns_show'],
         colHeaders: true
       });
 
@@ -409,7 +409,7 @@ describe('HiddenColumns', function() {
         hiddenColumns: true,
         width: 500,
         height: 300,
-        contextMenu: ['hiddenColumns_hide', 'hiddenColumns_show'],
+        contextMenu: ['hidden_columns_hide', 'hidden_columns_show'],
         colHeaders: true
       });
 
@@ -437,7 +437,7 @@ describe('HiddenColumns', function() {
         },
         width: 500,
         height: 300,
-        contextMenu: ['hiddenColumns_show'],
+        contextMenu: ['hidden_columns_show'],
         colHeaders: true
       });
 

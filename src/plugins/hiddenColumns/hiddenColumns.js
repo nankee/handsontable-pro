@@ -403,7 +403,7 @@ class HiddenColumns extends BasePlugin {
         name: SEPARATOR
       },
       {
-        key: 'hiddenColumns_hide',
+        key: 'hidden_columns_hide',
         name: 'Hide column',
         callback: () => {
           let {from, to} = this.hot.getSelectedRange();
@@ -433,7 +433,7 @@ class HiddenColumns extends BasePlugin {
         }
       },
       {
-        key: 'hiddenColumns_show',
+        key: 'hidden_columns_show',
         name: 'Show column',
         callback: () => {
           let {from, to} = this.hot.getSelectedRange();

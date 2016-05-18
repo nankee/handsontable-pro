@@ -349,7 +349,7 @@ class HiddenRows extends BasePlugin {
     options.items.push(
       Handsontable.plugins.ContextMenu.SEPARATOR,
       {
-        key: 'hiddenRows_hide',
+        key: 'hidden_rows_hide',
         name: 'Hide row',
         callback: () => {
           let {from, to} = this.hot.getSelectedRange();
@@ -379,7 +379,7 @@ class HiddenRows extends BasePlugin {
         }
       },
       {
-        key: 'hiddenRows_show',
+        key: 'hidden_rows_show',
         name: 'Show row',
         callback: () => {
           let {from, to} = this.hot.getSelectedRange();
