@@ -66,11 +66,12 @@ describe('HiddenColumns', function() {
       height: 300
     });
     hot.getPlugin('hiddenColumns').disablePlugin();
+    hot.render();
 
     expect(hot.getColWidth(1)).toBe(50);
-    expect(hot.getCell(0, 2).clientHeight).toBe(22);
+    expect(hot.getCell(0, 2).clientHeight).toBe(42);
     expect(hot.getColWidth(2)).toBe(50);
-    expect(hot.getCell(0, 4).clientHeight).toBe(22);
+    expect(hot.getCell(0, 4).clientHeight).toBe(42);
     expect(hot.getColWidth(4)).toBe(50);
     expect(hot.getColWidth(5)).toBe(50);
   });
@@ -93,8 +94,13 @@ describe('HiddenColumns', function() {
       width: 500,
       height: 300
     });
+
+    window.hot = hot;
+
     hot.getPlugin('hiddenColumns').disablePlugin();
+    hot.render();
     hot.getPlugin('hiddenColumns').enablePlugin();
+    hot.render();
 
     expect(hot.getColWidth(1)).toBe(50);
     expect(hot.getCell(0, 2).clientHeight).toBe(22);
@@ -357,4 +363,100 @@ describe('HiddenColumns', function() {
       expect(getSelected()).toEqual([0, 5, 0, 5]);
     });
   });
+
+  describe('context-menu', function() {
+    it('should be visible "hide column" on context menu when column is selected by header', function() {
+      var hot = handsontable({
+        data: getMultilineData(5, 10),
+        hiddenColumns: true,
+        width: 500,
+        height: 300,
+        contextMenu: ['hidden_columns_hide', 'hidden_columns_show'],
+        colHeaders: true
+      });
+
+      var header = $('.ht_clone_top tr:eq(0) th:eq(0)');
+      header.simulate('mousedown');
+      header.simulate('mouseup');
+      contextMenu();
+
+      var items = $('.htContextMenu tbody td');
+      var actions = items.not('.htSeparator');
+
+      expect(actions.text()).toEqual('Hide column');
+    });
+    it('should be NOT visible "hide column" on context menu when column is selected by header', function() {
+      var hot = handsontable({
+        data: getMultilineData(5, 10),
+        hiddenColumns: true,
+        width: 500,
+        height: 300,
+        contextMenu: ['hidden_columns_hide', 'hidden_columns_show'],
+        colHeaders: true
+      });
+
+      selectCell(0, 0);
+      contextMenu();
+
+      var items = $('.htContextMenu tbody td');
+      var actions = items.not('.htSeparator');
+
+      expect(actions.length).toEqual(0);
+    });
+    it('should hide selected columns by "Hide column" in context menu', function() {
+      var hot = handsontable({
+        data: getMultilineData(5, 10),
+        hiddenColumns: true,
+        width: 500,
+        height: 300,
+        contextMenu: ['hidden_columns_hide', 'hidden_columns_show'],
+        colHeaders: true
+      });
+
+      var header = $('.ht_clone_top tr:eq(0)');
+
+      header.find('th:eq(3)').simulate('mousedown');
+      header.find('th:eq(4)').simulate('mouseover');
+      header.find('th:eq(4)').simulate('mouseup');
+
+      contextMenu();
+
+      var items = $('.htContextMenu tbody td');
+      var actions = items.not('.htSeparator');
+
+      actions.simulate('mousedown');
+
+      expect(hot.getColWidth(3)).toBe(0.1);
+      expect(hot.getColWidth(4)).toBe(0.1);
+    });
+    it('should show hidden columns by context menu', function() {
+      var hot = handsontable({
+        data: getMultilineData(5, 10),
+        hiddenColumns: {
+          columns: [2, 3]
+        },
+        width: 500,
+        height: 300,
+        contextMenu: ['hidden_columns_show'],
+        colHeaders: true
+      });
+
+      var header = $('.ht_clone_top tr:eq(0)');
+
+      header.find('th:eq(2)').simulate('mousedown');
+      header.find('th:eq(3)').simulate('mouseover');
+      header.find('th:eq(3)').simulate('mouseup');
+
+      contextMenu();
+
+      var items = $('.htContextMenu tbody td');
+      var actions = items.not('.htSeparator');
+
+      actions.simulate('mousedown');
+
+      expect(hot.getColWidth(2)).toBe(50);
+      expect(hot.getColWidth(3)).toBe(50);
+    });
+  });
+
 });
