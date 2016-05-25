@@ -860,15 +860,12 @@ var $WalkontableCellRange = WalkontableCellRange;
     return Math.max(this.from.col, this.to.col) - Math.min(this.from.col, this.to.col) + 1;
   },
   includes: function(cellCoords) {
+    var $__2 = cellCoords,
+        row = $__2.row,
+        col = $__2.col;
     var topLeft = this.getTopLeftCorner();
     var bottomRight = this.getBottomRightCorner();
-    if (cellCoords.row < 0) {
-      cellCoords.row = 0;
-    }
-    if (cellCoords.col < 0) {
-      cellCoords.col = 0;
-    }
-    return topLeft.row <= cellCoords.row && bottomRight.row >= cellCoords.row && topLeft.col <= cellCoords.col && bottomRight.col >= cellCoords.col;
+    return topLeft.row <= row && bottomRight.row >= row && topLeft.col <= col && bottomRight.col >= col;
   },
   includesRange: function(testedRange) {
     return this.includes(testedRange.getTopLeftCorner()) && this.includes(testedRange.getBottomRightCorner());
@@ -2134,6 +2131,7 @@ Object.defineProperties(exports, {
   __esModule: {value: true}
 });
 var $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__,
+    $___46__46__47__46__46__47__46__46__47_helpers_47_array__,
     $___46__46__47__46__46__47__46__46__47_helpers_47_unicode__,
     $___46__46__47__46__46__47__46__46__47_helpers_47_browser__,
     $___46__46__47__46__46__47__46__46__47_eventManager__;
@@ -2142,6 +2140,7 @@ var $__0 = ($___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__ =
     getScrollbarWidth = $__0.getScrollbarWidth,
     getScrollLeft = $__0.getScrollLeft,
     getScrollTop = $__0.getScrollTop;
+var arrayEach = ($___46__46__47__46__46__47__46__46__47_helpers_47_array__ = _dereq_("helpers/array"), $___46__46__47__46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47__46__46__47_helpers_47_array__}).arrayEach;
 var isKey = ($___46__46__47__46__46__47__46__46__47_helpers_47_unicode__ = _dereq_("helpers/unicode"), $___46__46__47__46__46__47__46__46__47_helpers_47_unicode__ && $___46__46__47__46__46__47__46__46__47_helpers_47_unicode__.__esModule && $___46__46__47__46__46__47__46__46__47_helpers_47_unicode__ || {default: $___46__46__47__46__46__47__46__46__47_helpers_47_unicode__}).isKey;
 var isMobileBrowser = ($___46__46__47__46__46__47__46__46__47_helpers_47_browser__ = _dereq_("helpers/browser"), $___46__46__47__46__46__47__46__46__47_helpers_47_browser__ && $___46__46__47__46__46__47__46__46__47_helpers_47_browser__.__esModule && $___46__46__47__46__46__47__46__46__47_helpers_47_browser__ || {default: $___46__46__47__46__46__47__46__46__47_helpers_47_browser__}).isMobileBrowser;
 var EventManager = ($___46__46__47__46__46__47__46__46__47_eventManager__ = _dereq_("eventManager"), $___46__46__47__46__46__47__46__46__47_eventManager__ && $___46__46__47__46__46__47__46__46__47_eventManager__.__esModule && $___46__46__47__46__46__47__46__46__47_eventManager__ || {default: $___46__46__47__46__46__47__46__46__47_eventManager__}).EventManager;
@@ -2229,49 +2228,49 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
     this.horizontalScrolling = false;
   },
   registerListeners: function() {
-    var $__4 = this;
+    var $__5 = this;
     var topOverlayScrollable = this.topOverlay.mainTableScrollableElement;
     var leftOverlayScrollable = this.leftOverlay.mainTableScrollableElement;
     var listenersToRegister = [];
     listenersToRegister.push([document.documentElement, 'keydown', (function(event) {
-      return $__4.onKeyDown(event);
+      return $__5.onKeyDown(event);
     })]);
     listenersToRegister.push([document.documentElement, 'keyup', (function() {
-      return $__4.onKeyUp();
+      return $__5.onKeyUp();
     })]);
     listenersToRegister.push([document, 'visibilitychange', (function() {
-      return $__4.onKeyUp();
+      return $__5.onKeyUp();
     })]);
     listenersToRegister.push([topOverlayScrollable, 'scroll', (function(event) {
-      return $__4.onTableScroll(event);
+      return $__5.onTableScroll(event);
     })]);
     if (topOverlayScrollable !== leftOverlayScrollable) {
       listenersToRegister.push([leftOverlayScrollable, 'scroll', (function(event) {
-        return $__4.onTableScroll(event);
+        return $__5.onTableScroll(event);
       })]);
     }
     if (this.topOverlay.needFullRender) {
       listenersToRegister.push([this.topOverlay.clone.wtTable.holder, 'scroll', (function(event) {
-        return $__4.onTableScroll(event);
+        return $__5.onTableScroll(event);
       })]);
       listenersToRegister.push([this.topOverlay.clone.wtTable.holder, 'wheel', (function(event) {
-        return $__4.onTableScroll(event);
+        return $__5.onTableScroll(event);
       })]);
     }
     if (this.bottomOverlay.needFullRender) {
       listenersToRegister.push([this.bottomOverlay.clone.wtTable.holder, 'scroll', (function(event) {
-        return $__4.onTableScroll(event);
+        return $__5.onTableScroll(event);
       })]);
       listenersToRegister.push([this.bottomOverlay.clone.wtTable.holder, 'wheel', (function(event) {
-        return $__4.onTableScroll(event);
+        return $__5.onTableScroll(event);
       })]);
     }
     if (this.leftOverlay.needFullRender) {
       listenersToRegister.push([this.leftOverlay.clone.wtTable.holder, 'scroll', (function(event) {
-        return $__4.onTableScroll(event);
+        return $__5.onTableScroll(event);
       })]);
       listenersToRegister.push([this.leftOverlay.clone.wtTable.holder, 'wheel', (function(event) {
-        return $__4.onTableScroll(event);
+        return $__5.onTableScroll(event);
       })]);
     }
     if (this.topOverlay.trimmingContainer !== window && this.leftOverlay.trimmingContainer !== window) {
@@ -2279,11 +2278,11 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
         var overlay;
         var deltaY = event.wheelDeltaY || event.deltaY;
         var deltaX = event.wheelDeltaX || event.deltaX;
-        if ($__4.topOverlay.clone.wtTable.holder.contains(event.realTarget)) {
+        if ($__5.topOverlay.clone.wtTable.holder.contains(event.realTarget)) {
           overlay = 'top';
-        } else if ($__4.bottomOverlay.clone && $__4.bottomOverlay.clone.wtTable.holder.contains(event.realTarget)) {
+        } else if ($__5.bottomOverlay.clone && $__5.bottomOverlay.clone.wtTable.holder.contains(event.realTarget)) {
           overlay = 'bottom';
-        } else if ($__4.leftOverlay.clone.wtTable.holder.contains(event.realTarget)) {
+        } else if ($__5.leftOverlay.clone.wtTable.holder.contains(event.realTarget)) {
           overlay = 'left';
         }
         if (overlay == 'top' && deltaY !== 0) {
@@ -2601,13 +2600,29 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
       this.bottomOverlay.applyToDOM();
     }
     this.leftOverlay.applyToDOM();
+  },
+  getParentOverlay: function(element) {
+    if (!element) {
+      return null;
+    }
+    var overlays = [this.topOverlay, this.leftOverlay, this.bottomOverlay, this.topLeftCornerOverlay, this.bottomLeftCornerOverlay];
+    var result = null;
+    arrayEach(overlays, (function(elem, i) {
+      if (!elem) {
+        return;
+      }
+      if (elem.clone && elem.clone.wtTable.TABLE.contains(element)) {
+        result = elem.clone;
+      }
+    }));
+    return result;
   }
 }, {});
 ;
 window.WalkontableOverlays = WalkontableOverlays;
 
 //# 
-},{"eventManager":41,"helpers/browser":43,"helpers/dom/element":46,"helpers/unicode":55}],17:[function(_dereq_,module,exports){
+},{"eventManager":41,"helpers/array":42,"helpers/browser":43,"helpers/dom/element":46,"helpers/unicode":55}],17:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableScroll: {get: function() {
@@ -3500,9 +3515,9 @@ var WalkontableTableRenderer = function WalkontableTableRenderer(wtTable) {
         workspaceWidth = this.wot.wtViewport.getWorkspaceWidth();
         this.wot.wtViewport.containerWidth = null;
       }
-      this.adjustColumnHeaderHeights();
       this.adjustColumnWidths(columnsToRender);
-      this.markOversizedColumns();
+      this.markOversizedColumnHeaders();
+      this.adjustColumnHeaderHeights();
     }
     if (!adjusted) {
       this.adjustAvailableNodes();
@@ -3621,9 +3636,9 @@ var WalkontableTableRenderer = function WalkontableTableRenderer(wtTable) {
       }
     }
   },
-  markOversizedColumns: function() {
+  markOversizedColumnHeaders: function() {
     var overlayName = this.wot.getOverlayName();
-    if (!this.columnHeaderCount || this.wot.wtViewport.isMarkedOversizedColumn[overlayName] || this.wtTable.isWorkingOnClone()) {
+    if (!this.columnHeaderCount || this.wot.wtViewport.hasOversizedColumnHeadersMarked[overlayName] || this.wtTable.isWorkingOnClone()) {
       return;
     }
     var columnCount = this.wtTable.getRenderedColumnsCount();
@@ -3632,19 +3647,19 @@ var WalkontableTableRenderer = function WalkontableTableRenderer(wtTable) {
         this.markIfOversizedColumnHeader(renderedColumnIndex);
       }
     }
-    this.wot.wtViewport.isMarkedOversizedColumn[overlayName] = true;
+    this.wot.wtViewport.hasOversizedColumnHeadersMarked[overlayName] = true;
   },
   adjustColumnHeaderHeights: function() {
     var columnHeaders = this.wot.getSetting('columnHeaders');
-    var childs = this.wot.wtTable.THEAD.childNodes;
-    var oversizedCols = this.wot.wtViewport.oversizedColumnHeaders;
+    var children = this.wot.wtTable.THEAD.childNodes;
+    var oversizedColumnHeaders = this.wot.wtViewport.oversizedColumnHeaders;
     for (var i = 0,
         len = columnHeaders.length; i < len; i++) {
-      if (oversizedCols[i]) {
-        if (childs[i].childNodes.length === 0) {
+      if (oversizedColumnHeaders[i]) {
+        if (children[i].childNodes.length === 0) {
           return;
         }
-        childs[i].childNodes[0].style.height = oversizedCols[i] + 'px';
+        children[i].childNodes[0].style.height = oversizedColumnHeaders[i] + 'px';
       }
     }
   },
@@ -3666,6 +3681,13 @@ var WalkontableTableRenderer = function WalkontableTableRenderer(wtTable) {
       currentHeaderHeight = innerHeight(currentHeader);
       if (!previousColHeaderHeight && defaultRowHeight < currentHeaderHeight || previousColHeaderHeight < currentHeaderHeight) {
         this.wot.wtViewport.oversizedColumnHeaders[level] = currentHeaderHeight;
+      }
+      if (Array.isArray(columnHeaderHeightSetting)) {
+        if (columnHeaderHeightSetting[level] != null) {
+          this.wot.wtViewport.oversizedColumnHeaders[level] = columnHeaderHeightSetting[level];
+        }
+      } else if (!isNaN(columnHeaderHeightSetting)) {
+        this.wot.wtViewport.oversizedColumnHeaders[level] = columnHeaderHeightSetting;
       }
       if (this.wot.wtViewport.oversizedColumnHeaders[level] < (columnHeaderHeightSetting[level] || columnHeaderHeightSetting)) {
         this.wot.wtViewport.oversizedColumnHeaders[level] = (columnHeaderHeightSetting[level] || columnHeaderHeightSetting);
@@ -3892,7 +3914,7 @@ var WalkontableViewport = function WalkontableViewport(wotInstance) {
   this.instance = this.wot;
   this.oversizedRows = [];
   this.oversizedColumnHeaders = [];
-  this.isMarkedOversizedColumn = {};
+  this.hasOversizedColumnHeadersMarked = {};
   this.clientHeight = 0;
   this.containerWidth = NaN;
   this.rowHeaderWidth = NaN;
@@ -4223,10 +4245,10 @@ var domHelpers = ($__helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"
 var domEventHelpers = ($__helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $__helpers_47_dom_47_event__ && $__helpers_47_dom_47_event__.__esModule && $__helpers_47_dom_47_event__ || {default: $__helpers_47_dom_47_event__});
 var HELPERS = [arrayHelpers, browserHelpers, dataHelpers, dateHelpers, featureHelpers, functionHelpers, mixedHelpers, numberHelpers, objectHelpers, settingHelpers, stringHelpers, unicodeHelpers];
 var DOM = [domHelpers, domEventHelpers];
-Handsontable.buildDate = 'Thu Apr 28 2016 15:10:46 GMT+0200 (CEST)';
+Handsontable.buildDate = 'Wed May 25 2016 12:48:10 GMT+0200 (CEST)';
 Handsontable.packageName = 'handsontable-pro';
-Handsontable.version = '1.3.4';
-var baseVersion = '0.24.3';
+Handsontable.version = '1.4.0';
+var baseVersion = '0.25.0';
 if (!/^@@/.test(baseVersion)) {
   Handsontable.baseVersion = baseVersion;
 }
@@ -5819,35 +5841,6 @@ Handsontable.Core = function Core(rootElement, userSettings) {
         return 0;
       }
     }
-  };
-  this.getColspanOffset = function(col, level) {
-    var colspanSum = 0;
-    if (instance.colspanArray) {
-      for (var i = 0; i < col; i++) {
-        colspanSum += instance.colspanArray[level][i] - 1 || 0;
-      }
-      return colspanSum;
-    }
-    var colspanSum = 0;
-    var TRindex = instance.view.wt.wtTable.THEAD.childNodes.length - level - 1;
-    var TR = instance.view.wt.wtTable.THEAD.querySelector('tr:nth-child(' + parseInt(TRindex + 1, 10) + ')');
-    var rowHeadersCount = instance.view.wt.wtSettings.settings.rowHeaders().length;
-    for (var i = rowHeadersCount; i < rowHeadersCount + col; i++) {
-      if (TR.childNodes[i].hasAttribute('colspan')) {
-        colspanSum += parseInt(TR.childNodes[i].getAttribute('colspan'), 10) - 1;
-      }
-    }
-    return colspanSum;
-  };
-  this.getHeaderColspan = function(col, level) {
-    var TRindex = instance.view.wt.wtTable.THEAD.childNodes.length - level - 1;
-    var rowHeadersCount = instance.view.wt.wtSettings.settings.rowHeaders().length;
-    var TR = instance.view.wt.wtTable.THEAD.querySelector('tr:nth-child(' + parseInt(TRindex + 1, 10) + ')');
-    var offsettedColIndex = rowHeadersCount + col - instance.view.wt.wtViewport.columnsRenderCalculator.startColumn;
-    if (TR.childNodes[offsettedColIndex].hasAttribute('colspan')) {
-      return parseInt(TR.childNodes[offsettedColIndex].getAttribute('colspan'), 10);
-    }
-    return 0;
   };
   this.rowOffset = function() {
     return instance.view.wt.wtTable.getFirstRenderedRow();
@@ -7489,7 +7482,7 @@ AutocompleteEditor.prototype.queryChoices = function(query) {
   var filteringCaseSensitive = this.cellProperties.filteringCaseSensitive;
   if (typeof source == 'function') {
     var _this = this;
-    source(query, function(choices) {
+    source.call(this.cellProperties, query, function(choices) {
       _this.updateChoicesList(choices);
     });
   } else if (Array.isArray(source)) {
@@ -11374,7 +11367,7 @@ Object.defineProperties(exports, {
 });
 var $__helpers_47_array__,
     $__helpers_47_object__;
-var REGISTERED_HOOKS = ['afterCellMetaReset', 'afterChange', 'afterChangesObserved', 'afterContextMenuDefaultOptions', 'afterContextMenuHide', 'afterContextMenuShow', 'afterCopyLimit', 'afterCreateCol', 'afterCreateRow', 'afterDeselect', 'afterDestroy', 'afterDocumentKeyDown', 'afterGetCellMeta', 'afterGetColHeader', 'afterGetRowHeader', 'afterInit', 'afterLoadData', 'afterMomentumScroll', 'afterOnCellCornerMouseDown', 'afterOnCellMouseDown', 'afterOnCellMouseOver', 'afterRemoveCol', 'afterRemoveRow', 'afterRender', 'beforeRenderer', 'afterRenderer', 'afterScrollHorizontally', 'afterScrollVertically', 'afterSelection', 'afterSelectionByProp', 'afterSelectionEnd', 'afterSelectionEndByProp', 'afterSetCellMeta', 'afterUpdateSettings', 'afterValidate', 'beforeAutofill', 'beforeCellAlignment', 'beforeChange', 'beforeChangeRender', 'beforeDrawBorders', 'beforeGetCellMeta', 'beforeInit', 'beforeInitWalkontable', 'beforeKeyDown', 'beforeOnCellMouseDown', 'beforeRemoveCol', 'beforeRemoveRow', 'beforeRender', 'beforeSetRangeEnd', 'beforeTouchScroll', 'beforeValidate', 'construct', 'init', 'modifyCol', 'unmodifyCol', 'modifyColHeader', 'modifyColWidth', 'modifyRow', 'modifyRowHeader', 'modifyRowHeight', 'persistentStateLoad', 'persistentStateReset', 'persistentStateSave', 'beforeColumnSort', 'afterColumnSort', 'afterAutofillApplyValues', 'modifyCopyableRange', 'beforeColumnMove', 'afterColumnMove', 'beforeRowMove', 'afterRowMove', 'beforeColumnResize', 'afterColumnResize', 'beforeRowResize', 'afterRowResize', 'afterGetColumnHeaderRenderers', 'afterGetRowHeaderRenderers', 'beforeStretchingColumnWidth', 'beforeFilter', 'afterFilter'];
+var REGISTERED_HOOKS = ['afterCellMetaReset', 'afterChange', 'afterChangesObserved', 'afterContextMenuDefaultOptions', 'afterContextMenuHide', 'afterContextMenuShow', 'afterCopyLimit', 'afterCreateCol', 'afterCreateRow', 'afterDeselect', 'afterDestroy', 'afterDocumentKeyDown', 'afterGetCellMeta', 'afterGetColHeader', 'afterGetRowHeader', 'afterInit', 'afterLoadData', 'afterMomentumScroll', 'afterOnCellCornerMouseDown', 'afterOnCellMouseDown', 'afterOnCellMouseOver', 'afterRemoveCol', 'afterRemoveRow', 'afterRender', 'beforeRenderer', 'afterRenderer', 'afterScrollHorizontally', 'afterScrollVertically', 'afterSelection', 'afterSelectionByProp', 'afterSelectionEnd', 'afterSelectionEndByProp', 'afterSetCellMeta', 'afterUpdateSettings', 'afterValidate', 'beforeAutofill', 'beforeCellAlignment', 'beforeChange', 'beforeChangeRender', 'beforeDrawBorders', 'beforeGetCellMeta', 'beforeInit', 'beforeInitWalkontable', 'beforeKeyDown', 'beforeOnCellMouseDown', 'beforeOnCellMouseOver', 'beforeRemoveCol', 'beforeRemoveRow', 'beforeRender', 'beforeSetRangeEnd', 'beforeTouchScroll', 'beforeValidate', 'construct', 'init', 'modifyCol', 'unmodifyCol', 'modifyColHeader', 'modifyColWidth', 'modifyRow', 'modifyRowHeader', 'modifyRowHeight', 'persistentStateLoad', 'persistentStateReset', 'persistentStateSave', 'beforeColumnSort', 'afterColumnSort', 'afterAutofillApplyValues', 'modifyCopyableRange', 'beforeColumnMove', 'afterColumnMove', 'beforeRowMove', 'afterRowMove', 'beforeColumnResize', 'afterColumnResize', 'beforeRowResize', 'afterRowResize', 'afterGetColumnHeaderRenderers', 'afterGetRowHeaderRenderers', 'beforeStretchingColumnWidth', 'beforeFilter', 'afterFilter', 'modifyColumnHeaderHeight'];
 var arrayEach = ($__helpers_47_array__ = _dereq_("helpers/array"), $__helpers_47_array__ && $__helpers_47_array__.__esModule && $__helpers_47_array__ || {default: $__helpers_47_array__}).arrayEach;
 var objectEach = ($__helpers_47_object__ = _dereq_("helpers/object"), $__helpers_47_object__ && $__helpers_47_object__.__esModule && $__helpers_47_object__ || {default: $__helpers_47_object__}).objectEach;
 var Hooks = function Hooks() {
@@ -11789,6 +11782,9 @@ var $AutoColumnSize = AutoColumnSize;
     if (samplingRatio && !isNaN(samplingRatio)) {
       this.samplesGenerator.customSampleCount = parseInt(samplingRatio, 10);
     }
+    if (setting && setting.useHeaders != null) {
+      this.ghostTable.setSetting('useHeaders', setting.useHeaders);
+    }
     this.addHook('afterLoadData', (function() {
       return $__11.onAfterLoadData();
     }));
@@ -12046,7 +12042,13 @@ var AutoRowSize = function AutoRowSize(hotInstance) {
   this.heights = [];
   this.ghostTable = new GhostTable(this.hot);
   this.samplesGenerator = new SamplesGenerator((function(row, col) {
-    return $__10.hot.getDataAtCell(row, col);
+    if (row >= 0) {
+      return $__10.hot.getDataAtCell(row, col);
+    } else if (row === -1) {
+      return $__10.hot.getColHeader(col);
+    } else {
+      return null;
+    }
   }));
   this.firstCalculation = true;
   this.inProgress = false;
@@ -12093,6 +12095,9 @@ var $AutoRowSize = AutoRowSize;
     this.addHook('modifyRowHeight', (function(height, row) {
       return $__10.getRowHeight(row, height);
     }));
+    this.addHook('modifyColumnHeaderHeight', (function() {
+      return $__10.getColumnHeaderHeight();
+    }));
     $traceurRuntime.superGet(this, $AutoRowSize.prototype, "enablePlugin").call(this);
   },
   disablePlugin: function() {
@@ -12120,6 +12125,10 @@ var $AutoRowSize = AutoRowSize;
         from: colRange,
         to: colRange
       };
+    }
+    if (this.hot.getColHeader(0) !== null) {
+      var samples = this.samplesGenerator.generateRowSamples(-1, colRange);
+      this.ghostTable.addColumnHeadersRow(samples.get(-1));
     }
     rangeEach(rowRange.from, rowRange.to, (function(row) {
       if (force || $__10.heights[row] === void 0) {
@@ -12209,6 +12218,9 @@ var $AutoRowSize = AutoRowSize;
     }
     return height;
   },
+  getColumnHeaderHeight: function() {
+    return this.heights[-1];
+  },
   getFirstVisibleRow: function() {
     var wot = this.hot.view.wt;
     if (wot.wtViewport.rowsVisibleCalculator) {
@@ -12231,6 +12243,7 @@ var $AutoRowSize = AutoRowSize;
   },
   clearCache: function() {
     this.heights.length = 0;
+    this.heights[-1] = void 0;
   },
   clearCacheByRange: function(range) {
     var $__10 = this;
@@ -16027,7 +16040,8 @@ var Handsontable = ($___46__46__47__46__46__47_browser__ = _dereq_("browser"), $
 var $__2 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}),
     addClass = $__2.addClass,
     hasClass = $__2.hasClass,
-    removeClass = $__2.removeClass;
+    removeClass = $__2.removeClass,
+    outerHeight = $__2.outerHeight;
 var $__3 = ($___46__46__47__46__46__47_helpers_47_array__ = _dereq_("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}),
     arrayEach = $__3.arrayEach,
     arrayMap = $__3.arrayMap;
@@ -16149,15 +16163,17 @@ var $ManualColumnMove = ManualColumnMove;
     }));
   },
   setupHandlePosition: function(TH) {
+    this.currentTH = TH;
     var priv = privatePool.get(this);
     var col = this.hot.view.wt.wtTable.getCoords(TH).col;
-    this.currentTH = TH;
+    var headerHeight = outerHeight(this.currentTH);
     if (col >= 0) {
       var box = this.currentTH.getBoundingClientRect();
       priv.currentCol = col;
       priv.startOffset = box.left;
       this.handleElement.style.top = box.top + 'px';
       this.handleElement.style.left = priv.startOffset + 'px';
+      this.handleElement.style.height = headerHeight + 'px';
       this.hot.rootElement.appendChild(this.handleElement);
     }
   },
@@ -16173,11 +16189,14 @@ var $ManualColumnMove = ManualColumnMove;
   setupGuidePosition: function() {
     var box = this.currentTH.getBoundingClientRect();
     var priv = privatePool.get(this);
+    var handleHeight = parseInt(outerHeight(this.handleElement), 10);
+    var handleBottomPosition = parseInt(this.handleElement.style.top, 10) + handleHeight;
+    var maximumVisibleElementHeight = parseInt(this.hot.view.maximumVisibleElementHeight(0), 10);
     addClass(this.handleElement, 'active');
     addClass(this.guideElement, 'active');
     this.guideElement.style.width = box.width + 'px';
-    this.guideElement.style.height = this.hot.view.maximumVisibleElementHeight(0) + 'px';
-    this.guideElement.style.top = this.handleElement.style.top;
+    this.guideElement.style.height = (maximumVisibleElementHeight - handleHeight) + 'px';
+    this.guideElement.style.top = handleBottomPosition + 'px';
     this.guideElement.style.left = priv.startOffset + 'px';
     this.hot.rootElement.appendChild(this.guideElement);
   },
@@ -16366,7 +16385,8 @@ var BasePlugin = ($___46__46__47__95_base_46_js__ = _dereq_("_base.js"), $___46_
 var $__2 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}),
     addClass = $__2.addClass,
     hasClass = $__2.hasClass,
-    removeClass = $__2.removeClass;
+    removeClass = $__2.removeClass,
+    outerHeight = $__2.outerHeight;
 var eventManagerObject = ($___46__46__47__46__46__47_eventManager__ = _dereq_("eventManager"), $___46__46__47__46__46__47_eventManager__ && $___46__46__47__46__46__47_eventManager__.__esModule && $___46__46__47__46__46__47_eventManager__ || {default: $___46__46__47__46__46__47_eventManager__}).eventManager;
 var $__4 = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}),
     pageX = $__4.pageX,
@@ -16413,6 +16433,9 @@ var $ManualColumnResize = ManualColumnResize;
     this.addHook('beforeStretchingColumnWidth', (function(stretchedWidth, column) {
       return $__8.onBeforeStretchingColumnWidth(stretchedWidth, column);
     }));
+    this.addHook('beforeColumnResize', (function(currentColumn, newSize, isDoubleClick) {
+      return $__8.onBeforeColumnResize(currentColumn, newSize, isDoubleClick);
+    }));
     if (typeof loadedManualColumnWidths != 'undefined') {
       this.manualColumnWidths = loadedManualColumnWidths;
     } else if (Array.isArray(initialColumnWidth)) {
@@ -16451,6 +16474,7 @@ var $ManualColumnResize = ManualColumnResize;
     }
     this.currentTH = TH;
     var col = this.hot.view.wt.wtTable.getCoords(TH).col;
+    var headerHeight = outerHeight(this.currentTH);
     if (col >= 0) {
       var box = this.currentTH.getBoundingClientRect();
       this.currentCol = col;
@@ -16479,6 +16503,7 @@ var $ManualColumnResize = ManualColumnResize;
       this.startWidth = parseInt(box.width, 10);
       this.handle.style.top = box.top + 'px';
       this.handle.style.left = this.startOffset + this.startWidth + 'px';
+      this.handle.style.height = headerHeight + 'px';
       this.hot.rootElement.appendChild(this.handle);
     }
   },
@@ -16486,11 +16511,14 @@ var $ManualColumnResize = ManualColumnResize;
     this.handle.style.left = this.startOffset + this.currentWidth + 'px';
   },
   setupGuidePosition: function() {
+    var handleHeight = parseInt(outerHeight(this.handle), 10);
+    var handleBottomPosition = parseInt(this.handle.style.top, 10) + handleHeight;
+    var maximumVisibleElementHeight = parseInt(this.hot.view.maximumVisibleElementHeight(0), 10);
     addClass(this.handle, 'active');
     addClass(this.guide, 'active');
-    this.guide.style.top = this.handle.style.top;
+    this.guide.style.top = handleBottomPosition + 'px';
     this.guide.style.left = this.handle.style.left;
-    this.guide.style.height = this.hot.view.maximumVisibleElementHeight(0) + 'px';
+    this.guide.style.height = (maximumVisibleElementHeight - handleHeight) + 'px';
     this.hot.rootElement.appendChild(this.guide);
   },
   refreshGuidePosition: function() {
@@ -16674,6 +16702,9 @@ var $ManualColumnResize = ManualColumnResize;
       width = stretchedWidth;
     }
     return width;
+  },
+  onBeforeColumnResize: function() {
+    this.hot.view.wt.wtViewport.hasOversizedColumnHeadersMarked = {};
   }
 }, {}, BasePlugin);
 ;
@@ -16701,7 +16732,8 @@ var Handsontable = ($___46__46__47__46__46__47_browser__ = _dereq_("browser"), $
 var $__2 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}),
     addClass = $__2.addClass,
     hasClass = $__2.hasClass,
-    removeClass = $__2.removeClass;
+    removeClass = $__2.removeClass,
+    outerWidth = $__2.outerWidth;
 var $__3 = ($___46__46__47__46__46__47_helpers_47_array__ = _dereq_("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}),
     arrayEach = $__3.arrayEach,
     arrayMap = $__3.arrayMap;
@@ -16819,15 +16851,17 @@ var $ManualRowMove = ManualRowMove;
     }));
   },
   setupHandlePosition: function(TH) {
+    this.currentTH = TH;
     var priv = privatePool.get(this);
     var row = this.hot.view.wt.wtTable.getCoords(TH).row;
-    this.currentTH = TH;
+    var headerWidth = outerWidth(this.currentTH);
     if (row >= 0) {
       var box = this.currentTH.getBoundingClientRect();
       priv.currentRow = row;
       priv.startOffset = box.top;
       this.handleElement.style.top = priv.startOffset + 'px';
       this.handleElement.style.left = box.left + 'px';
+      this.handleElement.style.width = headerWidth + 'px';
       this.hot.rootElement.appendChild(this.handleElement);
     }
   },
@@ -16843,12 +16877,15 @@ var $ManualRowMove = ManualRowMove;
   setupGuidePosition: function() {
     var box = this.currentTH.getBoundingClientRect();
     var priv = privatePool.get(this);
+    var handleWidth = parseInt(outerWidth(this.handleElement), 10);
+    var handleRightPosition = parseInt(this.handleElement.style.left, 10) + handleWidth;
+    var maximumVisibleElementWidth = parseInt(this.hot.view.maximumVisibleElementWidth(0), 10);
     addClass(this.handleElement, 'active');
     addClass(this.guideElement, 'active');
     this.guideElement.style.height = box.height + 'px';
-    this.guideElement.style.width = this.hot.view.maximumVisibleElementWidth(0) + 'px';
+    this.guideElement.style.width = (maximumVisibleElementWidth - handleWidth) + 'px';
     this.guideElement.style.top = priv.startOffset + 'px';
-    this.guideElement.style.left = this.handleElement.style.left;
+    this.guideElement.style.left = handleRightPosition + 'px';
     this.hot.rootElement.appendChild(this.guideElement);
   },
   refreshGuidePosition: function(diff) {
@@ -17025,7 +17062,8 @@ var BasePlugin = ($___46__46__47__95_base_46_js__ = _dereq_("_base.js"), $___46_
 var $__2 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}),
     addClass = $__2.addClass,
     hasClass = $__2.hasClass,
-    removeClass = $__2.removeClass;
+    removeClass = $__2.removeClass,
+    outerWidth = $__2.outerWidth;
 var eventManagerObject = ($___46__46__47__46__46__47_eventManager__ = _dereq_("eventManager"), $___46__46__47__46__46__47_eventManager__ && $___46__46__47__46__46__47_eventManager__.__esModule && $___46__46__47__46__46__47_eventManager__ || {default: $___46__46__47__46__46__47_eventManager__}).eventManager;
 var $__4 = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}),
     pageX = $__4.pageX,
@@ -17104,6 +17142,7 @@ var $ManualRowResize = ManualRowResize;
     var $__8 = this;
     this.currentTH = TH;
     var row = this.hot.view.wt.wtTable.getCoords(TH).row;
+    var headerWidth = outerWidth(this.currentTH);
     if (row >= 0) {
       var box = this.currentTH.getBoundingClientRect();
       this.currentRow = row;
@@ -17132,6 +17171,7 @@ var $ManualRowResize = ManualRowResize;
       this.startHeight = parseInt(box.height, 10);
       this.handle.style.left = box.left + 'px';
       this.handle.style.top = this.startOffset + this.startHeight + 'px';
+      this.handle.style.width = headerWidth + 'px';
       this.hot.rootElement.appendChild(this.handle);
     }
   },
@@ -17139,11 +17179,14 @@ var $ManualRowResize = ManualRowResize;
     this.handle.style.top = this.startOffset + this.currentHeight + 'px';
   },
   setupGuidePosition: function() {
+    var handleWidth = parseInt(outerWidth(this.handle), 10);
+    var handleRightPosition = parseInt(this.handle.style.left, 10) + handleWidth;
+    var maximumVisibleElementWidth = parseInt(this.hot.view.maximumVisibleElementWidth(0), 10);
     addClass(this.handle, 'active');
     addClass(this.guide, 'active');
     this.guide.style.top = this.handle.style.top;
-    this.guide.style.left = this.handle.style.left;
-    this.guide.style.width = this.hot.view.maximumVisibleElementWidth(0) + 'px';
+    this.guide.style.left = handleRightPosition + 'px';
+    this.guide.style.width = (maximumVisibleElementWidth - handleWidth) + 'px';
     this.hot.rootElement.appendChild(this.guide);
   },
   refreshGuidePosition: function() {
@@ -19574,9 +19617,6 @@ registerRenderer('text', textRenderer);
   var $getOwnPropertyDescriptor = $Object.getOwnPropertyDescriptor;
   var $getOwnPropertyNames = $Object.getOwnPropertyNames;
   var $keys = $Object.keys;
-  var $hasOwnProperty = $Object.prototype.hasOwnProperty;
-  var $preventExtensions = Object.preventExtensions;
-  var $seal = Object.seal;
   var $isExtensible = Object.isExtensible;
   function nonEnum(value) {
     return {
@@ -19679,14 +19719,6 @@ registerRenderer('text', textRenderer);
     getOwnHashObject(object);
     return $freeze.apply(this, arguments);
   }
-  function preventExtensions(object) {
-    getOwnHashObject(object);
-    return $preventExtensions.apply(this, arguments);
-  }
-  function seal(object) {
-    getOwnHashObject(object);
-    return $seal.apply(this, arguments);
-  }
   freeze(SymbolValue.prototype);
   function isSymbolString(s) {
     return symbolValues[s] || privateNames[s];
@@ -19695,21 +19727,6 @@ registerRenderer('text', textRenderer);
     if (isShimSymbol(name))
       return name[symbolInternalProperty];
     return name;
-  }
-  function removeSymbolKeys(array) {
-    var rv = [];
-    for (var i = 0; i < array.length; i++) {
-      if (!isSymbolString(array[i])) {
-        rv.push(array[i]);
-      }
-    }
-    return rv;
-  }
-  function getOwnPropertyNames(object) {
-    return removeSymbolKeys($getOwnPropertyNames(object));
-  }
-  function keys(object) {
-    return removeSymbolKeys($keys(object));
   }
   function getOwnPropertySymbols(object) {
     var rv = [];
@@ -19722,31 +19739,8 @@ registerRenderer('text', textRenderer);
     }
     return rv;
   }
-  function getOwnPropertyDescriptor(object, name) {
-    return $getOwnPropertyDescriptor(object, toProperty(name));
-  }
-  function hasOwnProperty(name) {
-    return $hasOwnProperty.call(this, toProperty(name));
-  }
   function getOption(name) {
     return global.traceur && global.traceur.options[name];
-  }
-  function defineProperty(object, name, descriptor) {
-    if (isShimSymbol(name)) {
-      name = name[symbolInternalProperty];
-    }
-    $defineProperty(object, name, descriptor);
-    return object;
-  }
-  function polyfillObject(Object) {
-    $defineProperty(Object, 'defineProperty', {value: defineProperty});
-    $defineProperty(Object, 'getOwnPropertyNames', {value: getOwnPropertyNames});
-    $defineProperty(Object, 'getOwnPropertyDescriptor', {value: getOwnPropertyDescriptor});
-    $defineProperty(Object.prototype, 'hasOwnProperty', {value: hasOwnProperty});
-    $defineProperty(Object, 'freeze', {value: freeze});
-    $defineProperty(Object, 'preventExtensions', {value: preventExtensions});
-    $defineProperty(Object, 'seal', {value: seal});
-    $defineProperty(Object, 'keys', {value: keys});
   }
   function exportStar(object) {
     for (var i = 1; i < arguments.length; i++) {
@@ -19794,7 +19788,6 @@ registerRenderer('text', textRenderer);
     polyfillSymbol(global, Symbol);
     global.Reflect = global.Reflect || {};
     global.Reflect.global = global.Reflect.global || global;
-    polyfillObject(global.Object);
   }
   setupGlobals(global);
   global.$traceurRuntime = {
@@ -19972,6 +19965,7 @@ Object.defineProperties(exports, {
 });
 var $__browser__,
     $__helpers_47_dom_47_element__,
+    $__helpers_47_object__,
     $__eventManager__,
     $__helpers_47_dom_47_event__,
     $__3rdparty_47_walkontable_47_src_47_cell_47_coords__,
@@ -19987,17 +19981,19 @@ var $__1 = ($__helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $__
     hasClass = $__1.hasClass,
     isChildOf = $__1.isChildOf,
     isInput = $__1.isInput,
-    isOutsideInput = $__1.isOutsideInput;
+    isOutsideInput = $__1.isOutsideInput,
+    closest = $__1.closest;
+var clone = ($__helpers_47_object__ = _dereq_("helpers/object"), $__helpers_47_object__ && $__helpers_47_object__.__esModule && $__helpers_47_object__ || {default: $__helpers_47_object__}).clone;
 var eventManagerObject = ($__eventManager__ = _dereq_("eventManager"), $__eventManager__ && $__eventManager__.__esModule && $__eventManager__ || {default: $__eventManager__}).eventManager;
-var $__3 = ($__helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $__helpers_47_dom_47_event__ && $__helpers_47_dom_47_event__.__esModule && $__helpers_47_dom_47_event__ || {default: $__helpers_47_dom_47_event__}),
-    stopPropagation = $__3.stopPropagation,
-    isImmediatePropagationStopped = $__3.isImmediatePropagationStopped;
+var $__4 = ($__helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $__helpers_47_dom_47_event__ && $__helpers_47_dom_47_event__.__esModule && $__helpers_47_dom_47_event__ || {default: $__helpers_47_dom_47_event__}),
+    stopPropagation = $__4.stopPropagation,
+    isImmediatePropagationStopped = $__4.isImmediatePropagationStopped;
 var WalkontableCellCoords = ($__3rdparty_47_walkontable_47_src_47_cell_47_coords__ = _dereq_("3rdparty/walkontable/src/cell/coords"), $__3rdparty_47_walkontable_47_src_47_cell_47_coords__ && $__3rdparty_47_walkontable_47_src_47_cell_47_coords__.__esModule && $__3rdparty_47_walkontable_47_src_47_cell_47_coords__ || {default: $__3rdparty_47_walkontable_47_src_47_cell_47_coords__}).WalkontableCellCoords;
 var WalkontableSelection = ($__3rdparty_47_walkontable_47_src_47_selection__ = _dereq_("3rdparty/walkontable/src/selection"), $__3rdparty_47_walkontable_47_src_47_selection__ && $__3rdparty_47_walkontable_47_src_47_selection__.__esModule && $__3rdparty_47_walkontable_47_src_47_selection__ || {default: $__3rdparty_47_walkontable_47_src_47_selection__}).WalkontableSelection;
 var Walkontable = ($__3rdparty_47_walkontable_47_src_47_core__ = _dereq_("3rdparty/walkontable/src/core"), $__3rdparty_47_walkontable_47_src_47_core__ && $__3rdparty_47_walkontable_47_src_47_core__.__esModule && $__3rdparty_47_walkontable_47_src_47_core__ || {default: $__3rdparty_47_walkontable_47_src_47_core__}).Walkontable;
 Handsontable.TableView = TableView;
 function TableView(instance) {
-  var $__7 = this;
+  var $__8 = this;
   var that = this;
   this.eventManager = eventManagerObject(instance);
   this.instance = instance;
@@ -20149,7 +20145,7 @@ function TableView(instance) {
     externalRowCalculator: this.instance.getPlugin('autoRowSize') && this.instance.getPlugin('autoRowSize').isEnabled(),
     table: table,
     preventOverflow: (function() {
-      return $__7.settings.preventOverflow;
+      return $__8.settings.preventOverflow;
     }),
     stretchH: function() {
       return that.settings.stretchH;
@@ -20209,39 +20205,38 @@ function TableView(instance) {
       return that.settings.fragmentSelection;
     },
     onCellMouseDown: function(event, coords, TD, wt) {
-      var colspanOffset;
-      var TR = TD.parentNode;
-      var THEAD = TR.parentNode;
-      var headerLevel;
-      var headerColspan;
       instance.listen();
       that.activeWt = wt;
       isMouseDown = true;
       Handsontable.hooks.run(instance, 'beforeOnCellMouseDown', event, coords, TD);
       if (!isImmediatePropagationStopped(event)) {
-        if (event.button === 2 && instance.selection.inInSelection(coords)) {
-          var nothing = 1;
-        } else if (event.shiftKey) {
+        if (event.shiftKey) {
           if (coords.row >= 0 && coords.col >= 0) {
             instance.selection.setRangeEnd(coords);
           }
+          if (instance.selection.selectedHeader.cols && coords.col >= 0) {
+            instance.selection.setRangeEnd(new WalkontableCellCoords(instance.countRows() - 1, coords.col));
+          }
+          if (instance.selection.selectedHeader.rows && coords.row >= 0) {
+            instance.selection.setRangeEnd(new WalkontableCellCoords(coords.row, instance.countCols() - 1));
+          }
         } else {
-          if ((coords.row < 0 || coords.col < 0) && (coords.row >= 0 || coords.col >= 0)) {
-            if (coords.row < 0) {
-              headerLevel = THEAD.childNodes.length - Array.prototype.indexOf.call(THEAD.childNodes, TR) - 1;
-              headerColspan = instance.getHeaderColspan(coords.col, headerLevel);
-              instance.selection.setSelectedHeaders(false, true);
-              instance.selectCell(0, coords.col, instance.countRows() - 1, coords.col + Math.max(0, headerColspan - 1));
+          if (event.button === 0 || (event.button === 2 && !instance.selection.inInSelection(coords))) {
+            if ((coords.row < 0 || coords.col < 0) && (coords.row >= 0 || coords.col >= 0)) {
+              if (coords.row < 0) {
+                instance.selection.setSelectedHeaders(false, true);
+                instance.selectCell(0, coords.col, instance.countRows() - 1, coords.col);
+              }
+              if (coords.col < 0) {
+                instance.selection.setSelectedHeaders(true, false);
+                instance.selectCell(coords.row, 0, coords.row, instance.countCols() - 1);
+              }
+            } else {
+              coords.row = coords.row < 0 ? 0 : coords.row;
+              coords.col = coords.col < 0 ? 0 : coords.col;
+              instance.selection.setSelectedHeaders(false, false);
+              instance.selection.setRangeStart(coords);
             }
-            if (coords.col < 0) {
-              instance.selection.setSelectedHeaders(true, false);
-              instance.selectCell(coords.row, 0, coords.row, instance.countCols() - 1);
-            }
-          } else {
-            coords.row = coords.row < 0 ? 0 : coords.row;
-            coords.col = coords.col < 0 ? 0 : coords.col;
-            instance.selection.setSelectedHeaders(false, false);
-            instance.selection.setRangeStart(coords);
           }
         }
         Handsontable.hooks.run(instance, 'afterOnCellMouseDown', event, coords, TD);
@@ -20249,27 +20244,34 @@ function TableView(instance) {
       }
     },
     onCellMouseOver: function(event, coords, TD, wt) {
+      var blockCalculations = {
+        row: false,
+        column: false
+      };
       that.activeWt = wt;
-      if (coords.row >= 0 && coords.col >= 0) {
-        if (isMouseDown) {
-          instance.selection.setRangeEnd(coords);
-        }
-      } else {
-        if (isMouseDown) {
-          if (coords.row < 0) {
-            if (instance.selection.selectedHeader.cols) {
-              instance.selection.setRangeEnd(new WalkontableCellCoords(instance.countRows() - 1, coords.col));
-              instance.selection.setSelectedHeaders(false, true);
-            } else {
-              instance.selection.setRangeEnd(new WalkontableCellCoords(coords.row, coords.col));
-            }
+      Handsontable.hooks.run(instance, 'beforeOnCellMouseOver', event, coords, TD, blockCalculations);
+      if (event.button === 0) {
+        if (coords.row >= 0 && coords.col >= 0) {
+          if (isMouseDown) {
+            instance.selection.setRangeEnd(coords);
           }
-          if (coords.col < 0) {
-            if (instance.selection.selectedHeader.rows) {
-              instance.selection.setRangeEnd(new WalkontableCellCoords(coords.row, instance.countCols() - 1));
-              instance.selection.setSelectedHeaders(true, false);
-            } else {
-              instance.selection.setRangeEnd(new WalkontableCellCoords(coords.row, coords.col));
+        } else {
+          if (isMouseDown) {
+            if (coords.row < 0 && !blockCalculations.column) {
+              if (instance.selection.selectedHeader.cols) {
+                instance.selection.setRangeEnd(new WalkontableCellCoords(instance.countRows() - 1, coords.col));
+                instance.selection.setSelectedHeaders(false, true);
+              } else {
+                instance.selection.setRangeEnd(new WalkontableCellCoords(coords.row, coords.col));
+              }
+            }
+            if (coords.col < 0 && !blockCalculations.row) {
+              if (instance.selection.selectedHeader.rows) {
+                instance.selection.setRangeEnd(new WalkontableCellCoords(coords.row, instance.countCols() - 1));
+                instance.selection.setSelectedHeaders(true, false);
+              } else {
+                instance.selection.setRangeEnd(new WalkontableCellCoords(coords.row, coords.col));
+              }
             }
           }
         }
@@ -20345,7 +20347,8 @@ function TableView(instance) {
       return that.settings.rowHeaderWidth;
     },
     columnHeaderHeight: function() {
-      return that.settings.columnHeaderHeight;
+      var columnHeaderHeight = instance.runHooks('modifyColumnHeaderHeight');
+      return that.settings.columnHeaderHeight || columnHeaderHeight;
     }
   };
   Handsontable.hooks.run(instance, 'beforeInitWalkontable', walkontableConfig);
@@ -20381,14 +20384,17 @@ TableView.prototype.isTextSelectionAllowed = function(el) {
   if (this.settings.fragmentSelection === 'cell' && this.isSelectedOnlyCell() && isChildOfTableBody) {
     return true;
   }
+  if (!this.settings.fragmentSelection && this.isCellEdited() && this.isSelectedOnlyCell()) {
+    return true;
+  }
   return false;
 };
 TableView.prototype.isSelectedOnlyCell = function() {
-  var $__8 = this.instance.getSelected() || [],
-      row = $__8[0],
-      col = $__8[1],
-      rowEnd = $__8[2],
-      colEnd = $__8[3];
+  var $__9 = this.instance.getSelected() || [],
+      row = $__9[0],
+      col = $__9[1],
+      rowEnd = $__9[2],
+      colEnd = $__9[3];
   return row !== void 0 && row === rowEnd && col === colEnd;
 };
 TableView.prototype.isCellEdited = function() {
@@ -20462,7 +20468,16 @@ TableView.prototype.appendColHeader = function(col, TH) {
   Handsontable.hooks.run(this.instance, 'afterGetColHeader', col, TH);
 };
 TableView.prototype.updateCellHeader = function(element, index, content) {
-  if (index > -1) {
+  var renderedIndex = index;
+  var parentOverlay = this.wt.wtOverlays.getParentOverlay(element) || this.wt;
+  if (element.parentNode) {
+    if (hasClass(element, 'colHeader')) {
+      renderedIndex = parentOverlay.wtTable.columnFilter.sourceToRendered(index);
+    } else if (hasClass(element, 'rowHeader')) {
+      renderedIndex = parentOverlay.wtTable.rowFilter.sourceToRendered(index);
+    }
+  }
+  if (renderedIndex > -1) {
     fastInnerHTML(element, content(index));
   } else {
     fastInnerText(element, String.fromCharCode(160));
@@ -20489,7 +20504,7 @@ TableView.prototype.destroy = function() {
 ;
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":5,"3rdparty/walkontable/src/core":7,"3rdparty/walkontable/src/selection":18,"browser":23,"eventManager":41,"helpers/dom/element":46,"helpers/dom/event":47}],104:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":5,"3rdparty/walkontable/src/core":7,"3rdparty/walkontable/src/selection":18,"browser":23,"eventManager":41,"helpers/dom/element":46,"helpers/dom/event":47,"helpers/object":52}],104:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   GhostTable: {get: function() {
@@ -20519,6 +20534,7 @@ var GhostTable = function GhostTable(hotInstance) {
   this.rows = [];
   this.columns = [];
   this.samples = null;
+  this.settings = {useHeaders: true};
 };
 ($traceurRuntime.createClass)(GhostTable, {
   addRow: function(row, samples) {
@@ -20537,6 +20553,19 @@ var GhostTable = function GhostTable(hotInstance) {
     this.container.container.appendChild(this.table.fragment);
     rowObject.table = this.table.table;
   },
+  addColumnHeadersRow: function(samples) {
+    if (this.hot.getColHeader(0) != null) {
+      var rowObject = {row: -1};
+      this.rows.push(rowObject);
+      this.container = this.createContainer(this.hot.rootElement.className);
+      this.samples = samples;
+      this.table = this.createTable(this.hot.table.className);
+      this.table.colGroup.appendChild(this.createColGroupsCol());
+      this.table.tHead.appendChild(this.createColumnHeadersRow());
+      this.container.container.appendChild(this.table.fragment);
+      rowObject.table = this.table.table;
+    }
+  },
   addColumn: function(column, samples) {
     if (this.rows.length) {
       throw new Error('Doesn\'t support multi-dimensional table');
@@ -20548,7 +20577,7 @@ var GhostTable = function GhostTable(hotInstance) {
     this.columns.push(columnObject);
     this.samples = samples;
     this.table = this.createTable(this.hot.table.className);
-    if (this.hot.getColHeader(column) !== null) {
+    if (this.getSetting('useHeaders') && this.hot.getColHeader(column) !== null) {
       this.hot.view.appendColHeader(column, this.table.th);
     }
     this.table.tBody.appendChild(this.createCol(column));
@@ -20571,11 +20600,32 @@ var GhostTable = function GhostTable(hotInstance) {
       callback(column.col, outerWidth(column.table));
     }));
   },
+  setSettings: function(settings) {
+    this.settings = settings;
+  },
+  setSetting: function(name, value) {
+    if (!this.settings) {
+      this.settings = {};
+    }
+    this.settings[name] = value;
+  },
+  getSettings: function() {
+    return this.settings;
+  },
+  getSetting: function(name) {
+    if (this.settings) {
+      return this.settings[name];
+    } else {
+      return null;
+    }
+  },
   createColGroupsCol: function() {
     var $__6 = this;
     var d = document;
     var fragment = d.createDocumentFragment();
-    fragment.appendChild(this.createColElement(-1));
+    if (this.hot.hasRowHeaders()) {
+      fragment.appendChild(this.createColElement(-1));
+    }
     this.samples.forEach((function(sample) {
       arrayEach(sample.strings, (function(string) {
         fragment.appendChild($__6.createColElement(string.col));
@@ -20588,10 +20638,10 @@ var GhostTable = function GhostTable(hotInstance) {
     var d = document;
     var fragment = d.createDocumentFragment();
     var th = d.createElement('th');
-    if (this.hot.getRowHeader(row) !== null) {
+    if (this.hot.hasRowHeaders()) {
       this.hot.view.appendRowHeader(row, th);
+      fragment.appendChild(th);
     }
-    fragment.appendChild(th);
     this.samples.forEach((function(sample) {
       arrayEach(sample.strings, (function(string) {
         var column = string.col;
@@ -20602,6 +20652,25 @@ var GhostTable = function GhostTable(hotInstance) {
         var td = d.createElement('td');
         renderer($__6.hot, td, row, column, $__6.hot.colToProp(column), string.value, cellProperties);
         fragment.appendChild(td);
+      }));
+    }));
+    return fragment;
+  },
+  createColumnHeadersRow: function() {
+    var $__6 = this;
+    var d = document;
+    var fragment = d.createDocumentFragment();
+    if (this.hot.hasRowHeaders()) {
+      var th = d.createElement('th');
+      this.hot.view.appendColHeader(-1, th);
+      fragment.appendChild(th);
+    }
+    this.samples.forEach((function(sample) {
+      arrayEach(sample.strings, (function(string) {
+        var column = string.col;
+        var th = d.createElement('th');
+        $__6.hot.view.appendColHeader(column, th);
+        fragment.appendChild(th);
       }));
     }));
     return fragment;
@@ -20628,6 +20697,7 @@ var GhostTable = function GhostTable(hotInstance) {
   },
   clean: function() {
     this.rows.length = 0;
+    this.rows[-1] = void 0;
     this.columns.length = 0;
     if (this.samples) {
       this.samples.clear();
@@ -20936,6 +21006,13 @@ var $___46__46__47_browser__,
 var Handsontable = ($___46__46__47_browser__ = _dereq_("browser"), $___46__46__47_browser__ && $___46__46__47_browser__.__esModule && $___46__46__47_browser__ || {default: $___46__46__47_browser__}).default;
 var stringify = ($___46__46__47_helpers_47_mixed__ = _dereq_("helpers/mixed"), $___46__46__47_helpers_47_mixed__ && $___46__46__47_helpers_47_mixed__.__esModule && $___46__46__47_helpers_47_mixed__ || {default: $___46__46__47_helpers_47_mixed__}).stringify;
 Handsontable.AutocompleteValidator = function(value, callback) {
+  if (value == null) {
+    value = '';
+  }
+  if (this.allowEmpty && value === '') {
+    callback(true);
+    return;
+  }
   if (this.strict && this.source) {
     if (typeof this.source === 'function') {
       this.source(value, process(value, callback));
@@ -22443,6 +22520,9 @@ var $DropdownMenu = DropdownMenu;
   },
   onAfterGetColHeader: function(col, TH) {
     var headerRow = TH.parentNode;
+    if (!headerRow) {
+      return;
+    }
     var headerRowList = headerRow.parentNode.childNodes;
     var level = Array.prototype.indexOf.call(headerRowList, headerRow);
     if (col < 0 || level !== headerRowList.length - 1) {
@@ -26148,14 +26228,18 @@ var $__handsontable_47_plugins_47__95_base__,
     $__handsontable_47_helpers_47_dom_47_element__,
     $__handsontable_47_helpers_47_number__,
     $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_plugins__;
+    $__handsontable_47_plugins__,
+    $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__;
 var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
-var addClass = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).addClass;
+var $__1 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
+    addClass = $__1.addClass,
+    removeClass = $__1.removeClass;
 var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
 var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
 var $__4 = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}),
     registerPlugin = $__4.registerPlugin,
     getPlugin = $__4.getPlugin;
+var SEPARATOR = ($__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems"), $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ || {default: $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__}).SEPARATOR;
 var HiddenColumns = function HiddenColumns(hotInstance) {
   $traceurRuntime.superConstructor($HiddenColumns).call(this, hotInstance);
   this.settings = {};
@@ -26168,7 +26252,7 @@ var $HiddenColumns = HiddenColumns;
     return !!this.hot.getSettings().hiddenColumns;
   },
   enablePlugin: function() {
-    var $__5 = this;
+    var $__6 = this;
     if (this.enabled) {
       return;
     }
@@ -26183,24 +26267,45 @@ var $HiddenColumns = HiddenColumns;
       }
       if (!settings.copyPasteEnabled) {
         this.addHook('modifyCopyableRange', (function(ranges) {
-          return $__5.onModifyCopyableRange(ranges);
+          return $__6.onModifyCopyableRange(ranges);
         }));
       }
     }
+    if (this.hot.hasColHeaders()) {
+      this.addHook('afterGetColHeader', (function(col, TH) {
+        return $__6.onAfterGetColHeader(col, TH);
+      }));
+    } else {
+      this.addHook('afterRenderer', (function(TD, row, col) {
+        return $__6.onAfterGetColHeader(col, TD);
+      }));
+    }
+    this.addHook('afterContextMenuDefaultOptions', (function(options) {
+      return $__6.onAfterContextMenuDefaultOptions(options);
+    }));
     this.addHook('afterGetCellMeta', (function(row, col, cellProperties) {
-      return $__5.onAfterGetCellMeta(row, col, cellProperties);
+      return $__6.onAfterGetCellMeta(row, col, cellProperties);
     }));
     this.addHook('modifyColWidth', (function(width, col) {
-      return $__5.onModifyColWidth(width, col);
-    }));
-    this.addHook('afterGetColHeader', (function(col, TH) {
-      return $__5.onAfterGetColHeader(col, TH);
+      return $__6.onModifyColWidth(width, col);
     }));
     this.addHook('beforeSetRangeEnd', (function(coords) {
-      return $__5.onBeforeSetRangeEnd(coords);
+      return $__6.onBeforeSetRangeEnd(coords);
     }));
     this.addHook('hiddenColumn', (function(column) {
-      return $__5.isHidden(column);
+      return $__6.isHidden(column);
+    }));
+    this.addHook('beforeStretchingColumnWidth', (function(width, column) {
+      return $__6.onBeforeStretchingColumnWidth(width, column);
+    }));
+    this.addHook('afterColumnMove', (function(startColumn, endColumns) {
+      return $__6.onAfterColumnMove(startColumn, endColumns);
+    }));
+    this.addHook('afterCreateCol', (function(index, amount) {
+      return $__6.onAfterCreateCol(index, amount);
+    }));
+    this.addHook('afterRemoveCol', (function(index, amount) {
+      return $__6.onAfterRemoveCol(index, amount);
     }));
     $traceurRuntime.superGet(this, $HiddenColumns.prototype, "enablePlugin").call(this);
   },
@@ -26213,37 +26318,38 @@ var $HiddenColumns = HiddenColumns;
     this.settings = {};
     this.hiddenColumns = [];
     this.lastSelectedColumn = -1;
+    this.hot.render();
     $traceurRuntime.superGet(this, $HiddenColumns.prototype, "disablePlugin").call(this);
     this.resetCellsMeta();
   },
   hideColumns: function(columns) {
-    var $__5 = this;
+    var $__6 = this;
     arrayEach(columns, (function(col) {
       col = parseInt(col, 10);
-      if (!$__5.isHidden(col)) {
-        $__5.hiddenColumns.push(col);
+      if (!$__6.isHidden(col)) {
+        $__6.hiddenColumns.push(col);
       }
     }));
   },
   hideColumn: function() {
     for (var column = [],
-        $__7 = 0; $__7 < arguments.length; $__7++)
-      column[$__7] = arguments[$__7];
+        $__8 = 0; $__8 < arguments.length; $__8++)
+      column[$__8] = arguments[$__8];
     this.hideColumns(column);
   },
   showColumns: function(columns) {
-    var $__5 = this;
+    var $__6 = this;
     arrayEach(columns, (function(col) {
       col = parseInt(col, 10);
-      if ($__5.isHidden(col)) {
-        $__5.hiddenColumns.splice($__5.hiddenColumns.indexOf(col), 1);
+      if ($__6.isHidden(col)) {
+        $__6.hiddenColumns.splice($__6.hiddenColumns.indexOf(col), 1);
       }
     }));
   },
   showColumn: function() {
     for (var column = [],
-        $__8 = 0; $__8 < arguments.length; $__8++)
-      column[$__8] = arguments[$__8];
+        $__9 = 0; $__9 < arguments.length; $__9++)
+      column[$__9] = arguments[$__9];
     this.showColumns(column);
   },
   isHidden: function(column) {
@@ -26262,6 +26368,12 @@ var $HiddenColumns = HiddenColumns;
   },
   getLogicalColumnIndex: function(column) {
     return this.hot.runHooks('modifyCol', column);
+  },
+  onBeforeStretchingColumnWidth: function(width, column) {
+    if (this.hiddenColumns.indexOf(column) > -1) {
+      width = 0;
+    }
+    return width;
   },
   onModifyColWidth: function(width, col) {
     if (this.isHidden(this.getLogicalColumnIndex(col))) {
@@ -26299,10 +26411,23 @@ var $HiddenColumns = HiddenColumns;
       if (firstSectionHidden && cellProperties.className.indexOf('firstVisible') === -1) {
         cellProperties.className += ' firstVisible';
       }
+    } else if (cellProperties.className) {
+      var classArr = cellProperties.className.split(' ');
+      if (classArr.length) {
+        var containAfterHiddenColumn = classArr.indexOf('afterHiddenColumn');
+        var containFirstVisible = classArr.indexOf('firstVisible');
+        if (containAfterHiddenColumn > -1) {
+          classArr.splice(containAfterHiddenColumn, 1);
+        }
+        if (containFirstVisible > -1) {
+          classArr.splice(containFirstVisible, 1);
+        }
+        cellProperties.className = classArr.join(' ');
+      }
     }
   },
   onModifyCopyableRange: function(ranges) {
-    var $__5 = this;
+    var $__6 = this;
     var newRanges = [];
     var pushRange = (function(startRow, endRow, startCol, endCol) {
       newRanges.push({
@@ -26316,7 +26441,7 @@ var $HiddenColumns = HiddenColumns;
       var isHidden = true;
       var rangeStart = 0;
       rangeEach(range.startCol, range.endCol, (function(col) {
-        if ($__5.isHidden(col)) {
+        if ($__6.isHidden(col)) {
           if (!isHidden) {
             pushRange(range.startRow, range.endRow, rangeStart, col - 1);
           }
@@ -26341,20 +26466,20 @@ var $HiddenColumns = HiddenColumns;
     if (this.isHidden(this.getLogicalColumnIndex(col - 1))) {
       addClass(TH, 'afterHiddenColumn');
     }
-    if (this.isHidden(this.getLogicalColumnIndex(col + 1))) {
+    if (this.isHidden(this.getLogicalColumnIndex(col + 1)) && col > -1) {
       addClass(TH, 'beforeHiddenColumn');
     }
   },
   onBeforeSetRangeEnd: function(coords) {
-    var $__5 = this;
+    var $__6 = this;
     if (this.hot.selection.selectedHeader.cols) {
       return;
     }
     var columnCount = this.hot.countCols();
     var getNextColumn = (function(col) {
-      var logicalCol = $__5.getLogicalColumnIndex(col);
-      if ($__5.isHidden(logicalCol)) {
-        if ($__5.lastSelectedColumn > col || coords.col === columnCount - 1) {
+      var logicalCol = $__6.getLogicalColumnIndex(col);
+      if ($__6.isHidden(logicalCol)) {
+        if ($__6.lastSelectedColumn > col || coords.col === columnCount - 1) {
           col = getNextColumn(--col);
         } else {
           col = getNextColumn(++col);
@@ -26364,6 +26489,150 @@ var $HiddenColumns = HiddenColumns;
     });
     coords.col = getNextColumn(coords.col);
     this.lastSelectedColumn = coords.col;
+  },
+  onAfterContextMenuDefaultOptions: function(options) {
+    var $__6 = this;
+    var beforeHiddenColumns = [];
+    var afterHiddenColumns = [];
+    options.items.push({name: SEPARATOR}, {
+      key: 'hidden_columns_hide',
+      name: 'Hide column',
+      callback: (function() {
+        var $__10 = $__6.hot.getSelectedRange(),
+            from = $__10.from,
+            to = $__10.to;
+        var start = from.col;
+        var end = to.col;
+        if (end < start) {
+          start = to.col;
+          end = from.col;
+        }
+        rangeEach(start, end, (function(i) {
+          return $__6.hideColumn($__6.getLogicalColumnIndex(i));
+        }));
+        $__6.hot.render();
+        $__6.hot.view.wt.wtOverlays.adjustElementsSize(true);
+        if (start < 1) {
+          $__6.hot.scrollViewportTo(void 0, start);
+        } else {
+          $__6.hot.scrollViewportTo(void 0, start - 1);
+        }
+      }),
+      disabled: false,
+      hidden: (function() {
+        return !$__6.hot.selection.selectedHeader.cols;
+      })
+    }, {
+      key: 'hidden_columns_show',
+      name: 'Show column',
+      callback: (function() {
+        var $__10 = $__6.hot.getSelectedRange(),
+            from = $__10.from,
+            to = $__10.to;
+        var start = from.col;
+        var end = to.col;
+        if (end < start) {
+          start = to.col;
+          end = from.col;
+        }
+        if (start === end) {
+          if (beforeHiddenColumns.length === start) {
+            $__6.showColumns(beforeHiddenColumns);
+            beforeHiddenColumns = [];
+          }
+          if (afterHiddenColumns.length === $__6.hot.countCols() - (start + 1)) {
+            $__6.showColumns(afterHiddenColumns);
+            afterHiddenColumns = [];
+          }
+        } else {
+          rangeEach(start, end, (function(i) {
+            return $__6.showColumn($__6.getLogicalColumnIndex(i));
+          }));
+        }
+        $__6.hot.render();
+      }),
+      disabled: false,
+      hidden: (function() {
+        if (!$__6.hiddenColumns.length) {
+          return true;
+        }
+        if (!$__6.hot.selection.selectedHeader.cols) {
+          return true;
+        }
+        beforeHiddenColumns = [];
+        afterHiddenColumns = [];
+        var $__10 = $__6.hot.getSelectedRange(),
+            from = $__10.from,
+            to = $__10.to;
+        var start = from.col;
+        var end = to.col;
+        var hiddenInSelection = false;
+        if (start === end) {
+          var totalColumnLength = $__6.hot.countCols();
+          rangeEach(0, totalColumnLength, (function(i) {
+            var partedHiddenLength = beforeHiddenColumns.length + afterHiddenColumns.length;
+            if (partedHiddenLength === $__6.hiddenColumns.length) {
+              return false;
+            }
+            if (i < start) {
+              if ($__6.hiddenColumns.indexOf($__6.getLogicalColumnIndex(i)) > -1) {
+                beforeHiddenColumns.push($__6.getLogicalColumnIndex(i));
+              }
+            } else {
+              if ($__6.hiddenColumns.indexOf($__6.getLogicalColumnIndex(i)) > -1) {
+                afterHiddenColumns.push($__6.getLogicalColumnIndex(i));
+              }
+            }
+          }));
+          totalColumnLength = totalColumnLength - 1;
+          if ((beforeHiddenColumns.length === start && start > 0) || (afterHiddenColumns.length === totalColumnLength - start && start < totalColumnLength)) {
+            hiddenInSelection = true;
+          }
+        } else {
+          if (end < start) {
+            start = to.col;
+            end = from.col;
+          }
+          rangeEach(start, end, (function(i) {
+            if ($__6.isHidden($__6.getLogicalColumnIndex(i))) {
+              hiddenInSelection = true;
+              return false;
+            }
+          }));
+        }
+        return !hiddenInSelection;
+      })
+    });
+  },
+  onAfterCreateCol: function(index, amount) {
+    var tempHidden = [];
+    arrayEach(this.hiddenColumns, (function(col) {
+      if (col >= index) {
+        col += amount;
+      }
+      tempHidden.push(col);
+    }));
+    this.hiddenColumns = tempHidden;
+  },
+  onAfterRemoveCol: function(index, amount) {
+    var tempHidden = [];
+    arrayEach(this.hiddenColumns, (function(col) {
+      if (col >= index) {
+        col -= amount;
+      }
+      tempHidden.push(col);
+    }));
+    this.hiddenColumns = tempHidden;
+  },
+  onAfterColumnMove: function(startIndex, newIndex) {
+    var tempHidden = [];
+    arrayEach(this.hiddenColumns, (function(col) {
+      if (col >= newIndex && col < startIndex) {
+        col += amount;
+      }
+      tempHidden.push(col);
+    }));
+    this.hiddenColumns = tempHidden;
   },
   destroy: function() {
     $traceurRuntime.superGet(this, $HiddenColumns.prototype, "destroy").call(this);
@@ -26376,7 +26645,7 @@ function hiddenRenderer(hotInstance, td) {
 registerPlugin('hiddenColumns', HiddenColumns);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":62}],167:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":74}],167:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   HiddenRows: {get: function() {
@@ -26440,6 +26709,9 @@ var $HiddenRows = HiddenRows;
         return $__5.onAfterGetRowHeader(row, TD);
       }));
     }
+    this.addHook('afterContextMenuDefaultOptions', (function(options) {
+      return $__5.onAfterContextMenuDefaultOptions(options);
+    }));
     this.addHook('afterGetCellMeta', (function(row, col, cellProperties) {
       return $__5.onAfterGetCellMeta(row, col, cellProperties);
     }));
@@ -26451,6 +26723,15 @@ var $HiddenRows = HiddenRows;
     }));
     this.addHook('hiddenRow', (function(row) {
       return $__5.isHidden(row);
+    }));
+    this.addHook('afterRowMove', (function(start, end) {
+      return $__5.onAfterRowMove(start, end);
+    }));
+    this.addHook('afterCreateRow', (function(index, amount) {
+      return $__5.onAfterCreateRow(index, amount);
+    }));
+    this.addHook('afterRemoveRow', (function(index, amount) {
+      return $__5.onAfterRemoveRow(index, amount);
     }));
     $traceurRuntime.superGet(this, $HiddenRows.prototype, "enablePlugin").call(this);
   },
@@ -26586,6 +26867,157 @@ var $HiddenRows = HiddenRows;
     coords.row = getNextRow(coords.row);
     this.lastSelectedRow = coords.row;
   },
+  onAfterContextMenuDefaultOptions: function(options) {
+    var $__5 = this;
+    var beforeHiddenRows = [];
+    var afterHiddenRows = [];
+    options.items.push(Handsontable.plugins.ContextMenu.SEPARATOR, {
+      key: 'hidden_rows_hide',
+      name: 'Hide row',
+      callback: (function() {
+        var $__9 = $__5.hot.getSelectedRange(),
+            from = $__9.from,
+            to = $__9.to;
+        var start = from.row;
+        var end = to.row;
+        if (end < start) {
+          start = to.row;
+          end = from.row;
+        }
+        rangeEach(start, end, (function(i) {
+          return $__5.hideRow(i);
+        }));
+        $__5.hot.render();
+        $__5.hot.view.wt.wtOverlays.adjustElementsSize(true);
+        if (start < 1) {
+          $__5.hot.scrollViewportTo(start);
+        } else {
+          $__5.hot.scrollViewportTo(start - 1);
+        }
+      }),
+      disabled: false,
+      hidden: (function() {
+        return !$__5.hot.selection.selectedHeader.rows;
+      })
+    }, {
+      key: 'hidden_rows_show',
+      name: 'Show row',
+      callback: (function() {
+        var $__9 = $__5.hot.getSelectedRange(),
+            from = $__9.from,
+            to = $__9.to;
+        var start = from.row;
+        var end = to.row;
+        if (end < start) {
+          start = to.row;
+          end = from.row;
+        }
+        if (start === end) {
+          if (beforeHiddenRows.length === start) {
+            $__5.showRows(beforeHiddenRows);
+            beforeHiddenRows = [];
+          }
+          if (afterHiddenRows.length === $__5.hot.countSourceRows() - (start + 1)) {
+            $__5.showRows(afterHiddenRows);
+            afterHiddenRows = [];
+          }
+        } else {
+          rangeEach(start, end, (function(i) {
+            return $__5.showRow(i);
+          }));
+        }
+        $__5.hot.render();
+      }),
+      disabled: false,
+      hidden: (function() {
+        if (!$__5.hiddenRows.length) {
+          return true;
+        }
+        if (!$__5.hot.selection.selectedHeader.rows) {
+          return true;
+        }
+        beforeHiddenRows = [];
+        afterHiddenRows = [];
+        var $__9 = $__5.hot.getSelectedRange(),
+            from = $__9.from,
+            to = $__9.to;
+        var start = from.row;
+        var end = to.row;
+        var hiddenInSelection = false;
+        if (start === end) {
+          var totalRowsLength = $__5.hot.countSourceRows();
+          rangeEach(0, totalRowsLength, (function(i) {
+            var partedHiddenLength = beforeHiddenRows.length + afterHiddenRows.length;
+            if (partedHiddenLength === $__5.hiddenRows.length) {
+              return false;
+            }
+            if (i < start) {
+              if ($__5.hiddenRows.indexOf(i) > -1) {
+                beforeHiddenRows.push(i);
+              }
+            } else {
+              if ($__5.hiddenRows.indexOf(i) > -1) {
+                afterHiddenRows.push(i);
+              }
+            }
+          }));
+          totalRowsLength = totalRowsLength - 1;
+          if ((beforeHiddenRows.length === start && start > 0) || (afterHiddenRows.length === totalRowsLength - start && start < totalRowsLength)) {
+            hiddenInSelection = true;
+          }
+        } else {
+          if (end < start) {
+            start = to.row;
+            end = from.row;
+          }
+          rangeEach(start, end, (function(i) {
+            if ($__5.isHidden(i)) {
+              hiddenInSelection = true;
+              return false;
+            }
+          }));
+        }
+        return !hiddenInSelection;
+      })
+    });
+  },
+  onAfterRowMove: function(start, end) {
+    var tempHidden = [];
+    arrayEach(this.hiddenRows, (function(col) {
+      if (end > start) {
+        if (col > start && col < end) {
+          col--;
+        }
+      } else {
+        if (col < start && col > end) {
+          col++;
+        }
+      }
+      tempHidden.push(col);
+    }));
+    this.hiddenRows = tempHidden;
+    this.hot.render();
+  },
+  onAfterCreateRow: function(index, amount) {
+    var tempHidden = [];
+    arrayEach(this.hiddenRows, (function(col) {
+      if (col >= index) {
+        col += amount;
+      }
+      tempHidden.push(col);
+    }));
+    this.hiddenRows = tempHidden;
+  },
+  onAfterRemoveRow: function(index, amount) {
+    var tempHidden = [];
+    arrayEach(this.hiddenRows, (function(col) {
+      if (col >= index) {
+        col -= amount;
+      }
+      tempHidden.push(col);
+    }));
+    this.hiddenRows = tempHidden;
+  },
   destroy: function() {
     $traceurRuntime.superGet(this, $HiddenRows.prototype, "destroy").call(this);
   }
@@ -26643,8 +27075,11 @@ var $NestedHeaders = NestedHeaders;
     this.addHook('afterInit', (function() {
       return $__6.onAfterInit();
     }));
-    this.addHook('afterOnCellMouseOver', (function(event, coords, TD) {
-      return $__6.onAfterOnCellMouseOver(event, coords, TD);
+    this.addHook('afterOnCellMouseDown', (function(event, coords, TD) {
+      return $__6.onAfterOnCellMouseDown(event, coords, TD);
+    }));
+    this.addHook('beforeOnCellMouseOver', (function(event, coords, TD, blockCalculations) {
+      return $__6.onBeforeOnCellMouseOver(event, coords, TD, blockCalculations);
     }));
     this.addHook('afterViewportColumnCalculatorOverride', (function(calc) {
       return $__6.onAfterViewportColumnCalculatorOverride(calc);
@@ -26862,33 +27297,53 @@ var $NestedHeaders = NestedHeaders;
     }));
     calc.startColumn = newStartColumn;
   },
-  onAfterOnCellMouseOver: function(event, coords, TD) {
-    if (coords.row < 0 && this.hot.view.isMouseDown()) {
-      var currentColspan = this.colspanArray[this.rowCoordsToLevel(coords.row)][coords.col] ? this.colspanArray[this.rowCoordsToLevel(coords.row)][coords.col].colspan : null;
-      if (currentColspan === null) {
-        return;
+  onAfterOnCellMouseDown: function(event, coords, TD) {
+    if (coords.row < 0) {
+      var colspan = this.getColspan(coords.row, coords.col);
+      var lastColIndex = coords.col + colspan - 1;
+      if (colspan > 1) {
+        var lastRowIndex = this.hot.countRows() - 1;
+        this.hot.selection.setRangeEnd(new WalkontableCellCoords(lastRowIndex, lastColIndex));
       }
-      var wot = this.hot.view.wt;
-      var fromCoords = wot.selections[1].cellRange ? wot.selections[1].cellRange.from : null;
-      var toCoords = wot.selections[1].cellRange ? wot.selections[1].cellRange.to : null;
-      var highlightCoords = wot.selections[1].cellRange ? wot.selections[1].cellRange.highlight : null;
-      var rowCount = this.hot.countRows();
-      var fromCoordsNestedParent = this.getNestedParent(this.rowCoordsToLevel(coords.row), fromCoords.col);
-      var rightColspan = this.getColspan(coords.row, toCoords.col);
-      if (fromCoords === null || toCoords === null || highlightCoords === null) {
-        return;
-      }
-      if (highlightCoords.col === toCoords.col && (toCoords.col !== fromCoords.col)) {
-        this.hot.selection.setRangeStart(new WalkontableCellCoords(0, toCoords.col + rightColspan - 1));
-        this.hot.selection.setRangeEnd(new WalkontableCellCoords(rowCount - 1, fromCoords.col));
-      } else if (highlightCoords.col === fromCoords.col && (fromCoords.col !== fromCoordsNestedParent) && (toCoords.col !== fromCoords.col)) {
-        var currentLevel = this.rowCoordsToLevel(coords.row);
-        var leftSectionNestedParent = this.getNestedParent(currentLevel, toCoords.col - 1);
-        var leftColspan = this.getColspan(coords.row, leftSectionNestedParent);
-        this.hot.selection.setRangeStart(new WalkontableCellCoords(0, fromCoords.col - leftColspan + 1));
-        this.hot.selection.setRangeEnd(new WalkontableCellCoords(rowCount - 1, toCoords.col + rightColspan - 1));
+    }
+  },
+  onBeforeOnCellMouseOver: function(event, coords, TD, blockCalculations) {
+    var $__9;
+    if (coords.row < 0 && coords.col >= 0 && this.hot.view.isMouseDown()) {
+      var $__8 = this.hot.getSelectedRange(),
+          from = $__8.from,
+          to = $__8.to;
+      var colspan = this.getColspan(coords.row, coords.col);
+      var lastColIndex = coords.col + colspan - 1;
+      var changeDirection = false;
+      if (from.col <= to.col) {
+        if ((coords.col < from.col && lastColIndex === to.col) || (coords.col < from.col && lastColIndex < from.col) || (coords.col < from.col && lastColIndex >= from.col && lastColIndex < to.col)) {
+          changeDirection = true;
+        }
       } else {
-        this.hot.selection.setRangeEnd(new WalkontableCellCoords(rowCount - 1, coords.col + currentColspan - 1));
+        if ((coords.col < to.col && lastColIndex > from.col) || (coords.col > from.col) || (coords.col <= to.col && lastColIndex > from.col) || (coords.col > to.col && lastColIndex > from.col)) {
+          changeDirection = true;
+        }
+      }
+      if (changeDirection) {
+        ($__9 = [to.col, from.col], from.col = $__9[0], to.col = $__9[1], $__9);
+      }
+      if (colspan > 1) {
+        blockCalculations.column = true;
+        this.hot.selection.setSelectedHeaders(false, true);
+        if (from.col === to.col) {
+          if (lastColIndex <= from.col && coords.col < from.col) {
+            this.hot.selectCell(from.row, to.col, to.row, coords.col);
+          } else {
+            this.hot.selectCell(from.row, coords.col < from.col ? coords.col : from.col, to.row, lastColIndex > to.col ? lastColIndex : to.col);
+          }
+        }
+        if (from.col < to.col) {
+          this.hot.selectCell(from.row, coords.col < from.col ? coords.col : from.col, to.row, lastColIndex);
+        }
+        if (from.col > to.col) {
+          this.hot.selectCell(from.row, from.col, to.row, coords.col);
+        }
       }
     }
   },
@@ -27376,6 +27831,7 @@ function autoResize() {
         observe(el, 'paste', delayedResize);
         observe(el, 'drop', delayedResize);
         observe(el, 'keydown', delayedResize);
+        observe(el, 'focus', resize);
       }
 
       resize();
@@ -27395,6 +27851,7 @@ function autoResize() {
       unObserve(el, 'paste', delayedResize);
       unObserve(el, 'drop', delayedResize);
       unObserve(el, 'keydown', delayedResize);
+      unObserve(el, 'focus', resize);
     },
     resize: resize
   };
@@ -27976,11 +28433,76 @@ CopyPasteClass.prototype.hasBeenDestroyed = function() {
 })(typeof exports != 'undefined' && typeof global != 'undefined' ? global : window);
 
 },{}],"jsonpatch":[function(_dereq_,module,exports){
-// json-patch-duplex.js 0.3.6
-// (c) 2013 Joachim Wester
-// MIT license
+/*!
+ * https://github.com/Starcounter-Jack/JSON-Patch
+ * json-patch-duplex.js version: 0.5.7
+ * (c) 2013 Joachim Wester
+ * MIT license
+ */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+var OriginalError = Error;
 var jsonpatch;
 (function (jsonpatch) {
+    var _objectKeys = function (obj) {
+        if (_isArray(obj)) {
+            var keys = new Array(obj.length);
+            for (var k = 0; k < keys.length; k++) {
+                keys[k] = "" + k;
+            }
+            return keys;
+        }
+        if (Object.keys) {
+            return Object.keys(obj);
+        }
+        var keys = [];
+        for (var i in obj) {
+            if (obj.hasOwnProperty(i)) {
+                keys.push(i);
+            }
+        }
+        return keys;
+    };
+    function _equals(a, b) {
+        switch (typeof a) {
+            case 'undefined': //backward compatibility, but really I think we should return false
+            case 'boolean':
+            case 'string':
+            case 'number':
+                return a === b;
+            case 'object':
+                if (a === null)
+                    return b === null;
+                if (_isArray(a)) {
+                    if (!_isArray(b) || a.length !== b.length)
+                        return false;
+                    for (var i = 0, l = a.length; i < l; i++)
+                        if (!_equals(a[i], b[i]))
+                            return false;
+                    return true;
+                }
+                var bKeys = _objectKeys(b);
+                var bLength = bKeys.length;
+                if (_objectKeys(a).length !== bLength)
+                    return false;
+                for (var i = 0; i < bLength; i++)
+                    if (!_equals(a[i], b[i]))
+                        return false;
+                return true;
+            default:
+                return false;
+        }
+    }
+    /* We use a Javascript hash to store each
+     function. Each hash entry (property) uses
+     the operation identifiers specified in rfc6902.
+     In this way, we can map each patch operation
+     to its dedicated function in efficient way.
+     */
+    /* The operations applicable to an object */
     var objOps = {
         add: function (obj, key) {
             obj[key] = this.value;
@@ -28014,13 +28536,13 @@ var jsonpatch;
             return true;
         },
         test: function (obj, key) {
-            return (JSON.stringify(obj[key]) === JSON.stringify(this.value));
+            return _equals(obj[key], this.value);
         },
         _get: function (obj, key) {
             this.value = obj[key];
         }
     };
-
+    /* The operations applicable to an array. Many are the same as for the object */
     var arrOps = {
         add: function (arr, i) {
             arr.splice(i, 0, this.value);
@@ -28039,14 +28561,49 @@ var jsonpatch;
         test: objOps.test,
         _get: objOps._get
     };
-
+    /* The operations applicable to object root. Many are the same as for the object */
+    var rootOps = {
+        add: function (obj) {
+            rootOps.remove.call(this, obj);
+            for (var key in this.value) {
+                if (this.value.hasOwnProperty(key)) {
+                    obj[key] = this.value[key];
+                }
+            }
+            return true;
+        },
+        remove: function (obj) {
+            for (var key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    objOps.remove.call(this, obj, key);
+                }
+            }
+            return true;
+        },
+        replace: function (obj) {
+            apply(obj, [
+                { op: "remove", path: this.path }
+            ]);
+            apply(obj, [
+                { op: "add", path: this.path, value: this.value }
+            ]);
+            return true;
+        },
+        move: objOps.move,
+        copy: objOps.copy,
+        test: function (obj) {
+            return (JSON.stringify(obj) === JSON.stringify(this.value));
+        },
+        _get: function (obj) {
+            this.value = obj;
+        }
+    };
     var observeOps = {
         add: function (patches, path) {
             var patch = {
                 op: "add",
                 path: path + escapePathComponent(this.name),
-                value: this.object[this.name]
-            };
+                value: this.object[this.name] };
             patches.push(patch);
         },
         'delete': function (patches, path) {
@@ -28065,49 +28622,39 @@ var jsonpatch;
             patches.push(patch);
         }
     };
-
     function escapePathComponent(str) {
-        if (str.indexOf('/') === -1 && str.indexOf('~') === -1) {
+        if (str.indexOf('/') === -1 && str.indexOf('~') === -1)
             return str;
-        }
-
         return str.replace(/~/g, '~0').replace(/\//g, '~1');
     }
-
     function _getPathRecursive(root, obj) {
         var found;
         for (var key in root) {
             if (root.hasOwnProperty(key)) {
                 if (root[key] === obj) {
                     return escapePathComponent(key) + '/';
-                } else if (typeof root[key] === 'object') {
+                }
+                else if (typeof root[key] === 'object') {
                     found = _getPathRecursive(root[key], obj);
-                    /* jshint ignore:start */
                     if (found != '') {
                         return escapePathComponent(key) + '/' + found;
                     }
-                    /* jshint ignore:end */
                 }
             }
         }
         return '';
     }
-
     function getPath(root, obj) {
         if (root === obj) {
             return '/';
         }
         var path = _getPathRecursive(root, obj);
         if (path === '') {
-            throw new Error("Object not found in root");
+            throw new OriginalError("Object not found in root");
         }
         return '/' + path;
     }
-
     var beforeDict = [];
-    /* jshint ignore:start */
-    jsonpatch.intervals;
-    /* jshint ignore:end */
     var Mirror = (function () {
         function Mirror(obj) {
             this.observers = [];
@@ -28115,7 +28662,6 @@ var jsonpatch;
         }
         return Mirror;
     })();
-
     var ObserverInfo = (function () {
         function ObserverInfo(callback, observer) {
             this.callback = callback;
@@ -28123,7 +28669,6 @@ var jsonpatch;
         }
         return ObserverInfo;
     })();
-
     function getMirror(obj) {
         for (var i = 0, ilen = beforeDict.length; i < ilen; i++) {
             if (beforeDict[i].obj === obj) {
@@ -28131,14 +28676,6 @@ var jsonpatch;
             }
         }
     }
-    function removeMirror(obj) {
-        for (var i = 0, ilen = beforeDict.length; i < ilen; i++) {
-            if (beforeDict[i] === obj) {
-              beforeDict.splice(i, 1);
-            }
-        }
-    }
-
     function getObserverFromMirror(mirror, callback) {
         for (var j = 0, jlen = mirror.observers.length; j < jlen; j++) {
             if (mirror.observers[j].callback === callback) {
@@ -28146,188 +28683,116 @@ var jsonpatch;
             }
         }
     }
-
     function removeObserverFromMirror(mirror, observer) {
         for (var j = 0, jlen = mirror.observers.length; j < jlen; j++) {
             if (mirror.observers[j].observer === observer) {
                 mirror.observers.splice(j, 1);
-
-                if (!mirror.observers.length) {
-                    removeMirror(mirror);
-                }
                 return;
             }
         }
     }
-
     function unobserve(root, observer) {
-        generate(observer);
-        if (Object.observe) {
-            _unobserve(observer, root);
-        } else {
-            clearTimeout(observer.next);
-        }
-
-        var mirror = getMirror(root);
-        removeObserverFromMirror(mirror, observer);
+        observer.unobserve();
     }
     jsonpatch.unobserve = unobserve;
-
+    function deepClone(obj) {
+        if (typeof obj === "object") {
+            return JSON.parse(JSON.stringify(obj)); //Faster than ES5 clone - http://jsperf.com/deep-cloning-of-objects/5
+        }
+        else {
+            return obj; //no need to clone primitives
+        }
+    }
     function observe(obj, callback) {
         var patches = [];
         var root = obj;
         var observer;
         var mirror = getMirror(obj);
-
         if (!mirror) {
             mirror = new Mirror(obj);
             beforeDict.push(mirror);
-        } else {
+        }
+        else {
             observer = getObserverFromMirror(mirror, callback);
         }
-
         if (observer) {
             return observer;
         }
-
-        if (Object.observe) {
-            observer = function (arr) {
-                //This "refresh" is needed to begin observing new object properties
-                _unobserve(observer, obj);
-                _observe(observer, obj);
-
-                var a = 0, alen = arr.length;
-                /* jshint ignore:start */
-                while (a < alen) {
-                    if (!(arr[a].name === 'length' && _isArray(arr[a].object)) && !(arr[a].name === '__Jasmine_been_here_before__')) {
-                        var type = arr[a].type;
-
-                        switch (type) {
-                            case 'new':
-                                type = 'add';
-                                break;
-
-                            case 'deleted':
-                                type = 'delete';
-                                break;
-
-                            case 'updated':
-                                type = 'update';
-                                break;
-                        }
-
-                        observeOps[type].call(arr[a], patches, getPath(root, arr[a].object));
-                    }
-                    a++;
-                }
-                /* jshint ignore:end */
-
-                if (patches) {
-                    if (callback) {
-                        callback(patches);
-                    }
-                }
-                observer.patches = patches;
-                patches = [];
-            };
-        } else {
-            observer = {};
-
-            mirror.value = JSON.parse(JSON.stringify(obj));
-
-            if (callback) {
-                //callbacks.push(callback); this has no purpose
-                observer.callback = callback;
-                observer.next = null;
-                var intervals = this.intervals || [100, 1000, 10000, 60000];
-                var currentInterval = 0;
-
-                var dirtyCheck = function () {
-                    generate(observer);
-                };
-                var fastCheck = function () {
-                    clearTimeout(observer.next);
-                    observer.next = setTimeout(function () {
-                        dirtyCheck();
-                        currentInterval = 0;
-                        observer.next = setTimeout(slowCheck, intervals[currentInterval++]);
-                    }, 0);
-                };
-                var slowCheck = function () {
-                    dirtyCheck();
-                    if (currentInterval == intervals.length) {
-                        currentInterval = intervals.length - 1;
-                    }
-                    observer.next = setTimeout(slowCheck, intervals[currentInterval++]);
-                };
-                if (typeof window !== 'undefined') {
-                    if (window.addEventListener) {
-                        window.addEventListener('mousedown', fastCheck);
-                        window.addEventListener('mouseup', fastCheck);
-                        window.addEventListener('keydown', fastCheck);
-                    } else {
-                        window.attachEvent('onmousedown', fastCheck);
-                        window.attachEvent('onmouseup', fastCheck);
-                        window.attachEvent('onkeydown', fastCheck);
-                    }
-                }
-                observer.next = setTimeout(slowCheck, intervals[currentInterval++]);
+        observer = {};
+        mirror.value = deepClone(obj);
+        if (callback) {
+            observer.callback = callback;
+            observer.next = null;
+            var intervals = this.intervals || [100, 1000, 10000, 60000];
+            if (intervals.push === void 0) {
+                throw new OriginalError("jsonpatch.intervals must be an array");
             }
+            var currentInterval = 0;
+            var dirtyCheck = function () {
+                generate(observer);
+            };
+            var fastCheck = function () {
+                clearTimeout(observer.next);
+                observer.next = setTimeout(function () {
+                    dirtyCheck();
+                    currentInterval = 0;
+                    observer.next = setTimeout(slowCheck, intervals[currentInterval++]);
+                }, 0);
+            };
+            var slowCheck = function () {
+                dirtyCheck();
+                if (currentInterval == intervals.length)
+                    currentInterval = intervals.length - 1;
+                observer.next = setTimeout(slowCheck, intervals[currentInterval++]);
+            };
+            if (typeof window !== 'undefined') {
+                if (window.addEventListener) {
+                    window.addEventListener('mousedown', fastCheck);
+                    window.addEventListener('mouseup', fastCheck);
+                    window.addEventListener('keydown', fastCheck);
+                }
+                else {
+                    document.documentElement.attachEvent('onmousedown', fastCheck);
+                    document.documentElement.attachEvent('onmouseup', fastCheck);
+                    document.documentElement.attachEvent('onkeydown', fastCheck);
+                }
+            }
+            observer.next = setTimeout(slowCheck, intervals[currentInterval++]);
         }
         observer.patches = patches;
         observer.object = obj;
-
+        observer.unobserve = function () {
+            generate(observer);
+            clearTimeout(observer.next);
+            removeObserverFromMirror(mirror, observer);
+            if (typeof window !== 'undefined') {
+                if (window.removeEventListener) {
+                    window.removeEventListener('mousedown', fastCheck);
+                    window.removeEventListener('mouseup', fastCheck);
+                    window.removeEventListener('keydown', fastCheck);
+                }
+                else {
+                    document.documentElement.detachEvent('onmousedown', fastCheck);
+                    document.documentElement.detachEvent('onmouseup', fastCheck);
+                    document.documentElement.detachEvent('onkeydown', fastCheck);
+                }
+            }
+        };
         mirror.observers.push(new ObserverInfo(callback, observer));
-
-        return _observe(observer, obj);
+        return observer;
     }
     jsonpatch.observe = observe;
-
-    /// Listen to changes on an object tree, accumulate patches
-    function _observe(observer, obj) {
-        if (Object.observe) {
-            Object.observe(obj, observer);
-            for (var key in obj) {
-                if (obj.hasOwnProperty(key)) {
-                    var v = obj[key];
-                    if (v && typeof (v) === "object") {
-                        _observe(observer, v);
-                    }
-                }
-            }
-        }
-        return observer;
-    }
-
-    function _unobserve(observer, obj) {
-        if (Object.observe) {
-            Object.unobserve(obj, observer);
-            for (var key in obj) {
-                if (obj.hasOwnProperty(key)) {
-                    var v = obj[key];
-                    if (v && typeof (v) === "object") {
-                        _unobserve(observer, v);
-                    }
-                }
-            }
-        }
-        return observer;
-    }
-
     function generate(observer) {
-        if (Object.observe) {
-            Object.deliverChangeRecords(observer);
-        } else {
-            var mirror;
-            for (var i = 0, ilen = beforeDict.length; i < ilen; i++) {
-                if (beforeDict[i].obj === observer.object) {
-                    mirror = beforeDict[i];
-                    break;
-                }
+        var mirror;
+        for (var i = 0, ilen = beforeDict.length; i < ilen; i++) {
+            if (beforeDict[i].obj === observer.object) {
+                mirror = beforeDict[i];
+                break;
             }
-            if (mirror) {
-                _generate(mirror.value, observer.object, observer.patches, "");
-            }
+        }
+        _generate(mirror.value, observer.object, observer.patches, "");
+        if (observer.patches.length) {
+            apply(mirror.value, observer.patches);
         }
         var temp = observer.patches;
         if (temp.length > 0) {
@@ -28339,117 +28804,262 @@ var jsonpatch;
         return temp;
     }
     jsonpatch.generate = generate;
-
-    var _objectKeys;
-    if (Object.keys) {
-        _objectKeys = Object.keys;
-    } else {
-        _objectKeys = function (obj) {
-            var keys = [];
-            for (var o in obj) {
-                if (obj.hasOwnProperty(o)) {
-                    keys.push(o);
-                }
-            }
-            return keys;
-        };
-    }
-
     // Dirty check if obj is different from mirror, generate patches and update mirror
     function _generate(mirror, obj, patches, path) {
         var newKeys = _objectKeys(obj);
         var oldKeys = _objectKeys(mirror);
         var changed = false;
         var deleted = false;
-
+        //if ever "move" operation is implemented here, make sure this test runs OK: "should not generate the same patch twice (move)"
         for (var t = oldKeys.length - 1; t >= 0; t--) {
             var key = oldKeys[t];
             var oldVal = mirror[key];
             if (obj.hasOwnProperty(key)) {
                 var newVal = obj[key];
-                if (oldVal instanceof Object) {
+                if (typeof oldVal == "object" && oldVal != null && typeof newVal == "object" && newVal != null) {
                     _generate(oldVal, newVal, patches, path + "/" + escapePathComponent(key));
-                } else {
+                }
+                else {
                     if (oldVal != newVal) {
                         changed = true;
-                        patches.push({ op: "replace", path: path + "/" + escapePathComponent(key), value: newVal });
-                        mirror[key] = newVal;
+                        patches.push({ op: "replace", path: path + "/" + escapePathComponent(key), value: deepClone(newVal) });
                     }
                 }
-            } else {
+            }
+            else {
                 patches.push({ op: "remove", path: path + "/" + escapePathComponent(key) });
-                delete mirror[key];
-                deleted = true;
+                deleted = true; // property has been deleted
             }
         }
-
         if (!deleted && newKeys.length == oldKeys.length) {
             return;
         }
-
         for (var t = 0; t < newKeys.length; t++) {
             var key = newKeys[t];
             if (!mirror.hasOwnProperty(key)) {
-                patches.push({ op: "add", path: path + "/" + escapePathComponent(key), value: obj[key] });
-                mirror[key] = JSON.parse(JSON.stringify(obj[key]));
+                patches.push({ op: "add", path: path + "/" + escapePathComponent(key), value: deepClone(obj[key]) });
             }
         }
     }
-
     var _isArray;
     if (Array.isArray) {
         _isArray = Array.isArray;
-    } else {
+    }
+    else {
         _isArray = function (obj) {
             return obj.push && typeof obj.length === 'number';
         };
     }
-
+    //3x faster than cached /^\d+$/.test(str)
+    function isInteger(str) {
+        var i = 0;
+        var len = str.length;
+        var charCode;
+        while (i < len) {
+            charCode = str.charCodeAt(i);
+            if (charCode >= 48 && charCode <= 57) {
+                i++;
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
     /// Apply a json-patch operation on an object tree
-    function apply(tree, patches) {
-        var result = false, p = 0, plen = patches.length, patch;
+    function apply(tree, patches, validate) {
+        var result = false, p = 0, plen = patches.length, patch, key;
         while (p < plen) {
             patch = patches[p];
-
-            // Find the object
-            var keys = patch.path.split('/');
-            var obj = tree;
-            var t = 1;
-            var len = keys.length;
-            while (true) {
-                if (_isArray(obj)) {
-                    var index = parseInt(keys[t], 10);
-                    t++;
-                    if (t >= len) {
-                        result = arrOps[patch.op].call(patch, obj, index, tree);
-                        break;
-                    }
-                    obj = obj[index];
-                } else {
-                    var key = keys[t];
-                    if (key.indexOf('~') != -1) {
-                        key = key.replace(/~1/g, '/').replace(/~0/g, '~');
-                    }
-                    t++;
-                    if (t >= len) {
-                        result = objOps[patch.op].call(patch, obj, key, tree);
-                        break;
-                    }
-                    obj = obj[key];
-                }
-            }
             p++;
+            // Find the object
+            var path = patch.path || "";
+            var keys = path.split('/');
+            var obj = tree;
+            var t = 1; //skip empty element - http://jsperf.com/to-shift-or-not-to-shift
+            var len = keys.length;
+            var existingPathFragment = undefined;
+            while (true) {
+                key = keys[t];
+                if (validate) {
+                    if (existingPathFragment === undefined) {
+                        if (obj[key] === undefined) {
+                            existingPathFragment = keys.slice(0, t).join('/');
+                        }
+                        else if (t == len - 1) {
+                            existingPathFragment = patch.path;
+                        }
+                        if (existingPathFragment !== undefined) {
+                            this.validator(patch, p - 1, tree, existingPathFragment);
+                        }
+                    }
+                }
+                t++;
+                if (key === undefined) {
+                    if (t >= len) {
+                        result = rootOps[patch.op].call(patch, obj, key, tree); // Apply patch
+                        break;
+                    }
+                }
+                if (_isArray(obj)) {
+                    if (key === '-') {
+                        key = obj.length;
+                    }
+                    else {
+                        if (validate && !isInteger(key)) {
+                            throw new JsonPatchError("Expected an unsigned base-10 integer value, making the new referenced value the array element with the zero-based index", "OPERATION_PATH_ILLEGAL_ARRAY_INDEX", p - 1, patch.path, patch);
+                        }
+                        key = parseInt(key, 10);
+                    }
+                    if (t >= len) {
+                        if (validate && patch.op === "add" && key > obj.length) {
+                            throw new JsonPatchError("The specified index MUST NOT be greater than the number of elements in the array", "OPERATION_VALUE_OUT_OF_BOUNDS", p - 1, patch.path, patch);
+                        }
+                        result = arrOps[patch.op].call(patch, obj, key, tree); // Apply patch
+                        break;
+                    }
+                }
+                else {
+                    if (key && key.indexOf('~') != -1)
+                        key = key.replace(/~1/g, '/').replace(/~0/g, '~'); // escape chars
+                    if (t >= len) {
+                        result = objOps[patch.op].call(patch, obj, key, tree); // Apply patch
+                        break;
+                    }
+                }
+                obj = obj[key];
+            }
         }
         return result;
     }
     jsonpatch.apply = apply;
+    function compare(tree1, tree2) {
+        var patches = [];
+        _generate(tree1, tree2, patches, '');
+        return patches;
+    }
+    jsonpatch.compare = compare;
+    var JsonPatchError = (function (_super) {
+        __extends(JsonPatchError, _super);
+        function JsonPatchError(message, name, index, operation, tree) {
+            _super.call(this, message);
+            this.message = message;
+            this.name = name;
+            this.index = index;
+            this.operation = operation;
+            this.tree = tree;
+        }
+        return JsonPatchError;
+    })(OriginalError);
+    jsonpatch.JsonPatchError = JsonPatchError;
+    jsonpatch.Error = JsonPatchError;
+    /**
+     * Recursively checks whether an object has any undefined values inside.
+     */
+    function hasUndefined(obj) {
+        if (obj === undefined) {
+            return true;
+        }
+        if (typeof obj == "array" || typeof obj == "object") {
+            for (var i in obj) {
+                if (hasUndefined(obj[i])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    /**
+     * Validates a single operation. Called from `jsonpatch.validate`. Throws `JsonPatchError` in case of an error.
+     * @param {object} operation - operation object (patch)
+     * @param {number} index - index of operation in the sequence
+     * @param {object} [tree] - object where the operation is supposed to be applied
+     * @param {string} [existingPathFragment] - comes along with `tree`
+     */
+    function validator(operation, index, tree, existingPathFragment) {
+        if (typeof operation !== 'object' || operation === null || _isArray(operation)) {
+            throw new JsonPatchError('Operation is not an object', 'OPERATION_NOT_AN_OBJECT', index, operation, tree);
+        }
+        else if (!objOps[operation.op]) {
+            throw new JsonPatchError('Operation `op` property is not one of operations defined in RFC-6902', 'OPERATION_OP_INVALID', index, operation, tree);
+        }
+        else if (typeof operation.path !== 'string') {
+            throw new JsonPatchError('Operation `path` property is not a string', 'OPERATION_PATH_INVALID', index, operation, tree);
+        }
+        else if ((operation.op === 'move' || operation.op === 'copy') && typeof operation.from !== 'string') {
+            throw new JsonPatchError('Operation `from` property is not present (applicable in `move` and `copy` operations)', 'OPERATION_FROM_REQUIRED', index, operation, tree);
+        }
+        else if ((operation.op === 'add' || operation.op === 'replace' || operation.op === 'test') && operation.value === undefined) {
+            throw new JsonPatchError('Operation `value` property is not present (applicable in `add`, `replace` and `test` operations)', 'OPERATION_VALUE_REQUIRED', index, operation, tree);
+        }
+        else if ((operation.op === 'add' || operation.op === 'replace' || operation.op === 'test') && hasUndefined(operation.value)) {
+            throw new JsonPatchError('Operation `value` property is not present (applicable in `add`, `replace` and `test` operations)', 'OPERATION_VALUE_CANNOT_CONTAIN_UNDEFINED', index, operation, tree);
+        }
+        else if (tree) {
+            if (operation.op == "add") {
+                var pathLen = operation.path.split("/").length;
+                var existingPathLen = existingPathFragment.split("/").length;
+                if (pathLen !== existingPathLen + 1 && pathLen !== existingPathLen) {
+                    throw new JsonPatchError('Cannot perform an `add` operation at the desired path', 'OPERATION_PATH_CANNOT_ADD', index, operation, tree);
+                }
+            }
+            else if (operation.op === 'replace' || operation.op === 'remove' || operation.op === '_get') {
+                if (operation.path !== existingPathFragment) {
+                    throw new JsonPatchError('Cannot perform the operation at a path that does not exist', 'OPERATION_PATH_UNRESOLVABLE', index, operation, tree);
+                }
+            }
+            else if (operation.op === 'move' || operation.op === 'copy') {
+                var existingValue = { op: "_get", path: operation.from, value: undefined };
+                var error = jsonpatch.validate([existingValue], tree);
+                if (error && error.name === 'OPERATION_PATH_UNRESOLVABLE') {
+                    throw new JsonPatchError('Cannot perform the operation from a path that does not exist', 'OPERATION_FROM_UNRESOLVABLE', index, operation, tree);
+                }
+            }
+        }
+    }
+    jsonpatch.validator = validator;
+    /**
+     * Validates a sequence of operations. If `tree` parameter is provided, the sequence is additionally validated against the object tree.
+     * If error is encountered, returns a JsonPatchError object
+     * @param sequence
+     * @param tree
+     * @returns {JsonPatchError|undefined}
+     */
+    function validate(sequence, tree) {
+        try {
+            if (!_isArray(sequence)) {
+                throw new JsonPatchError('Patch sequence must be an array', 'SEQUENCE_NOT_AN_ARRAY');
+            }
+            if (tree) {
+                tree = JSON.parse(JSON.stringify(tree)); //clone tree so that we can safely try applying operations
+                apply.call(this, tree, sequence, true);
+            }
+            else {
+                for (var i = 0; i < sequence.length; i++) {
+                    this.validator(sequence[i], i);
+                }
+            }
+        }
+        catch (e) {
+            if (e instanceof JsonPatchError) {
+                return e;
+            }
+            else {
+                throw e;
+            }
+        }
+    }
+    jsonpatch.validate = validate;
 })(jsonpatch || (jsonpatch = {}));
-
 if (typeof exports !== "undefined") {
     exports.apply = jsonpatch.apply;
     exports.observe = jsonpatch.observe;
     exports.unobserve = jsonpatch.unobserve;
     exports.generate = jsonpatch.generate;
+    exports.compare = jsonpatch.compare;
+    exports.validate = jsonpatch.validate;
+    exports.validator = jsonpatch.validator;
+    exports.JsonPatchError = jsonpatch.JsonPatchError;
+    exports.Error = jsonpatch.Error;
 }
 
 },{}],"numeral":[function(_dereq_,module,exports){
