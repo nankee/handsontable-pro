@@ -554,7 +554,6 @@ class HiddenColumns extends BasePlugin {
 
   onAfterColumnMove(startIndex, newIndex) {
     let tempHidden = [];
-    console.log('afterColumnMove');
 
     arrayEach(this.hiddenColumns, (col) => {
       if (col >= newIndex && col < startIndex) {
