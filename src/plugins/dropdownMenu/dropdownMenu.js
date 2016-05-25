@@ -250,6 +250,10 @@ class DropdownMenu extends BasePlugin {
   onAfterGetColHeader(col, TH) {
     // Corner or a higher-level header
     let headerRow = TH.parentNode;
+    if (!headerRow) {
+      return;
+    }
+
     let headerRowList = headerRow.parentNode.childNodes;
     let level = Array.prototype.indexOf.call(headerRowList, headerRow);
 
