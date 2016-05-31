@@ -33,6 +33,13 @@ class HiddenColumns extends BasePlugin {
      * @default -1
      */
     this.lastSelectedColumn = -1;
+    /**
+     * First selected column index.
+     *
+     * @type {Number}
+     * @default -1
+     */
+    this.firstSelectedColumn = -1;
   }
 
   /**
@@ -75,10 +82,10 @@ class HiddenColumns extends BasePlugin {
     this.addHook('afterContextMenuDefaultOptions', (options) => this.onAfterContextMenuDefaultOptions(options));
     this.addHook('afterGetCellMeta', (row, col, cellProperties) => this.onAfterGetCellMeta(row, col, cellProperties));
     this.addHook('modifyColWidth', (width, col) => this.onModifyColWidth(width, col));
+    this.addHook('beforeSetRangeStart', (coords) => this.onBeforeSetRangeStart(coords));
     this.addHook('beforeSetRangeEnd', (coords) => this.onBeforeSetRangeEnd(coords));
     this.addHook('hiddenColumn', (column) => this.isHidden(column));
     this.addHook('beforeStretchingColumnWidth', (width, column) => this.onBeforeStretchingColumnWidth(width, column));
-    this.addHook('afterColumnMove', (startColumn, endColumns) => this.onAfterColumnMove(startColumn, endColumns));
     this.addHook('afterCreateCol', (index, amount) => this.onAfterCreateCol(index, amount));
     this.addHook('afterRemoveCol', (index, amount) => this.onAfterRemoveCol(index, amount));
 
@@ -102,6 +109,7 @@ class HiddenColumns extends BasePlugin {
     this.settings = {};
     this.hiddenColumns = [];
     this.lastSelectedColumn = -1;
+    this.firstSelectedColumn = -1;
 
     this.hot.render();
     super.disablePlugin();
@@ -254,32 +262,35 @@ class HiddenColumns extends BasePlugin {
         cellProperties.renderer = cellProperties.baseRenderer;
         cellProperties.baseRenderer = null;
       }
-
     }
 
-    if (this.isHidden(col - 1)) {
+    if (this.isHidden(this.getLogicalColumnIndex(cellProperties.visualCol - 1))) {
       let firstSectionHidden = true;
-      let i = col - 1;
+      let i = cellProperties.visualCol - 1;
 
-      cellProperties.className = cellProperties.className || ' afterHiddenColumn';
+      cellProperties.className = cellProperties.className || '';
+
+      if (cellProperties.className.indexOf('afterHiddenColumn') === -1) {
+        cellProperties.className += ' afterHiddenColumn';
+      }
 
       do {
-        if (!this.isHidden(i)) {
+        if (!this.isHidden(this.getLogicalColumnIndex(i))) {
           firstSectionHidden = false;
           break;
         }
         i--;
       } while (i >= 0);
 
-      if (firstSectionHidden && cellProperties.className.indexOf('firstVisible') === -1) {
-        cellProperties.className += ' firstVisible';
+      if (firstSectionHidden && cellProperties.className.indexOf('firstVisibleColumn') === -1) {
+        cellProperties.className += ' firstVisibleColumn';
       }
     } else if (cellProperties.className) {
       let classArr = cellProperties.className.split(' ');
 
       if (classArr.length) {
         let containAfterHiddenColumn = classArr.indexOf('afterHiddenColumn');
-        let containFirstVisible = classArr.indexOf('firstVisible');
+        let containFirstVisible = classArr.indexOf('firstVisibleColumn');
 
         if (containAfterHiddenColumn > -1) {
           classArr.splice(containAfterHiddenColumn, 1);
@@ -344,7 +355,26 @@ class HiddenColumns extends BasePlugin {
    * @param {HTMLElement} TH
    */
   onAfterGetColHeader(col, TH) {
-    if (!this.settings.indicators || this.isHidden(this.getLogicalColumnIndex(col))) {
+    if (this.isHidden(this.getLogicalColumnIndex(col))) {
+      return;
+    }
+
+    let firstSectionHidden = true;
+    let i = col - 1;
+
+    do {
+      if (!this.isHidden(this.getLogicalColumnIndex(i))) {
+        firstSectionHidden = false;
+        break;
+      }
+      i--;
+    } while (i >= 0);
+
+    if (firstSectionHidden) {
+      addClass(TH, 'firstVisibleColumn');
+    }
+
+    if (!this.settings.indicators) {
       return;
     }
 
@@ -355,6 +385,37 @@ class HiddenColumns extends BasePlugin {
     if (this.isHidden(this.getLogicalColumnIndex(col + 1)) && col > -1) {
       addClass(TH, 'beforeHiddenColumn');
     }
+  }
+
+  /**
+   * On before set range start listener.
+   *
+   * @private
+   * @param {Object} coords Object with `row` and `col` properties.
+   */
+  onBeforeSetRangeStart(coords) {
+    if (coords.col > 0) {
+      return;
+    }
+
+    coords.col = 0;
+
+    let getNextColumn = (col) => {
+      let logicalCol = this.getLogicalColumnIndex(col);
+
+      if (this.isHidden(logicalCol)) {
+        if (this.firstSelectedColumn > col) {
+          col = getNextColumn(++col);
+        } else {
+          col = getNextColumn(++col);
+        }
+      }
+
+      return col;
+    };
+
+    coords.col = getNextColumn(coords.col);
+    this.firstSelectedColumn = coords.col;
   }
 
   /**
@@ -420,12 +481,6 @@ class HiddenColumns extends BasePlugin {
           this.hot.render();
           this.hot.view.wt.wtOverlays.adjustElementsSize(true);
 
-          if (start < 1) {
-            this.hot.scrollViewportTo(void 0, start);
-
-          } else {
-            this.hot.scrollViewportTo(void 0, start - 1);
-          }
         },
         disabled: false,
         hidden: () => {
@@ -549,19 +604,6 @@ class HiddenColumns extends BasePlugin {
       }
       tempHidden.push(col);
     });
-    this.hiddenColumns = tempHidden;
-  }
-
-  onAfterColumnMove(startIndex, newIndex) {
-    let tempHidden = [];
-
-    arrayEach(this.hiddenColumns, (col) => {
-      if (col >= newIndex && col < startIndex) {
-        col += amount;
-      }
-      tempHidden.push(col);
-    });
-
     this.hiddenColumns = tempHidden;
   }
 

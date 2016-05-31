@@ -26,6 +26,7 @@
   content: '\25B6';
 }
 
-.handsontable td.afterHiddenColumn.firstVisible {
+.handsontable td.afterHiddenColumn.firstVisibleColumn,
+.handsontable th.afterHiddenColumn.firstVisibleColumn {
   border-left: 1px solid #CCC;
 }

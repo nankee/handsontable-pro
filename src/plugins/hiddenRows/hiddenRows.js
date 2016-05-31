@@ -71,6 +71,13 @@ class HiddenRows extends BasePlugin {
      * @default -1
      */
     this.lastSelectedRow = -1;
+    /**
+     * First selected row index.
+     *
+     * @type {Number}
+     * @default -1
+     */
+    this.firstSelectedRow = -1;
   }
 
   /**
@@ -113,6 +120,7 @@ class HiddenRows extends BasePlugin {
     this.addHook('afterContextMenuDefaultOptions', (options) => this.onAfterContextMenuDefaultOptions(options));
     this.addHook('afterGetCellMeta', (row, col, cellProperties) => this.onAfterGetCellMeta(row, col, cellProperties));
     this.addHook('modifyRowHeight', (height, row) => this.onModifyRowHeight(height, row));
+    this.addHook('beforeSetRangeStart', (coords) => this.onBeforeSetRangeStart(coords));
     this.addHook('beforeSetRangeEnd', (coords) => this.onBeforeSetRangeEnd(coords));
     this.addHook('hiddenRow', (row) => this.isHidden(row));
     this.addHook('afterRowMove', (start, end) => this.onAfterRowMove(start, end));
@@ -139,6 +147,7 @@ class HiddenRows extends BasePlugin {
     this.settings = {};
     this.hiddenRows = [];
     this.lastSelectedRow = -1;
+    this.firstSelectedRow = -1;
 
     super.disablePlugin();
     this.resetCellsMeta();
@@ -228,6 +237,45 @@ class HiddenRows extends BasePlugin {
     } else {
       cellProperties.skipRowOnPaste = false;
     }
+
+    if (this.isHidden(row - 1)) {
+      let firstSectionHidden = true;
+      let i = row - 1;
+
+      cellProperties.className = cellProperties.className || '';
+
+      if (cellProperties.className.indexOf('afterHiddenRow') === -1) {
+        cellProperties.className += ' afterHiddenRow';
+      }
+
+      do {
+        if (!this.isHidden(i)) {
+          firstSectionHidden = false;
+          break;
+        }
+        i--;
+      } while (i >= 0);
+
+      if (firstSectionHidden && cellProperties.className.indexOf('firstVisibleRow') === -1) {
+        cellProperties.className += ' firstVisibleRow';
+      }
+    } else if (cellProperties.className) {
+      let classArr = cellProperties.className.split(' ');
+
+      if (classArr.length) {
+        let containAfterHiddenColumn = classArr.indexOf('afterHiddenRow');
+        let containFirstVisible = classArr.indexOf('firstVisibleRow');
+
+        if (containAfterHiddenColumn > -1) {
+          classArr.splice(containAfterHiddenColumn, 1);
+        }
+        if (containFirstVisible > -1) {
+          classArr.splice(containFirstVisible, 1);
+        }
+
+        cellProperties.className = classArr.join(' ');
+      }
+    }
   }
 
   /**
@@ -247,6 +295,22 @@ class HiddenRows extends BasePlugin {
         removeClass(tr, 'hide');
       }
     }
+
+    let firstSectionHidden = true;
+    let i = row - 1;
+
+    do {
+      if (!this.isHidden(i)) {
+        firstSectionHidden = false;
+        break;
+      }
+      i--;
+    } while (i >= 0);
+
+    if (firstSectionHidden) {
+      addClass(th, 'firstVisibleRow');
+    }
+
     if (this.settings.indicators && this.hot.hasRowHeaders()) {
       if (this.isHidden(row - 1)) {
         addClass(th, 'afterHiddenRow');
@@ -313,6 +377,35 @@ class HiddenRows extends BasePlugin {
   }
 
   /**
+   * On before set range start listener.
+   *
+   * @private
+   * @param {Object} coords Object with `row` and `col` properties.
+   */
+  onBeforeSetRangeStart(coords) {
+    if (coords.row > 0) {
+      return;
+    }
+    coords.row = 0;
+
+    let getNextRow = (row) => {
+
+      if (this.isHidden(row)) {
+        if (this.firstSelectedRow > row) {
+          row = getNextRow(++row);
+        } else {
+          row = getNextRow(++row);
+        }
+      }
+
+      return row;
+    };
+    coords.row = getNextRow(coords.row);
+
+    this.firstSelectedRow = coords.row;
+  }
+
+  /**
    * On before set range end listener.
    *
    * @private
@@ -366,12 +459,6 @@ class HiddenRows extends BasePlugin {
           this.hot.render();
           this.hot.view.wt.wtOverlays.adjustElementsSize(true);
 
-          if (start < 1) {
-            this.hot.scrollViewportTo(start);
-
-          } else {
-            this.hot.scrollViewportTo(start - 1);
-          }
         },
         disabled: false,
         hidden: () => {
