@@ -543,6 +543,50 @@ describe('Filters UI', function() {
     });
   });
 
+  it('should deselect all values in "Filter by value" after clicking "Clear" link', function() {
+    var hot = handsontable({
+      data: getDataForFilters(),
+      columns: getColumnsForFilters(),
+      filters: true,
+      dropdownMenu: true,
+      width: 500,
+      height: 300
+    });
+
+    dropdownMenu(1);
+
+    waits(100);
+    runs(function() {
+      $(dropdownMenuRootElement().querySelector('.htUIClearAll a')).simulate('click');
+
+      expect(byValueMultipleSelect().items.map(function(o) { return o.checked }).indexOf(true)).toBe(-1);
+    });
+  });
+
+  it('should select all values in "Filter by value" after clicking "Select all" link', function() {
+    var hot = handsontable({
+      data: getDataForFilters(),
+      columns: getColumnsForFilters(),
+      filters: true,
+      dropdownMenu: true,
+      width: 500,
+      height: 300
+    });
+
+    dropdownMenu(1);
+
+    waits(100);
+    runs(function() {
+      $(dropdownMenuRootElement().querySelector('.htUIClearAll a')).simulate('click');
+
+      expect(byValueMultipleSelect().items.map(function(o) { return o.checked }).indexOf(true)).toBe(-1);
+
+      $(dropdownMenuRootElement().querySelector('.htUISelectAll a')).simulate('click');
+
+      expect(byValueMultipleSelect().items.map(function(o) { return o.checked }).indexOf(false)).toBe(-1);
+    });
+  });
+
   describe('Simple filtering (one column)', function() {
     it('should filter empty values and revert back after removing filter', function() {
       var hot = handsontable({
