@@ -159,10 +159,17 @@ class ValueComponent extends BaseComponent {
   reset() {
     let values = this._getColumnVisibleValues();
 
-    let transformToItems = function(values) {
+    const transformToItems = function(values) {
       let result = [];
 
-      arrayEach(values, (value) => result.push({checked: true, value}));
+      arrayEach(values, (value) => {
+        let visualValue = value;
+
+        if (visualValue === '') {
+          visualValue = '(Blank cells)';
+        }
+        result.push({checked: true, value, visualValue});
+      });
 
       return result;
     };

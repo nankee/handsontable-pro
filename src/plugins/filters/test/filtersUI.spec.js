@@ -12,534 +12,561 @@ describe('Filters UI', function() {
     }
   });
 
-  it('should display conditional filter component under dropdown menu', function() {
-    var hot = handsontable({
-      data: getDataForFilters(),
-      columns: getColumnsForFilters(),
-      filters: true,
-      dropdownMenu: true,
-      width: 500,
-      height: 300
+  describe('Conditional component', function() {
+    it('should display conditional filter component under dropdown menu', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
+
+      dropdownMenu(1);
+
+      expect(dropdownMenuRootElement().querySelector('.htFiltersMenuCondition .htFiltersMenuLabel').textContent).toBe('Filter by condition:');
     });
 
-    dropdownMenu(1);
+    it('should appear conditional options menu after UISelect element click', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
 
-    expect(dropdownMenuRootElement().querySelector('.htFiltersMenuCondition .htFiltersMenuLabel').textContent).toBe('Filter by condition:');
-  });
+      expect(document.querySelector('.htFiltersConditionsMenu.handsontable table')).toBeNull();
 
-  it('should display "by value" filter component under dropdown menu', function() {
-    var hot = handsontable({
-      data: getDataForFilters(),
-      columns: getColumnsForFilters(),
-      filters: true,
-      dropdownMenu: true,
-      width: 500,
-      height: 300
+      dropdownMenu(1);
+      $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+
+      expect(document.querySelector('.htFiltersConditionsMenu.handsontable table')).not.toBeNull();
     });
 
-    dropdownMenu(1);
+    it('should appear conditional options menu in the proper place after UISelect element click', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
+      hot.rootElement.style.marginTop = '1000px';
 
-    expect(byValueMultipleSelect().element.parentNode.querySelector('.htFiltersMenuLabel').textContent).toBe('Filter by value:');
-  });
+      dropdownMenu(1);
+      $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
 
-  it('should appear conditional options menu after UISelect element click', function() {
-    var hot = handsontable({
-      data: getDataForFilters(),
-      columns: getColumnsForFilters(),
-      filters: true,
-      dropdownMenu: true,
-      width: 500,
-      height: 300
+      var rect = document.querySelector('.htFiltersConditionsMenu.handsontable table').getBoundingClientRect();
+
+      expect(rect.top).toBeGreaterThan(500);
+      hot.rootElement.style.marginTop = '';
     });
 
-    expect(document.querySelector('.htFiltersConditionsMenu.handsontable table')).toBeNull();
+    it('should appear specified conditional options menu for text cell types', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
 
-    dropdownMenu(1);
-    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+      dropdownMenu(1);
+      $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
 
-    expect(document.querySelector('.htFiltersConditionsMenu.handsontable table')).not.toBeNull();
-  });
+      var menuItems = $(conditionMenuRootElement()).find('.htCore tr').map(function(){
+        return this.textContent;
+      }).toArray();
 
-  it('should appear conditional options menu in the proper place after UISelect element click', function() {
-    var hot = handsontable({
-      data: getDataForFilters(),
-      columns: getColumnsForFilters(),
-      filters: true,
-      dropdownMenu: true,
-      width: 500,
-      height: 300
-    });
-    hot.rootElement.style.marginTop = '1000px';
-
-    dropdownMenu(1);
-    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
-
-    var rect = document.querySelector('.htFiltersConditionsMenu.handsontable table').getBoundingClientRect();
-
-    expect(rect.top).toBeGreaterThan(500);
-    hot.rootElement.style.marginTop = '';
-  });
-
-  it('should appear specified conditional options menu for text cell types', function() {
-    var hot = handsontable({
-      data: getDataForFilters(),
-      columns: getColumnsForFilters(),
-      filters: true,
-      dropdownMenu: true,
-      width: 500,
-      height: 300
+      expect(menuItems).toEqual([
+        'None',
+        '',
+        'Is empty',
+        'Is not empty',
+        '',
+        'Is equal to',
+        'Is not equal to',
+        '',
+        'Begins with',
+        'Ends with',
+        '',
+        'Contains',
+        'Does not contain',
+      ]);
     });
 
-    dropdownMenu(1);
-    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+    it('should appear specified conditional options menu for numeric cell types', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
 
-    var menuItems = $(conditionMenuRootElement()).find('.htCore tr').map(function(){
-      return this.textContent;
-    }).toArray();
+      dropdownMenu(5);
+      $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
 
-    expect(menuItems).toEqual([
-      'None',
-      '',
-      'Is empty',
-      'Is not empty',
-      '',
-      'Is equal to',
-      'Is not equal to',
-      '',
-      'Begins with',
-      'Ends with',
-      '',
-      'Contains',
-      'Does not contain',
-    ]);
-  });
+      var menuItems = $(conditionMenuRootElement()).find('.htCore tr').map(function(){
+        return this.textContent;
+      }).toArray();
 
-  it('should appear specified conditional options menu for numeric cell types', function() {
-    var hot = handsontable({
-      data: getDataForFilters(),
-      columns: getColumnsForFilters(),
-      filters: true,
-      dropdownMenu: true,
-      width: 500,
-      height: 300
+      expect(menuItems).toEqual([
+        'None',
+        '',
+        'Is empty',
+        'Is not empty',
+        '',
+        'Is equal to',
+        'Is not equal to',
+        '',
+        'Greater than',
+        'Greater than or equal to',
+        'Less than',
+        'Less than or equal to',
+        'Is between',
+        'Is not between'
+      ]);
     });
 
-    dropdownMenu(5);
-    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
-
-    var menuItems = $(conditionMenuRootElement()).find('.htCore tr').map(function(){
-      return this.textContent;
-    }).toArray();
-
-    expect(menuItems).toEqual([
-      'None',
-      '',
-      'Is empty',
-      'Is not empty',
-      '',
-      'Is equal to',
-      'Is not equal to',
-      '',
-      'Greater than',
-      'Greater than or equal to',
-      'Less than',
-      'Less than or equal to',
-      'Is between',
-      'Is not between'
-    ]);
-  });
-
-  it('should appear specified conditional options menu for date cell types', function() {
-    var hot = handsontable({
-      data: getDataForFilters(),
-      columns: getColumnsForFilters(),
-      filters: true,
-      dropdownMenu: true,
-      width: 500,
-      height: 300
-    });
-
-    dropdownMenu(3);
-    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
-
-    var menuItems = $(conditionMenuRootElement()).find('.htCore tr').map(function(){
-      return this.textContent;
-    }).toArray();
-
-    expect(menuItems).toEqual([
-      'None',
-      '',
-      'Is empty',
-      'Is not empty',
-      '',
-      'Is equal to',
-      'Is not equal to',
-      '',
-      'Before',
-      'After',
-      'Is between',
-      '',
-      'Tomorrow',
-      'Today',
-      'Yesterday',
-    ]);
-  });
-
-  it('should appear general conditional options menu for mixed cell types', function() {
-    var hot = handsontable({
-      data: getDataForFilters(),
-      columns: getColumnsForFilters(),
-      filters: true,
-      dropdownMenu: true,
-      width: 500,
-      height: 300,
-      cells: function(row, col) {
-        if (col === 3 && row === 2) {
-          this.type = 'text';
-        }
-      }
-    });
-
-    dropdownMenu(3);
-    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
-
-    var menuItems = $(conditionMenuRootElement()).find('.htCore tr').map(function(){
-      return this.textContent;
-    }).toArray();
-
-    expect(menuItems).toEqual([
-      'None',
-      '',
-      'Is empty',
-      'Is not empty',
-      '',
-      'Is equal to',
-      'Is not equal to',
-      '',
-      'Begins with',
-      'Ends with',
-      '',
-      'Contains',
-      'Does not contain',
-    ]);
-  });
-
-  it('should appear specified conditional options menu depends on cell types when table has all filtered rows', function() {
-    var hot = handsontable({
-      data: getDataForFilters(),
-      columns: getColumnsForFilters(),
-      filters: true,
-      dropdownMenu: true,
-      width: 500,
-      height: 300
-    });
-
-    dropdownMenu(3);
-    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
-
-    // is empty
-    $(conditionMenuRootElement().querySelector('tbody :nth-child(3) td')).simulate('mousedown');
-    $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK')).simulate('click');
-
-    dropdownMenu(3);
-    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
-
-    var menuItems = $(conditionMenuRootElement()).find('.htCore tr').map(function(){
-      return this.textContent;
-    }).toArray();
-
-    expect(menuItems).toEqual([
-      'None',
-      '',
-      'Is empty',
-      'Is not empty',
-      '',
-      'Is equal to',
-      'Is not equal to',
-      '',
-      'Before',
-      'After',
-      'Is between',
-      '',
-      'Tomorrow',
-      'Today',
-      'Yesterday',
-    ]);
-  });
-
-  it('should disappear conditional options menu after outside the table click', function() {
-    var hot = handsontable({
-      data: getDataForFilters(),
-      columns: getColumnsForFilters(),
-      filters: true,
-      dropdownMenu: true,
-      width: 500,
-      height: 300
-    });
-
-    dropdownMenu(1);
-    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
-
-    expect(document.querySelector('.htFiltersConditionsMenu.handsontable table')).not.toBeNull();
-
-    $(document.body).simulate('mousedown');
-
-    expect($(dropdownMenuRootElement()).is(':visible')).toBe(false);
-  });
-
-  it('should disappear conditional options menu after click inside main menu', function() {
-    var hot = handsontable({
-      data: getDataForFilters(),
-      columns: getColumnsForFilters(),
-      filters: true,
-      dropdownMenu: true,
-      width: 500,
-      height: 300
-    });
-
-    dropdownMenu(1);
-    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
-
-    expect(document.querySelector('.htFiltersConditionsMenu.handsontable table')).not.toBeNull();
-
-    $(document.querySelector('.htDropdownMenu.handsontable table tr td')).simulate('mousedown');
-
-    expect($(conditionMenuRootElement()).is(':visible')).toBe(false);
-    expect($(dropdownMenuRootElement()).is(':visible')).toBe(true);
-  });
-
-  it('should disappear conditional options menu after dropdown action click', function() {
-    var hot = handsontable({
-      data: getDataForFilters(),
-      columns: getColumnsForFilters(),
-      filters: true,
-      dropdownMenu: true,
-      width: 500,
-      height: 300
-    });
-
-    dropdownMenu(1);
-    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
-
-    expect(document.querySelector('.htFiltersConditionsMenu.handsontable table')).not.toBeNull();
-
-    $(dropdownMenuRootElement().querySelector('tbody :nth-child(6) td')).simulate('mousedown');
-
-    expect($(dropdownMenuRootElement()).is(':visible')).toBe(false);
-  });
-
-  it('should disappear dropdown menu after hitting ESC key in conditional component', function() {
-    var hot = handsontable({
-      data: getDataForFilters(),
-      columns: getColumnsForFilters(),
-      filters: true,
-      dropdownMenu: true,
-      width: 500,
-      height: 300
-    });
-
-    dropdownMenu(1);
-    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
-    $(conditionMenuRootElement().querySelector('tbody :nth-child(6) td')).simulate('mousedown');
-
-    waitsFor(function() {
-      return document.activeElement.nodeName === 'INPUT';
-    });
-    runs(function() {
-      keyDownUp('esc');
-
-      expect($(conditionMenuRootElement()).is(':visible')).toBe(false);
-      expect($(dropdownMenuRootElement()).is(':visible')).toBe(false);
-    });
-  });
-
-  it('should disappear dropdown menu after hitting ESC key in by value component (search input)', function() {
-    var hot = handsontable({
-      data: getDataForFilters(),
-      columns: getColumnsForFilters(),
-      filters: true,
-      dropdownMenu: true,
-      width: 500,
-      height: 300
-    });
-
-    dropdownMenu(1);
-    byValueMultipleSelect().element.querySelector('input').focus();
-
-    waitsFor(function() {
-      return document.activeElement.nodeName === 'INPUT';
-    });
-    runs(function() {
-      keyDownUp('esc');
-
-      expect($(conditionMenuRootElement()).is(':visible')).toBe(false);
-      expect($(dropdownMenuRootElement()).is(':visible')).toBe(false);
-    });
-  });
-
-  it('should disappear dropdown menu after hitting ESC key in "by value" component (items box)', function() {
-    var hot = handsontable({
-      data: getDataForFilters(),
-      columns: getColumnsForFilters(),
-      filters: true,
-      dropdownMenu: true,
-      width: 500,
-      height: 300
-    });
-
-    dropdownMenu(1);
-    byValueMultipleSelect().itemsBox.listen();
-
-    waitsFor(function() {
-      return byValueMultipleSelect().itemsBox.isListening();
-    });
-    runs(function() {
-      keyDownUp('esc');
-
-      expect($(conditionMenuRootElement()).is(':visible')).toBe(false);
-      expect($(dropdownMenuRootElement()).is(':visible')).toBe(false);
-    });
-  });
-
-  it('shouldn\'t disappear dropdown menu after conditional options menu click', function() {
-    var hot = handsontable({
-      data: getDataForFilters(),
-      columns: getColumnsForFilters(),
-      filters: true,
-      dropdownMenu: true,
-      width: 500,
-      height: 300
-    });
-
-    dropdownMenu(1);
-    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
-    $(conditionMenuRootElement().querySelector('tbody :nth-child(3) td')).simulate('mousedown');
-
-    expect($(dropdownMenuRootElement()).is(':visible')).toBe(true);
-    expect($(conditionMenuRootElement()).is(':visible')).toBe(false);
-  });
-
-  it('should not select separator from conditional menu', function() {
-    var hot = handsontable({
-      data: getDataForFilters(),
-      columns: getColumnsForFilters(),
-      filters: true,
-      dropdownMenu: true,
-      width: 500,
-      height: 300
-    });
-
-    dropdownMenu(1);
-    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
-    // menu separator click
-    $(conditionMenuRootElement().querySelector('tbody :nth-child(2) td')).simulate('mousedown');
-
-    expect($(conditionSelectRootElement()).find('.htUISelectCaption').text()).toBe('None');
-  });
-
-  it('should save state of applied filter for specified column', function() {
-    var hot = handsontable({
-      data: getDataForFilters(),
-      columns: getColumnsForFilters(),
-      dropdownMenu: true,
-      filters: true,
-      width: 500,
-      height: 300
-    });
-
-    dropdownMenu(0);
-    $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
-    // eq
-    $(conditionMenuRootElement().querySelector('tbody :nth-child(6) td')).simulate('mousedown');
-
-    waitsFor(function() {
-      return document.activeElement.nodeName === 'INPUT';
-    });
-    runs(function() {
-      // Is equal to '5'
-      document.activeElement.value = '5';
-      $(document.activeElement).simulate('keyup');
-      $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
-
-      dropdownMenu(0);
-
-      expect(dropdownMenuRootElement().querySelector('.htUISelectCaption').textContent).toBe('Is equal to');
-
-      var inputs = dropdownMenuRootElement().querySelectorAll('.htFiltersMenuCondition .htUIInput input');
-
-      expect($(inputs[0]).is(':visible')).toBe(true);
-      expect(inputs[0].value).toBe('5');
-      expect($(inputs[1]).is(':visible')).toBe(false);
+    it('should appear specified conditional options menu for date cell types', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
 
       dropdownMenu(3);
       $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
-      // between
-      $(conditionMenuRootElement().querySelector('tbody :nth-child(11) td')).simulate('mousedown');
+
+      var menuItems = $(conditionMenuRootElement()).find('.htCore tr').map(function(){
+        return this.textContent;
+      }).toArray();
+
+      expect(menuItems).toEqual([
+        'None',
+        '',
+        'Is empty',
+        'Is not empty',
+        '',
+        'Is equal to',
+        'Is not equal to',
+        '',
+        'Before',
+        'After',
+        'Is between',
+        '',
+        'Tomorrow',
+        'Today',
+        'Yesterday',
+      ]);
     });
-    waitsFor(function() {
-      return document.activeElement.nodeName === 'INPUT';
-    });
-    runs(function() {
-      // Is equal to '5'
-      document.activeElement.value = '5';
-      $(document.activeElement).simulate('keyup');
-      $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
+
+    it('should appear general conditional options menu for mixed cell types', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300,
+        cells: function(row, col) {
+          if (col === 3 && row === 2) {
+            this.type = 'text';
+          }
+        }
+      });
 
       dropdownMenu(3);
+      $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
 
-      expect(dropdownMenuRootElement().querySelector('.htUISelectCaption').textContent).toBe('Is between');
+      var menuItems = $(conditionMenuRootElement()).find('.htCore tr').map(function(){
+        return this.textContent;
+      }).toArray();
 
-      var inputs = dropdownMenuRootElement().querySelectorAll('.htFiltersMenuCondition .htUIInput input');
-
-      expect($(inputs[0]).is(':visible')).toBe(true);
-      expect(inputs[0].value).toBe('5');
-      expect($(inputs[1]).is(':visible')).toBe(true);
-      expect(inputs[1].value).toBe('');
+      expect(menuItems).toEqual([
+        'None',
+        '',
+        'Is empty',
+        'Is not empty',
+        '',
+        'Is equal to',
+        'Is not equal to',
+        '',
+        'Begins with',
+        'Ends with',
+        '',
+        'Contains',
+        'Does not contain',
+      ]);
     });
-  });
 
-  it('should save state of applied filter for specified column when formulas was added from API', function() {
-    var hot = handsontable({
-      data: getDataForFilters(),
-      columns: getColumnsForFilters(),
-      dropdownMenu: true,
-      filters: true,
-      width: 500,
-      height: 300
+    it('should appear specified conditional options menu depends on cell types when table has all filtered rows', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
+
+      dropdownMenu(3);
+      $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+
+      // is empty
+      $(conditionMenuRootElement().querySelector('tbody :nth-child(3) td')).simulate('mousedown');
+      $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK')).simulate('click');
+
+      dropdownMenu(3);
+      $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+
+      var menuItems = $(conditionMenuRootElement()).find('.htCore tr').map(function(){
+        return this.textContent;
+      }).toArray();
+
+      expect(menuItems).toEqual([
+        'None',
+        '',
+        'Is empty',
+        'Is not empty',
+        '',
+        'Is equal to',
+        'Is not equal to',
+        '',
+        'Before',
+        'After',
+        'Is between',
+        '',
+        'Tomorrow',
+        'Today',
+        'Yesterday',
+      ]);
     });
 
-    var filters = hot.getPlugin('filters');
+    it('should disappear conditional options menu after outside the table click', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
 
-    filters.addFormula(1, 'gte', [10]);
-    filters.filter();
+      dropdownMenu(1);
+      $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
 
-    dropdownMenu(1);
+      expect(document.querySelector('.htFiltersConditionsMenu.handsontable table')).not.toBeNull();
 
-    waitsFor(function() {
-      return document.activeElement.nodeName === 'INPUT';
+      $(document.body).simulate('mousedown');
+
+      expect($(dropdownMenuRootElement()).is(':visible')).toBe(false);
     });
-    runs(function() {
-      expect(dropdownMenuRootElement().querySelector('.htUISelectCaption').textContent).toBe('Greater than or equal to');
 
-      var inputs = dropdownMenuRootElement().querySelectorAll('.htFiltersMenuCondition .htUIInput input');
+    it('should disappear conditional options menu after click inside main menu', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
 
-      expect($(inputs[0]).is(':visible')).toBe(true);
-      expect(inputs[0].value).toBe('10');
-      expect($(inputs[1]).is(':visible')).toBe(false);
+      dropdownMenu(1);
+      $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
 
-      filters.clearFormulas(1);
+      expect(document.querySelector('.htFiltersConditionsMenu.handsontable table')).not.toBeNull();
+
+      $(document.querySelector('.htDropdownMenu.handsontable table tr td')).simulate('mousedown');
+
+      expect($(conditionMenuRootElement()).is(':visible')).toBe(false);
+      expect($(dropdownMenuRootElement()).is(':visible')).toBe(true);
+    });
+
+    it('should disappear conditional options menu after dropdown action click', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
+
+      dropdownMenu(1);
+      $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+
+      expect(document.querySelector('.htFiltersConditionsMenu.handsontable table')).not.toBeNull();
+
+      $(dropdownMenuRootElement().querySelector('tbody :nth-child(6) td')).simulate('mousedown');
+
+      expect($(dropdownMenuRootElement()).is(':visible')).toBe(false);
+    });
+
+    it('should disappear dropdown menu after hitting ESC key in conditional component', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
+
+      dropdownMenu(1);
+      $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+      $(conditionMenuRootElement().querySelector('tbody :nth-child(6) td')).simulate('mousedown');
+
+      waitsFor(function() {
+        return document.activeElement.nodeName === 'INPUT';
+      });
+      runs(function() {
+        keyDownUp('esc');
+
+        expect($(conditionMenuRootElement()).is(':visible')).toBe(false);
+        expect($(dropdownMenuRootElement()).is(':visible')).toBe(false);
+      });
+    });
+
+    it('shouldn\'t disappear dropdown menu after conditional options menu click', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
+
+      dropdownMenu(1);
+      $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+      $(conditionMenuRootElement().querySelector('tbody :nth-child(3) td')).simulate('mousedown');
+
+      expect($(dropdownMenuRootElement()).is(':visible')).toBe(true);
+      expect($(conditionMenuRootElement()).is(':visible')).toBe(false);
+    });
+
+    it('should not select separator from conditional menu', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
+
+      dropdownMenu(1);
+      $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+      // menu separator click
+      $(conditionMenuRootElement().querySelector('tbody :nth-child(2) td')).simulate('mousedown');
+
+      expect($(conditionSelectRootElement()).find('.htUISelectCaption').text()).toBe('None');
+    });
+
+    it('should save state of applied filter for specified column', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        dropdownMenu: true,
+        filters: true,
+        width: 500,
+        height: 300
+      });
+
+      dropdownMenu(0);
+      $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+      // eq
+      $(conditionMenuRootElement().querySelector('tbody :nth-child(6) td')).simulate('mousedown');
+
+      waitsFor(function() {
+        return document.activeElement.nodeName === 'INPUT';
+      });
+      runs(function() {
+        // Is equal to '5'
+        document.activeElement.value = '5';
+        $(document.activeElement).simulate('keyup');
+        $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
+
+        dropdownMenu(0);
+
+        expect(dropdownMenuRootElement().querySelector('.htUISelectCaption').textContent).toBe('Is equal to');
+
+        var inputs = dropdownMenuRootElement().querySelectorAll('.htFiltersMenuCondition .htUIInput input');
+
+        expect($(inputs[0]).is(':visible')).toBe(true);
+        expect(inputs[0].value).toBe('5');
+        expect($(inputs[1]).is(':visible')).toBe(false);
+
+        dropdownMenu(3);
+        $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+        // between
+        $(conditionMenuRootElement().querySelector('tbody :nth-child(11) td')).simulate('mousedown');
+      });
+      waitsFor(function() {
+        return document.activeElement.nodeName === 'INPUT';
+      });
+      runs(function() {
+        // Is equal to '5'
+        document.activeElement.value = '5';
+        $(document.activeElement).simulate('keyup');
+        $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
+
+        dropdownMenu(3);
+
+        expect(dropdownMenuRootElement().querySelector('.htUISelectCaption').textContent).toBe('Is between');
+
+        var inputs = dropdownMenuRootElement().querySelectorAll('.htFiltersMenuCondition .htUIInput input');
+
+        expect($(inputs[0]).is(':visible')).toBe(true);
+        expect(inputs[0].value).toBe('5');
+        expect($(inputs[1]).is(':visible')).toBe(true);
+        expect(inputs[1].value).toBe('');
+      });
+    });
+
+    it('should save state of applied filter for specified column when formulas was added from API', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        dropdownMenu: true,
+        filters: true,
+        width: 500,
+        height: 300
+      });
+
+      var filters = hot.getPlugin('filters');
+
+      filters.addFormula(1, 'gte', [10]);
       filters.filter();
 
       dropdownMenu(1);
+
+      waitsFor(function() {
+        return document.activeElement.nodeName === 'INPUT';
+      });
+      runs(function() {
+        expect(dropdownMenuRootElement().querySelector('.htUISelectCaption').textContent).toBe('Greater than or equal to');
+
+        var inputs = dropdownMenuRootElement().querySelectorAll('.htFiltersMenuCondition .htUIInput input');
+
+        expect($(inputs[0]).is(':visible')).toBe(true);
+        expect(inputs[0].value).toBe('10');
+        expect($(inputs[1]).is(':visible')).toBe(false);
+
+        filters.clearFormulas(1);
+        filters.filter();
+
+        dropdownMenu(1);
+      });
+      waits(100);
+      runs(function() {
+        expect(dropdownMenuRootElement().querySelector('.htUISelectCaption').textContent).toBe('None');
+
+        var inputs = dropdownMenuRootElement().querySelectorAll('.htFiltersMenuCondition .htUIInput input');
+
+        expect($(inputs[0]).is(':visible')).toBe(false);
+        expect($(inputs[1]).is(':visible')).toBe(false);
+      });
     });
-    waits(100);
-    runs(function() {
-      expect(dropdownMenuRootElement().querySelector('.htUISelectCaption').textContent).toBe('None');
+  });
 
-      var inputs = dropdownMenuRootElement().querySelectorAll('.htFiltersMenuCondition .htUIInput input');
+  describe('"by value" component', function() {
+    it('should appear under dropdown menu', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
 
-      expect($(inputs[0]).is(':visible')).toBe(false);
-      expect($(inputs[1]).is(':visible')).toBe(false);
+      dropdownMenu(1);
+
+      expect(byValueMultipleSelect().element.parentNode.querySelector('.htFiltersMenuLabel').textContent).toBe('Filter by value:');
+    });
+
+    it('should display empty values as "(Blank cells)"', function() {
+      var data = getDataForFilters();
+      data[3].name = '';
+
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
+
+      dropdownMenu(1);
+
+      expect(byValueMultipleSelect().element.querySelector('.htCore td').textContent).toBe('Alice Blake');
+
+      hot.loadData(data);
+      dropdownMenu(1);
+
+      expect(byValueMultipleSelect().element.querySelector('.htCore td').textContent).toBe('(Blank cells)');
+    });
+
+    it('should disappear after hitting ESC key (focused search input)', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
+
+      dropdownMenu(1);
+      byValueMultipleSelect().element.querySelector('input').focus();
+
+      waitsFor(function() {
+        return document.activeElement.nodeName === 'INPUT';
+      });
+      runs(function() {
+        keyDownUp('esc');
+
+        expect($(conditionMenuRootElement()).is(':visible')).toBe(false);
+        expect($(dropdownMenuRootElement()).is(':visible')).toBe(false);
+      });
+    });
+
+    it('should disappear after hitting ESC key (focused items box)', function() {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
+
+      dropdownMenu(1);
+      byValueMultipleSelect().itemsBox.listen();
+
+      waitsFor(function() {
+        return byValueMultipleSelect().itemsBox.isListening();
+      });
+      runs(function() {
+        keyDownUp('esc');
+
+        expect($(conditionMenuRootElement()).is(':visible')).toBe(false);
+        expect($(dropdownMenuRootElement()).is(':visible')).toBe(false);
+      });
     });
   });
 
