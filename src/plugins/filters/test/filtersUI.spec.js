@@ -521,6 +521,52 @@ describe('Filters UI', function() {
       expect(byValueMultipleSelect().element.querySelector('.htCore td').textContent).toBe('(Blank cells)');
     });
 
+    it('should display `null` values as "(Blank cells)"', function() {
+      var data = getDataForFilters();
+      data[3].name = null;
+
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
+
+      dropdownMenu(1);
+
+      expect(byValueMultipleSelect().element.querySelector('.htCore td').textContent).toBe('Alice Blake');
+
+      hot.loadData(data);
+      dropdownMenu(1);
+
+      expect(byValueMultipleSelect().element.querySelector('.htCore td').textContent).toBe('(Blank cells)');
+    });
+
+    it('should display `undefined` values as "(Blank cells)"', function() {
+      var data = getDataForFilters();
+      data[3].name = void 0;
+
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
+
+      dropdownMenu(1);
+
+      expect(byValueMultipleSelect().element.querySelector('.htCore td').textContent).toBe('Alice Blake');
+
+      hot.loadData(data);
+      dropdownMenu(1);
+
+      expect(byValueMultipleSelect().element.querySelector('.htCore td').textContent).toBe('(Blank cells)');
+    });
+
     it('should disappear after hitting ESC key (focused search input)', function() {
       var hot = handsontable({
         data: getDataForFilters(),

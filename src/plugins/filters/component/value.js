@@ -1,6 +1,6 @@
 import {addClass} from 'handsontable/helpers/dom/element';
 import {stopImmediatePropagation} from 'handsontable/helpers/dom/event';
-import {arrayEach, arrayUnique, arrayFilter} from 'handsontable/helpers/array';
+import {arrayEach, arrayUnique, arrayFilter, arrayMap} from 'handsontable/helpers/array';
 import {sortComparison} from './../utils';
 import {BaseComponent} from './_base';
 import {isKey} from 'handsontable/helpers/unicode';
@@ -172,8 +172,8 @@ class ValueComponent extends BaseComponent {
       return result;
     };
 
+    values = arrayMap(values, (value) => value == null ? '' : value);
     values = arrayUnique(values);
-    values = arrayFilter(values, (value) => !(value === null || value === void 0));
 
     // sort numbers correctly then strings
     values = values.sort(sortComparison);
