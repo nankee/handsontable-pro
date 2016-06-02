@@ -4,6 +4,9 @@ import {rangeEach} from 'handsontable/helpers/number';
 import {arrayEach, arrayFilter} from 'handsontable/helpers/array';
 import {registerPlugin, getPlugin} from 'handsontable/plugins';
 
+import {hideRowItem} from './contextMenuItem/hideRow';
+import {showRowItem} from './contextMenuItem/showRow';
+
 /**
  * @plugin HiddenRows
  * @pro
@@ -113,6 +116,7 @@ class HiddenRows extends BasePlugin {
     this.addHook('afterContextMenuDefaultOptions', (options) => this.onAfterContextMenuDefaultOptions(options));
     this.addHook('afterGetCellMeta', (row, col, cellProperties) => this.onAfterGetCellMeta(row, col, cellProperties));
     this.addHook('modifyRowHeight', (height, row) => this.onModifyRowHeight(height, row));
+    this.addHook('beforeSetRangeStartOnly', (coords) => this.onBeforeSetRangeStart(coords));
     this.addHook('beforeSetRangeEnd', (coords) => this.onBeforeSetRangeEnd(coords));
     this.addHook('hiddenRow', (row) => this.isHidden(row));
     this.addHook('afterRowMove', (start, end) => this.onAfterRowMove(start, end));
@@ -228,6 +232,45 @@ class HiddenRows extends BasePlugin {
     } else {
       cellProperties.skipRowOnPaste = false;
     }
+
+    if (this.isHidden(row - 1)) {
+      let firstSectionHidden = true;
+      let i = row - 1;
+
+      cellProperties.className = cellProperties.className || '';
+
+      if (cellProperties.className.indexOf('afterHiddenRow') === -1) {
+        cellProperties.className += ' afterHiddenRow';
+      }
+
+      do {
+        if (!this.isHidden(i)) {
+          firstSectionHidden = false;
+          break;
+        }
+        i--;
+      } while (i >= 0);
+
+      if (firstSectionHidden && cellProperties.className.indexOf('firstVisibleRow') === -1) {
+        cellProperties.className += ' firstVisibleRow';
+      }
+    } else if (cellProperties.className) {
+      let classArr = cellProperties.className.split(' ');
+
+      if (classArr.length) {
+        let containAfterHiddenColumn = classArr.indexOf('afterHiddenRow');
+        let containFirstVisible = classArr.indexOf('firstVisibleRow');
+
+        if (containAfterHiddenColumn > -1) {
+          classArr.splice(containAfterHiddenColumn, 1);
+        }
+        if (containFirstVisible > -1) {
+          classArr.splice(containFirstVisible, 1);
+        }
+
+        cellProperties.className = classArr.join(' ');
+      }
+    }
   }
 
   /**
@@ -247,6 +290,22 @@ class HiddenRows extends BasePlugin {
         removeClass(tr, 'hide');
       }
     }
+
+    let firstSectionHidden = true;
+    let i = row - 1;
+
+    do {
+      if (!this.isHidden(i)) {
+        firstSectionHidden = false;
+        break;
+      }
+      i--;
+    } while (i >= 0);
+
+    if (firstSectionHidden) {
+      addClass(th, 'firstVisibleRow');
+    }
+
     if (this.settings.indicators && this.hot.hasRowHeaders()) {
       if (this.isHidden(row - 1)) {
         addClass(th, 'afterHiddenRow');
@@ -313,6 +372,31 @@ class HiddenRows extends BasePlugin {
   }
 
   /**
+   * On before set range start listener.
+   *
+   * @private
+   * @param {Object} coords Object with `row` and `col` properties.
+   */
+  onBeforeSetRangeStart(coords) {
+    if (coords.row > 0) {
+      return;
+    }
+
+    coords.row = 0;
+
+    let getNextRow = (row) => {
+
+      if (this.isHidden(row)) {
+        row = getNextRow(++row);
+      }
+
+      return row;
+    };
+
+    coords.row = getNextRow(coords.row);
+  }
+
+  /**
    * On before set range end listener.
    *
    * @private
@@ -324,7 +408,19 @@ class HiddenRows extends BasePlugin {
     let getNextRow = (row) => {
       if (this.isHidden(row)) {
         if (this.lastSelectedRow > row || coords.row === rowCount - 1) {
-          row = getNextRow(--row);
+          if (row > 0) {
+            row = getNextRow(--row);
+
+          } else {
+            rangeEach(0, this.lastSelectedRow, (i) => {
+              if (!this.isHidden(i)) {
+                row = i;
+
+                return false;
+              }
+            });
+          }
+
         } else {
           row = getNextRow(++row);
         }
@@ -332,6 +428,7 @@ class HiddenRows extends BasePlugin {
 
       return row;
     };
+
     coords.row = getNextRow(coords.row);
     this.lastSelectedRow = coords.row;
   }
@@ -343,135 +440,10 @@ class HiddenRows extends BasePlugin {
    * @param {Object} options
    */
   onAfterContextMenuDefaultOptions(options) {
-    let beforeHiddenRows = [];
-    let afterHiddenRows = [];
-
     options.items.push(
       Handsontable.plugins.ContextMenu.SEPARATOR,
-      {
-        key: 'hidden_rows_hide',
-        name: 'Hide row',
-        callback: () => {
-          let {from, to} = this.hot.getSelectedRange();
-          let start = from.row;
-          let end = to.row;
-
-          if (end < start) {
-            start = to.row;
-            end = from.row;
-          }
-
-          rangeEach(start, end, (i) => this.hideRow(i));
-
-          this.hot.render();
-          this.hot.view.wt.wtOverlays.adjustElementsSize(true);
-
-          if (start < 1) {
-            this.hot.scrollViewportTo(start);
-
-          } else {
-            this.hot.scrollViewportTo(start - 1);
-          }
-        },
-        disabled: false,
-        hidden: () => {
-          return !this.hot.selection.selectedHeader.rows;
-        }
-      },
-      {
-        key: 'hidden_rows_show',
-        name: 'Show row',
-        callback: () => {
-          let {from, to} = this.hot.getSelectedRange();
-          let start = from.row;
-          let end = to.row;
-
-          if (end < start) {
-            start = to.row;
-            end = from.row;
-          }
-
-          if (start === end) {
-            if (beforeHiddenRows.length === start) {
-              this.showRows(beforeHiddenRows);
-              beforeHiddenRows = [];
-            }
-            if (afterHiddenRows.length === this.hot.countSourceRows() - (start + 1)) {
-              this.showRows(afterHiddenRows);
-              afterHiddenRows = [];
-            }
-
-          } else {
-            rangeEach(start, end, (i) => this.showRow(i));
-          }
-
-          this.hot.render();
-        },
-        disabled: false,
-        hidden: () => {
-          if (!this.hiddenRows.length) {
-            return true;
-          }
-
-          if (!this.hot.selection.selectedHeader.rows) {
-            return true;
-          }
-
-          beforeHiddenRows = [];
-          afterHiddenRows = [];
-
-          let {from, to} = this.hot.getSelectedRange();
-          let start = from.row;
-          let end = to.row;
-
-          let hiddenInSelection = false;
-
-          if (start === end) {
-            let totalRowsLength = this.hot.countSourceRows();
-
-            rangeEach(0, totalRowsLength, (i) => {
-              let partedHiddenLength = beforeHiddenRows.length + afterHiddenRows.length;
-
-              if (partedHiddenLength === this.hiddenRows.length) {
-                return false;
-              }
-
-              if (i < start) {
-                if (this.hiddenRows.indexOf(i) > -1) {
-                  beforeHiddenRows.push(i);
-                }
-              } else {
-                if (this.hiddenRows.indexOf(i) > -1) {
-                  afterHiddenRows.push(i);
-                }
-              }
-            });
-
-            totalRowsLength = totalRowsLength - 1;
-
-            if ((beforeHiddenRows.length === start && start > 0) ||
-              (afterHiddenRows.length === totalRowsLength - start && start < totalRowsLength)) {
-              hiddenInSelection = true;
-            }
-
-          } else {
-            if (end < start) {
-              start = to.row;
-              end = from.row;
-            }
-
-            rangeEach(start, end, (i) => {
-              if (this.isHidden(i)) {
-                hiddenInSelection = true;
-
-                return false;
-              }
-            });
-          }
-
-          return !hiddenInSelection;
-        }
-      }
+      hideRowItem(this),
+      showRowItem(this)
     );
   }
 
