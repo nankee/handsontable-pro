@@ -500,22 +500,21 @@ class NestedHeaders extends BasePlugin {
 
         if (from.col === to.col) {
           if (lastColIndex <= from.col && coords.col < from.col) {
-            this.hot.selectCell(from.row, to.col, to.row, coords.col);
+            this.hot.selection.setRangeStartOnly(new WalkontableCellCoords(from.row, to.col));
+            this.hot.selection.setRangeEnd(new WalkontableCellCoords(to.row, coords.col));
           } else {
-            this.hot.selectCell(
-              from.row, coords.col < from.col ? coords.col : from.col,
-              to.row, lastColIndex > to.col ? lastColIndex : to.col
-            );
+            this.hot.selection.setRangeStartOnly(new WalkontableCellCoords(from.row, coords.col < from.col ? coords.col : from.col));
+            this.hot.selection.setRangeEnd(new WalkontableCellCoords(to.row, lastColIndex > to.col ? lastColIndex : to.col));
           }
         }
         if (from.col < to.col) {
-          this.hot.selectCell(
-            from.row, coords.col < from.col ? coords.col : from.col,
-            to.row, lastColIndex
-          );
+          this.hot.selection.setRangeStartOnly(new WalkontableCellCoords(from.row, coords.col < from.col ? coords.col : from.col));
+          this.hot.selection.setRangeEnd(new WalkontableCellCoords(to.row, lastColIndex));
+
         }
         if (from.col > to.col) {
-          this.hot.selectCell(from.row, from.col, to.row, coords.col);
+          this.hot.selection.setRangeStartOnly(new WalkontableCellCoords(from.row, from.col));
+          this.hot.selection.setRangeEnd(new WalkontableCellCoords(to.row, coords.col));
         }
       }
     }

@@ -433,7 +433,8 @@ describe('HiddenColumns', function() {
       var hot = handsontable({
         data: getMultilineData(5, 10),
         hiddenColumns: {
-          columns: [2, 3]
+          columns: [2, 3],
+          indicators: true
         },
         width: 500,
         height: 300,
@@ -443,9 +444,9 @@ describe('HiddenColumns', function() {
 
       var header = $('.ht_clone_top tr:eq(0)');
 
-      header.find('th:eq(2)').simulate('mousedown');
-      header.find('th:eq(3)').simulate('mouseover');
-      header.find('th:eq(3)').simulate('mouseup');
+      header.find('th:eq(1)').simulate('mousedown');
+      header.find('th:eq(4)').simulate('mouseover');
+      header.find('th:eq(4)').simulate('mouseup');
 
       contextMenu();
 
