@@ -76,9 +76,6 @@ export function showRowItem(hiddenRowsPlugin) {
         }
 
       } else {
-        start = Math.min(from.row, to.row);
-        end = Math.max(from.row, to.row);
-
         rangeEach(start, end, (i) => {
           if (hiddenRowsPlugin.isHidden(i)) {
             hiddenInSelection = true;

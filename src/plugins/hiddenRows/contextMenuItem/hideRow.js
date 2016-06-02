@@ -6,13 +6,8 @@ export function hideRowItem(hiddenRowsPlugin) {
     name: 'Hide row',
     callback: function() {
       let {from, to} = this.getSelectedRange();
-      let start = from.row;
-      let end = to.row;
-
-      if (end < start) {
-        start = to.row;
-        end = from.row;
-      }
+      let start = Math.min(from.row, to.row);
+      let end = Math.max(from.row, to.row);
 
       rangeEach(start, end, (i) => hiddenRowsPlugin.hideRow(i));
 

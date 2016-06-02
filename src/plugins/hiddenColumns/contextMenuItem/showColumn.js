@@ -19,11 +19,11 @@ export function showColumnItem(hiddenColumnsPlugin) {
 
       if (start === end) {
         if (beforeHiddenColumns.length === start) {
-          this.showColumns(beforeHiddenColumns);
+          hiddenColumnsPlugin.showColumns(beforeHiddenColumns);
           beforeHiddenColumns.length = 0;
         }
         if (afterHiddenColumns.length === this.countCols() - (start + 1)) {
-          this.showColumns(afterHiddenColumns);
+          hiddenColumnsPlugin.showColumns(afterHiddenColumns);
           afterHiddenColumns.length = 0;
         }
 
