@@ -122,7 +122,7 @@ class MultipleSelectUI extends BaseUI {
       this.itemsBox = new Handsontable(wrapper, {
         data: valueToItems(this.items, this.options.value),
         columns: [
-          {data: 'checked', type: 'checkbox', label: {property: 'value', position: 'after'}}
+          {data: 'checked', type: 'checkbox', label: {property: 'visualValue', position: 'after'}}
         ],
         autoWrapCol: true,
         colWidths: 150,
@@ -233,6 +233,13 @@ class MultipleSelectUI extends BaseUI {
 
 export {MultipleSelectUI};
 
+/**
+ * Pick up object items based on selected values.
+ *
+ * @param {Array} availableItems Base collection to compare values.
+ * @param selectedValue Flat array with selected values.
+ * @returns {Array}
+ */
 function valueToItems(availableItems, selectedValue) {
   return arrayMap(availableItems, (item) => {
     item.checked = selectedValue.indexOf(item.value) !== -1;
@@ -241,6 +248,12 @@ function valueToItems(availableItems, selectedValue) {
   });
 }
 
+/**
+ * Convert all checked items into flat array.
+ *
+ * @param {Array} availableItems Base collection.
+ * @returns {Array}
+ */
 function itemsToValue(availableItems) {
   let items = [];
 
