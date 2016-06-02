@@ -1,11 +1,11 @@
 import {rangeEach} from 'handsontable/helpers/number';
 
-export function hideRowItem() {
+export function hideRowItem(hiddenRowsPlugin) {
   return {
     key: 'hidden_rows_hide',
     name: 'Hide row',
-    callback: () => {
-      let {from, to} = this.hot.getSelectedRange();
+    callback: function() {
+      let {from, to} = this.getSelectedRange();
       let start = from.row;
       let end = to.row;
 
@@ -14,15 +14,15 @@ export function hideRowItem() {
         end = from.row;
       }
 
-      rangeEach(start, end, (i) => this.hideRow(i));
+      rangeEach(start, end, (i) => hiddenRowsPlugin.hideRow(i));
 
-      this.hot.render();
-      this.hot.view.wt.wtOverlays.adjustElementsSize(true);
+      this.render();
+      this.view.wt.wtOverlays.adjustElementsSize(true);
 
     },
     disabled: false,
-    hidden: () => {
-      return !this.hot.selection.selectedHeader.rows;
+    hidden: function() {
+      return !this.selection.selectedHeader.rows;
     }
   };
 }

@@ -442,8 +442,8 @@ class HiddenRows extends BasePlugin {
   onAfterContextMenuDefaultOptions(options) {
     options.items.push(
       Handsontable.plugins.ContextMenu.SEPARATOR,
-      hideRowItem.call(this),
-      showRowItem.call(this)
+      hideRowItem(this),
+      showRowItem(this)
     );
   }
 

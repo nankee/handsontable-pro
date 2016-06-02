@@ -456,8 +456,8 @@ class HiddenColumns extends BasePlugin {
       {
         name: SEPARATOR
       },
-      hideColumnItem.call(this),
-      showColumnItem.call(this)
+      hideColumnItem(this),
+      showColumnItem(this)
     );
   }
 

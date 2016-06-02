@@ -1,23 +1,23 @@
 import {rangeEach} from 'handsontable/helpers/number';
 
-export function hideColumnItem() {
+export function hideColumnItem(hiddenColumnsPlugin) {
   return {
     key: 'hidden_columns_hide',
     name: 'Hide column',
-    callback: () => {
-      let {from, to} = this.hot.getSelectedRange();
+    callback: function() {
+      let {from, to} = this.getSelectedRange();
       let start = Math.min(from.col, to.col);
       let end = Math.max(from.col, to.col);
 
-      rangeEach(start, end, (i) => this.hideColumn(this.getLogicalColumnIndex(i)));
+      rangeEach(start, end, (i) => hiddenColumnsPlugin.hideColumn(hiddenColumnsPlugin.getLogicalColumnIndex(i)));
 
-      this.hot.render();
-      this.hot.view.wt.wtOverlays.adjustElementsSize(true);
+      this.render();
+      this.view.wt.wtOverlays.adjustElementsSize(true);
 
     },
     disabled: false,
-    hidden: () => {
-      return !this.hot.selection.selectedHeader.cols;
+    hidden: function() {
+      return !this.selection.selectedHeader.cols;
     }
   };
 }
