@@ -147,6 +147,7 @@ class MultipleSelectUI extends BaseUI {
         this.itemsBox.destroy();
       }
 
+      addClass(wrapper, 'htUIMultipleSelectHot');
       this.itemsBox = new Handsontable(wrapper, {
         data: valueToItems(this.items, this.options.value),
         columns: [

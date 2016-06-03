@@ -567,6 +567,48 @@ describe('Filters UI', function() {
       expect(byValueMultipleSelect().element.querySelector('.htCore td').textContent).toBe('(Blank cells)');
     });
 
+    it('shouldn\'t break "by value" items in the next filter stacks', function() {
+      var data = getDataForFilters();
+      data[3].name = void 0;
+
+      var hot = handsontable({
+        data: data,
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
+
+      dropdownMenu(1);
+
+      waits(200);
+      runs(function() {
+        // deselect "(Blank cells)"
+        $(byValueMultipleSelect().element.querySelector('.htUIMultipleSelectHot td input')).simulate('click');
+        $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
+        dropdownMenu(2);
+      });
+      waits(200);
+      runs(function() {
+        // deselect "Alamo"
+        $(byValueMultipleSelect().element.querySelector('.htUIMultipleSelectHot td input')).simulate('click');
+        $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
+        dropdownMenu(1);
+      });
+      waits(200);
+      runs(function() {
+        // select "(Blank cells)"
+        $(byValueMultipleSelect().element.querySelector('.htUIMultipleSelectHot td input')).simulate('click');
+        $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
+        dropdownMenu(2);
+      });
+      waits(200)
+      runs(function() {
+        expect(byValueMultipleSelect().element.querySelector('.htCore td').textContent).toBe('Alamo');
+      });
+    });
+
     it('should disappear after hitting ESC key (focused search input)', function() {
       var hot = handsontable({
         data: getDataForFilters(),
