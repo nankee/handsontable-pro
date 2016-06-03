@@ -48,7 +48,7 @@ export function unifyColumnValues(values) {
 }
 
 /**
- * Intersect 'base' values with 'selected' values and return an array of object. 
+ * Intersect 'base' values with 'selected' values and return an array of object.
  *
  * @param {Array} base An array of base values.
  * @param {Array} selected An array of selected values.
