@@ -14,6 +14,7 @@ class InputUI extends BaseUI {
     return clone({
       placeholder: '',
       type: 'text',
+      tagName: 'input',
     });
   }
 
@@ -37,24 +38,15 @@ class InputUI extends BaseUI {
   build() {
     super.build();
     let priv = privatePool.get(this);
-    let input = priv.input = document.createElement('input');
     let icon = document.createElement('div');
+
+    priv.input = this._element.firstChild;
 
     addClass(this._element, 'htUIInput');
     addClass(icon, 'htUIInputIcon');
-    input.placeholder = this.options.placeholder;
-    input.type = this.options.type;
-    input.value = this.options.value;
 
-    if (this.options.className) {
-      addClass(this._element, this.options.className);
-    }
-    this._element.appendChild(input);
     this._element.appendChild(icon);
 
-    arrayEach(['click', 'input', 'keydown', 'keypress', 'keyup', 'focus',  'blur'], (eventName) => {
-      this.eventManager.addEventListener(input, eventName, (event) => this.runLocalHooks(eventName, event, this));
-    });
     this.update();
   }
 

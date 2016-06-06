@@ -1,11 +1,10 @@
 import {addClass} from 'handsontable/helpers/dom/element';
 import {stopImmediatePropagation} from 'handsontable/helpers/dom/event';
-import {arrayEach, arrayUnique, arrayFilter} from 'handsontable/helpers/array';
-import {sortComparison} from './../utils';
+import {arrayEach, arrayUnique, arrayFilter, arrayMap} from 'handsontable/helpers/array';
+import {stringify} from 'handsontable/helpers/string';
+import {unifyColumnValues, intersectValues} from './../utils';
 import {BaseComponent} from './_base';
-import {InputUI} from './../ui/input';
 import {isKey} from 'handsontable/helpers/unicode';
-import {SelectUI} from './../ui/select';
 import {MultipleSelectUI} from './../ui/multipleSelect';
 import {FORMULA_BY_VALUE, FORMULA_NONE} from './../constants';
 import {getFormulaDescriptor} from './../formulaRegisterer';
@@ -79,22 +78,18 @@ class ValueComponent extends BaseComponent {
       const state = {};
 
       if (formula) {
-        let itemsSnapshot = [];
-        let values = [];
+        let rowValues = arrayMap(filteredRowsFactory(column, formulasStack), (row) => row.value);
 
-        arrayEach(filteredRowsFactory(column, formulasStack), ({value}) => {
-          let checked = false;
+        rowValues = unifyColumnValues(rowValues);
 
-          if (formula.args[0].indexOf(value) >= 0) {
-            checked = true;
-            values.push(value);
+        const selectedValues = [];
+        const itemsSnapshot = intersectValues(rowValues, formula.args[0], (item) => {
+          if (item.checked) {
+            selectedValues.push(item.value);
           }
-          itemsSnapshot.push({checked, value});
         });
 
-        itemsSnapshot = itemsSnapshot.sort((a, b) => sortComparison(a.value, b.value));
-
-        state.args = [values];
+        state.args = [selectedValues];
         state.command = getFormulaDescriptor(FORMULA_BY_VALUE);
         state.itemsSnapshot = itemsSnapshot;
 
@@ -159,23 +154,9 @@ class ValueComponent extends BaseComponent {
   reset() {
     let values = this._getColumnVisibleValues();
 
-    let transformToItems = function(values) {
-      let result = [];
+    values = unifyColumnValues(values);
 
-      arrayEach(values, (value) => result.push({checked: true, value}));
-
-      return result;
-    };
-
-    values = arrayUnique(values);
-    values = arrayFilter(values, (value) => !(value === null || value === void 0));
-
-    // sort numbers correctly then strings
-    values = values.sort(sortComparison);
-
-    let items = transformToItems(values);
-
-    this.getMultipleSelectElement().setItems(items);
+    this.getMultipleSelectElement().setItems(intersectValues(values, values));
     super.reset();
     this.getMultipleSelectElement().setValue(values);
   }

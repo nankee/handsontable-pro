@@ -1,11 +1,9 @@
 import {arrayEach, arrayMap, arrayFilter} from 'handsontable/helpers/array';
 import {FormulaCollection} from './formulaCollection';
 import {DataFilter} from './dataFilter';
-import {sortComparison} from './utils';
 import {mixin, objectEach} from 'handsontable/helpers/object';
 import {curry, debounce} from 'handsontable/helpers/function';
 import {localHooks} from 'handsontable/mixins/localHooks';
-import {FORMULA_BY_VALUE} from './constants';
 
 /**
  * Class which is designed for observing changes in formula collection. When formula is changed by user at specified
