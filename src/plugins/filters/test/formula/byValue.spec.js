@@ -10,6 +10,11 @@ describe('Filters formula (`by_value`)', function() {
     expect(formula(data('2015'), [['2019', '2014', '2015']])).toBe(true);
     expect(formula(data('foo'), [['foo', 'bar', 'baz']])).toBe(true);
     expect(formula(data(-1), [[-9, -3, -1]])).toBe(true);
+    expect(formula(data(null), [[-9, '', -1]])).toBe(true);
+    expect(formula(data(void 0), [[-9, '', -1]])).toBe(true);
+    expect(formula(data(''), [[-9, '', -1]])).toBe(true);
+    expect(formula(data(null), [[-9, null, -1]])).toBe(true);
+    expect(formula(data(void 0), [[-9, void 0, -1]])).toBe(true);
   });
 
   it('should filter not matching values', function() {
