@@ -6,10 +6,25 @@
 .handsontable th div.ht_levelIndicators {
     display: inline-block;
     position: absolute;
+    left: 11px;
+}
+
+.handsontable.innerBorderLeft th div.ht_levelIndicators,
+.handsontable.innerBorderLeft ~ .handsontable th div.ht_levelIndicators {
     right: 10px;
 }
 
 .handsontable th span.ht_levelIndicator {
+    display: inline-block;
+}
+
+.handsontable th span.ht_levelIndicator_empty {
+    display: inline-block;
+    width: 10px;
+}
+
+.handsontable th span.ht_levelIndicator::after {
+    content: "\2510";
     font-size: 9px;
     display: inline-block;
     position: relative;
@@ -23,6 +38,19 @@
 .handsontable th div.ht_nestedRowsButtons {
     display: inline-block;
     position: absolute;
-    right: 0;
+    right: 1px;
     cursor: pointer;
+}
+
+.handsontable th div.ht_nestedRowsButtons.expand::after {
+    content: "\002B";
+}
+
+.handsontable th div.ht_nestedRowsButtons.collapse::after {
+    content: "\002D";
+}
+
+.handsontable.innerBorderLeft th div.ht_nestedRowsButtons,
+.handsontable.innerBorderLeft ~ .handsontable th div.ht_nestedRowsButtons {
+    right: 0;
 }

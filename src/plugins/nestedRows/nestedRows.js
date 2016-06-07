@@ -7,7 +7,8 @@ import {
   addClass,
   hasClass,
   fastInnerHTML,
-  closest
+  closest,
+  getStyle
 } from 'handsontable/helpers/dom/element';
 import {EventManager} from 'handsontable/eventManager';
 import {stopImmediatePropagation} from 'handsontable/helpers/dom/event';
@@ -36,6 +37,13 @@ class NestedRows extends BasePlugin {
      * @type {WeakMap}
      */
     this.parentReference = null;
+
+    /**
+     * Cache for the nesting levels of rows.
+     *
+     * @type {Array}
+     */
+    this.levelCache = null;
     /**
      * Reference to the Hidden Rows plugin.
      *
@@ -68,9 +76,13 @@ class NestedRows extends BasePlugin {
     this.addHook('modifyRowData', (row) => this.onModifyRowData(row));
     this.addHook('modifySourceLength', () => this.onModifySourceLength());
     this.addHook('beforeDataSplice', (index, amount, element) => this.onBeforeDataSplice(index, amount, element));
+    this.addHook('beforeDataFilter', (index, amount, logicRows) => this.onBeforeDataFilter(index, amount, logicRows));
     this.addHook('afterContextMenuDefaultOptions', (defaultOptions) => this.onAfterContextMenuDefaultOptions(defaultOptions));
     this.addHook('afterGetRowHeader', (row, th) => this.onAfterGetRowHeader(row, th));
     this.addHook('beforeOnCellMouseDown', (row, th) => this.onBeforeOnCellMouseDown(row, th));
+
+    this.addHook('afterInit', () => this.onAfterInit());
+    // this.addHook('modifyColWidth', (width, col) => this.onModifyColWidth(width, col));
 
     //testing
     // this.addHook('afterRenderer', (td, row, col, prop, value, cellProperties) => this.onAfterRenderer(td, row, col, prop, value, cellProperties));
@@ -301,6 +313,20 @@ class NestedRows extends BasePlugin {
   }
 
   /**
+   * Check if the provided row/row element has children.
+   *
+   * @param {Number|Object} row Row number or row element.
+   * @returns {Boolean}
+   */
+  hasChildren(row) {
+    if (!isNaN(row)) {
+      row = this.getVisualRowObject(row);
+    }
+
+    return (row.__children && row.__children.length);
+  }
+
+  /**
    * Add a child to the provided parent. It's optional to add a row object as the "element"
    *
    * @param {Object} parent The parent row object.
@@ -321,7 +347,9 @@ class NestedRows extends BasePlugin {
 
     parent.__children.push(element);
 
+    this.refreshLevelCache();
     this.hot.render();
+    this.updateRowHeaderWidth();
   }
 
   /**
@@ -344,7 +372,9 @@ class NestedRows extends BasePlugin {
       }
     }
 
+    this.refreshLevelCache();
     this.hot.render();
+    this.updateRowHeaderWidth();
   }
 
   /**
@@ -361,7 +391,7 @@ class NestedRows extends BasePlugin {
       rowObject = this.getVisualRowObject(row);
     }
 
-    if (rowObject.__children && rowObject.__children.length) {
+    if (this.hasChildren(rowObject)) {
       arrayEach(rowObject.__children, (elem, i) => {
         this.hideNode(elem);
       });
@@ -381,7 +411,7 @@ class NestedRows extends BasePlugin {
 
     this.hiddenRowsPlugin.hideRow(rowIndex);
 
-    if (rowObj.__children && rowObj.__children.length) {
+    if (this.hasChildren(rowObj)) {
       arrayEach(rowObj.__children, (elem, i) => {
         this.hideNode(elem);
       });
@@ -402,7 +432,7 @@ class NestedRows extends BasePlugin {
       rowObject = this.getVisualRowObject(row);
     }
 
-    if (rowObject.__children && rowObject.__children.length) {
+    if (this.hasChildren(rowObject)) {
       arrayEach(rowObject.__children, (elem, i) => {
         this.showNode(elem);
       });
@@ -422,7 +452,7 @@ class NestedRows extends BasePlugin {
 
     this.hiddenRowsPlugin.showRow(rowIndex);
 
-    if (rowObj.__children && rowObj.__children.length) {
+    if (this.hasChildren(rowObj)) {
       arrayEach(rowObj.__children, (elem, i) => {
         this.showNode(elem);
       });
@@ -445,7 +475,7 @@ class NestedRows extends BasePlugin {
       rowObj = this.getVisualRowObject(row);
     }
 
-    if (rowObj.__children && rowObj.__children.length) {
+    if (this.hasChildren(rowObj)) {
       arrayEach(rowObj.__children, (elem, i) => {
         let rowIndex = this.getRowIndex(elem);
 
@@ -457,6 +487,62 @@ class NestedRows extends BasePlugin {
     }
 
     return allHidden;
+  }
+
+  /**
+   * Update the row header width according to number of levels in the dataset.
+   *
+   * @private
+   * @param {Number} deepestLevel Cached deepest level of nesting.
+   */
+  updateRowHeaderWidth(deepestLevel) {
+    if (!deepestLevel) {
+      deepestLevel = Math.max(...this.levelCache);
+    }
+
+    this.hot.updateSettings({
+      // rowHeaderWidth: 50 + 17 * (deepestLevel - 1)
+      rowHeaderWidth: Math.max(50, 20 + 20 * deepestLevel)
+    });
+  }
+
+  /**
+   * Refresh the nesting level depth cache.
+   *
+   * @private
+   */
+  refreshLevelCache() {
+    this.levelCache = [];
+
+    rangeEach(0, this.hot.countRows(), (i) => {
+      this.levelCache[i] = this.getRowLevel(i);
+    });
+  }
+
+  /**
+   * Filter the data by the `logicRows` array.
+   *
+   * @param {Number} index Index of the first row to remove.
+   * @param {Number} amount Number of elements to remove.
+   * @param {Array} logicRows Array of indexes to remove.
+   */
+  filterData(index, amount, logicRows) {
+    const elementsToRemove = [];
+
+    arrayEach(logicRows, (elem, ind) => {
+      elementsToRemove.push(this.getVisualRowObject(elem));
+    });
+
+    arrayEach(elementsToRemove, (elem, ind) => {
+      const indexWithinParent = this.getRowIndexWithinParent(elem);
+      const tempParent = this.getRowParent(elem);
+
+      if (tempParent === null) {
+        this.sourceData.splice(indexWithinParent, 1);
+      } else {
+        tempParent.__children.splice(indexWithinParent, 1);
+      }
+    });
   }
 
   /**
@@ -530,6 +616,25 @@ class NestedRows extends BasePlugin {
       this.sourceData.splice(indexWithinParent, amount, element);
     }
 
+    this.refreshLevelCache();
+
+    return false;
+  }
+
+  /**
+   * Called before the source data filtering. Returning `false` stops the native filtering.
+   *
+   * @private
+   * @param {Number} index
+   * @param {Number} amount
+   * @param {Array} logicRows
+   * @returns {Boolean}
+   */
+  onBeforeDataFilter(index, amount, logicRows) {
+    this.filterData(index, amount, logicRows);
+
+    this.refreshLevelCache();
+
     return false;
   }
 
@@ -588,7 +693,7 @@ class NestedRows extends BasePlugin {
    * @param {HTMLElement} TH row header element.
    */
   onAfterGetRowHeader(row, TH) {
-    let rowLevel = this.getRowLevel(row);
+    let rowLevel = this.levelCache ? this.levelCache[row] : this.getRowLevel(row);
     let rowObject = this.getVisualRowObject(row);
     let innerDiv = TH.getElementsByTagName('DIV')[0];
     let previousIndicators = innerDiv.querySelector('.ht_levelIndicators');
@@ -605,34 +710,60 @@ class NestedRows extends BasePlugin {
     addClass(TH, 'ht_levelIndicators');
 
     if (rowLevel) {
-      let indicatorsContainer = document.createElement('DIV');
+      const indicatorsContainer = document.createElement('DIV');
       addClass(indicatorsContainer, 'ht_levelIndicators');
 
-      rangeEach(0, rowLevel - 1, (i) => {
-        let levelIndicator = document.createElement('SPAN');
-        addClass(levelIndicator, 'ht_levelIndicator');
-        fastInnerHTML(levelIndicator, '&#9488;');
-
+      rangeEach(0, rowLevel - 2, (i) => {
+        const levelIndicator = document.createElement('SPAN');
+        addClass(levelIndicator, 'ht_levelIndicator_empty');
         indicatorsContainer.appendChild(levelIndicator);
       });
+
+      const levelIndicator = document.createElement('SPAN');
+      addClass(levelIndicator, 'ht_levelIndicator');
+      indicatorsContainer.appendChild(levelIndicator);
 
       innerDiv.appendChild(indicatorsContainer);
     }
 
-    if (rowObject.__children && rowObject.__children.length > 0) {
-      let buttonsContainer = document.createElement('DIV');
-      addClass(buttonsContainer, 'ht_nestedRowsButtons');
+    if (this.hasChildren(rowObject)) {
+      const buttonsContainer = document.createElement('DIV');
 
       if (this.areChildrenHidden(row)) {
-        fastInnerHTML(buttonsContainer, '+');
+        addClass(buttonsContainer, 'ht_nestedRowsButtons expand');
+        // fastInnerHTML(buttonsContainer, '+');
 
       } else {
-        fastInnerHTML(buttonsContainer, '-');
+        addClass(buttonsContainer, 'ht_nestedRowsButtons collapse');
+        // fastInnerHTML(buttonsContainer, '-');
       }
 
       innerDiv.appendChild(buttonsContainer);
     }
   }
+
+  // TODO: may need optimization, maybe move it to beforeInit + hook added after structure change?
+  onAfterInit() {
+    this.refreshLevelCache();
+
+    let deepestLevel = Math.max(...this.levelCache);
+
+    if (deepestLevel > 0) {
+      this.updateRowHeaderWidth(deepestLevel);
+    }
+  }
+
+  // onModifyColWidth(width, col) {
+  //
+  //   console.log(col);
+  //
+  //   if (col === -1) {
+  //     let deepestLevel = Math.max(...this.levelCache);
+  //
+  //     return praseInt(50 + 9 * (deepestLevel - 1), 10);
+  //   }
+  //   // console.log(this.deepestLevel);
+  // }
 
   // testing
   onAfterRenderer(td, row, col, prop, value, cellProperties) {
