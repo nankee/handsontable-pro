@@ -8,7 +8,7 @@
   },
   "author": "Handsoncode <hello@handsontable.com>",
   "version": "1.4.1",
-  "compatibleHotVersion": "0.25.1",
+  "compatibleHotVersion": "feature/issue-3565",
   "main": "./dist/handsontable.js",
   "keywords": [
     "data",
