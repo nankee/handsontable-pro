@@ -110,7 +110,7 @@ describe('NestedRows', function() {
   });
 
   describe('API', function() {
-    describe('getVisualRowObject', function() {
+    describe('getDataObject', function() {
       it('should return the data source object corresponding to the provided visual row number', function() {
         var hot = handsontable({
           data: this.complexData,
@@ -119,13 +119,13 @@ describe('NestedRows', function() {
 
         var plugin = hot.getPlugin('nestedRows');
 
-        expect(plugin.getVisualRowObject(-5)).toEqual(null);
-        expect(plugin.getVisualRowObject(0)).toEqual(this.complexData[0]);
-        expect(plugin.getVisualRowObject(2)).toEqual(this.complexData[0].__children[1]);
-        expect(plugin.getVisualRowObject(3)).toEqual(this.complexData[0].__children[1].__children[0]);
-        expect(plugin.getVisualRowObject(5)).toEqual(this.complexData[0].__children[2]);
-        expect(plugin.getVisualRowObject(10)).toEqual(this.complexData[2].__children[1].__children[0]);
-        expect(plugin.getVisualRowObject(15)).toEqual(null);
+        expect(plugin.dataManager.getDataObject(-5)).toEqual(null);
+        expect(plugin.dataManager.getDataObject(0)).toEqual(this.complexData[0]);
+        expect(plugin.dataManager.getDataObject(2)).toEqual(this.complexData[0].__children[1]);
+        expect(plugin.dataManager.getDataObject(3)).toEqual(this.complexData[0].__children[1].__children[0]);
+        expect(plugin.dataManager.getDataObject(5)).toEqual(this.complexData[0].__children[2]);
+        expect(plugin.dataManager.getDataObject(10)).toEqual(this.complexData[2].__children[1].__children[0]);
+        expect(plugin.dataManager.getDataObject(15)).toEqual(null);
 
       });
     });
@@ -139,11 +139,11 @@ describe('NestedRows', function() {
 
         var plugin = hot.getPlugin('nestedRows');
 
-        expect(plugin.getRowIndex(this.complexData[0])).toEqual(0);
-        expect(plugin.getRowIndex(this.complexData[0].__children[1])).toEqual(2);
-        expect(plugin.getRowIndex(this.complexData[0].__children[1].__children[0])).toEqual(3);
-        expect(plugin.getRowIndex(this.complexData[0].__children[2])).toEqual(5);
-        expect(plugin.getRowIndex(this.complexData[2].__children[1].__children[0])).toEqual(10);
+        expect(plugin.dataManager.getRowIndex(this.complexData[0])).toEqual(0);
+        expect(plugin.dataManager.getRowIndex(this.complexData[0].__children[1])).toEqual(2);
+        expect(plugin.dataManager.getRowIndex(this.complexData[0].__children[1].__children[0])).toEqual(3);
+        expect(plugin.dataManager.getRowIndex(this.complexData[0].__children[2])).toEqual(5);
+        expect(plugin.dataManager.getRowIndex(this.complexData[2].__children[1].__children[0])).toEqual(10);
 
       });
     });
@@ -157,13 +157,13 @@ describe('NestedRows', function() {
 
         var plugin = hot.getPlugin('nestedRows');
 
-        expect(plugin.getRowIndexWithinParent(-5)).toEqual(-1);
-        expect(plugin.getRowIndexWithinParent(0)).toEqual(0);
-        expect(plugin.getRowIndexWithinParent(2)).toEqual(1);
-        expect(plugin.getRowIndexWithinParent(3)).toEqual(0);
-        expect(plugin.getRowIndexWithinParent(5)).toEqual(2);
-        expect(plugin.getRowIndexWithinParent(10)).toEqual(0);
-        expect(plugin.getRowIndexWithinParent(15)).toEqual(-1);
+        expect(plugin.dataManager.getRowIndexWithinParent(-5)).toEqual(-1);
+        expect(plugin.dataManager.getRowIndexWithinParent(0)).toEqual(0);
+        expect(plugin.dataManager.getRowIndexWithinParent(2)).toEqual(1);
+        expect(plugin.dataManager.getRowIndexWithinParent(3)).toEqual(0);
+        expect(plugin.dataManager.getRowIndexWithinParent(5)).toEqual(2);
+        expect(plugin.dataManager.getRowIndexWithinParent(10)).toEqual(0);
+        expect(plugin.dataManager.getRowIndexWithinParent(15)).toEqual(-1);
 
       });
     });
@@ -177,7 +177,7 @@ describe('NestedRows', function() {
 
         var plugin = hot.getPlugin('nestedRows');
 
-        expect(plugin.countAllRows()).toEqual(12);
+        expect(plugin.dataManager.countAllRows()).toEqual(12);
 
       });
     });
@@ -191,13 +191,13 @@ describe('NestedRows', function() {
 
         var plugin = hot.getPlugin('nestedRows');
 
-        expect(plugin.countChildren(-5)).toEqual(0);
-        expect(plugin.countChildren(0)).toEqual(5);
-        expect(plugin.countChildren(2)).toEqual(2);
-        expect(plugin.countChildren(3)).toEqual(1);
-        expect(plugin.countChildren(5)).toEqual(0);
-        expect(plugin.countChildren(10)).toEqual(0);
-        expect(plugin.countChildren(15)).toEqual(0);
+        expect(plugin.dataManager.countChildren(-5)).toEqual(0);
+        expect(plugin.dataManager.countChildren(0)).toEqual(5);
+        expect(plugin.dataManager.countChildren(2)).toEqual(2);
+        expect(plugin.dataManager.countChildren(3)).toEqual(1);
+        expect(plugin.dataManager.countChildren(5)).toEqual(0);
+        expect(plugin.dataManager.countChildren(10)).toEqual(0);
+        expect(plugin.dataManager.countChildren(15)).toEqual(0);
 
       });
 
@@ -209,11 +209,11 @@ describe('NestedRows', function() {
 
         var plugin = hot.getPlugin('nestedRows');
 
-        expect(plugin.countChildren(this.complexData[0])).toEqual(5);
-        expect(plugin.countChildren(this.complexData[0].__children[1])).toEqual(2);
-        expect(plugin.countChildren(this.complexData[0].__children[1].__children[0])).toEqual(1);
-        expect(plugin.countChildren(this.complexData[0].__children[2])).toEqual(0);
-        expect(plugin.countChildren(this.complexData[2].__children[1].__children[0])).toEqual(0);
+        expect(plugin.dataManager.countChildren(this.complexData[0])).toEqual(5);
+        expect(plugin.dataManager.countChildren(this.complexData[0].__children[1])).toEqual(2);
+        expect(plugin.dataManager.countChildren(this.complexData[0].__children[1].__children[0])).toEqual(1);
+        expect(plugin.dataManager.countChildren(this.complexData[0].__children[2])).toEqual(0);
+        expect(plugin.dataManager.countChildren(this.complexData[2].__children[1].__children[0])).toEqual(0);
 
       });
     });
@@ -227,13 +227,13 @@ describe('NestedRows', function() {
 
         var plugin = hot.getPlugin('nestedRows');
 
-        expect(plugin.getRowParent(-5)).toEqual(null);
-        expect(plugin.getRowParent(0)).toEqual(null);
-        expect(plugin.getRowParent(2)).toEqual(this.complexData[0]);
-        expect(plugin.getRowParent(3)).toEqual(this.complexData[0].__children[1]);
-        expect(plugin.getRowParent(5)).toEqual(this.complexData[0]);
-        expect(plugin.getRowParent(10)).toEqual(this.complexData[2].__children[1]);
-        expect(plugin.getRowParent(15)).toEqual(null);
+        expect(plugin.dataManager.getRowParent(-5)).toEqual(null);
+        expect(plugin.dataManager.getRowParent(0)).toEqual(null);
+        expect(plugin.dataManager.getRowParent(2)).toEqual(this.complexData[0]);
+        expect(plugin.dataManager.getRowParent(3)).toEqual(this.complexData[0].__children[1]);
+        expect(plugin.dataManager.getRowParent(5)).toEqual(this.complexData[0]);
+        expect(plugin.dataManager.getRowParent(10)).toEqual(this.complexData[2].__children[1]);
+        expect(plugin.dataManager.getRowParent(15)).toEqual(null);
 
       });
 
@@ -245,11 +245,11 @@ describe('NestedRows', function() {
 
         var plugin = hot.getPlugin('nestedRows');
 
-        expect(plugin.getRowParent(this.complexData[0])).toEqual(null);
-        expect(plugin.getRowParent(this.complexData[0].__children[1])).toEqual(this.complexData[0]);
-        expect(plugin.getRowParent(this.complexData[0].__children[1].__children[0])).toEqual(this.complexData[0].__children[1]);
-        expect(plugin.getRowParent(this.complexData[0].__children[2])).toEqual(this.complexData[0]);
-        expect(plugin.getRowParent(this.complexData[2].__children[1].__children[0])).toEqual(this.complexData[2].__children[1]);
+        expect(plugin.dataManager.getRowParent(this.complexData[0])).toEqual(null);
+        expect(plugin.dataManager.getRowParent(this.complexData[0].__children[1])).toEqual(this.complexData[0]);
+        expect(plugin.dataManager.getRowParent(this.complexData[0].__children[1].__children[0])).toEqual(this.complexData[0].__children[1]);
+        expect(plugin.dataManager.getRowParent(this.complexData[0].__children[2])).toEqual(this.complexData[0]);
+        expect(plugin.dataManager.getRowParent(this.complexData[2].__children[1].__children[0])).toEqual(this.complexData[2].__children[1]);
 
       });
     });
@@ -263,13 +263,13 @@ describe('NestedRows', function() {
 
         var plugin = hot.getPlugin('nestedRows');
 
-        expect(plugin.getRowLevel(-5)).toEqual(null);
-        expect(plugin.getRowLevel(0)).toEqual(0);
-        expect(plugin.getRowLevel(2)).toEqual(1);
-        expect(plugin.getRowLevel(3)).toEqual(2);
-        expect(plugin.getRowLevel(5)).toEqual(1);
-        expect(plugin.getRowLevel(10)).toEqual(2);
-        expect(plugin.getRowLevel(15)).toEqual(null);
+        expect(plugin.dataManager.getRowLevel(-5)).toEqual(null);
+        expect(plugin.dataManager.getRowLevel(0)).toEqual(0);
+        expect(plugin.dataManager.getRowLevel(2)).toEqual(1);
+        expect(plugin.dataManager.getRowLevel(3)).toEqual(2);
+        expect(plugin.dataManager.getRowLevel(5)).toEqual(1);
+        expect(plugin.dataManager.getRowLevel(10)).toEqual(2);
+        expect(plugin.dataManager.getRowLevel(15)).toEqual(null);
 
       });
 
@@ -281,11 +281,11 @@ describe('NestedRows', function() {
 
         var plugin = hot.getPlugin('nestedRows');
 
-        expect(plugin.getRowLevel(this.complexData[0])).toEqual(0);
-        expect(plugin.getRowLevel(this.complexData[0].__children[1])).toEqual(1);
-        expect(plugin.getRowLevel(this.complexData[0].__children[1].__children[0])).toEqual(2);
-        expect(plugin.getRowLevel(this.complexData[0].__children[2])).toEqual(1);
-        expect(plugin.getRowLevel(this.complexData[2].__children[1].__children[0])).toEqual(2);
+        expect(plugin.dataManager.getRowLevel(this.complexData[0])).toEqual(0);
+        expect(plugin.dataManager.getRowLevel(this.complexData[0].__children[1])).toEqual(1);
+        expect(plugin.dataManager.getRowLevel(this.complexData[0].__children[1].__children[0])).toEqual(2);
+        expect(plugin.dataManager.getRowLevel(this.complexData[0].__children[2])).toEqual(1);
+        expect(plugin.dataManager.getRowLevel(this.complexData[2].__children[1].__children[0])).toEqual(2);
 
       });
     });
@@ -300,13 +300,13 @@ describe('NestedRows', function() {
         var plugin = hot.getPlugin('nestedRows');
         var parentElement = this.complexData[0].__children[1];
 
-        expect(plugin.countChildren(2)).toEqual(2);
+        expect(plugin.dataManager.countChildren(2)).toEqual(2);
 
         expect(parentElement.__children[0].a).toEqual('a0-a1-a0');
         expect(parentElement.__children[1]).toBeUndefined();
 
-        plugin.addChild(parentElement);
-        expect(plugin.countChildren(2)).toEqual(3);
+        plugin.dataManager.addChild(parentElement);
+        expect(plugin.dataManager.countChildren(2)).toEqual(3);
 
         expect(parentElement.__children[0].a).toEqual('a0-a1-a0');
         expect(parentElement.__children[1].a).toEqual(null);
@@ -325,13 +325,13 @@ describe('NestedRows', function() {
           b: 'test-b'
         };
 
-        expect(plugin.countChildren(2)).toEqual(2);
+        expect(plugin.dataManager.countChildren(2)).toEqual(2);
 
         expect(parentElement.__children[0].a).toEqual('a0-a1-a0');
         expect(parentElement.__children[1]).toBeUndefined();
 
-        plugin.addChild(parentElement, newElement);
-        expect(plugin.countChildren(2)).toEqual(3);
+        plugin.dataManager.addChild(parentElement, newElement);
+        expect(plugin.dataManager.countChildren(2)).toEqual(3);
 
         expect(parentElement.__children[0].a).toEqual('a0-a1-a0');
         expect(parentElement.__children[1].a).toEqual('test-a');
@@ -349,26 +349,26 @@ describe('NestedRows', function() {
 
         var plugin = hot.getPlugin('nestedRows');
         var parentElement = this.complexData[0].__children[1];
-        var grandparent = plugin.getRowParent(parentElement) || this.complexData;
+        var grandparent = plugin.dataManager.getRowParent(parentElement) || this.complexData;
         var child = parentElement.__children[0];
 
         expect(parentElement.__children.length).toEqual(1);
         expect(grandparent.__children ? grandparent.__children.length :  this.complexData.length).toEqual(3);
 
-        plugin.detachFromParent(child);
+        plugin.dataManager.detachFromParent(child);
 
         expect(parentElement.__children.length).toEqual(0);
         expect(grandparent.__children ? grandparent.__children.length :  this.complexData.length).toEqual(4);
         expect(grandparent.__children ? grandparent.__children[3] :  this.complexData[3]).toEqual(child);
 
         parentElement = this.complexData[2];
-        grandparent = plugin.getRowParent(parentElement) || this.complexData;
+        grandparent = plugin.dataManager.getRowParent(parentElement) || this.complexData;
         child = parentElement.__children[1];
 
         expect(parentElement.__children.length).toEqual(2);
         expect(grandparent.__children ? grandparent.__children.length :  this.complexData.length).toEqual(3);
 
-        plugin.detachFromParent(child);
+        plugin.dataManager.detachFromParent(child);
 
         expect(parentElement.__children.length).toEqual(1);
         expect(grandparent.__children ? grandparent.__children.length :  this.complexData.length).toEqual(4);
@@ -384,21 +384,21 @@ describe('NestedRows', function() {
         });
 
         var plugin = hot.getPlugin('nestedRows');
-        var hiddenRowsPlugin = hot.getPlugin('hiddenRows');
+        var trimRowsPlugin = hot.getPlugin('trimRows');
 
-        for (var i = 0; i < plugin.countChildren(0); i++) {
-          expect(hiddenRowsPlugin.isHidden(i + 1)).toEqual(false);
+        for (var i = 0; i < plugin.dataManager.countChildren(0); i++) {
+          expect(trimRowsPlugin.isTrimmed(i + 1)).toEqual(false);
         }
 
-        plugin.hideChildren(0);
+        plugin.collapsingUI.hideChildren(0);
 
-        expect(hiddenRowsPlugin.isHidden(0)).toEqual(false);
+        expect(trimRowsPlugin.isTrimmed(0)).toEqual(false);
 
-        for (var i = 0; i < plugin.countChildren(0); i++) {
-          expect(hiddenRowsPlugin.isHidden(i + 1)).toEqual(true);
+        for (var i = 0; i < plugin.dataManager.countChildren(0); i++) {
+          expect(trimRowsPlugin.isTrimmed(i + 1)).toEqual(true);
         }
 
-        expect(hiddenRowsPlugin.isHidden(plugin.countChildren(0) + 2)).toEqual(false);
+        expect(trimRowsPlugin.isTrimmed(plugin.dataManager.countChildren(0) + 2)).toEqual(false);
       });
 
       it('should hide all children nodes of the row provided as an object', function() {
@@ -408,22 +408,22 @@ describe('NestedRows', function() {
         });
 
         var plugin = hot.getPlugin('nestedRows');
-        var hiddenRowsPlugin = hot.getPlugin('hiddenRows');
+        var trimRowsPlugin = hot.getPlugin('trimRows');
         var child = this.complexData[0];
 
-        for (var i = 0; i < plugin.countChildren(0); i++) {
-          expect(hiddenRowsPlugin.isHidden(i + 1)).toEqual(false);
+        for (var i = 0; i < plugin.dataManager.countChildren(0); i++) {
+          expect(trimRowsPlugin.isTrimmed(i + 1)).toEqual(false);
         }
 
-        plugin.hideChildren(child);
+        plugin.collapsingUI.hideChildren(child);
 
-        expect(hiddenRowsPlugin.isHidden(0)).toEqual(false);
+        expect(trimRowsPlugin.isTrimmed(0)).toEqual(false);
 
-        for (var i = 0; i < plugin.countChildren(0); i++) {
-          expect(hiddenRowsPlugin.isHidden(i + 1)).toEqual(true);
+        for (var i = 0; i < plugin.dataManager.countChildren(0); i++) {
+          expect(trimRowsPlugin.isTrimmed(i + 1)).toEqual(true);
         }
 
-        expect(hiddenRowsPlugin.isHidden(plugin.countChildren(0) + 2)).toEqual(false);
+        expect(trimRowsPlugin.isTrimmed(plugin.dataManager.countChildren(0) + 2)).toEqual(false);
       });
     });
 
@@ -435,13 +435,13 @@ describe('NestedRows', function() {
         });
 
         var plugin = hot.getPlugin('nestedRows');
-        var hiddenRowsPlugin = hot.getPlugin('hiddenRows');
+        var trimRowsPlugin = hot.getPlugin('trimRows');
 
-        plugin.hideChildren(0);
-        plugin.showChildren(0);
+        plugin.collapsingUI.hideChildren(0);
+        plugin.collapsingUI.showChildren(0);
 
-        for (var i = 0; i < plugin.countChildren(0); i++) {
-          expect(hiddenRowsPlugin.isHidden(i + 1)).toEqual(false);
+        for (var i = 0; i < plugin.dataManager.countChildren(0); i++) {
+          expect(trimRowsPlugin.isTrimmed(i + 1)).toEqual(false);
         }
       });
 
@@ -452,14 +452,14 @@ describe('NestedRows', function() {
         });
 
         var plugin = hot.getPlugin('nestedRows');
-        var hiddenRowsPlugin = hot.getPlugin('hiddenRows');
+        var trimRowsPlugin = hot.getPlugin('trimRows');
         var child = this.complexData[0];
 
-        plugin.hideChildren(0);
-        plugin.showChildren(0);
+        plugin.collapsingUI.hideChildren(0);
+        plugin.collapsingUI.showChildren(0);
 
-        for (var i = 0; i < plugin.countChildren(0); i++) {
-          expect(hiddenRowsPlugin.isHidden(i + 1)).toEqual(false);
+        for (var i = 0; i < plugin.dataManager.countChildren(0); i++) {
+          expect(trimRowsPlugin.isTrimmed(i + 1)).toEqual(false);
         }
       });
     });
