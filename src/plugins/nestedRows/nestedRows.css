@@ -31,7 +31,8 @@
     bottom: 3px;
 }
 
-.handsontable th div.ht_nestingLevels span.ht_nestingLevel:first-child {
+.handsontable th div.ht_nestingLevels span.ht_nestingLevel:first-child,
+.handsontable th span.ht_nestingLevel_empty:first-child {
     margin-left: 10px;
 }
 

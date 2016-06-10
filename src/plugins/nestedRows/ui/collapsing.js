@@ -146,15 +146,28 @@ class CollapsingUI extends BaseUI {
       return;
     }
 
+    const row = this.translateTrimmedRow(coords.row);
+
     if (hasClass(event.target, HeadersUI.CSS_CLASSES.button)) {
-      if (this.areChildrenHidden(coords.row)) {
-        this.showChildren(coords.row);
+      if (this.areChildrenHidden(row)) {
+        this.showChildren(row);
       } else {
-        this.hideChildren(coords.row);
+        this.hideChildren(row);
       }
 
       stopImmediatePropagation(event);
     }
+  }
+
+  /**
+   * Translate physical row after trimming to physical base row index.
+   *
+   * @private
+   * @param {Number} row Row index.
+   * @returns {Number} Base row index.
+   */
+  translateTrimmedRow(row) {
+    return this.trimRowsPlugin.rowsMapper.getValueByIndex(row);
   }
 }
 
