@@ -223,6 +223,7 @@ YOU SHALL OBTAIN A COMMERCIAL LICENSE FOR THIS SOFTWARE AT HANDSONTABLE.COM.
 .handsontable .manualColumnMoverGuide.active,
 .handsontable .manualRowMoverGuide.active {
   display: block;
+  z-index: 199;
 }
 
 .handsontable .manualColumnMover:hover,
@@ -284,6 +285,7 @@ YOU SHALL OBTAIN A COMMERCIAL LICENSE FOR THIS SOFTWARE AT HANDSONTABLE.COM.
 .handsontable .manualColumnResizerGuide.active,
 .handsontable .manualRowResizerGuide.active {
   display: block;
+  z-index: 199;
 }
 
 .handsontable .columnSorting {
@@ -487,7 +489,10 @@ AutocompleteRenderer down arrow
 /*
 CheckboxRenderer
 */
-
+.handsontable .htCheckboxRendererInput {
+  display: inline-block;
+  vertical-align: middle;
+}
 .handsontable .htCheckboxRendererInput.noValue {
   opacity: 0.5;
 }
@@ -495,14 +500,6 @@ CheckboxRenderer
   cursor: pointer;
   display: inline-block;
   width: 100%;
-}
-
-/*
-NumericRenderer
-*/
-
-.handsontable .htNumeric {
-  text-align: right;
 }
 
 /*
@@ -1168,6 +1165,38 @@ thead .htCollapseButton:after {
   overflow: hidden;
 }
 /*!
+ * Handsontable HiddenColumns
+ */
+.handsontable th.beforeHiddenColumn {
+  position: relative;
+}
+
+.handsontable th.beforeHiddenColumn::after,
+.handsontable th.afterHiddenColumn::before {
+  content: '\25C0';
+  color: #bbb;
+  position: absolute;
+  right: 1px;
+  top: 2px;
+  font-size: 5pt;
+}
+
+.handsontable th.afterHiddenColumn {
+  position: relative;
+}
+
+.handsontable th.afterHiddenColumn::before {
+  left: 1px;
+  top: 2px;
+  right: auto;
+  content: '\25B6';
+}
+
+.handsontable td.afterHiddenColumn.firstVisibleColumn,
+.handsontable th.afterHiddenColumn.firstVisibleColumn {
+  border-left: 1px solid #CCC;
+}
+/*!
  * Handsontable DropdownMenu
  */
 .handsontable .changeType {
@@ -1413,6 +1442,24 @@ thead .htCollapseButton:after {
   background-color: #d2e0d9;
 }
 
+.handsontable .htUIClearAll, .handsontable .htUISelectAll {
+  display: inline-block;
+  margin: 0 5px;
+}
+.handsontable .htUIClearAll a, .handsontable .htUISelectAll a {
+  color: #3283D8;
+  font-size: 12px;
+}
+.handsontable .htUISelectionControls {
+  text-align: right;
+}
+
+.handsontable .htCheckboxRendererInput {
+  margin: 0 5px 0 0;
+  vertical-align: middle;
+  height: 1em;
+}
+
 
 /* UI elements */
 /* Input */
@@ -1487,20 +1534,23 @@ thead .htCollapseButton:after {
   content: '▲';
   font-size: 7px;
   position: absolute;
-  right: 6px;
+  right: 10px;
   top: 0;
 }
 .handsontable .htUISelectDropdown:before {
   content: '▼';
   font-size: 7px;
   position: absolute;
-  right: 6px;
+  right: 10px;
   top: 8px;
 }
 
 /* SelectMultiple */
 .handsontable .htUIMultipleSelect .handsontable .htCore {
   border: none;
+}
+.handsontable .htUIMultipleSelect .handsontable .htCore td:hover {
+  background-color: #F5F5F5;
 }
 
 .handsontable .htUIMultipleSelectSearch input {
@@ -1696,3 +1746,7 @@ thead .htCollapseButton:after {
   top: -5px;
 }
 
+.handsontable td.afterHiddenRow.firstVisibleRow,
+.handsontable th.afterHiddenRow.firstVisibleRow {
+  border-top: 1px solid #CCC;
+}

@@ -51,7 +51,7 @@ class ActionBarComponent extends BaseComponent {
   getMenuItemDescriptor() {
     return {
       key: 'filter_action_bar',
-      name: '',
+      name: 'Action bar',
       isCommand: false,
       disableSelection: true,
       hidden: () => this.isHidden(),

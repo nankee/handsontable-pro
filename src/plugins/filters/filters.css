@@ -138,6 +138,24 @@
   background-color: #d2e0d9;
 }
 
+.handsontable .htUIClearAll, .handsontable .htUISelectAll {
+  display: inline-block;
+  margin: 0 5px;
+}
+.handsontable .htUIClearAll a, .handsontable .htUISelectAll a {
+  color: #3283D8;
+  font-size: 12px;
+}
+.handsontable .htUISelectionControls {
+  text-align: right;
+}
+
+.handsontable .htCheckboxRendererInput {
+  margin: 0 5px 0 0;
+  vertical-align: middle;
+  height: 1em;
+}
+
 
 /* UI elements */
 /* Input */
@@ -212,20 +230,23 @@
   content: '▲';
   font-size: 7px;
   position: absolute;
-  right: 6px;
+  right: 10px;
   top: 0;
 }
 .handsontable .htUISelectDropdown:before {
   content: '▼';
   font-size: 7px;
   position: absolute;
-  right: 6px;
+  right: 10px;
   top: 8px;
 }
 
 /* SelectMultiple */
 .handsontable .htUIMultipleSelect .handsontable .htCore {
   border: none;
+}
+.handsontable .htUIMultipleSelect .handsontable .htCore td:hover {
+  background-color: #F5F5F5;
 }
 
 .handsontable .htUIMultipleSelectSearch input {

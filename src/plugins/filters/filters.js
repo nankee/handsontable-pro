@@ -200,6 +200,16 @@ class Filters extends BasePlugin {
    * // Add filter "Greater than" 95 to column at index 1
    * hot.getPlugin('filters').addFormula(1, 'gt', [95]);
    * hot.getPlugin('filters').filter();
+   *
+   * // Add filter "Begins with" with value "de" and "Not contains" with value "ing"
+   * hot.getPlugin('filters').addFormula(1, 'begins_with', ['de']);
+   * hot.getPlugin('filters').addFormula(1, 'not_contains', ['ing']);
+   * hot.getPlugin('filters').filter();
+   *
+   * // If you want to add filter formulas with OR operator you can use formula "by_value"
+   * hot.getPlugin('filters').addFormula(1, 'by_value', [['ing', 'ed', 'as', 'on']]);
+   * hot.getPlugin('filters').filter();
+   * // In this case all value's that don't match will be filtered.
    * ```
    * @param {Number} column Column index.
    * @param {String} name Formula short name.

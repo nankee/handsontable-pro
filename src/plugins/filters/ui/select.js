@@ -2,6 +2,7 @@ import {BaseUI} from './_base';
 import {addClass, getWindowScrollTop, getWindowScrollLeft} from 'handsontable/helpers/dom/element';
 import {Menu} from 'handsontable/plugins/contextMenu/menu';
 import {clone, extend} from 'handsontable/helpers/object';
+import {arrayEach} from 'handsontable/helpers/array';
 import {SEPARATOR} from 'handsontable/plugins/contextMenu/predefinedItems';
 
 const privatePool = new WeakMap();
@@ -12,7 +13,10 @@ const privatePool = new WeakMap();
  */
 class SelectUI extends BaseUI {
   static get DEFAULTS() {
-    return clone({});
+    return clone({
+      className: 'htUISelect',
+      wrapIt: false,
+    });
   }
 
   constructor(hotInstance, options) {
@@ -66,20 +70,17 @@ class SelectUI extends BaseUI {
     });
     this.menu.setMenuItems(this.items);
 
-    let caption = privatePool.get(this).caption = document.createElement('div');
-    let dropdown = document.createElement('div');
-    let label = document.createElement('div');
+    const caption = new BaseUI(this.hot, {
+      className: 'htUISelectCaption'
+    });
+    const dropdown = new BaseUI(this.hot, {
+      className: 'htUISelectDropdown'
+    });
 
-    addClass(this._element, 'htUISelect');
-    addClass(caption, 'htUISelectCaption');
-    addClass(dropdown, 'htUISelectDropdown');
-    addClass(label, 'htFiltersMenuLabel');
-
-    this._element.appendChild(caption);
-    this._element.appendChild(dropdown);
+    privatePool.get(this).caption = caption.element;
+    arrayEach([caption, dropdown], (element) => this._element.appendChild(element.element));
 
     this.menu.addLocalHook('select', (command) => this.onMenuSelect(command));
-    this.eventManager.addEventListener(this._element, 'click', (event) => this.runLocalHooks('click', event, this));
     this.update();
   }
 
