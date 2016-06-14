@@ -365,7 +365,7 @@ class DataManager {
     if (newRowParent) {
       newRowParent.__children.splice(indexWithinParent, amount, element);
     } else {
-      this.sourceData.splice(indexWithinParent, amount, element);
+      this.data.splice(indexWithinParent, amount, element);
     }
   }
 
@@ -377,7 +377,7 @@ class DataManager {
   refreshLevelCache() {
     this.levelCache = [];
 
-    rangeEach(0, this.hot.countRows(), (i) => {
+    rangeEach(0, this.countAllRows(), (i) => {
       this.levelCache[i] = this.getRowLevel(i);
     });
   }
