@@ -21,6 +21,8 @@
 .handsontable th span.ht_nestingLevel_empty {
     display: inline-block;
     width: 10px;
+    height: 1px;
+    float: left;
 }
 
 .handsontable th span.ht_nestingLevel::after {
@@ -31,10 +33,6 @@
     bottom: 3px;
 }
 
-.handsontable th div.ht_nestingLevels span.ht_nestingLevel:first-child,
-.handsontable th span.ht_nestingLevel_empty:first-child {
-    margin-left: 10px;
-}
 
 .handsontable th div.ht_nestingButton {
     display: inline-block;

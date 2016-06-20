@@ -283,9 +283,13 @@ class DataManager {
     parent.__children.push(element);
 
     this.refreshLevelCache();
-    this.hot.render();
 
+    const newRowIndex = this.getRowIndex(element);
+
+    this.hot.runHooks('afterCreateRow', newRowIndex, 1);
     this.hot.runHooks('afterAddChild', parent, element);
+
+    this.hot.render();
   }
 
   /**

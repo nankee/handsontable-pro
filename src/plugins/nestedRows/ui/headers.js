@@ -1,4 +1,5 @@
 import {BaseUI} from './_base';
+import {arrayEach} from 'handsontable/helpers/array';
 import {rangeEach} from 'handsontable/helpers/number';
 import {addClass} from 'handsontable/helpers/dom/element';
 
@@ -68,37 +69,31 @@ class HeadersUI extends BaseUI {
   appendLevelIndicators(row, TH) {
     row = this.trimRowsPlugin.rowsMapper.getValueByIndex(row);
 
-    let rowLevel = this.levelCache ? this.levelCache[row] : this.dataManager.getRowLevel(row);
-    let rowObject = this.dataManager.getDataObject(row);
-    let innerDiv = TH.getElementsByTagName('DIV')[0];
-    let previousIndicators = innerDiv.querySelector('.' + HeadersUI.CSS_CLASSES.indicatorContainer);
-    let previousButtons = innerDiv.querySelector('.' + HeadersUI.CSS_CLASSES.button);
+    const rowLevel = this.levelCache ? this.levelCache[row] : this.dataManager.getRowLevel(row);
+    const rowObject = this.dataManager.getDataObject(row);
+    const innerDiv = TH.getElementsByTagName('DIV')[0];
+    const innerSpan = innerDiv.querySelector('span.rowHeader');
+    const previousIndicators = innerDiv.querySelectorAll('[class^="ht_nesting"]');
 
-    if (previousIndicators) {
-      innerDiv.removeChild(previousIndicators);
-    }
-
-    if (previousButtons) {
-      innerDiv.removeChild(previousButtons);
-    }
+    arrayEach(previousIndicators, (elem, i) => {
+      if (elem) {
+        innerDiv.removeChild(elem);
+      }
+    });
 
     addClass(TH, HeadersUI.CSS_CLASSES.indicatorContainer);
 
     if (rowLevel) {
-      const indicatorsContainer = document.createElement('DIV');
-      addClass(indicatorsContainer, HeadersUI.CSS_CLASSES.indicatorContainer);
+      const initialContent = innerSpan.cloneNode(true);
+      innerDiv.innerHTML = '';
 
-      rangeEach(0, rowLevel - 2, (i) => {
+      rangeEach(0, rowLevel - 1, (i) => {
         const levelIndicator = document.createElement('SPAN');
         addClass(levelIndicator, HeadersUI.CSS_CLASSES.emptyIndicator);
-        indicatorsContainer.appendChild(levelIndicator);
+        innerDiv.appendChild(levelIndicator);
       });
 
-      const levelIndicator = document.createElement('SPAN');
-      addClass(levelIndicator, HeadersUI.CSS_CLASSES.indicator);
-      indicatorsContainer.appendChild(levelIndicator);
-
-      innerDiv.appendChild(indicatorsContainer);
+      innerDiv.appendChild(initialContent);
     }
 
     if (this.dataManager.hasChildren(rowObject)) {
@@ -125,7 +120,8 @@ class HeadersUI extends BaseUI {
     if (!deepestLevel) {
       deepestLevel = Math.max(...this.dataManager.levelCache);
     }
-    this.rowHeaderWidthCache = Math.max(50, 20 + 20 * deepestLevel);
+
+    this.rowHeaderWidthCache = Math.max(50, 11 + 10 * deepestLevel + 20);
 
     this.hot.render();
   }

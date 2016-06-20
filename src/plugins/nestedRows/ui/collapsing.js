@@ -63,6 +63,19 @@ class CollapsingUI extends BaseUI {
   }
 
   /**
+   * Show rows provided as an argument.
+   *
+   * @param {Array} rows Rows to show.
+   */
+  showRows(rows) {
+    arrayEach(rows, (elem, i) => {
+      const rowObj = this.dataManager.getDataObject(elem);
+
+      this.showNode(rowObj);
+    });
+  }
+
+  /**
    * Show the children of the row passed as an argument.
    *
    * @param {Number|Object} row Parent row.

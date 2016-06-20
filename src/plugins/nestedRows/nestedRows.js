@@ -1,5 +1,6 @@
 import BasePlugin from 'handsontable/plugins/_base';
 import {registerPlugin} from 'handsontable/plugins';
+import {rangeEach} from 'handsontable/helpers/number';
 import {DataManager} from './data/dataManager';
 import {CollapsingUI} from './ui/collapsing';
 import {HeadersUI} from './ui/headers';
@@ -11,7 +12,7 @@ import {ContextMenuUI} from './ui/contextMenu';
  *
  * @description
  * Blank plugin template. It needs to inherit from the BasePlugin class.
- * @dependencies HiddenRows
+ * @dependencies TrimRows, BindRowsWithHeaders
  */
 class NestedRows extends BasePlugin {
 
@@ -29,6 +30,13 @@ class NestedRows extends BasePlugin {
      * @type {Object}
      */
     this.trimRowsPlugin = null;
+
+    /**
+     * Reference to the BindRowsWithHeaders plugin.
+     *
+     * @type {Object}
+     */
+    this.bindRowsWithHeadersPlugin = null;
 
     /**
      * Reference to the DataManager instance.
@@ -60,6 +68,7 @@ class NestedRows extends BasePlugin {
   enablePlugin() {
     this.sourceData = this.hot.getSourceData();
     this.trimRowsPlugin = this.hot.getPlugin('trimRows');
+    this.bindRowsWithHeadersPlugin = this.hot.getPlugin('bindRowsWithHeaders');
 
     this.dataManager = new DataManager(this, this.hot, this.sourceData);
     this.collapsingUI = new CollapsingUI(this, this.hot, this.trimRowsPlugin);
@@ -73,6 +82,7 @@ class NestedRows extends BasePlugin {
     this.addHook('afterContextMenuDefaultOptions', (defaultOptions) => this.onAfterContextMenuDefaultOptions(defaultOptions));
     this.addHook('afterGetRowHeader', (row, th) => this.onAfterGetRowHeader(row, th));
     this.addHook('beforeOnCellMouseDown', (event, coords, TD) => this.onBeforeOnCellMouseDown(event, coords, TD));
+    this.addHook('beforeRemoveRow', (index, amount) => this.onBeforeRemoveRow(index, amount));
     this.addHook('afterInit', () => this.onAfterInit());
 
     this.addHook('afterAddChild', () => this.headersUI.updateRowHeaderWidth());
@@ -196,12 +206,31 @@ class NestedRows extends BasePlugin {
   }
 
   /**
+   * `beforeRemoveRow` hook callback.
+   *
+   * @param {Number} index Removed row.
+   * @param {Number} amount Amount of removed rows.
+   * @private
+   */
+  onBeforeRemoveRow(index, amount) {
+    const rowsToRemove = [];
+    rangeEach(index, index + amount - 1, (i) => {
+      rowsToRemove.push(i);
+    });
+
+    this.collapsingUI.showRows(rowsToRemove);
+  }
+
+  /**
    * `afterInit` hook callback.
    *
    * @private
    */
   onAfterInit() {
     this.dataManager.refreshLevelCache();
+
+    // Workaround to fix an issue caused by the 'bindRowsWithHeaders' plugin loading before this one.
+    this.bindRowsWithHeadersPlugin.bindStrategy.createMap(this.hot.countSourceRows());
 
     let deepestLevel = Math.max(...this.dataManager.levelCache);
 
