@@ -83,6 +83,7 @@ class NestedRows extends BasePlugin {
     this.addHook('afterGetRowHeader', (row, th) => this.onAfterGetRowHeader(row, th));
     this.addHook('beforeOnCellMouseDown', (event, coords, TD) => this.onBeforeOnCellMouseDown(event, coords, TD));
     this.addHook('beforeRemoveRow', (index, amount) => this.onBeforeRemoveRow(index, amount));
+    this.addHook('afterRemoveRow', (index, amount) => this.headersUI.updateRowHeaderWidth());
     this.addHook('afterInit', () => this.onAfterInit());
 
     this.addHook('afterAddChild', () => this.headersUI.updateRowHeaderWidth());
@@ -230,7 +231,9 @@ class NestedRows extends BasePlugin {
     this.dataManager.refreshLevelCache();
 
     // Workaround to fix an issue caused by the 'bindRowsWithHeaders' plugin loading before this one.
-    this.bindRowsWithHeadersPlugin.bindStrategy.createMap(this.hot.countSourceRows());
+    if (this.bindRowsWithHeadersPlugin.bindStrategy.strategy) {
+      this.bindRowsWithHeadersPlugin.bindStrategy.createMap(this.hot.countSourceRows());
+    }
 
     let deepestLevel = Math.max(...this.dataManager.levelCache);
 

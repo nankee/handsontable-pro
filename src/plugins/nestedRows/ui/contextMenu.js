@@ -36,7 +36,7 @@ class ContextMenuUI extends BaseUI {
       {
         key: 'detach_from_parent',
         name: () => {
-          return 'Detach from parent.';
+          return 'Detach from parent';
         },
         callback: () => {
           let parent = this.dataManager.getDataObject(this.hot.getSelected()[0]);
