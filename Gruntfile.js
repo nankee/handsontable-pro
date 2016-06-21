@@ -112,7 +112,7 @@ module.exports = function(grunt) {
       free: {
         src: [
           'dist/handsontable.min.js',
-          nodeHandsontablePath + 'demo/js/numeral.de-de.js',
+          'dist/numbro/languages.js',
           nodeHandsontablePath + 'demo/js/backbone/lodash.underscore.js',
           nodeHandsontablePath + 'demo/js/backbone/backbone.js',
           nodeHandsontablePath + 'demo/js/backbone/backbone-relational/backbone-relational.js',
@@ -136,7 +136,7 @@ module.exports = function(grunt) {
           ],
           vendor: [
             nodeHandsontablePath + 'demo/js/jquery.min.js',
-            nodeHandsontablePath + 'lib/numeral/numeral.js',
+            'dist/numbro/numbro.js',
             nodeHandsontablePath + 'lib/autoResize/autoResize.js',
             nodeHandsontablePath + 'lib/copyPaste/copyPaste.js',
             nodeHandsontablePath + 'lib/SheetClip/SheetClip.js',
@@ -159,7 +159,6 @@ module.exports = function(grunt) {
       proStandalone: {
         src: [
           'dist/handsontable.js',
-          nodeHandsontablePath + 'demo/js/numeral.de-de.js',
           nodeHandsontablePath + 'demo/js/backbone/lodash.underscore.js',
           nodeHandsontablePath + 'demo/js/backbone/backbone.js',
           nodeHandsontablePath + 'demo/js/backbone/backbone-relational/backbone-relational.js',
@@ -180,6 +179,8 @@ module.exports = function(grunt) {
           ],
           vendor: [
             nodeHandsontablePath + 'demo/js/jquery.min.js',
+            'dist/numbro/languages.js',
+            'dist/numbro/numbro.js',
             nodeHandsontablePath + 'lib/numeral/numeral.js',
             nodeHandsontablePath + 'lib/autoResize/autoResize.js',
             nodeHandsontablePath + 'lib/copyPaste/copyPaste.js',
@@ -204,7 +205,6 @@ module.exports = function(grunt) {
       proFull: {
         src: [
           'dist/handsontable.full.min.js',
-          nodeHandsontablePath + 'demo/js/numeral.de-de.js',
           nodeHandsontablePath + 'demo/js/backbone/lodash.underscore.js',
           nodeHandsontablePath + 'demo/js/backbone/backbone.js',
           nodeHandsontablePath + 'demo/js/backbone/backbone-relational/backbone-relational.js',
@@ -225,6 +225,7 @@ module.exports = function(grunt) {
           ],
           vendor: [
             nodeHandsontablePath + 'demo/js/jquery.min.js',
+            'dist/numbro/languages.js',
             nodeHandsontablePath + 'lib/autoResize/autoResize.js',
             nodeHandsontablePath + 'lib/copyPaste/copyPaste.js',
             nodeHandsontablePath + 'lib/SheetClip/SheetClip.js',
