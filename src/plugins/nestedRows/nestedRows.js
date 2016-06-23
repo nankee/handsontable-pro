@@ -83,9 +83,8 @@ class NestedRows extends BasePlugin {
     this.addHook('afterGetRowHeader', (row, th) => this.onAfterGetRowHeader(row, th));
     this.addHook('beforeOnCellMouseDown', (event, coords, TD) => this.onBeforeOnCellMouseDown(event, coords, TD));
     this.addHook('beforeRemoveRow', (index, amount) => this.onBeforeRemoveRow(index, amount));
-    this.addHook('afterRemoveRow', (index, amount) => this.headersUI.updateRowHeaderWidth());
+    this.addHook('modifyRemovedAmount', (amount, index) => this.onModifyRemovedAmount(amount, index));
     this.addHook('afterInit', () => this.onAfterInit());
-
     this.addHook('afterAddChild', () => this.headersUI.updateRowHeaderWidth());
     this.addHook('afterDetachChild', () => this.headersUI.updateRowHeaderWidth());
     this.addHook('modifyRowHeaderWidth', (rowHeaderWidth) => this.onModifyRowHeaderWidth(rowHeaderWidth));
@@ -214,12 +213,24 @@ class NestedRows extends BasePlugin {
    * @private
    */
   onBeforeRemoveRow(index, amount) {
-    const rowsToRemove = [];
+    index = this.collapsingUI.translateTrimmedRow(index);
+    if (index != null) {
+      const rowsToRemove = [];
+      rangeEach(index, index + amount - 1, (i) => {
+        rowsToRemove.push(i);
+      });
+
+      this.collapsingUI.showRows(rowsToRemove);
+    }
+  }
+
+  onModifyRemovedAmount(amount, index) {
+    let childrenCount = 0;
     rangeEach(index, index + amount - 1, (i) => {
-      rowsToRemove.push(i);
+      childrenCount += this.dataManager.countChildren(this.collapsingUI.translateTrimmedRow(i));
     });
 
-    this.collapsingUI.showRows(rowsToRemove);
+    return amount + childrenCount;
   }
 
   /**

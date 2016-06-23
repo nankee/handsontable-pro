@@ -63,6 +63,7 @@ class HeadersUI extends BaseUI {
   /**
    * Append nesting indicators and buttons to the row headers.
    *
+   * @private
    * @param {Number} row Row index.
    * @param {HTMLElement} TH TH element.
    */

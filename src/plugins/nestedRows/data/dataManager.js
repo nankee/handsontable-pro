@@ -258,7 +258,7 @@ class DataManager {
       row = this.getDataObject(row);
     }
 
-    return (row.__children && row.__children.length);
+    return !!(row.__children && row.__children.length);
   }
 
   /**
@@ -321,6 +321,7 @@ class DataManager {
   /**
    * Filter the data by the `logicRows` array.
    *
+   * @private
    * @param {Number} index Index of the first row to remove.
    * @param {Number} amount Number of elements to remove.
    * @param {Array} logicRows Array of indexes to remove.
@@ -353,6 +354,8 @@ class DataManager {
    * @param {Object} element Row to add.
    */
   spliceData(index, amount, element) {
+    index = this.translateTrimmedRow(index);
+
     let previousElement = this.getDataObject(index - 1);
     let newRowParent = null;
     let indexWithinParent = null;
@@ -384,6 +387,21 @@ class DataManager {
     rangeEach(0, this.countAllRows(), (i) => {
       this.levelCache[i] = this.getRowLevel(i);
     });
+  }
+
+  /**
+   * Translate the row index according to the `TrimRows` plugin.
+   *
+   * @private
+   * @param {Number} row Row index.
+   * @returns {Number}
+   */
+  translateTrimmedRow(row) {
+    if (this.plugin.collapsingUI) {
+      return this.plugin.collapsingUI.translateTrimmedRow(row);
+    } else {
+      return row;
+    }
   }
 }
 
