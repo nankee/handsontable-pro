@@ -294,7 +294,11 @@ class GanttChart extends BasePlugin {
    *
    */
   loadData(data, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
+    this.hot.alter('insert_row', 0, data.length - 1);
+
     this.dataFeed = new GanttChartDataFeed(this.hot, data, startDateColumn, endDateColumn, additionalData, asyncUpdates);
+
+    this.hot.render();
   }
 
   /**
@@ -435,8 +439,8 @@ class GanttChart extends BasePlugin {
       colWidths: 60,
       hiddenColumns: true,
       nestedHeaders: [
-        this.monthHeadersArray,
-        this.weekHeadersArray
+        this.monthHeadersArray.slice(),
+        this.weekHeadersArray.slice()
       ],
       collapsibleColumns: true,
       columnSorting: false
@@ -507,15 +511,6 @@ class GanttChart extends BasePlugin {
   addRangeBar(row, startDate, endDate, additionalData) {
     let startDateColumn = this.dateCalculator.dateToColumn(startDate);
     let endDateColumn = this.dateCalculator.dateToColumn(endDate);
-    let rowCount = this.hot.countRows();
-
-    if (!this.dateCalculator.isValidRangeBarData(startDate, endDate) || startDateColumn === false || endDateColumn === false) {
-      if (row > rowCount - 1) {
-        this.hot.alter('insert_row', rowCount, row - rowCount + 1);
-      }
-
-      return false;
-    }
 
     if (!this.rangeBars[row]) {
       this.rangeBars[row] = {};
@@ -594,18 +589,17 @@ class GanttChart extends BasePlugin {
    */
   renderRangeBar(row, startDateColumn, endDateColumn, additionalData) {
     let currentBar = this.rangeBars[row][startDateColumn];
-    let rowCount = this.hot.countRows();
-
-    if (row > rowCount - 1) {
-      this.hot.alter('insert_row', rowCount, row - rowCount + 1);
-    }
 
     for (let i = startDateColumn; i <= endDateColumn; i++) {
       let cellMeta = this.hot.getCellMeta(row, i);
-      let newClassName = (cellMeta.className || '') + ' rangeBar ' + 'color-green';
+      let newClassName = (cellMeta.className || '') + ' rangeBar';
 
       if ((i === startDateColumn && currentBar.partialStart) || (i === endDateColumn && currentBar.partialEnd)) {
         newClassName += ' partial';
+      }
+
+      if (i === endDateColumn) {
+        newClassName += ' last';
       }
 
       this.hot.setCellMeta(row, i, 'originalClassName', cellMeta.className);
@@ -617,8 +611,6 @@ class GanttChart extends BasePlugin {
       this.cacheRangeBarMeta(row, i, 'className', newClassName);
       this.cacheRangeBarMeta(row, i, 'additionalData', currentBar.additionalData);
     }
-
-    this.hot.render();
   }
 
   /**
