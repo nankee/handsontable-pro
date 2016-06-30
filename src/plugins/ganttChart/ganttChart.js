@@ -512,6 +512,10 @@ class GanttChart extends BasePlugin {
     let startDateColumn = this.dateCalculator.dateToColumn(startDate);
     let endDateColumn = this.dateCalculator.dateToColumn(endDate);
 
+    if (!this.dateCalculator.isValidRangeBarData(startDate, endDate) || !startDateColumn || !endDateColumn) {
+      return false;
+    }
+
     if (!this.rangeBars[row]) {
       this.rangeBars[row] = {};
     }
