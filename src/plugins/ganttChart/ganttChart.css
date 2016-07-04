@@ -5,9 +5,12 @@
   display: block;
 }
 .handsontable.ganttChart td.rangeBar {
-  position: relative;
   background: #48b703;
   border-right-width: 0;
+  position: relative;
+  -webkit-box-shadow: inset 0 3px 0 #ffffff;
+  -moz-box-shadow: inset 0 3px 0 #ffffff;
+  box-shadow: inset 0 3px 0 #ffffff;
 }
 .handsontable.ganttChart td.rangeBar.last {
   border-right-width: 1px;
@@ -21,20 +24,3 @@
 .handsontable.ganttChart td.rangeBar.area.partial {
   background: #A1D8AD;
 }
-
-.handsontable.ganttChart td.rangeBar::after,
-.handsontable.ganttChart td.rangeBar::before{
-  position: absolute;
-  background: #fff;
-  height: 10%;
-  left: 0;
-  width: 100%;
-  content: ' ';
-}
-.handsontable.ganttChart td.rangeBar::after {
-  top: 0;
-}
-.handsontable.ganttChart td.rangeBar::before {
-  bottom: 0;
-}
-
