@@ -22,7 +22,6 @@ class ContextMenuUI extends BaseUI {
 
   appendOptions(defaultOptions) {
     const newEntries = [
-      Handsontable.plugins.ContextMenu.SEPARATOR,
       {
         key: 'add_child',
         name: () => {
@@ -31,6 +30,11 @@ class ContextMenuUI extends BaseUI {
         callback: () => {
           let parent = this.dataManager.getDataObject(this.hot.getSelected()[0]);
           this.dataManager.addChild(parent);
+        },
+        disabled: () => {
+          let selected = this.hot.getSelected();
+
+          return !selected || selected[0] < 0 ||  this.hot.selection.selectedHeader.cols || this.hot.countRows() >= this.hot.getSettings().maxRows;
         }
       },
       {
@@ -39,19 +43,21 @@ class ContextMenuUI extends BaseUI {
           return 'Detach from parent';
         },
         callback: () => {
-          let parent = this.dataManager.getDataObject(this.hot.getSelected()[0]);
-          this.dataManager.detachFromParent(parent);
+          let element = this.dataManager.getDataObject(this.hot.getSelected()[0]);
+          this.dataManager.detachFromParent(this.hot.getSelected());
         },
         disabled: () => {
-          let parent = this.dataManager.getRowParent(this.hot.getSelected()[0]);
-          return !parent;
+          let selected = this.hot.getSelected();
+          let parent = this.dataManager.getRowParent(selected[0]);
+
+          return !parent || !selected || selected[0] < 0 ||  this.hot.selection.selectedHeader.cols || this.hot.countRows() >= this.hot.getSettings().maxRows;
         }
-      }
+      },
+      Handsontable.plugins.ContextMenu.SEPARATOR
     ];
 
     rangeEach(0, defaultOptions.items.length - 1, (i) => {
-      if (defaultOptions.items[i].name === Handsontable.plugins.ContextMenu.SEPARATOR.name && (i > 0 && defaultOptions.items[i - 1].key === 'row_below')) {
-
+      if (i === 0) {
         arrayEach(newEntries, (val, j) => {
           defaultOptions.items.splice(i + j, 0, val);
         });

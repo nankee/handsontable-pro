@@ -18,6 +18,7 @@ class HeadersUI extends BaseUI {
   static get CSS_CLASSES() {
     return {
       indicatorContainer: 'ht_nestingLevels',
+      parent: 'ht_nestingParent',
       indicator: 'ht_nestingLevel',
       emptyIndicator: 'ht_nestingLevel_empty',
       button: 'ht_nestingButton',
@@ -99,6 +100,7 @@ class HeadersUI extends BaseUI {
 
     if (this.dataManager.hasChildren(rowObject)) {
       const buttonsContainer = document.createElement('DIV');
+      addClass(TH, HeadersUI.CSS_CLASSES.parent);
 
       if (this.collapsingUI.areChildrenHidden(row)) {
         addClass(buttonsContainer, HeadersUI.CSS_CLASSES.button + ' ' + HeadersUI.CSS_CLASSES.expandButton);

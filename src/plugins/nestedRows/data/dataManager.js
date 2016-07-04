@@ -295,9 +295,27 @@ class DataManager {
   /**
    * Detach the provided element from its parent and add it right after it.
    *
-   * @param {Object} element Row object.
+   * @param {Object|Array} elements Row object or an array of selected coordinates.
+   * @param {Boolean} [forceRender=true] If true (default), it triggers render after finished.
    */
-  detachFromParent(element) {
+  detachFromParent(elements, forceRender = true) {
+    let element = null;
+    let rowObjects = [];
+
+    if (Array.isArray(elements)) {
+      rangeEach(elements[0], elements[2], (i) => {
+        rowObjects.push(this.getDataObject(i));
+      });
+
+      rangeEach(0, rowObjects.length - 2, (i) => {
+        this.detachFromParent(rowObjects[i], false);
+      });
+
+      element = rowObjects[rowObjects.length - 1];
+    } else {
+      element = elements;
+    }
+
     const indexWithinParent = this.getRowIndexWithinParent(element);
     const parent = this.getRowParent(element);
     const grandparent = this.getRowParent(parent);
@@ -312,8 +330,10 @@ class DataManager {
       }
     }
 
-    this.refreshLevelCache();
-    this.hot.render();
+    if (forceRender) {
+      this.refreshLevelCache();
+      this.hot.render();
+    }
 
     this.hot.runHooks('afterDetachChild', parent, element);
   }

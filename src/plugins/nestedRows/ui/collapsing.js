@@ -1,6 +1,7 @@
 import {BaseUI} from './_base';
 import {stopImmediatePropagation} from 'handsontable/helpers/dom/event';
 import {arrayEach} from 'handsontable/helpers/array';
+import {rangeEach} from 'handsontable/helpers/number';
 import {hasClass} from 'handsontable/helpers/dom/element';
 import {HeadersUI} from './headers';
 
@@ -19,14 +20,16 @@ class CollapsingUI extends BaseUI {
      */
     this.trimRowsPlugin = nestedRowsPlugin.trimRowsPlugin;
     this.dataManager = this.plugin.dataManager;
+    this.collapsedRows = [];
   }
 
   /**
    * Hide the children of the row passed as an argument.
    *
    * @param {Number|Object} row The parent row.
+   * @param {Boolean} [forceRender=true] Whether to render the table after the function ends.
    */
-  hideChildren(row) {
+  hideChildren(row, forceRender = true) {
     let rowObject = null;
 
     if (isNaN(row)) {
@@ -41,7 +44,13 @@ class CollapsingUI extends BaseUI {
       });
     }
 
-    this.hot.render();
+    if (forceRender) {
+      this.renderAndAdjust();
+    }
+
+    if (this.collapsedRows.indexOf(row) > -1) {
+      this.collapsedRows.splice(this.collapsedRows.indexOf(row), 1);
+    }
   }
 
   /**
@@ -79,8 +88,9 @@ class CollapsingUI extends BaseUI {
    * Show the children of the row passed as an argument.
    *
    * @param {Number|Object} row Parent row.
+   * @param {Boolean} [forceRender=true] Whether to render the table after the function ends.
    */
-  showChildren(row) {
+  showChildren(row, forceRender = true) {
     let rowObject = null;
 
     if (isNaN(row)) {
@@ -95,7 +105,43 @@ class CollapsingUI extends BaseUI {
       });
     }
 
-    this.hot.render();
+    if (forceRender) {
+      this.renderAndAdjust();
+    }
+
+    if (this.collapsedRows.indexOf(row) === -1) {
+      this.collapsedRows.push(row);
+    }
+  }
+
+  /**
+   * Collapse all collapsable rows.
+   */
+  hideAll() {
+    const sourceData = this.hot.getSourceData();
+
+    arrayEach(sourceData, (elem, i) => {
+      if (this.dataManager.hasChildren(elem)) {
+        this.hideChildren(elem, false);
+      }
+    });
+
+    this.renderAndAdjust();
+  }
+
+  /**
+   * Expand all collapsable rows.
+   */
+  showAll() {
+    const sourceData = this.hot.getSourceData();
+
+    arrayEach(sourceData, (elem, i) => {
+      if (this.dataManager.hasChildren(elem)) {
+        this.showChildren(elem, false);
+      }
+    });
+
+    this.renderAndAdjust();
   }
 
   /**
@@ -181,6 +227,18 @@ class CollapsingUI extends BaseUI {
    */
   translateTrimmedRow(row) {
     return this.trimRowsPlugin.rowsMapper.getValueByIndex(row);
+  }
+
+  /**
+   * Helper function to render the table and call the `adjustElementsSize` method.
+   *
+   * @private
+   */
+  renderAndAdjust() {
+    this.hot.render();
+
+    // Dirty workaround to prevent scroll height not adjusting to the table height. Needs refactoring in the future.
+    this.hot.view.wt.wtOverlays.adjustElementsSize();
   }
 }
 

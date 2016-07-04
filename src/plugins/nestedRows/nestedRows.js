@@ -1,6 +1,7 @@
 import BasePlugin from 'handsontable/plugins/_base';
 import {registerPlugin} from 'handsontable/plugins';
 import {rangeEach} from 'handsontable/helpers/number';
+import {arrayEach} from 'handsontable/helpers/array';
 import {DataManager} from './data/dataManager';
 import {CollapsingUI} from './ui/collapsing';
 import {HeadersUI} from './ui/headers';
@@ -90,7 +91,10 @@ class NestedRows extends BasePlugin {
     this.addHook('modifyRowHeaderWidth', (rowHeaderWidth) => this.onModifyRowHeaderWidth(rowHeaderWidth));
 
     if (!this.trimRowsPlugin.isEnabled()) {
+
+      // Workaround to prevent calling updateSetttings in the enablePlugin method, which causes many problems.
       this.trimRowsPlugin.enablePlugin();
+      this.hot.getSettings().trimRows = true;
     }
 
     super.enablePlugin();
@@ -224,10 +228,49 @@ class NestedRows extends BasePlugin {
     }
   }
 
+  /**
+   * `modifyRemovedAmount` hook callback.
+   *
+   * @private
+   * @param {Number} amount Initial amount.
+   * @param {Number} index Index of the starting row.
+   * @returns {Number} Modified amount.
+   */
   onModifyRemovedAmount(amount, index) {
     let childrenCount = 0;
+    let lastParents = [];
+
     rangeEach(index, index + amount - 1, (i) => {
-      childrenCount += this.dataManager.countChildren(this.collapsingUI.translateTrimmedRow(i));
+      let isChild = false;
+      let translated = this.collapsingUI.translateTrimmedRow(i);
+      let currentDataObj = this.dataManager.getDataObject(translated);
+
+      if (this.dataManager.hasChildren(currentDataObj)) {
+        lastParents.push(currentDataObj);
+
+        arrayEach(lastParents, (elem) => {
+          if (elem.__children.indexOf(currentDataObj) > -1) {
+            isChild = true;
+            return false;
+          }
+        });
+
+        if (!isChild) {
+          childrenCount += this.dataManager.countChildren(currentDataObj);
+        }
+      }
+
+      isChild = false;
+      arrayEach(lastParents, (elem) => {
+        if (elem.__children.indexOf(currentDataObj) > -1) {
+          isChild = true;
+          return false;
+        }
+      });
+
+      if (isChild) {
+        childrenCount--;
+      }
     });
 
     return amount + childrenCount;
