@@ -14,8 +14,8 @@ describe('NestedRows Collapsing UI', function() {
   });
 
   describe("API", function() {
-    describe('hideChildren', function() {
-      it('should hide all children nodes of the row provided as a number', function() {
+    describe('collapseChildren', function() {
+      it('should collapse all children nodes of the row provided as a number', function() {
         var hot = handsontable({
           data: this.complexData(),
           nestedRows: true
@@ -28,7 +28,7 @@ describe('NestedRows Collapsing UI', function() {
           expect(trimRowsPlugin.isTrimmed(i + 1)).toEqual(false);
         }
 
-        plugin.collapsingUI.hideChildren(0);
+        plugin.collapsingUI.collapseChildren(0);
 
         expect(trimRowsPlugin.isTrimmed(0)).toEqual(false);
 
@@ -39,7 +39,7 @@ describe('NestedRows Collapsing UI', function() {
         expect(trimRowsPlugin.isTrimmed(plugin.dataManager.countChildren(0) + 2)).toEqual(false);
       });
 
-      it('should hide all children nodes of the row provided as an object', function() {
+      it('should collapse all children nodes of the row provided as an object', function() {
         var hot = handsontable({
           data: this.complexData(),
           nestedRows: true
@@ -53,7 +53,7 @@ describe('NestedRows Collapsing UI', function() {
           expect(trimRowsPlugin.isTrimmed(i + 1)).toEqual(false);
         }
 
-        plugin.collapsingUI.hideChildren(child);
+        plugin.collapsingUI.collapseChildren(child);
 
         expect(trimRowsPlugin.isTrimmed(0)).toEqual(false);
 
@@ -65,8 +65,8 @@ describe('NestedRows Collapsing UI', function() {
       });
     });
 
-    describe('showChildren', function() {
-      it('should hide all children nodes of the row provided as a number', function() {
+    describe('expandChildren', function() {
+      it('should collapse all children nodes of the row provided as a number', function() {
         var hot = handsontable({
           data: this.complexData(),
           nestedRows: true
@@ -75,15 +75,15 @@ describe('NestedRows Collapsing UI', function() {
         var plugin = hot.getPlugin('nestedRows');
         var trimRowsPlugin = hot.getPlugin('trimRows');
 
-        plugin.collapsingUI.hideChildren(0);
-        plugin.collapsingUI.showChildren(0);
+        plugin.collapsingUI.collapseChildren(0);
+        plugin.collapsingUI.expandChildren(0);
 
         for (var i = 0; i < plugin.dataManager.countChildren(0); i++) {
           expect(trimRowsPlugin.isTrimmed(i + 1)).toEqual(false);
         }
       });
 
-      it('should hide all children nodes of the row provided as an object', function() {
+      it('should collapse all children nodes of the row provided as an object', function() {
         var hot = handsontable({
           data: this.complexData(),
           nestedRows: true
@@ -93,8 +93,8 @@ describe('NestedRows Collapsing UI', function() {
         var trimRowsPlugin = hot.getPlugin('trimRows');
         var child = hot.getSourceData()[0];
 
-        plugin.collapsingUI.hideChildren(0);
-        plugin.collapsingUI.showChildren(0);
+        plugin.collapsingUI.collapseChildren(0);
+        plugin.collapsingUI.expandChildren(0);
 
         for (var i = 0; i < plugin.dataManager.countChildren(0); i++) {
           expect(trimRowsPlugin.isTrimmed(i + 1)).toEqual(false);
@@ -102,18 +102,18 @@ describe('NestedRows Collapsing UI', function() {
       });
     });
 
-    describe('showRows', function() {
+    describe('expandRows', function() {
       it("Should make the rows provided in the arguments visible", function() {
         var hot = handsontable({
           data: this.complexData(),
           nestedRows: true,
-          trimRows: [1, 2, 3, 4], // "hide" rows using the trimRows plugin
+          trimRows: [1, 2, 3, 4], // "collapse" rows using the trimRows plugin
         });
 
         expect(hot.countRows()).toEqual(8);
 
         var plugin = hot.getPlugin('nestedRows');
-        plugin.collapsingUI.showRows([2]);
+        plugin.collapsingUI.expandRows([2]);
         hot.render();
 
         waits(100);
@@ -125,18 +125,18 @@ describe('NestedRows Collapsing UI', function() {
       });
     });
 
-    describe('showChildren', function() {
+    describe('expandChildren', function() {
       it("Should make the child rows of the provided element visible", function() {
         var hot = handsontable({
           data: this.complexData(),
           nestedRows: true,
-          trimRows: [3, 4], // "hide" rows using the trimRows plugin
+          trimRows: [3, 4], // "collapse" rows using the trimRows plugin
         });
 
         expect(hot.countRows()).toEqual(10);
 
         var plugin = hot.getPlugin('nestedRows');
-        plugin.collapsingUI.showChildren(2);
+        plugin.collapsingUI.expandChildren(2);
         hot.render();
 
         waits(100);
@@ -151,13 +151,13 @@ describe('NestedRows Collapsing UI', function() {
         var hot = handsontable({
           data: this.complexData(),
           nestedRows: true,
-          trimRows: [3, 4], // "hide" rows using the trimRows plugin
+          trimRows: [3, 4], // "collapse" rows using the trimRows plugin
         });
 
         expect(hot.countRows()).toEqual(10);
 
         var plugin = hot.getPlugin('nestedRows');
-        plugin.collapsingUI.showChildren(0);
+        plugin.collapsingUI.expandChildren(0);
         hot.render();
 
         waits(100);

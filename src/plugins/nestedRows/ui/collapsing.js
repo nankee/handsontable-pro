@@ -24,12 +24,12 @@ class CollapsingUI extends BaseUI {
   }
 
   /**
-   * Hide the children of the row passed as an argument.
+   * Collapse the children of the row passed as an argument.
    *
    * @param {Number|Object} row The parent row.
    * @param {Boolean} [forceRender=true] Whether to render the table after the function ends.
    */
-  hideChildren(row, forceRender = true) {
+  collapseChildren(row, forceRender = true) {
     let rowObject = null;
 
     if (isNaN(row)) {
@@ -40,68 +40,7 @@ class CollapsingUI extends BaseUI {
 
     if (this.dataManager.hasChildren(rowObject)) {
       arrayEach(rowObject.__children, (elem, i) => {
-        this.hideNode(elem);
-      });
-    }
-
-    if (forceRender) {
-      this.renderAndAdjust();
-    }
-
-    if (this.collapsedRows.indexOf(row) > -1) {
-      this.collapsedRows.splice(this.collapsedRows.indexOf(row), 1);
-    }
-  }
-
-  /**
-   * Hide a row node and its children.
-   *
-   * @private
-   * @param {Object} rowObj Row object.
-   */
-  hideNode(rowObj) {
-    const rowIndex = this.dataManager.getRowIndex(rowObj);
-
-    this.trimRowsPlugin.trimRow(rowIndex);
-
-    if (this.dataManager.hasChildren(rowObj)) {
-      arrayEach(rowObj.__children, (elem, i) => {
-        this.hideNode(elem);
-      });
-    }
-  }
-
-  /**
-   * Show rows provided as an argument.
-   *
-   * @param {Array} rows Rows to show.
-   */
-  showRows(rows) {
-    arrayEach(rows, (elem, i) => {
-      const rowObj = this.dataManager.getDataObject(elem);
-
-      this.showNode(rowObj);
-    });
-  }
-
-  /**
-   * Show the children of the row passed as an argument.
-   *
-   * @param {Number|Object} row Parent row.
-   * @param {Boolean} [forceRender=true] Whether to render the table after the function ends.
-   */
-  showChildren(row, forceRender = true) {
-    let rowObject = null;
-
-    if (isNaN(row)) {
-      rowObject = row;
-    } else {
-      rowObject = this.dataManager.getDataObject(row);
-    }
-
-    if (this.dataManager.hasChildren(rowObject)) {
-      arrayEach(rowObject.__children, (elem, i) => {
-        this.showNode(elem);
+        this.collapseNode(elem);
       });
     }
 
@@ -115,14 +54,77 @@ class CollapsingUI extends BaseUI {
   }
 
   /**
+   * Collapse a row node and its children.
+   *
+   * @private
+   * @param {Object} rowObj Row object.
+   */
+  collapseNode(rowObj) {
+    const rowIndex = this.dataManager.getRowIndex(rowObj);
+
+    this.trimRowsPlugin.trimRow(rowIndex);
+
+    if (this.dataManager.hasChildren(rowObj)) {
+      arrayEach(rowObj.__children, (elem, i) => {
+        this.collapseNode(elem);
+      });
+    }
+  }
+
+  /**
+   * Expand rows provided as an argument.
+   *
+   * @param {Array} rows Rows to expand.
+   */
+  expandRows(rows) {
+    arrayEach(rows, (elem, i) => {
+      const rowObj = this.dataManager.getDataObject(elem);
+
+      this.expandNode(rowObj);
+    });
+  }
+
+  /**
+   * Expand the children of the row passed as an argument.
+   *
+   * @param {Number|Object} row Parent row.
+   * @param {Boolean} [forceRender=true] Whether to render the table after the function ends.
+   */
+  expandChildren(row, forceRender = true) {
+    let rowObject = null;
+
+    if (isNaN(row)) {
+      rowObject = row;
+    } else {
+      rowObject = this.dataManager.getDataObject(row);
+    }
+
+    this.collapsedRows.splice(this.collapsedRows.indexOf(row), 1);
+
+    if (this.dataManager.hasChildren(rowObject)) {
+      arrayEach(rowObject.__children, (elem, i) => {
+        this.expandNode(elem);
+      });
+    }
+
+    if (forceRender) {
+      this.renderAndAdjust();
+    }
+
+    // if (this.collapsedRows.indexOf(row) > -1) {
+    //   this.collapsedRows.splice(this.collapsedRows.indexOf(row), 1);
+    // }
+  }
+
+  /**
    * Collapse all collapsable rows.
    */
-  hideAll() {
+  collapseAll() {
     const sourceData = this.hot.getSourceData();
 
     arrayEach(sourceData, (elem, i) => {
       if (this.dataManager.hasChildren(elem)) {
-        this.hideChildren(elem, false);
+        this.collapseChildren(elem, false);
       }
     });
 
@@ -132,12 +134,12 @@ class CollapsingUI extends BaseUI {
   /**
    * Expand all collapsable rows.
    */
-  showAll() {
+  expandAll() {
     const sourceData = this.hot.getSourceData();
 
     arrayEach(sourceData, (elem, i) => {
       if (this.dataManager.hasChildren(elem)) {
-        this.showChildren(elem, false);
+        this.expandChildren(elem, false);
       }
     });
 
@@ -145,32 +147,34 @@ class CollapsingUI extends BaseUI {
   }
 
   /**
-   * Show a row node and its children.
+   * Expand a row node and its children.
    *
    * @private
    * @param {Object} rowObj Row object.
    */
-  showNode(rowObj) {
+  expandNode(rowObj) {
     const rowIndex = this.dataManager.getRowIndex(rowObj);
 
-    this.trimRowsPlugin.untrimRow(rowIndex);
+    if (!this.isAnyParentCollapsed(rowObj)) {
+      this.trimRowsPlugin.untrimRow(rowIndex);
+    }
 
     if (this.dataManager.hasChildren(rowObj)) {
       arrayEach(rowObj.__children, (elem, i) => {
-        this.showNode(elem);
+        this.expandNode(elem);
       });
     }
   }
 
   /**
-   * Check if all child rows are hidden.
+   * Check if all child rows are collapsed.
    *
    * @param {Number|Object} row The parent row.
    * @private
    */
-  areChildrenHidden(row) {
+  areChildrenCollapsed(row) {
     let rowObj = null;
-    let allHidden = true;
+    let allCollapsed = true;
 
     if (isNaN(row)) {
       rowObj = row;
@@ -183,13 +187,35 @@ class CollapsingUI extends BaseUI {
         let rowIndex = this.dataManager.getRowIndex(elem);
 
         if (!this.trimRowsPlugin.isTrimmed(rowIndex)) {
-          allHidden = false;
+          allCollapsed = false;
           return false;
         }
       });
     }
 
-    return allHidden;
+    return allCollapsed;
+  }
+
+  /**
+   * Check if any of the row object parents are collapsed.
+   *
+   * @private
+   * @param {Object} rowObj Row object.
+   * @returns {Boolean}
+   */
+  isAnyParentCollapsed(rowObj) {
+    let parent = rowObj;
+
+    while (parent !== null) {
+      parent = this.dataManager.getRowParent(parent);
+      let parentIndex = this.dataManager.getRowIndex(parent);
+
+      if (this.collapsedRows.indexOf(parentIndex) > -1) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -208,10 +234,10 @@ class CollapsingUI extends BaseUI {
     const row = this.translateTrimmedRow(coords.row);
 
     if (hasClass(event.target, HeadersUI.CSS_CLASSES.button)) {
-      if (this.areChildrenHidden(row)) {
-        this.showChildren(row);
+      if (this.areChildrenCollapsed(row)) {
+        this.expandChildren(row);
       } else {
-        this.hideChildren(row);
+        this.collapseChildren(row);
       }
 
       stopImmediatePropagation(event);

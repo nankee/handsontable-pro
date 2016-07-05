@@ -224,7 +224,7 @@ class NestedRows extends BasePlugin {
         rowsToRemove.push(i);
       });
 
-      this.collapsingUI.showRows(rowsToRemove);
+      this.collapsingUI.expandRows(rowsToRemove);
     }
   }
 

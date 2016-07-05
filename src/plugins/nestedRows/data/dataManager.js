@@ -104,6 +104,15 @@ class DataManager {
   }
 
   /**
+   * Update the parent reference map.
+   *
+   * @private
+   */
+  updateParentReference() {
+    this.readTreeNodes({__children: this.data}, 0, this.hot.countRows());
+  }
+
+  /**
    * Get the row index for the provided row object.
    *
    * @param {Object} rowObj The row object.
@@ -335,6 +344,7 @@ class DataManager {
       this.hot.render();
     }
 
+    this.updateParentReference();
     this.hot.runHooks('afterDetachChild', parent, element);
   }
 

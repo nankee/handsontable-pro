@@ -102,7 +102,7 @@ class HeadersUI extends BaseUI {
       const buttonsContainer = document.createElement('DIV');
       addClass(TH, HeadersUI.CSS_CLASSES.parent);
 
-      if (this.collapsingUI.areChildrenHidden(row)) {
+      if (this.collapsingUI.areChildrenCollapsed(row)) {
         addClass(buttonsContainer, HeadersUI.CSS_CLASSES.button + ' ' + HeadersUI.CSS_CLASSES.expandButton);
 
       } else {
