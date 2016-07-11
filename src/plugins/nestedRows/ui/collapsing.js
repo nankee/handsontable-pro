@@ -92,14 +92,17 @@ class CollapsingUI extends BaseUI {
    */
   expandChildren(row, forceRender = true) {
     let rowObject = null;
+    let rowIndex = null;
 
     if (isNaN(row)) {
       rowObject = row;
+      rowIndex = this.dataManager.getRowIndex(row);
     } else {
       rowObject = this.dataManager.getDataObject(row);
+      rowIndex = row;
     }
 
-    this.collapsedRows.splice(this.collapsedRows.indexOf(row), 1);
+    this.collapsedRows.splice(this.collapsedRows.indexOf(rowIndex), 1);
 
     if (this.dataManager.hasChildren(rowObject)) {
       arrayEach(rowObject.__children, (elem, i) => {
@@ -110,10 +113,6 @@ class CollapsingUI extends BaseUI {
     if (forceRender) {
       this.renderAndAdjust();
     }
-
-    // if (this.collapsedRows.indexOf(row) > -1) {
-    //   this.collapsedRows.splice(this.collapsedRows.indexOf(row), 1);
-    // }
   }
 
   /**
@@ -160,9 +159,7 @@ class CollapsingUI extends BaseUI {
     }
 
     if (this.dataManager.hasChildren(rowObj)) {
-      arrayEach(rowObj.__children, (elem, i) => {
-        this.expandNode(elem);
-      });
+      this.expandChildren(rowObj);
     }
   }
 

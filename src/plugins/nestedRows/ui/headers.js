@@ -35,12 +35,12 @@ class HeadersUI extends BaseUI {
      * @type {DataManager}
      */
     this.dataManager = this.plugin.dataManager;
-    /**
-     * Level cache array.
-     *
-     * @type {Array}
-     */
-    this.levelCache = this.dataManager.levelCache;
+    // /**
+    //  * Level cache array.
+    //  *
+    //  * @type {Array}
+    //  */
+    // this.levelCache = this.dataManager.cache.levels;
     /**
      * Reference to the CollapsingUI instance connected with the Nested Rows plugin.
      *
@@ -71,7 +71,7 @@ class HeadersUI extends BaseUI {
   appendLevelIndicators(row, TH) {
     row = this.trimRowsPlugin.rowsMapper.getValueByIndex(row);
 
-    const rowLevel = this.levelCache ? this.levelCache[row] : this.dataManager.getRowLevel(row);
+    const rowLevel = this.dataManager.getRowLevel(row);
     const rowObject = this.dataManager.getDataObject(row);
     const innerDiv = TH.getElementsByTagName('DIV')[0];
     const innerSpan = innerDiv.querySelector('span.rowHeader');
@@ -121,7 +121,7 @@ class HeadersUI extends BaseUI {
    */
   updateRowHeaderWidth(deepestLevel) {
     if (!deepestLevel) {
-      deepestLevel = Math.max(...this.dataManager.levelCache);
+      deepestLevel = Math.max(...this.dataManager.cache.levels);
     }
 
     this.rowHeaderWidthCache = Math.max(50, 11 + 10 * deepestLevel + 20);

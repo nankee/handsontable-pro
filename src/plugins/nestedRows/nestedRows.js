@@ -76,6 +76,8 @@ class NestedRows extends BasePlugin {
     this.headersUI = new HeadersUI(this, this.hot);
     this.contextMenuUI = new ContextMenuUI(this, this.hot);
 
+    this.dataManager.rewriteCache();
+
     this.addHook('modifyRowData', (row) => this.onModifyRowData(row));
     this.addHook('modifySourceLength', () => this.onModifySourceLength());
     this.addHook('beforeDataSplice', (index, amount, element) => this.onBeforeDataSplice(index, amount, element));
@@ -158,7 +160,6 @@ class NestedRows extends BasePlugin {
    */
   onBeforeDataSplice(index, amount, element) {
     this.dataManager.spliceData(index, amount, element);
-    this.dataManager.refreshLevelCache();
 
     return false;
   }
@@ -174,7 +175,6 @@ class NestedRows extends BasePlugin {
    */
   onBeforeDataFilter(index, amount, logicRows) {
     this.dataManager.filterData(index, amount, logicRows);
-    this.dataManager.refreshLevelCache();
 
     return false;
   }
@@ -282,14 +282,12 @@ class NestedRows extends BasePlugin {
    * @private
    */
   onAfterInit() {
-    this.dataManager.refreshLevelCache();
-
     // Workaround to fix an issue caused by the 'bindRowsWithHeaders' plugin loading before this one.
     if (this.bindRowsWithHeadersPlugin.bindStrategy.strategy) {
       this.bindRowsWithHeadersPlugin.bindStrategy.createMap(this.hot.countSourceRows());
     }
 
-    let deepestLevel = Math.max(...this.dataManager.levelCache);
+    let deepestLevel = Math.max(...this.dataManager.cache.levels);
 
     if (deepestLevel > 0) {
       this.headersUI.updateRowHeaderWidth(deepestLevel);

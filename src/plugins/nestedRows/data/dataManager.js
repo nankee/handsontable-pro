@@ -35,11 +35,64 @@ class DataManager {
      */
     this.parentReference = new WeakMap();
     /**
-     * Array containing the level number for each row.
+     * Nested structure cache.
      *
-     * @type {Array|null}
+     * @type {Object}
      */
-    this.levelCache = null;
+    this.cache = {
+      levels: [],
+      levelCount: 0,
+      rows: [],
+      nodeInfo: new WeakMap()
+    };
+
+    this.rowCounter = 0;
+  }
+
+  /**
+   * Rewrite the nested structure cache.
+   *
+   * @private
+   */
+  rewriteCache() {
+    this.cache = {
+      levels: [],
+      levelCount: 0,
+      rows: [],
+      nodeInfo: new WeakMap()
+    };
+
+    rangeEach(0, this.data.length - 1, (i) => {
+      this.cacheNode(this.data[i], 0, null);
+    });
+  }
+
+  /**
+   * Cache a data node.
+   *
+   * @private
+   * @param {Object} node Node to cache.
+   * @param {Number} level Level of the node.
+   * @param {Object} parent Parent of the node.
+   */
+  cacheNode(node, level, parent) {
+    if (!this.cache.levels[level]) {
+      this.cache.levels[level] = [];
+      this.cache.levelCount++;
+    }
+    this.cache.levels[level].push(node);
+    this.cache.rows.push(node);
+    this.cache.nodeInfo.set(node, {
+      parent: parent,
+      row: this.cache.rows.length - 1,
+      level: level
+    });
+
+    if (this.hasChildren(node)) {
+      arrayEach(node.__children, (elem, i) => {
+        this.cacheNode(elem, level + 1, node);
+      });
+    }
   }
 
   /**
@@ -48,8 +101,7 @@ class DataManager {
    * @param {Number} row Row index.
    */
   getDataObject(row) {
-    let rowObjData = this.readTreeNodes(null, 0, row, null);
-    return rowObjData ? rowObjData.result : null;
+    return row == null ? null : this.cache.rows[row];
   }
 
   /**
@@ -119,7 +171,7 @@ class DataManager {
    * @returns {Number} Row index.
    */
   getRowIndex(rowObj) {
-    return this.readTreeNodes(null, 0, null, rowObj).result;
+    return rowObj == null ? null : this.cache.nodeInfo.get(rowObj).row;
   }
 
   /**
@@ -213,7 +265,7 @@ class DataManager {
       return null;
     }
 
-    return this.parentReference.get(rowObject);
+    return this.cache.nodeInfo.get(rowObject).parent;
   }
 
   /**
@@ -242,18 +294,7 @@ class DataManager {
    * @returns {Number} Row level.
    */
   getRowObjectLevel(rowObject) {
-    let parentNode = this.getRowObjectParent(rowObject);
-    let levelCount = 0;
-    if (parentNode === null) {
-      return 0;
-    }
-
-    while (parentNode != null) {
-      parentNode = this.getRowObjectParent(parentNode);
-      levelCount++;
-    }
-
-    return levelCount;
+    return rowObject == null ? null : this.cache.nodeInfo.get(rowObject).level;
   }
 
   /**
@@ -291,10 +332,9 @@ class DataManager {
 
     parent.__children.push(element);
 
-    this.refreshLevelCache();
+    this.rewriteCache();
 
     const newRowIndex = this.getRowIndex(element);
-
     this.hot.runHooks('afterCreateRow', newRowIndex, 1);
     this.hot.runHooks('afterAddChild', parent, element);
 
@@ -339,12 +379,12 @@ class DataManager {
       }
     }
 
+    this.rewriteCache();
+
     if (forceRender) {
-      this.refreshLevelCache();
       this.hot.render();
     }
 
-    this.updateParentReference();
     this.hot.runHooks('afterDetachChild', parent, element);
   }
 
@@ -373,6 +413,8 @@ class DataManager {
         tempParent.__children.splice(indexWithinParent, 1);
       }
     });
+
+    this.rewriteCache();
   }
 
   /**
@@ -404,19 +446,8 @@ class DataManager {
     } else {
       this.data.splice(indexWithinParent, amount, element);
     }
-  }
 
-  /**
-   * Refresh the nesting level depth cache.
-   *
-   * @private
-   */
-  refreshLevelCache() {
-    this.levelCache = [];
-
-    rangeEach(0, this.countAllRows(), (i) => {
-      this.levelCache[i] = this.getRowLevel(i);
-    });
+    this.rewriteCache();
   }
 
   /**
