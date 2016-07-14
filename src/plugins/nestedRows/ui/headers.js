@@ -121,7 +121,7 @@ class HeadersUI extends BaseUI {
    */
   updateRowHeaderWidth(deepestLevel) {
     if (!deepestLevel) {
-      deepestLevel = Math.max(...this.dataManager.cache.levels);
+      deepestLevel = this.dataManager.cache.levelCount;
     }
 
     this.rowHeaderWidthCache = Math.max(50, 11 + 10 * deepestLevel + 20);
