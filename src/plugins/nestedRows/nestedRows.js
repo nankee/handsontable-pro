@@ -1,6 +1,6 @@
 import BasePlugin from 'handsontable/plugins/_base';
 import {registerPlugin} from 'handsontable/plugins';
-import {rangeEach} from 'handsontable/helpers/number';
+import {rangeEach, rangeEachReverse} from 'handsontable/helpers/number';
 import {arrayEach} from 'handsontable/helpers/array';
 import {DataManager} from './data/dataManager';
 import {CollapsingUI} from './ui/collapsing';
@@ -88,8 +88,10 @@ class NestedRows extends BasePlugin {
     this.addHook('beforeRemoveRow', (index, amount) => this.onBeforeRemoveRow(index, amount));
     this.addHook('modifyRemovedAmount', (amount, index) => this.onModifyRemovedAmount(amount, index));
     this.addHook('afterInit', () => this.onAfterInit());
-    this.addHook('afterAddChild', () => this.headersUI.updateRowHeaderWidth());
-    this.addHook('afterDetachChild', () => this.headersUI.updateRowHeaderWidth());
+    this.addHook('beforeAddChild', (parent, element) => this.onBeforeAddChild(parent, element));
+    this.addHook('afterAddChild', (parent, element) => this.onAfterAddChild(parent, element));
+    this.addHook('beforeDetachChild', (parent, element) => this.onBeforeDetachChild(parent, element));
+    this.addHook('afterDetachChild', (parent, element) => this.onAfterDetachChild(parent, element));
     this.addHook('modifyRowHeaderWidth', (rowHeaderWidth) => this.onModifyRowHeaderWidth(rowHeaderWidth));
 
     if (!this.trimRowsPlugin.isEnabled()) {
@@ -274,6 +276,91 @@ class NestedRows extends BasePlugin {
     });
 
     return amount + childrenCount;
+  }
+
+  /**
+   * `beforeAddChild` hook callback.
+   *
+   * @private
+   * @param {Object} parent Parent element.
+   * @param {Object} element New child element.
+   */
+  onBeforeAddChild(parent, element) {
+    this.lastCollapsedRows = this.collapsingUI.collapsedRows.slice(0);
+
+    //Workaround for wrong indexes being set in the trimRows plugin
+    arrayEach(this.lastCollapsedRows, (elem, i) => {
+      this.collapsingUI.expandChildren(elem, false);
+    });
+  }
+
+  /**
+   * `afterAddChild` hook callback.
+   *
+   * @private
+   * @param {Object} parent Parent element.
+   * @param {Object} element New child element.
+   */
+  onAfterAddChild(parent, element) {
+    const parentIndex = this.dataManager.getRowIndex(parent);
+
+    arrayEach(this.lastCollapsedRows, (elem, i) => {
+      if (elem > parentIndex) {
+        this.lastCollapsedRows[i] = elem + 1;
+      }
+    });
+
+    //Workaround for wrong indexes being set in the trimRows plugin
+    arrayEach(this.lastCollapsedRows, (elem, i) => {
+      this.collapsingUI.collapseChildren(elem, false);
+    });
+
+    this.lastCollapsedRows = void 0;
+
+    this.headersUI.updateRowHeaderWidth();
+  }
+
+  /**
+   * `beforeDetachChild` hook callback.
+   *
+   * @private
+   * @param {Object} parent Parent element.
+   * @param {Object} element New child element.
+   */
+  onBeforeDetachChild(parent, element) {
+    this.lastCollapsedRows = this.collapsingUI.collapsedRows.slice(0);
+
+    //Workaround for wrong indexes being set in the trimRows plugin
+    arrayEach(this.lastCollapsedRows, (elem, i) => {
+      this.collapsingUI.expandChildren(elem, false);
+    });
+
+  }
+
+  /**
+   * `afterDetachChild` hook callback.
+   *
+   * @private
+   * @param {Object} parent Parent element.
+   * @param {Object} element New child element.
+   */
+  onAfterDetachChild(parent, element) {
+    const parentIndex = this.dataManager.getRowIndex(parent);
+
+    arrayEach(this.lastCollapsedRows, (elem, i) => {
+      if (elem > parentIndex) {
+        this.lastCollapsedRows[i] = elem - 1;
+      }
+    });
+
+    //Workaround for wrong indexes being set in the trimRows plugin
+    arrayEach(this.lastCollapsedRows, (elem, i) => {
+      this.collapsingUI.collapseChildren(elem, false);
+    });
+
+    this.lastCollapsedRows = void 0;
+
+    this.headersUI.updateRowHeaderWidth();
   }
 
   /**

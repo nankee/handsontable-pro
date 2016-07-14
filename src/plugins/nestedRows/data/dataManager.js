@@ -318,6 +318,8 @@ class DataManager {
    * @param {Object} [element] The element to add as a child.
    */
   addChild(parent, element) {
+    this.hot.runHooks('beforeAddChild', parent, element);
+
     if (!parent.__children) {
       parent.__children = [];
     }
@@ -337,8 +339,6 @@ class DataManager {
     const newRowIndex = this.getRowIndex(element);
     this.hot.runHooks('afterCreateRow', newRowIndex, 1);
     this.hot.runHooks('afterAddChild', parent, element);
-
-    this.hot.render();
   }
 
   /**
@@ -353,7 +353,8 @@ class DataManager {
 
     if (Array.isArray(elements)) {
       rangeEach(elements[0], elements[2], (i) => {
-        rowObjects.push(this.getDataObject(i));
+        let translatedIndex = this.translateTrimmedRow(i);
+        rowObjects.push(this.getDataObject(translatedIndex));
       });
 
       rangeEach(0, rowObjects.length - 2, (i) => {
@@ -368,6 +369,8 @@ class DataManager {
     const indexWithinParent = this.getRowIndexWithinParent(element);
     const parent = this.getRowParent(element);
     const grandparent = this.getRowParent(parent);
+
+    this.hot.runHooks('beforeDetachChild', parent, element);
 
     if (indexWithinParent != null) {
       parent.__children.splice(indexWithinParent, 1);

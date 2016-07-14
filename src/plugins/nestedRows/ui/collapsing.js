@@ -31,11 +31,14 @@ class CollapsingUI extends BaseUI {
    */
   collapseChildren(row, forceRender = true) {
     let rowObject = null;
+    let rowIndex = null;
 
     if (isNaN(row)) {
       rowObject = row;
+      rowIndex = this.dataManager.getRowIndex(rowObject);
     } else {
       rowObject = this.dataManager.getDataObject(row);
+      rowIndex = row;
     }
 
     if (this.dataManager.hasChildren(rowObject)) {
@@ -48,8 +51,8 @@ class CollapsingUI extends BaseUI {
       this.renderAndAdjust();
     }
 
-    if (this.collapsedRows.indexOf(row) === -1) {
-      this.collapsedRows.push(row);
+    if (this.collapsedRows.indexOf(rowIndex) === -1) {
+      this.collapsedRows.push(rowIndex);
     }
   }
 
@@ -78,9 +81,28 @@ class CollapsingUI extends BaseUI {
    */
   expandRows(rows) {
     arrayEach(rows, (elem, i) => {
-      const rowObj = this.dataManager.getDataObject(elem);
+      let rowObj = elem;
+      if (!isNaN(elem)) {
+        rowObj = this.dataManager.getDataObject(elem);
+      }
 
       this.expandNode(rowObj);
+    });
+  }
+
+  /**
+   * Collapse rows provided as an argument.
+   *
+   * @param {Array} rows Rows to expand.
+   */
+  collapseRows(rows) {
+    arrayEach(rows, (elem, i) => {
+      let rowObj = elem;
+      if (!isNaN(elem)) {
+        rowObj = this.dataManager.getDataObject(elem);
+      }
+
+      this.collapseNode(rowObj);
     });
   }
 
