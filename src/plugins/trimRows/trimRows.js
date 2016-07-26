@@ -96,7 +96,7 @@ class TrimRows extends BasePlugin {
   }
 
   /**
-   * Update plugin according to Handsontable settings.
+   * Updates the plugin to use the latest options you have specified.
    */
   updatePlugin() {
     this.disablePlugin();

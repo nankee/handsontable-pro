@@ -242,7 +242,7 @@ class GanttChart extends BasePlugin {
   }
 
   /**
-   * Update the plugin's settings.
+   * Updates the plugin to use the latest options you have specified.
    */
   updatePlugin() {
     this.disablePlugin();
@@ -544,7 +544,7 @@ class GanttChart extends BasePlugin {
   }
 
   /**
-   * Get the range bar data for the provided row and column.
+   * Get the range bar data of the provided row and column.
    *
    * @param {Number} row Row index.
    * @param {Number} column Column index.
