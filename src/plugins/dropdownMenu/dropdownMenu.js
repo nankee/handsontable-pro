@@ -129,7 +129,7 @@ class DropdownMenu extends BasePlugin {
   }
 
   /**
-   * Update the plugin according to Handsontable settings.
+   * Updates the plugin to use the latest options you have specified.
    */
   updatePlugin() {
     this.disablePlugin();

@@ -15,8 +15,7 @@ import {FORMULA_NONE} from './constants';
 import {SEPARATOR} from 'handsontable/plugins/contextMenu/predefinedItems';
 
 /**
- * The filters plugin.
- * It allows filtering the table data either by the built-in component or with the API.
+ * This plugin allows filtering the table data either by the built-in component or with the API.
  *
  * @plugin Filters
  * @pro

@@ -8,7 +8,7 @@ import {hideColumnItem} from './contextMenuItem/hideColumn';
 import {showColumnItem} from './contextMenuItem/showColumn';
 
 /**
- * Plugin allowing hiding of certain columns.
+ * Plugin allowing to hide certain columns.
  *
  * @plugin HiddenColumns
  * @pro
@@ -88,7 +88,7 @@ class HiddenColumns extends BasePlugin {
   }
 
   /**
-   * Called after updating the plugin settings.
+   * Updates the plugin to use the latest options you have specified.
    */
   updatePlugin() {
     this.disablePlugin();

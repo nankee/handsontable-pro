@@ -220,7 +220,7 @@ class CollapsibleColumns extends BasePlugin {
   }
 
   /**
-   * Checks if all the needed dependencies are enabled.
+   * Checks if all the required dependencies are enabled.
    */
   checkDependencies() {
     let settings = this.hot.getSettings();

@@ -12,7 +12,7 @@ import {showRowItem} from './contextMenuItem/showRow';
  * @pro
  *
  * @description
- * Plugin allowing hiding of certain rows.
+ * Plugin allowing to hide certain rows.
  *
  * Possible plugin settings:
  *  * `copyPasteEnabled` as `Boolean` (default `true`)
@@ -127,7 +127,7 @@ class HiddenRows extends BasePlugin {
   }
 
   /**
-   * Update plugin according to Handsontable settings.
+   * Updates the plugin to use the latest options you have specified.
    */
   updatePlugin() {
     this.disablePlugin();
