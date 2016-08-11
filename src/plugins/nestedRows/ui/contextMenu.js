@@ -2,6 +2,8 @@ import {BaseUI} from './_base';
 import {rangeEach} from 'handsontable/helpers/number';
 import {arrayEach} from 'handsontable/helpers/array';
 
+const privatePool = new WeakMap();
+
 /**
  * Class responsible for the Context Menu entries for the Nested Rows plugin.
  *
@@ -10,6 +12,20 @@ import {arrayEach} from 'handsontable/helpers/array';
  */
 class ContextMenuUI extends BaseUI {
   constructor(nestedRowsPlugin, hotInstance) {
+    /* jshint ignore:start */
+    // jscs:disable
+    privatePool.set(this, {
+      row_above: (key, selection) => {
+        // console.log('insert above');
+        this.dataManager.addSibling(selection.start.row, 'above');
+      },
+      row_below: (key, selection) => {
+        // console.log('insert below');
+        this.dataManager.addSibling(selection.start.row, 'below');
+      }
+    });
+    // jscs:enable
+    /* jshint ignore:end */
     super(nestedRowsPlugin, hotInstance);
 
     /**
@@ -20,6 +36,7 @@ class ContextMenuUI extends BaseUI {
     this.dataManager = this.plugin.dataManager;
   }
 
+  //TODO: docs
   appendOptions(defaultOptions) {
     const newEntries = [
       {
@@ -35,7 +52,7 @@ class ContextMenuUI extends BaseUI {
         disabled: () => {
           const selected = this.hot.getSelected();
 
-          return !selected || selected[0] < 0 ||  this.hot.selection.selectedHeader.cols || this.hot.countRows() >= this.hot.getSettings().maxRows;
+          return !selected || selected[0] < 0 || this.hot.selection.selectedHeader.cols || this.hot.countRows() >= this.hot.getSettings().maxRows;
         }
       },
       {
@@ -54,7 +71,7 @@ class ContextMenuUI extends BaseUI {
           const translatedRowIndex = this.dataManager.translateTrimmedRow(selected[0]);
           let parent = this.dataManager.getRowParent(translatedRowIndex);
 
-          return !parent || !selected || selected[0] < 0 ||  this.hot.selection.selectedHeader.cols || this.hot.countRows() >= this.hot.getSettings().maxRows;
+          return !parent || !selected || selected[0] < 0 || this.hot.selection.selectedHeader.cols || this.hot.countRows() >= this.hot.getSettings().maxRows;
         }
       },
       Handsontable.plugins.ContextMenu.SEPARATOR
@@ -67,6 +84,22 @@ class ContextMenuUI extends BaseUI {
         });
 
         return false;
+      }
+    });
+
+    defaultOptions = this.modifyRowInsertingOptions(defaultOptions);
+
+    return defaultOptions;
+  }
+
+  //TODO: docs
+  modifyRowInsertingOptions(defaultOptions) {
+    let priv = privatePool.get(this);
+
+    rangeEach(0, defaultOptions.items.length - 1, (i) => {
+
+      if (priv[defaultOptions.items[i].key] != null) {
+        defaultOptions.items[i].callback = priv[defaultOptions.items[i].key];
       }
     });
 

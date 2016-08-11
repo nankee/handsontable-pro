@@ -21,6 +21,36 @@ class CollapsingUI extends BaseUI {
     this.trimRowsPlugin = nestedRowsPlugin.trimRowsPlugin;
     this.dataManager = this.plugin.dataManager;
     this.collapsedRows = [];
+    this.collapsedRowsStash = {
+      stash: () => {
+        this.lastCollapsedRows = this.collapsedRows.slice(0);
+
+        //Workaround for wrong indexes being set in the trimRows plugin
+        this.expandMultipleChildren(this.lastCollapsedRows, false);
+      },
+      shiftStash: (elementIndex, delta = 1) => {
+        elementIndex = this.translateTrimmedRow(elementIndex);
+        arrayEach(this.lastCollapsedRows, (elem, i) => {
+          if (elem > elementIndex - 1) {
+            this.lastCollapsedRows[i] = elem + delta;
+          }
+        });
+      },
+      applyStash: () => {
+        //Workaround for wrong indexes being set in the trimRows plugin
+        this.hot.runHooks('skipLengthCache', 100);
+        this.collapseMultipleChildren(this.lastCollapsedRows, true);
+        this.lastCollapsedRows = void 0;
+      },
+      trimStash: (realElementIndex, amount) => {
+        rangeEach(realElementIndex, realElementIndex + amount - 1, (i) => {
+          const indexOfElement = this.lastCollapsedRows.indexOf(i);
+          if (indexOfElement > -1) {
+            this.lastCollapsedRows.splice(indexOfElement, 1);
+          }
+        });
+      }
+    };
   }
 
   /**
@@ -29,7 +59,7 @@ class CollapsingUI extends BaseUI {
    * @param {Number|Object} row The parent row.
    * @param {Boolean} [forceRender=true] Whether to render the table after the function ends.
    */
-  collapseChildren(row, forceRender = true) {
+  collapseChildren(row, forceRender = true, doTrimming = true) {
     let rowObject = null;
     let rowIndex = null;
 
@@ -41,10 +71,18 @@ class CollapsingUI extends BaseUI {
       rowIndex = row;
     }
 
+    const rowsToCollapse = [];
+
     if (this.dataManager.hasChildren(rowObject)) {
       arrayEach(rowObject.__children, (elem, i) => {
-        this.collapseNode(elem);
+        rowsToCollapse.push(this.dataManager.getRowIndex(elem));
       });
+    }
+
+    const rowsToTrim = this.collapseRows(rowsToCollapse, true, false);
+
+    if (doTrimming) {
+      this.trimRowsPlugin.trimRows(rowsToTrim);
     }
 
     if (forceRender) {
@@ -54,56 +92,107 @@ class CollapsingUI extends BaseUI {
     if (this.collapsedRows.indexOf(rowIndex) === -1) {
       this.collapsedRows.push(rowIndex);
     }
+
+    return rowsToTrim;
   }
 
-  /**
-   * Collapse a row node and its children.
-   *
-   * @private
-   * @param {Object} rowObj Row object.
-   */
-  collapseNode(rowObj) {
-    const rowIndex = this.dataManager.getRowIndex(rowObj);
+  //TODO: docs
+  collapseMultipleChildren(rows, forceRender = true, doTrimming = true) {
+    let rowsToTrim = [];
 
-    this.trimRowsPlugin.trimRow(rowIndex);
+    arrayEach(rows, (elem, i) => {
+      rowsToTrim = rowsToTrim.concat(this.collapseChildren(elem, false, false));
+    });
 
-    if (this.dataManager.hasChildren(rowObj)) {
-      arrayEach(rowObj.__children, (elem, i) => {
-        this.collapseNode(elem);
-      });
+    if (doTrimming) {
+      this.trimRowsPlugin.trimRows(rowsToTrim);
+    }
+
+    if (forceRender) {
+      this.renderAndAdjust();
     }
   }
 
-  /**
-   * Expand rows provided as an argument.
-   *
-   * @param {Array} rows Rows to expand.
-   */
-  expandRows(rows) {
-    arrayEach(rows, (elem, i) => {
-      let rowObj = elem;
-      if (!isNaN(elem)) {
-        rowObj = this.dataManager.getDataObject(elem);
-      }
-
-      this.expandNode(rowObj);
-    });
+  //TODO: docs
+  collapseRow(rowIndex, recursive = true) {
+    this.collapseRows([rowIndex], recursive);
   }
 
-  /**
-   * Collapse rows provided as an argument.
-   *
-   * @param {Array} rows Rows to expand.
-   */
-  collapseRows(rows) {
-    arrayEach(rows, (elem, i) => {
-      let rowObj = elem;
-      if (!isNaN(elem)) {
-        rowObj = this.dataManager.getDataObject(elem);
-      }
+  //TODO: docs
+  collapseRows(rowIndexes, recursive = true, doTrimming = false) {
+    const rowsToTrim = [];
 
-      this.collapseNode(rowObj);
+    arrayEach(rowIndexes, (elem, i) => {
+      rowsToTrim.push(elem);
+      if (recursive) {
+        this.collapseChildRows(elem, rowsToTrim);
+      }
     });
+
+    if (doTrimming) {
+      this.trimRowsPlugin.trimRows(rowsToTrim);
+    }
+
+    return rowsToTrim;
+  }
+
+  //TODO: docs
+  collapseChildRows(parentIndex, rowsToTrim = [], recursive = true, doTrimming = false) {
+    if (this.dataManager.hasChildren(parentIndex)) {
+      const parentObject = this.dataManager.getDataObject(parentIndex);
+
+      arrayEach(parentObject.__children, (elem, i) => {
+        const elemIndex = this.dataManager.getRowIndex(elem);
+        rowsToTrim.push(elemIndex);
+        this.collapseChildRows(elemIndex, rowsToTrim);
+      });
+    }
+
+    if (doTrimming) {
+      this.trimRowsPlugin.trimRows(rowsToTrim);
+    }
+  }
+
+  //TODO: docs
+  expandRow(rowIndex, recursive = true) {
+    this.expandRows([rowIndex], recursive);
+  }
+
+  //TODO: docs
+  expandRows(rowIndexes, recursive = true, doTrimming = false) {
+    const rowsToUntrim = [];
+
+    arrayEach(rowIndexes, (elem, i) => {
+      rowsToUntrim.push(elem);
+      if (recursive) {
+        this.expandChildRows(elem, rowsToUntrim);
+      }
+    });
+
+    if (doTrimming) {
+      this.trimRowsPlugin.untrimRows(rowsToUntrim);
+    }
+
+    return rowsToUntrim;
+  }
+
+  //TODO: docs
+  expandChildRows(parentIndex, rowsToUntrim = [], recursive = true, doTrimming = false) {
+    if (this.dataManager.hasChildren(parentIndex)) {
+      const parentObject = this.dataManager.getDataObject(parentIndex);
+
+      arrayEach(parentObject.__children, (elem, i) => {
+        if (!this.isAnyParentCollapsed(elem)) {
+          const elemIndex = this.dataManager.getRowIndex(elem);
+          rowsToUntrim.push(elemIndex);
+          this.expandChildRows(elemIndex, rowsToUntrim);
+        }
+      });
+    }
+
+    if (doTrimming) {
+      this.trimRowsPlugin.untrimRows(rowsToUntrim);
+    }
   }
 
   /**
@@ -112,7 +201,7 @@ class CollapsingUI extends BaseUI {
    * @param {Number|Object} row Parent row.
    * @param {Boolean} [forceRender=true] Whether to render the table after the function ends.
    */
-  expandChildren(row, forceRender = true) {
+  expandChildren(row, forceRender = true, doTrimming = true) {
     let rowObject = null;
     let rowIndex = null;
 
@@ -124,12 +213,41 @@ class CollapsingUI extends BaseUI {
       rowIndex = row;
     }
 
+    const rowsToExpand = [];
     this.collapsedRows.splice(this.collapsedRows.indexOf(rowIndex), 1);
 
     if (this.dataManager.hasChildren(rowObject)) {
       arrayEach(rowObject.__children, (elem, i) => {
-        this.expandNode(elem);
+        const childIndex = this.dataManager.getRowIndex(elem);
+
+        // if (this.collapsedRows.indexOf(childIndex) === -1) {
+        rowsToExpand.push(childIndex);
       });
+    }
+
+    const rowsToUntrim = this.expandRows(rowsToExpand, true, false);
+
+    if (doTrimming) {
+      this.trimRowsPlugin.untrimRows(rowsToUntrim);
+    }
+
+    if (forceRender) {
+      this.renderAndAdjust();
+    }
+
+    return rowsToUntrim;
+  }
+
+  //TODO: docs
+  expandMultipleChildren(rows, forceRender = true, doTrimming = true) {
+    let rowsToUntrim = [];
+
+    arrayEach(rows, (elem, i) => {
+      rowsToUntrim = rowsToUntrim.concat(this.expandChildren(elem, false, false));
+    });
+
+    if (doTrimming) {
+      this.trimRowsPlugin.untrimRows(rowsToUntrim);
     }
 
     if (forceRender) {
@@ -142,12 +260,15 @@ class CollapsingUI extends BaseUI {
    */
   collapseAll() {
     const sourceData = this.hot.getSourceData();
+    const parentsToCollapse = [];
 
     arrayEach(sourceData, (elem, i) => {
       if (this.dataManager.hasChildren(elem)) {
-        this.collapseChildren(elem, false);
+        parentsToCollapse.push(elem);
       }
     });
+
+    this.collapseMultipleChildren(parentsToCollapse);
 
     this.renderAndAdjust();
   }
@@ -157,32 +278,17 @@ class CollapsingUI extends BaseUI {
    */
   expandAll() {
     const sourceData = this.hot.getSourceData();
+    const parentsToExpand = [];
 
     arrayEach(sourceData, (elem, i) => {
       if (this.dataManager.hasChildren(elem)) {
-        this.expandChildren(elem, false);
+        parentsToExpand.push(elem);
       }
     });
 
+    this.expandMultipleChildren(parentsToExpand);
+
     this.renderAndAdjust();
-  }
-
-  /**
-   * Expand a row node and its children.
-   *
-   * @private
-   * @param {Object} rowObj Row object.
-   */
-  expandNode(rowObj) {
-    const rowIndex = this.dataManager.getRowIndex(rowObj);
-
-    if (!this.isAnyParentCollapsed(rowObj)) {
-      this.trimRowsPlugin.untrimRow(rowIndex);
-    }
-
-    if (this.dataManager.hasChildren(rowObj)) {
-      this.expandChildren(rowObj);
-    }
   }
 
   /**

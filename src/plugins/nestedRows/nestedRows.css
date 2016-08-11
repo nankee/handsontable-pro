@@ -37,7 +37,7 @@
 .handsontable th div.ht_nestingButton {
     display: inline-block;
     position: absolute;
-    right: 1px;
+    right: -2px;
     cursor: pointer;
 }
 

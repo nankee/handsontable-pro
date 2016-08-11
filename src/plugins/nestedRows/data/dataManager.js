@@ -164,6 +164,26 @@ class DataManager {
     this.readTreeNodes({__children: this.data}, 0, this.hot.countRows());
   }
 
+  //TODO: docs
+  mockParent() {
+    let fakeParent = this.mockNode();
+
+    fakeParent.__children = this.data;
+
+    return fakeParent;
+  }
+
+  //TODO: docs
+  mockNode() {
+    let fakeNode = {};
+
+    objectEach(this.data[0], (val, key) => {
+      fakeNode[key] = null;
+    });
+
+    return fakeNode;
+  }
+
   /**
    * Get the row index for the provided row object.
    *
@@ -319,26 +339,67 @@ class DataManager {
    */
   addChild(parent, element) {
     this.hot.runHooks('beforeAddChild', parent, element);
+    let functionalParent = parent;
 
-    if (!parent.__children) {
-      parent.__children = [];
+    if (!parent) {
+      functionalParent = this.mockParent();
+    }
+    if (!functionalParent.__children) {
+      functionalParent.__children = [];
     }
 
     if (!element) {
-      element = {};
-      objectEach(parent, (val, prop) => {
-        element[prop] = null;
-      });
-
+      element = this.mockNode();
     }
 
-    parent.__children.push(element);
+    functionalParent.__children.push(element);
 
     this.rewriteCache();
 
     const newRowIndex = this.getRowIndex(element);
     this.hot.runHooks('afterCreateRow', newRowIndex, 1);
     this.hot.runHooks('afterAddChild', parent, element);
+  }
+
+  //TODO: docs
+  addChildAtIndex(parent, index, element) {
+    this.hot.runHooks('beforeAddChild', parent, element, index);
+    let functionalParent = parent;
+
+    if (!parent) {
+      functionalParent = this.mockParent();
+    }
+
+    if (!functionalParent.__children) {
+      functionalParent.__children = [];
+    }
+
+    if (!element) {
+      element = this.mockNode();
+    }
+
+    functionalParent.__children.splice(index, null, element);
+
+    this.rewriteCache();
+
+    this.hot.runHooks('afterCreateRow', index + 1, 1);
+    this.hot.runHooks('afterAddChild', parent, element, index);
+  }
+
+  //TODO: docs
+  addSibling(index, where = 'below') {
+    const translatedIndex = this.translateTrimmedRow(index);
+    const parent = this.getRowParent(translatedIndex);
+    const indexWithinParent = this.getRowIndexWithinParent(translatedIndex);
+
+    switch (where) {
+      case 'below':
+        this.addChildAtIndex(parent, indexWithinParent + 1);
+        break;
+      case 'above':
+        this.addChildAtIndex(parent, indexWithinParent);
+        break;
+    }
   }
 
   /**
