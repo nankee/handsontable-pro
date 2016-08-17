@@ -86,7 +86,7 @@ describe('NestedRows Collapsing UI', function() {
       it('should collapse all children nodes of the row provided as an object', function() {
         var hot = handsontable({
           data: this.complexData(),
-          nestedRows: true
+          nestedRows: true,
         });
 
         var plugin = hot.getPlugin('nestedRows');
@@ -107,6 +107,7 @@ describe('NestedRows Collapsing UI', function() {
         var hot = handsontable({
           data: this.complexData(),
           nestedRows: true,
+          rowHeaders: true,
           trimRows: [1, 2, 3, 4], // "collapse" rows using the trimRows plugin
         });
 
