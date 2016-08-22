@@ -331,6 +331,14 @@ class DataManager {
     return !!(row.__children && row.__children.length);
   }
 
+  isParent(row) {
+    if (!isNaN(row)) {
+      row = this.getDataObject(row);
+    }
+
+    return !!(row.hasOwnProperty('__children'));
+  }
+
   /**
    * Add a child to the provided parent. It's optional to add a row object as the "element"
    *
@@ -512,6 +520,23 @@ class DataManager {
     }
 
     this.rewriteCache();
+  }
+
+  moveRow(fromIndex, toIndex) {
+    let targetIsParent = this.isParent(toIndex);
+
+    let fromParent = this.getRowParent(fromIndex);
+    let indexInFromParent = this.getRowIndexWithinParent(fromIndex);
+    let toParent = targetIsParent ? this.getDataObject(toIndex) : this.getRowParent(toIndex);
+    if (!toParent) {
+      toParent = this.getDataObject(toIndex);
+      toParent.__children = [];
+    }
+    let indexInToParent = targetIsParent ? 0 : this.getRowIndexWithinParent(toIndex);
+
+    let elemToMove = fromParent.__children.slice(indexInFromParent, indexInFromParent + 1);
+    fromParent.__children.splice(indexInFromParent, 1);
+    toParent.__children.splice(indexInToParent, 0, elemToMove[0]);
   }
 
   /**

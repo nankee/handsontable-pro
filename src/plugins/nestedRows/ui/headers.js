@@ -66,7 +66,7 @@ class HeadersUI extends BaseUI {
    *
    * @private
    * @param {Number} row Row index.
-   * @param {HTMLElement} TH TH element.
+   * @param {HTMLElement} TH TH 3element.
    */
   appendLevelIndicators(row, TH) {
     row = this.trimRowsPlugin.rowsMapper.getValueByIndex(row);

@@ -7,6 +7,8 @@ import {CollapsingUI} from './ui/collapsing';
 import {HeadersUI} from './ui/headers';
 import {ContextMenuUI} from './ui/contextMenu';
 
+const privatePool = new WeakMap();
+
 /**
  * @plugin NestedRows
  *
@@ -18,6 +20,12 @@ import {ContextMenuUI} from './ui/contextMenu';
 class NestedRows extends BasePlugin {
 
   constructor(hotInstance) {
+
+    privatePool.set(this, {
+      changeSelection: false,
+      movedToParentBegin: false,
+      target: void 0,
+    });
 
     /**
      * Source data object.
@@ -31,7 +39,12 @@ class NestedRows extends BasePlugin {
      * @type {Object}
      */
     this.trimRowsPlugin = null;
-
+    /**
+     * Reference to the Manual Row Move plugin.
+     *
+     * @type {Object}
+     */
+    this.manualRowsMovePlugin = null;
     /**
      * Reference to the BindRowsWithHeaders plugin.
      *
@@ -72,6 +85,7 @@ class NestedRows extends BasePlugin {
   enablePlugin() {
     this.sourceData = this.hot.getSourceData();
     this.trimRowsPlugin = this.hot.getPlugin('trimRows');
+    this.manualRowsMovePlugin = this.hot.getPlugin('manualRowMove');
     this.bindRowsWithHeadersPlugin = this.hot.getPlugin('bindRowsWithHeaders');
 
     this.dataManager = new DataManager(this, this.hot, this.sourceData);
@@ -99,11 +113,21 @@ class NestedRows extends BasePlugin {
     this.addHook('afterDetachChild', (parent, element) => this.onAfterDetachChild(parent, element));
     this.addHook('modifyRowHeaderWidth', (rowHeaderWidth) => this.onModifyRowHeaderWidth(rowHeaderWidth));
 
+    this.addHook('beforeRowMove', (rows, target, blockMoving) => this.onBeforeRowMove(rows, target, blockMoving));
+    this.addHook('afterRowMove', (rows, target) => this.onAfterRowMove(rows, target));
+
     if (!this.trimRowsPlugin.isEnabled()) {
 
       // Workaround to prevent calling updateSetttings in the enablePlugin method, which causes many problems.
       this.trimRowsPlugin.enablePlugin();
       this.hot.getSettings().trimRows = true;
+    }
+
+    if (!this.manualRowsMovePlugin.isEnabled()) {
+
+      // Workaround to prevent calling updateSetttings in the enablePlugin method, which causes many problems.
+      this.manualRowsMovePlugin.enablePlugin();
+      this.hot.getSettings().manualRowsMovePlugin = true;
     }
 
     super.enablePlugin();
@@ -126,6 +150,84 @@ class NestedRows extends BasePlugin {
     super.updatePlugin();
   }
 
+  onAfterRowMove(rows, target) {
+    let priv = privatePool.get(this);
+
+    if (!priv.changeSelection) {
+      return;
+    }
+
+    let startRow = 0;
+    let endRow = 0;
+    let rowsLen = rows.length;
+
+    if (priv.movedToParentBegin) {
+      priv.movedToParentBegin = false;
+      endRow = target;
+      startRow = endRow - rowsLen + 1;
+
+    } else {
+      if (rows[rowsLen - 1] < target) {
+        endRow = this.dataManager.isParent(target) ? target + 1 : target - 1;
+        startRow = endRow - rowsLen + 1;
+
+      } else {
+        startRow = target;
+        endRow = startRow + rowsLen - 1;
+      }
+    }
+
+    let selection = this.hot.selection;
+    let lastColIndex = this.hot.countCols() - 1;
+
+    selection.setRangeStart(new WalkontableCellCoords(startRow, 0));
+    selection.setRangeEnd(new WalkontableCellCoords(endRow, lastColIndex), true);
+
+    priv.changeSelection = false;
+  }
+  onBeforeRowMove(rows, target, blockMoving) {
+    blockMoving.rows = true;
+
+    let priv = privatePool.get(this);
+    let allowMove = true;
+    let rowsLen = rows.length;
+    let i;
+
+    for (i = 0; i < rowsLen; i++) {
+      if (this.dataManager.isParent(rows[i])) {
+        allowMove = false;
+      }
+    }
+
+    if (rows.indexOf(target) > -1 || !allowMove) {
+      return;
+    }
+    priv.changeSelection = true;
+
+    let fromParent = this.dataManager.getRowParent(rows[0]);
+    let toParent = this.dataManager.isParent(target) ? this.dataManager.getDataObject(target) : this.dataManager.getRowParent(target);
+    let sameParent = fromParent === toParent;
+
+    if (rows[rowsLen - 1] <= target && sameParent) {
+      rows.reverse();
+      target--;
+
+    } else if (this.dataManager.isParent(target)) {
+      priv.movedToParentBegin = true;
+      rows.reverse();
+    }
+
+
+    for (i = 0; i < rowsLen; i++) {
+      this.dataManager.moveRow(rows[i], target);
+    }
+
+    if ((rows[rowsLen - 1] <= target && sameParent) || this.dataManager.isParent(target)) {
+      rows.reverse();
+    }
+
+    this.dataManager.rewriteCache();
+  }
   /**
    * beforeOnCellMousedown callback
    *
