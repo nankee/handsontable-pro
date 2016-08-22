@@ -12,7 +12,8 @@ import {ContextMenuUI} from './ui/contextMenu';
  *
  *
  * @description
- * Blank plugin template. It needs to inherit from the BasePlugin class.
+ * Plugin responsible for displaying and operating on data sources with nested structures.
+ * 
  * @dependencies TrimRows, BindRowsWithHeaders
  */
 class NestedRows extends BasePlugin {

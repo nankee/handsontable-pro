@@ -9,7 +9,7 @@ import {HeadersUI} from './headers';
  * Class responsible for the UI for collapsing and expanding groups.
  *
  * @class
- * @private
+ * @extends BaseUI
  */
 class CollapsingUI extends BaseUI {
   constructor(nestedRowsPlugin, hotInstance) {
