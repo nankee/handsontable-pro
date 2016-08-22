@@ -14,7 +14,8 @@ const privatePool = new WeakMap();
  *
  *
  * @description
- * Blank plugin template. It needs to inherit from the BasePlugin class.
+ * Plugin responsible for displaying and operating on data sources with nested structures.
+ * 
  * @dependencies TrimRows, BindRowsWithHeaders
  */
 class NestedRows extends BasePlugin {
@@ -301,6 +302,8 @@ class NestedRows extends BasePlugin {
   }
 
   /**
+   * `afterContextMenuDefaultOptions` hook callback.
+   *
    * @private
    * @param defaultOptions
    */
@@ -331,16 +334,12 @@ class NestedRows extends BasePlugin {
   }
 
   /**
-   * `beforeRemoveRow` hook callback.
+   * `onAfterRemoveRow` hook callback.
    *
    * @param {Number} index Removed row.
    * @param {Number} amount Amount of removed rows.
    * @private
    */
-  onBeforeRemoveRow(index, amount) {
-  }
-
-  //TODO: docs
   onAfterRemoveRow(index, amount) {
     setTimeout(() => {
       this.skipRender = null;
@@ -465,7 +464,13 @@ class NestedRows extends BasePlugin {
     }
   }
 
-  //TODO: docs
+  /**
+   * `beforeRender` hook callback.
+   *
+   * @param force
+   * @param skipRender
+   * @private
+   */
   onBeforeRender(force, skipRender) {
     if (this.skipRender) {
       skipRender.skipRender = true;

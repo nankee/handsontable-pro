@@ -8,7 +8,6 @@ const privatePool = new WeakMap();
  * Class responsible for the Context Menu entries for the Nested Rows plugin.
  *
  * @class
- * @private
  */
 class ContextMenuUI extends BaseUI {
   constructor(nestedRowsPlugin, hotInstance) {
@@ -36,7 +35,13 @@ class ContextMenuUI extends BaseUI {
     this.dataManager = this.plugin.dataManager;
   }
 
-  //TODO: docs
+  /**
+   * Append options to the context menu. (Propagated from the `afterContextMenuDefaultOptions` hook callback)
+   * f
+   * @private
+   * @param {Object} defaultOptions Default context menu options.
+   * @returns {*}
+   */
   appendOptions(defaultOptions) {
     const newEntries = [
       {
@@ -92,7 +97,13 @@ class ContextMenuUI extends BaseUI {
     return defaultOptions;
   }
 
-  //TODO: docs
+  /**
+   * Modify how the row inserting options work.
+   *
+   * @private
+   * @param {Object} defaultOptions Default context menu items.
+   * @returns {*}
+   */
   modifyRowInsertingOptions(defaultOptions) {
     let priv = privatePool.get(this);
 

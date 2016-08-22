@@ -9,7 +9,7 @@ import {HeadersUI} from './headers';
  * Class responsible for the UI for collapsing and expanding groups.
  *
  * @class
- * @private
+ * @extends BaseUI
  */
 class CollapsingUI extends BaseUI {
   constructor(nestedRowsPlugin, hotInstance) {
@@ -96,7 +96,13 @@ class CollapsingUI extends BaseUI {
     return rowsToTrim;
   }
 
-  //TODO: docs
+  /**
+   * Collapse multiple children.
+   *
+   * @param {Array} rows Rows to collapse (including their children)
+   * @param {Boolean} [forceRender = true] `true` if the table should be rendered after finishing the function.
+   * @param {Boolean} [doTrimming = true] `true` if the table should trim the provided rows.
+   */
   collapseMultipleChildren(rows, forceRender = true, doTrimming = true) {
     let rowsToTrim = [];
 
@@ -113,12 +119,24 @@ class CollapsingUI extends BaseUI {
     }
   }
 
-  //TODO: docs
+  /**
+   * Collapse a single row.
+   *
+   * @param {Number} rowIndex Index of the row to collapse.
+   * @param {Boolean} [recursive = true] `true` if it should collapse the row's children.
+   */
   collapseRow(rowIndex, recursive = true) {
     this.collapseRows([rowIndex], recursive);
   }
 
-  //TODO: docs
+  /**
+   * Collapse multiple rows.
+   *
+   * @param {Array} rowIndexes Array of row indexes to collapse.
+   * @param {Boolean} [recursive = true] `true` if it should collapse the rows' children.
+   * @param {Boolean} [doTrimming = false] `true` if the provided rows should be collapsed.
+   * @returns {Array} Rows prepared for trimming (or trimmed, if doTrimming == true)
+   */
   collapseRows(rowIndexes, recursive = true, doTrimming = false) {
     const rowsToTrim = [];
 
@@ -136,7 +154,14 @@ class CollapsingUI extends BaseUI {
     return rowsToTrim;
   }
 
-  //TODO: docs
+  /**
+   * Collapse child rows of the row at the provided index.
+   *
+   * @param {Number} parentIndex Index of the parent node.
+   * @param {Array} [rowsToTrim = []] Array of rows to trim. Defaults to an empty array.
+   * @param {Boolean} [recursive = true] `true` if the collapsing process should be recursive.
+   * @param {Boolean} [doTrimming = false] `true` if rows should be trimmed.
+   */
   collapseChildRows(parentIndex, rowsToTrim = [], recursive = true, doTrimming = false) {
     if (this.dataManager.hasChildren(parentIndex)) {
       const parentObject = this.dataManager.getDataObject(parentIndex);
@@ -153,12 +178,24 @@ class CollapsingUI extends BaseUI {
     }
   }
 
-  //TODO: docs
+  /**
+   * Expand a single row.
+   *
+   * @param {Number} rowIndex Index of the row to expand.
+   * @param {Boolean} [recursive = true] `true` if it should expand the row's children recursively.
+   */
   expandRow(rowIndex, recursive = true) {
     this.expandRows([rowIndex], recursive);
   }
 
-  //TODO: docs
+  /**
+   * Expand multiple rows.
+   *
+   * @param {Array} rowIndexes Array of indexes of the rows to expand.
+   * @param {Boolean} [recursive = true] `true` if it should expand the rows' children recursively.
+   * @param {Boolean} [doTrimming = false] `true` if rows should be untrimmed.
+   * @returns {Array} Array of row indexes to be untrimmed.
+   */
   expandRows(rowIndexes, recursive = true, doTrimming = false) {
     const rowsToUntrim = [];
 
@@ -176,7 +213,14 @@ class CollapsingUI extends BaseUI {
     return rowsToUntrim;
   }
 
-  //TODO: docs
+  /**
+   * Expand child rows of the provided index.
+   *
+   * @param {Number} parentIndex Index of the parent row.
+   * @param {Array} [rowsToUntrim = []] Array of the rows to be untrimmed.
+   * @param {Boolean} [recursive = true] `true` if it should expand the rows' children recursively.
+   * @param {Boolean} [doTrimming = false] `true` if rows should be untrimmed.
+   */
   expandChildRows(parentIndex, rowsToUntrim = [], recursive = true, doTrimming = false) {
     if (this.dataManager.hasChildren(parentIndex)) {
       const parentObject = this.dataManager.getDataObject(parentIndex);
@@ -238,7 +282,13 @@ class CollapsingUI extends BaseUI {
     return rowsToUntrim;
   }
 
-  //TODO: docs
+  /**
+   * Expand multiple rows' children.
+   *
+   * @param {Array} rows Array of rows which children are about to be expanded.
+   * @param {Boolean} [forceRender = true] `true` if the table should render after finishing the function.
+   * @param {Boolean} [doTrimming = true] `true` if the rows should be untrimmed after finishing the function.
+   */
   expandMultipleChildren(rows, forceRender = true, doTrimming = true) {
     let rowsToUntrim = [];
 

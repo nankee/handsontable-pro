@@ -164,7 +164,12 @@ class DataManager {
     this.readTreeNodes({__children: this.data}, 0, this.hot.countRows());
   }
 
-  //TODO: docs
+  /**
+   * Mock a parent node.
+   *
+   * @private
+   * @returns {*}
+   */
   mockParent() {
     let fakeParent = this.mockNode();
 
@@ -173,7 +178,12 @@ class DataManager {
     return fakeParent;
   }
 
-  //TODO: docs
+  /**
+   * Mock a data node.
+   *
+   * @private
+   * @returns {{}}
+   */
   mockNode() {
     let fakeNode = {};
 
@@ -369,7 +379,13 @@ class DataManager {
     this.hot.runHooks('afterAddChild', parent, element);
   }
 
-  //TODO: docs
+  /**
+   * Add a child node to the provided parent at a specified index.
+   *
+   * @param {Object} parent Parent node.
+   * @param {Number} index Index to insert the child element at.
+   * @param {Object} [element] Element (node) to insert.
+   */
   addChildAtIndex(parent, index, element) {
     this.hot.runHooks('beforeAddChild', parent, element, index);
     let functionalParent = parent;
@@ -394,7 +410,12 @@ class DataManager {
     this.hot.runHooks('afterAddChild', parent, element, index);
   }
 
-  //TODO: docs
+  /**
+   * Add a sibling element at the specified index.
+   *
+   * @param {Number} index New element sibling's index.
+   * @param {('above'|'below')} where Direction in which the sibling is to be created.
+   */
   addSibling(index, where = 'below') {
     const translatedIndex = this.translateTrimmedRow(index);
     const parent = this.getRowParent(translatedIndex);
