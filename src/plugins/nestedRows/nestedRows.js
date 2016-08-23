@@ -12,10 +12,9 @@ const privatePool = new WeakMap();
 /**
  * @plugin NestedRows
  *
- *
  * @description
  * Plugin responsible for displaying and operating on data sources with nested structures.
- * 
+ *
  * @dependencies TrimRows, BindRowsWithHeaders
  */
 class NestedRows extends BasePlugin {
@@ -118,14 +117,12 @@ class NestedRows extends BasePlugin {
     this.addHook('afterRowMove', (rows, target) => this.onAfterRowMove(rows, target));
 
     if (!this.trimRowsPlugin.isEnabled()) {
-
       // Workaround to prevent calling updateSetttings in the enablePlugin method, which causes many problems.
       this.trimRowsPlugin.enablePlugin();
       this.hot.getSettings().trimRows = true;
     }
 
     if (!this.manualRowsMovePlugin.isEnabled()) {
-
       // Workaround to prevent calling updateSetttings in the enablePlugin method, which causes many problems.
       this.manualRowsMovePlugin.enablePlugin();
       this.hot.getSettings().manualRowsMovePlugin = true;
@@ -217,7 +214,6 @@ class NestedRows extends BasePlugin {
       priv.movedToParentBegin = true;
       rows.reverse();
     }
-
 
     for (i = 0; i < rowsLen; i++) {
       this.dataManager.moveRow(rows[i], target);
