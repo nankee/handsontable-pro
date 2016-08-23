@@ -554,23 +554,40 @@ class DataManager {
 
   moveRow(fromIndex, toIndex) {
     let targetIsParent = this.isParent(toIndex);
+    // let nextToTargetIsParent = this.isParent(toIndex + 1);
 
-    //let fromParent = this.getRowParent(fromIndex);
-    //let indexInFromParent = this.getRowIndexWithinParent(fromIndex);
+    let fromParent = this.getRowParent(fromIndex);
+    let indexInFromParent = this.getRowIndexWithinParent(fromIndex);
 
-    let toParent = targetIsParent ? this.getDataObject(toIndex) : this.getRowParent(toIndex);
+    // let toParent = targetIsParent ? this.getDataObject(toIndex) : this.getRowParent(toIndex);
+    let toParent = this.getRowParent(toIndex);
+
+    if (toParent == null) {
+      toParent = this.getRowParent(toIndex - 1);
+    }
+
+    if (toParent == null) {
+      toParent = this.getDataObject(toIndex - 1);
+    }
+
     if (!toParent) {
       toParent = this.getDataObject(toIndex);
       toParent.__children = [];
     }
-    let indexInToParent = targetIsParent ? 0 : this.getRowIndexWithinParent(toIndex);
 
-    // let elemToMove = fromParent.__children.slice(indexInFromParent, indexInFromParent + 1);
-    // fromParent.__children.splice(indexInFromParent, 1);
-    // toParent.__children.splice(indexInToParent, 0, elemToMove[0]);
-    let elemToMove = this.getDataObject(fromIndex);
-    this.spliceData(fromIndex, 1);
-    this.addChildAtIndex(toParent, indexInToParent, elemToMove);
+    // let indexInToParent = targetIsParent ? 0 : this.getRowIndexWithinParent(toIndex);
+
+    let previousToTargetParent = this.getRowParent(toIndex - 1);
+    let indexInToParent = targetIsParent ? this.countChildren(previousToTargetParent) : this.getRowIndexWithinParent(toIndex);
+
+    let elemToMove = fromParent.__children.slice(indexInFromParent, indexInFromParent + 1);
+
+    toParent.__children.splice(indexInToParent, 0, elemToMove[0]);
+    fromParent.__children.splice(indexInFromParent, 1);
+
+    // let elemToMove = this.getDataObject(fromIndex);
+    // this.spliceData(fromIndex, 1);
+    // this.addChildAtIndex(toParent, indexInToParent, elemToMove);
   }
 
   /**

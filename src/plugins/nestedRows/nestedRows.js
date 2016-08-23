@@ -148,6 +148,93 @@ class NestedRows extends BasePlugin {
     super.updatePlugin();
   }
 
+  //TODO: docs
+  onBeforeRowMove(rows, target, blockMoving) {
+    blockMoving.rows = true;
+
+    let priv = privatePool.get(this);
+    let allowMove = true;
+    let rowsLen = rows.length;
+    let i;
+    let translatedStartIndexes = [];
+    let translatedTargetIndex = this.dataManager.translateTrimmedRow(target);
+    // let translatedTargetIndex = target;
+
+    for (i = 0; i < rowsLen; i++) {
+      translatedStartIndexes.push(this.dataManager.translateTrimmedRow(rows[i]));
+
+      if (this.dataManager.isParent(translatedStartIndexes[i])) {
+        allowMove = false;
+      }
+    }
+
+    if (translatedStartIndexes.indexOf(translatedTargetIndex) > -1 || !allowMove) {
+      return;
+    }
+
+    let fromParent = this.dataManager.getRowParent(translatedStartIndexes[0]);
+    // let toParent = this.dataManager.isParent(translatedTargetIndex - 1) ? this.dataManager.getDataObject(translatedTargetIndex - 1) : this.dataManager.getRowParent(translatedTargetIndex);
+    let toParent = this.dataManager.getRowParent(translatedTargetIndex);
+
+    if (toParent == null) {
+      toParent = this.dataManager.getRowParent(translatedTargetIndex - 1);
+    }
+
+    if (toParent == null) {
+      toParent = this.dataManager.getDataObject(translatedTargetIndex - 1);
+      priv.movedToParentBegin = true;
+    }
+
+    if (!toParent) {
+      return;
+    }
+
+    let sameParent = fromParent === toParent;
+
+    priv.movedToCollapsed = this.collapsingUI.areChildrenCollapsed(toParent);
+
+    this.collapsingUI.collapsedRowsStash.stash();
+    // this.collapsingUI.collapsedRowsStash.trimStash(translatedStartIndexes[0], rows.length);
+
+    if (!sameParent) {
+      if (Math.max(...translatedStartIndexes) <= translatedTargetIndex) {
+        this.collapsingUI.collapsedRowsStash.shiftStash(translatedStartIndexes[0], (-1) * rows.length);
+      } else {
+        this.collapsingUI.collapsedRowsStash.shiftStash(translatedTargetIndex, rows.length);
+      }
+    }
+
+    priv.changeSelection = true;
+
+    // if (translatedStartIndexes[rowsLen - 1] <= translatedTargetIndex && sameParent) {
+    //   rows.reverse();
+    //   translatedStartIndexes.reverse();
+    //   // translatedTargetIndex--;
+    //
+    // }
+
+    if (priv.movedToParentBegin === true) {
+      rows.reverse();
+      translatedStartIndexes.reverse();
+    }
+
+    // else if (this.dataManager.isParent(translatedTargetIndex)) {
+    //   priv.movedToParentBegin = true;
+    //   rows.reverse();
+    // }
+
+    for (i = 0; i < rowsLen; i++) {
+      this.dataManager.moveRow(translatedStartIndexes[i], translatedTargetIndex);
+    }
+
+    if ((translatedStartIndexes[rowsLen - 1] <= translatedTargetIndex && sameParent) || this.dataManager.isParent(translatedTargetIndex)) {
+      rows.reverse();
+    }
+
+    this.dataManager.rewriteCache();
+  }
+
+  //TODO: docs
   onAfterRowMove(rows, target) {
     let priv = privatePool.get(this);
 
@@ -159,14 +246,38 @@ class NestedRows extends BasePlugin {
     let endRow = 0;
     let rowsLen = rows.length;
 
+    this.collapsingUI.collapsedRowsStash.applyStash();
+
+    let translatedTargetIndex = this.dataManager.translateTrimmedRow(target);
+
     if (priv.movedToParentBegin) {
       priv.movedToParentBegin = false;
-      endRow = target;
-      startRow = endRow - rowsLen + 1;
+      // endRow = target;
+      // startRow = endRow - rowsLen + 1;
+
+      startRow = target;
+      endRow = target + rowsLen - 1;
+
+      if (target >= Math.max(...rows)) {
+        startRow -= rowsLen;
+        endRow -= rowsLen;
+      }
+
+    } else if (priv.movedToCollapsed) {
+      // let parentObject = this.dataManager.getRowParent(target);
+      let parentObject = this.dataManager.getRowParent(translatedTargetIndex - 1);
+      if (parentObject == null) {
+        parentObject = this.dataManager.getDataObject(translatedTargetIndex - 1);
+      }
+      let parentIndex = this.dataManager.getRowIndex(parentObject);
+
+      startRow = parentIndex;
+      endRow = startRow;
 
     } else {
       if (rows[rowsLen - 1] < target) {
-        endRow = this.dataManager.isParent(target) ? target + 1 : target - 1;
+        // endRow = this.dataManager.isParent(target) ? target + 1 : target - 1;
+        endRow = target - 1;
         startRow = endRow - rowsLen + 1;
 
       } else {
@@ -183,48 +294,7 @@ class NestedRows extends BasePlugin {
 
     priv.changeSelection = false;
   }
-  onBeforeRowMove(rows, target, blockMoving) {
-    blockMoving.rows = true;
 
-    let priv = privatePool.get(this);
-    let allowMove = true;
-    let rowsLen = rows.length;
-    let i;
-
-    for (i = 0; i < rowsLen; i++) {
-      if (this.dataManager.isParent(rows[i])) {
-        allowMove = false;
-      }
-    }
-
-    if (rows.indexOf(target) > -1 || !allowMove) {
-      return;
-    }
-    priv.changeSelection = true;
-
-    let fromParent = this.dataManager.getRowParent(rows[0]);
-    let toParent = this.dataManager.isParent(target) ? this.dataManager.getDataObject(target) : this.dataManager.getRowParent(target);
-    let sameParent = fromParent === toParent;
-
-    if (rows[rowsLen - 1] <= target && sameParent) {
-      rows.reverse();
-      target--;
-
-    } else if (this.dataManager.isParent(target)) {
-      priv.movedToParentBegin = true;
-      rows.reverse();
-    }
-
-    for (i = 0; i < rowsLen; i++) {
-      this.dataManager.moveRow(rows[i], target);
-    }
-
-    if ((rows[rowsLen - 1] <= target && sameParent) || this.dataManager.isParent(target)) {
-      rows.reverse();
-    }
-
-    this.dataManager.rewriteCache();
-  }
   /**
    * beforeOnCellMousedown callback
    *

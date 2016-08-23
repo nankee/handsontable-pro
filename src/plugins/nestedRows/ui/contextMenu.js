@@ -44,42 +44,42 @@ class ContextMenuUI extends BaseUI {
    */
   appendOptions(defaultOptions) {
     const newEntries = [
-      {
-        key: 'add_child',
-        name: () => {
-          return 'Insert child row';
-        },
-        callback: () => {
-          const translatedRowIndex = this.dataManager.translateTrimmedRow(this.hot.getSelected()[0]);
-          const parent = this.dataManager.getDataObject(translatedRowIndex);
-          this.dataManager.addChild(parent);
-        },
-        disabled: () => {
-          const selected = this.hot.getSelected();
-
-          return !selected || selected[0] < 0 || this.hot.selection.selectedHeader.cols || this.hot.countRows() >= this.hot.getSettings().maxRows;
-        }
-      },
-      {
-        key: 'detach_from_parent',
-        name: () => {
-          return 'Detach from parent';
-        },
-        callback: () => {
-          const translatedRowIndex = this.dataManager.translateTrimmedRow(this.hot.getSelected()[0]);
-          const element = this.dataManager.getDataObject(translatedRowIndex);
-
-          this.dataManager.detachFromParent(this.hot.getSelected());
-        },
-        disabled: () => {
-          const selected = this.hot.getSelected();
-          const translatedRowIndex = this.dataManager.translateTrimmedRow(selected[0]);
-          let parent = this.dataManager.getRowParent(translatedRowIndex);
-
-          return !parent || !selected || selected[0] < 0 || this.hot.selection.selectedHeader.cols || this.hot.countRows() >= this.hot.getSettings().maxRows;
-        }
-      },
-      Handsontable.plugins.ContextMenu.SEPARATOR
+      // {
+      //   key: 'add_child',
+      //   name: () => {
+      //     return 'Insert child row';
+      //   },
+      //   callback: () => {
+      //     const translatedRowIndex = this.dataManager.translateTrimmedRow(this.hot.getSelected()[0]);
+      //     const parent = this.dataManager.getDataObject(translatedRowIndex);
+      //     this.dataManager.addChild(parent);
+      //   },
+      //   disabled: () => {
+      //     const selected = this.hot.getSelected();
+      //
+      //     return !selected || selected[0] < 0 || this.hot.selection.selectedHeader.cols || this.hot.countRows() >= this.hot.getSettings().maxRows;
+      //   }
+      // },
+      // {
+      //   key: 'detach_from_parent',
+      //   name: () => {
+      //     return 'Detach from parent';
+      //   },
+      //   callback: () => {
+      //     const translatedRowIndex = this.dataManager.translateTrimmedRow(this.hot.getSelected()[0]);
+      //     const element = this.dataManager.getDataObject(translatedRowIndex);
+      //
+      //     this.dataManager.detachFromParent(this.hot.getSelected());
+      //   },
+      //   disabled: () => {
+      //     const selected = this.hot.getSelected();
+      //     const translatedRowIndex = this.dataManager.translateTrimmedRow(selected[0]);
+      //     let parent = this.dataManager.getRowParent(translatedRowIndex);
+      //
+      //     return !parent || !selected || selected[0] < 0 || this.hot.selection.selectedHeader.cols || this.hot.countRows() >= this.hot.getSettings().maxRows;
+      //   }
+      // },
+      // Handsontable.plugins.ContextMenu.SEPARATOR
     ];
 
     rangeEach(0, defaultOptions.items.length - 1, (i) => {
