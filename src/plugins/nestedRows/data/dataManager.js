@@ -582,8 +582,8 @@ class DataManager {
 
     let elemToMove = fromParent.__children.slice(indexInFromParent, indexInFromParent + 1);
 
-    toParent.__children.splice(indexInToParent, 0, elemToMove[0]);
     fromParent.__children.splice(indexInFromParent, 1);
+    toParent.__children.splice(indexInToParent, 0, elemToMove[0]);
 
     // let elemToMove = this.getDataObject(fromIndex);
     // this.spliceData(fromIndex, 1);

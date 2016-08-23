@@ -206,6 +206,11 @@ class NestedRows extends BasePlugin {
 
     priv.changeSelection = true;
 
+    if (translatedStartIndexes[rowsLen - 1] <= translatedTargetIndex && sameParent) {
+      rows.reverse();
+      translatedStartIndexes.reverse();
+      translatedTargetIndex--;
+    }
     // if (translatedStartIndexes[rowsLen - 1] <= translatedTargetIndex && sameParent) {
     //   rows.reverse();
     //   translatedStartIndexes.reverse();
