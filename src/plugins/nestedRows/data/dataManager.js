@@ -573,6 +573,9 @@ class DataManager {
     if (!toParent) {
       toParent = this.getDataObject(toIndex);
       toParent.__children = [];
+
+    } else if (!toParent.__children) {
+      toParent.__children = [];
     }
 
     // let indexInToParent = targetIsParent ? 0 : this.getRowIndexWithinParent(toIndex);

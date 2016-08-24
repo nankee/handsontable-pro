@@ -123,7 +123,7 @@ class HeadersUI extends BaseUI {
       deepestLevel = this.dataManager.cache.levelCount;
     }
 
-    this.rowHeaderWidthCache = Math.max(50, 11 + 10 * deepestLevel + 20);
+    this.rowHeaderWidthCache = Math.max(50, 11 + 10 * deepestLevel + 25);
 
     this.hot.render();
   }
