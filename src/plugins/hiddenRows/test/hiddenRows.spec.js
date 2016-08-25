@@ -233,6 +233,40 @@ describe('HiddenRows', function() {
     expect(errorThrown).toBe(false);
   });
 
+  describe('alter table', function () {
+    it('should recalculate index of the hidden rows after insert rows', function () {
+      var hot = handsontable({
+        data: Handsontable.helper.createSpreadsheetData(5, 10),
+        hiddenRows: {
+          rows: [3]
+        },
+        width: 500,
+        height: 300
+      });
+
+      var plugin = hot.getPlugin('hiddenRows');
+      hot.alter('insert_row', 0, 2);
+
+      expect(plugin.hiddenRows[0]).toEqual(5);
+    });
+
+    it('should recalculate index of the hidden rows after remove rows', function () {
+      var hot = handsontable({
+        data: Handsontable.helper.createSpreadsheetData(5, 10),
+        hiddenRows: {
+          rows: [3]
+        },
+        width: 500,
+        height: 300
+      });
+
+      var plugin = hot.getPlugin('hiddenRows');
+      hot.alter('remove_row', 0, 2);
+
+      expect(plugin.hiddenRows[0]).toEqual(1);
+    });
+  });
+
   describe('copy-paste functionality', function() {
 
     it('should allow to copy hidden rows, when "copyPasteEnabled" property is not set', function() {
@@ -469,6 +503,28 @@ describe('HiddenRows', function() {
 
       expect(hot.getRowHeight(2)).toBe(30);
       expect(hot.getRowHeight(3)).toBe(30);
+    });
+  });
+
+  describe('manualRowMove', function() {
+    it('should properly render hidden ranges after moving action', function() {
+      var hot = handsontable({
+        data: Handsontable.helper.createSpreadsheetData(5, 10),
+        hiddenRows: {
+          rows: [3]
+        },
+        width: 500,
+        height: 300,
+        manualRowMove: true
+      });
+      var hiddenRows = hot.getPlugin('hiddenRows');
+      var manualRowMove = hot.getPlugin('manualRowMove');
+
+      manualRowMove.moveRows(4, [0, 1]);
+      hot.render();
+
+      expect(hiddenRows.hiddenRows[0]).toEqual(3);
+      expect(hot.getRowHeight(1)).toEqual(0.1);
     });
   });
 });

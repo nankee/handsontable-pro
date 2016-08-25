@@ -119,7 +119,6 @@ class HiddenRows extends BasePlugin {
     this.addHook('beforeSetRangeStartOnly', (coords) => this.onBeforeSetRangeStart(coords));
     this.addHook('beforeSetRangeEnd', (coords) => this.onBeforeSetRangeEnd(coords));
     this.addHook('hiddenRow', (row) => this.isHidden(row));
-    this.addHook('afterRowMove', (start, end) => this.onAfterRowMove(start, end));
     this.addHook('afterCreateRow', (index, amount) => this.onAfterCreateRow(index, amount));
     this.addHook('afterRemoveRow', (index, amount) => this.onAfterRemoveRow(index, amount));
 
@@ -148,6 +147,9 @@ class HiddenRows extends BasePlugin {
     this.resetCellsMeta();
   }
 
+  getLogicIndex(row) {
+    return this.hot.runHooks('modifyRow', row);
+  }
   /**
    * Show the rows provided in the array.
    *
@@ -156,8 +158,9 @@ class HiddenRows extends BasePlugin {
   showRows(rows) {
     arrayEach(rows, (row) => {
       row = parseInt(row, 10);
+      row = this.getLogicIndex(row);
 
-      if (this.isHidden(row)) {
+      if (this.isHidden(row, true)) {
         this.hiddenRows.splice(this.hiddenRows.indexOf(row), 1);
       }
     });
@@ -180,8 +183,9 @@ class HiddenRows extends BasePlugin {
   hideRows(rows) {
     arrayEach(rows, (row) => {
       row = parseInt(row, 10);
+      row = this.getLogicIndex(row);
 
-      if (!this.isHidden(row)) {
+      if (!this.isHidden(row, true)) {
         this.hiddenRows.push(row);
       }
     });
@@ -201,7 +205,11 @@ class HiddenRows extends BasePlugin {
    *
    * @returns {Boolean}
    */
-  isHidden(row) {
+  isHidden(row, isLogicIndex) {
+    if (!isLogicIndex) {
+      row = this.getLogicIndex(row);
+    }
+
     return this.hiddenRows.indexOf(row) > -1;
   }
 
@@ -227,8 +235,11 @@ class HiddenRows extends BasePlugin {
    * @param {Object} cellProperties Cell meta object properties.
    */
   onAfterGetCellMeta(row, col, cellProperties) {
+    row = this.hot.runHooks('unmodifyRow', row);
+
     if (this.settings.copyPasteEnabled === false && this.isHidden(row)) {
       cellProperties.skipRowOnPaste = true;
+
     } else {
       cellProperties.skipRowOnPaste = false;
     }
@@ -445,35 +456,6 @@ class HiddenRows extends BasePlugin {
       hideRowItem(this),
       showRowItem(this)
     );
-  }
-
-  /**
-   * On row move listener. Recalculate hidden index on change
-   *
-   * @private
-   * @param {Number} start
-   * @param {Number} end
-   */
-  onAfterRowMove(start, end) {
-    let tempHidden = [];
-
-    arrayEach(this.hiddenRows, (col) => {
-      if (end > start) {
-        if (col > start && col < end) {
-          col--;
-        }
-      } else {
-        if (col < start && col > end) {
-          col++;
-        }
-      }
-
-      tempHidden.push(col);
-    });
-
-    this.hiddenRows = tempHidden;
-
-    this.hot.render();
   }
 
   /**

@@ -495,6 +495,7 @@ class NestedHeaders extends BasePlugin {
 
       if (colspan > 1) {
         blockCalculations.column = true;
+        blockCalculations.cell = true;
 
         this.hot.selection.setSelectedHeaders(false, true);
 
