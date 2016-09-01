@@ -10,7 +10,7 @@ import {ActionBarComponent} from './component/actionBar';
 import {FormulaCollection} from './formulaCollection';
 import {DataFilter} from './dataFilter';
 import {FormulaUpdateObserver} from './formulaUpdateObserver';
-import {getFormulaDescriptor} from './formulaRegisterer';
+import {createArrayAssertion, toEmptyString} from './utils';
 import {FORMULA_NONE} from './constants';
 import {SEPARATOR} from 'handsontable/plugins/contextMenu/predefinedItems';
 
@@ -132,6 +132,7 @@ class Filters extends BasePlugin {
     this.actionBarComponent.show();
 
     this.registerEvents();
+    this.addHook('beforeDropdownMenuSetItems', (items) => this.onBeforeDropdownMenuSetItems(items));
     this.addHook('afterDropdownMenuDefaultOptions', (defaultOptions) => this.onAfterDropdownMenuDefaultOptions(defaultOptions));
     this.addHook('afterDropdownMenuShow', () => this.onAfterDropdownMenuShow());
     this.addHook('afterDropdownMenuHide', () => this.onAfterDropdownMenuHide());
@@ -247,26 +248,30 @@ class Filters extends BasePlugin {
   filter() {
     let dataFilter = this._createDataFilter();
     let needToFilter = !this.formulaCollection.isEmpty();
-    let filteredRows = [];
+    let visibleVisualRows = [];
 
     const formulas = this.formulaCollection.exportAllFormulas();
-    let allowFiltering = this.hot.runHooks('beforeFilter', formulas);
+    const allowFiltering = this.hot.runHooks('beforeFilter', formulas);
 
     if (allowFiltering !== false) {
       if (needToFilter) {
         let trimmedRows = [];
 
         this.trimRowsPlugin.trimmedRows.length = 0;
-        filteredRows = arrayMap(dataFilter.filter(), (rowData) => rowData.meta.visualRow);
+
+        visibleVisualRows = arrayMap(dataFilter.filter(), (rowData) => rowData.meta.visualRow);
+
+        const visibleVisualRowsAssertion = createArrayAssertion(visibleVisualRows);
 
         rangeEach(this.hot.countSourceRows() - 1, (row) => {
-          if (filteredRows.indexOf(row) === -1) {
+          if (!visibleVisualRowsAssertion(row)) {
             trimmedRows.push(row);
           }
         });
+
         this.trimRowsPlugin.trimRows(trimmedRows);
 
-        if (!filteredRows.length) {
+        if (!visibleVisualRows.length) {
           this.hot.deselectCell();
         }
       } else {
@@ -315,7 +320,7 @@ class Filters extends BasePlugin {
 
       data.push({
         meta: {row, col, visualCol, visualRow, type, instance, dateFormat},
-        value,
+        value: toEmptyString(value),
       });
     });
 
@@ -328,10 +333,16 @@ class Filters extends BasePlugin {
    * @private
    */
   onAfterDropdownMenuShow() {
-    let column = this.getSelectedColumn();
+    const column = this.getSelectedColumn();
+    const conditionComponent = this.conditionComponent;
+    const valueComponent = this.valueComponent;
 
-    this.conditionComponent.restoreState(column);
-    this.valueComponent.restoreState(column);
+    if (!conditionComponent.isHidden()) {
+      conditionComponent.restoreState(column);
+    }
+    if (!valueComponent.isHidden()) {
+      valueComponent.restoreState(column);
+    }
   }
 
   /**
@@ -341,6 +352,21 @@ class Filters extends BasePlugin {
    */
   onAfterDropdownMenuHide() {
     this.conditionComponent.getSelectElement().closeOptions();
+  }
+
+  /**
+   * Before dropdown menu set menu items listener.
+   *
+   * @private
+   * @param {Array} items DropdownMenu items created based on predefined items and settings provided by user.
+   */
+  onBeforeDropdownMenuSetItems(items) {
+    const menuKeys = arrayMap(items, (item) => item.key);
+    const conditionComponent = this.conditionComponent;
+    const valueComponent = this.valueComponent;
+
+    conditionComponent[menuKeys.indexOf(conditionComponent.getMenuItemDescriptor().key) === -1 ? 'hide' : 'show']();
+    valueComponent[menuKeys.indexOf(valueComponent.getMenuItemDescriptor().key) === -1 ? 'hide' : 'show']();
   }
 
   /**
@@ -384,9 +410,10 @@ class Filters extends BasePlugin {
 
       this.conditionComponent.saveState(column);
       this.valueComponent.saveState(column);
+
+      this.filter();
     }
     this.dropdownMenuPlugin.close();
-    this.filter();
   }
 
   /**

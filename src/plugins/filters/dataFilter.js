@@ -53,7 +53,7 @@ class DataFilter {
    * @returns {Array} Returns filtered data.
    */
   filterByColumn(column, dataSource = []) {
-    let filteredData = [];
+    const filteredData = [];
 
     arrayEach(dataSource, (dataRow) => {
       if (dataRow !== void 0 && this.formulaCollection.isMatch(dataRow, column)) {
@@ -73,10 +73,10 @@ class DataFilter {
    * @returns {Array}
    */
   _getIntersectData(data, needles) {
-    let result = [];
+    const result = [];
 
     arrayEach(needles, (needleRow) => {
-      let row = needleRow.meta.visualRow;
+      const row = needleRow.meta.visualRow;
 
       if (data[row] !== void 0) {
         result[row] = data[row];
