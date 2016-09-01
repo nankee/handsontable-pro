@@ -39,8 +39,12 @@ describe('registerFormula', function() {
 describe('getFormula', function() {
   var registerer = Handsontable.utils.FiltersFormulaRegisterer;
 
+  afterEach(function () {
+    registerer.formulas['my_formula'] = null;
+  });
+
   it('should return formula as a closure', function() {
-    var formulaMock = function() {};
+    var formulaMock = {formula: function() {}, descriptor: {}};
 
     registerer.formulas['my_formula'] = formulaMock;
 
@@ -50,10 +54,8 @@ describe('getFormula', function() {
   });
 
   it('should throw exception if formula not exists', function() {
-    var formula = registerer.getFormula('my_formula');
-
     expect(function() {
-      formula();
+      registerer.getFormula('my_formula');
     }).toThrow();
   });
 
@@ -65,7 +67,7 @@ describe('getFormula', function() {
     };
 
     formulaMock.andReturn(true);
-    registerer.formulas['my_formula'] = {formula: formulaMock};
+    registerer.formulas['my_formula'] = {formula: formulaMock, descriptor: {}};
 
     var formula = registerer.getFormula('my_formula', 'baz')(dataRow);
 
@@ -78,7 +80,7 @@ describe('getFormulaDescriptor', function() {
   var registerer = Handsontable.utils.FiltersFormulaRegisterer;
 
   it('should return formula as a closure', function() {
-    registerer.formulas['my_formula'] = {descriptor: {foo: 'bar'}};
+    registerer.formulas['my_formula'] = {formula: function() {}, descriptor: {foo: 'bar'}};
 
     var descriptor = registerer.getFormulaDescriptor('my_formula');
 

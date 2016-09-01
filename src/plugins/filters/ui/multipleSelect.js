@@ -1,3 +1,4 @@
+import Handsontable from '../../../browser';
 import {BaseUI} from './_base';
 import {addClass} from 'handsontable/helpers/dom/element';
 import {Menu} from 'handsontable/plugins/contextMenu/menu';
@@ -8,6 +9,7 @@ import {isKey} from 'handsontable/helpers/unicode';
 import {partial} from 'handsontable/helpers/function';
 import {stopImmediatePropagation} from 'handsontable/helpers/dom/event';
 import {InputUI} from './input';
+import {createArrayAssertion} from './../utils';
 
 const privatePool = new WeakMap();
 
@@ -149,7 +151,7 @@ class MultipleSelectUI extends BaseUI {
 
       addClass(wrapper, 'htUIMultipleSelectHot');
       this.itemsBox = new Handsontable(wrapper, {
-        data: valueToItems(this.items, this.options.value),
+        data: this.items,
         columns: [
           {data: 'checked', type: 'checkbox', label: {property: 'visualValue', position: 'after'}}
         ],
@@ -167,8 +169,6 @@ class MultipleSelectUI extends BaseUI {
     };
     hotInitializer(itemsBoxWrapper);
     setTimeout(() => hotInitializer(itemsBoxWrapper), 100);
-
-    this.update();
   }
 
   /**
@@ -298,8 +298,10 @@ export {MultipleSelectUI};
  * @returns {Array}
  */
 function valueToItems(availableItems, selectedValue) {
+  const arrayAssertion = createArrayAssertion(selectedValue);
+
   return arrayMap(availableItems, (item) => {
-    item.checked = selectedValue.indexOf(item.value) !== -1;
+    item.checked = arrayAssertion(item.value);
 
     return item;
   });
