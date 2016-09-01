@@ -27,14 +27,11 @@ export function showRowItem(hiddenRowsPlugin) {
       }
 
       this.render();
+      this.view.wt.wtOverlays.adjustElementsSize(true);
     },
     disabled: false,
     hidden: function() {
-      if (!hiddenRowsPlugin.hiddenRows.length) {
-        return true;
-      }
-
-      if (!this.selection.selectedHeader.rows) {
+      if (!hiddenRowsPlugin.hiddenRows.length || !this.selection.selectedHeader.rows) {
         return true;
       }
 

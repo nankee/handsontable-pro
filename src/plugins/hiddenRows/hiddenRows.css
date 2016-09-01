@@ -1,12 +1,13 @@
 /*!
  * Handsontable HiddenRows
  */
-.handsontable th.beforeHiddenRow::after,
-.handsontable th.afterHiddenRow::before {
+.handsontable th.beforeHiddenRow::before,
+.handsontable th.afterHiddenRow::after {
   color: #bbb;
   font-size: 6pt;
+  line-height: 6pt;
   position: absolute;
-  left: 1px;
+  left: 2px;
 }
 
 .handsontable th.beforeHiddenRow,
@@ -14,16 +15,19 @@
   position: relative;
 }
 
-.handsontable th.beforeHiddenRow::after {
+.handsontable th.beforeHiddenRow::before {
   content: '▲';
-  bottom: -6px;
+  bottom: 2px;
 }
 
-.handsontable th.afterHiddenRow::before {
+.handsontable th.afterHiddenRow::after {
   content: '▼';
-  top: -5px;
+  top: 2px;
 }
-
+.handsontable.ht__selection--rows tbody th.beforeHiddenRow.ht__highlight:before,
+.handsontable.ht__selection--rows tbody th.afterHiddenRow.ht__highlight:after {
+  color: #eee;
+}
 .handsontable td.afterHiddenRow.firstVisibleRow,
 .handsontable th.afterHiddenRow.firstVisibleRow {
   border-top: 1px solid #CCC;
