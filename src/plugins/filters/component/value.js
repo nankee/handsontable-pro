@@ -2,7 +2,7 @@ import {addClass} from 'handsontable/helpers/dom/element';
 import {stopImmediatePropagation} from 'handsontable/helpers/dom/event';
 import {arrayEach, arrayUnique, arrayFilter, arrayMap} from 'handsontable/helpers/array';
 import {stringify} from 'handsontable/helpers/string';
-import {unifyColumnValues, intersectValues} from './../utils';
+import {unifyColumnValues, intersectValues, toEmptyString} from './../utils';
 import {BaseComponent} from './_base';
 import {isKey} from 'handsontable/helpers/unicode';
 import {MultipleSelectUI} from './../ui/multipleSelect';
@@ -152,11 +152,10 @@ class ValueComponent extends BaseComponent {
    * Reset elements to their initial state.
    */
   reset() {
-    let values = this._getColumnVisibleValues();
+    let values = unifyColumnValues(this._getColumnVisibleValues());
+    let items = intersectValues(values, values);
 
-    values = unifyColumnValues(values);
-
-    this.getMultipleSelectElement().setItems(intersectValues(values, values));
+    this.getMultipleSelectElement().setItems(items);
     super.reset();
     this.getMultipleSelectElement().setValue(values);
   }
@@ -183,7 +182,7 @@ class ValueComponent extends BaseComponent {
   _getColumnVisibleValues() {
     let lastSelectedColumn = this.hot.getPlugin('filters').getSelectedColumn();
 
-    return this.hot.getDataAtCol(lastSelectedColumn);
+    return arrayMap(this.hot.getDataAtCol(lastSelectedColumn), (v) => toEmptyString(v));
   }
 }
 
