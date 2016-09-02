@@ -32,8 +32,9 @@
     "test"
   ],
   "dependencies": {
-    "zeroclipboard": "2.2.0",
-    "moment": "2.13.0",
-    "pikaday": "1.4.0"
+    "moment": "^2.13.0",
+    "numbro": "^1.8.0",
+    "pikaday": "^1.4.0",
+    "zeroclipboard": "2.2.0"
   }
 }
