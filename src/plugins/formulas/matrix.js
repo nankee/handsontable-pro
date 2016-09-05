@@ -2,8 +2,8 @@ import {arrayEach, arrayFilter, arrayReduce} from 'handsontable/helpers/array';
 import {CellValue} from './cell/value';
 
 /**
- * @plugin Formulas
- * @pro
+ * @class Matrix
+ * @util
  */
 class Matrix {
   constructor() {

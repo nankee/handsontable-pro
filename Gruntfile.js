@@ -66,9 +66,7 @@ module.exports = function(grunt) {
         }
       },
       options: {
-        config: '.jscsrc',
-        esnext: true,
-        verbose: true
+        config: '.jscsrc'
       }
     },
 
@@ -106,7 +104,7 @@ module.exports = function(grunt) {
       },
       options: {
         minify: true,
-        // hotBranch: pkg.compatibleHotVersion
+        hotBranch: pkg.compatibleHotVersion
       }
     },
 

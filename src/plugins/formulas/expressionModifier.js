@@ -14,8 +14,7 @@ const CELL_AND_RANGE_REGEX = /((?:[^0-9A-Z$: ]|^)\s*(\$?[A-Z]+\$?\d+)\s*(?![0-9A
 
 /**
  * @class ExpressionModifier
- * @plugin Formulas
- * @pro
+ * @util
  */
 class ExpressionModifier {
   constructor(expression) {
@@ -57,15 +56,15 @@ class ExpressionModifier {
    * Translate formula expression cells.
    *
    * @param {Object} baseCoord Coordinates which translation will be applied from.
-   * @param {Object} [delta={row: null, column: null}] Distance to move in proper direction.
+   * @param {Object} [delta={row: undefined, column: undefined}] Distance to move in proper direction.
    * @returns {ExpressionModifier}
    */
-  translate({row: baseRow, column: baseColumn}, {row: deltaRow = null, column: deltaColumn = null}) {
+  translate({row: baseRow, column: baseColumn}, {row: deltaRow, column: deltaColumn}) {
     arrayEach(this.cells, (cell) => {
-      if (deltaRow !== null) {
+      if (deltaRow != null) {
         this._translateCell(cell, 'row', baseRow, deltaRow);
       }
-      if (deltaColumn !== null) {
+      if (deltaColumn != null) {
         this._translateCell(cell, 'column', baseColumn, deltaColumn);
       }
     });

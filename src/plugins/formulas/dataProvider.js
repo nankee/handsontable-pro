@@ -4,8 +4,7 @@ import {isFormulaExpression} from './utils';
 
 /**
  * @class DataProvider
- * @plugin Formulas
- * @pro
+ * @util
  */
 class DataProvider {
   constructor(hot) {

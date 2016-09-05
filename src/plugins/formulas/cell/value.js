@@ -8,8 +8,8 @@ const STATE_UP_TO_DATE = 3;
 const states = [STATE_OUT_OFF_DATE, STATE_COMPUTING, STATE_UP_TO_DATE];
 
 /**
- * @plugin Formulas
- * @pro
+ * @class CellValue
+ * @util
  */
 class CellValue extends BaseCell {
   /**
@@ -18,7 +18,7 @@ class CellValue extends BaseCell {
    * @returns {Number}
    */
   static get STATE_OUT_OFF_DATE() {
-    return STATE_OUT_OFF_DATE;
+    return 1; // PhantomJS crashes when we want to use constant above
   }
 
   /**
@@ -27,7 +27,7 @@ class CellValue extends BaseCell {
    * @returns {Number}
    */
   static get STATE_COMPUTING() {
-    return STATE_COMPUTING;
+    return 2; // PhantomJS crashes when we want to use constant above
   }
 
   /**
@@ -36,7 +36,7 @@ class CellValue extends BaseCell {
    * @returns {Number}
    */
   static get STATE_UP_TO_DATE() {
-    return STATE_UP_TO_DATE;
+    return 3; // PhantomJS crashes when we want to use constant above
   }
 
   constructor(row, column) {

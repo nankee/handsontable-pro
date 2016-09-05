@@ -1,4 +1,3 @@
-
 var globalDateFormat = 'YYYY-MM-DD';
 
 function getDataSimpleExampleFormulas() {
@@ -12,6 +11,8 @@ function getDataSimpleExampleFormulas() {
 }
 
 function getDataAdvancedExampleFormulas() {
+  // jscs:disable
+  /* jshint ignore:start */
   return [
     ['Example #1', '', '', '', '', '', '', ''],
     ['Text', 'yellow', 'red', 'blue', 'green', 'pink', 'gray', ''],
@@ -31,6 +32,7 @@ function getDataAdvancedExampleFormulas() {
     ['Ken Siuk', 'ken@gmail.com', '=RIGHT(B16, LEN(B16) - FIND("@", B16))', '', '', '', '', '', ''],
     ['Marcin Kowalski', 'ken@syndex.pl', '=RIGHT(B17, LEN(B17) - FIND("@", B17))', '', '', '', '', '', ''],
   ];
+  /* jshint ignore:end */
 }
 
 function getDataForFormulas(row, column, value) {

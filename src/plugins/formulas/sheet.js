@@ -9,38 +9,15 @@ import {localHooks} from 'handsontable/mixins/localHooks';
 import {objectEach, mixin} from 'handsontable/helpers/object';
 import {Parser, ERROR_REF} from 'hot-formula-parser';
 
+const STATE_UP_TO_DATE = 1;
+const STATE_NEED_REBUILD = 2;
+const STATE_NEED_FULL_REBUILD = 3;
+
 /**
- * @plugin Formulas
- * @pro
+ * @class Sheet
+ * @util
  */
 class Sheet {
-  /**
-   * Up to date state.
-   *
-   * @returns {Number}
-   */
-  static get STATE_UP_TO_DATE() {
-    return 1;
-  }
-
-  /**
-   * State marking sheet to be rebuild using optimized methods.
-   *
-   * @returns {Number}
-   */
-  static get STATE_NEED_REBUILD() {
-    return 2;
-  }
-
-  /**
-   * State marking sheet to be full rebuild.
-   *
-   * @returns {Number}
-   */
-  static get STATE_NEED_FULL_REBUILD() {
-    return 3;
-  }
-
   constructor(dataProvider) {
     /**
      * Data provider for sheet calculations.
@@ -79,7 +56,7 @@ class Sheet {
      * @type {Number}
      * @private
      */
-    this._state = Sheet.STATE_NEED_FULL_REBUILD;
+    this._state = STATE_NEED_FULL_REBUILD;
 
     this.parser.on('callCellValue', (...args) => this._onCallCellValue(...args));
     this.parser.on('callRangeValue', (...args) => this._onCallRangeValue(...args));
@@ -91,10 +68,10 @@ class Sheet {
    */
   recalculate() {
     switch (this._state) {
-      case Sheet.STATE_NEED_FULL_REBUILD:
+      case STATE_NEED_FULL_REBUILD:
         this.recalculateFull();
         break;
-      case Sheet.STATE_NEED_REBUILD:
+      case STATE_NEED_REBUILD:
         this.recalculateOptimized();
         break;
     }
@@ -114,7 +91,7 @@ class Sheet {
       }
     });
 
-    this._state = Sheet.STATE_UP_TO_DATE;
+    this._state = STATE_UP_TO_DATE;
     this.runLocalHooks('afterRecalculate', cells, 'optimized');
   }
 
@@ -134,7 +111,7 @@ class Sheet {
       });
     });
 
-    this._state = Sheet.STATE_UP_TO_DATE;
+    this._state = STATE_UP_TO_DATE;
     this.runLocalHooks('afterRecalculate', cells, 'full');
   }
 
@@ -182,7 +159,7 @@ class Sheet {
       cellValue.setState(CellValue.STATE_OUT_OFF_DATE);
     });
 
-    this._state = Sheet.STATE_NEED_REBUILD;
+    this._state = STATE_NEED_REBUILD;
   }
 
   /**

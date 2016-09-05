@@ -427,7 +427,8 @@ describe('Formulas -> engineering functions', function() {
     });
 
     expect(hot.getDataAtCell(1, 1)).toBe('#VALUE!');
-    expect(hot.getDataAtCell(2, 1)).toBe('-6.580663040551157-7.581552742746545i');
+    expect(parseFloat(hot.getDataAtCell(2, 1).split('-')[1])).toBeCloseTo(6.580663040551157, 12);
+    expect(parseFloat(hot.getDataAtCell(2, 1).split('-')[2])).toBeCloseTo(7.581552742746545, 12);
   });
 
   it('IMCOT', function() {
@@ -456,7 +457,9 @@ describe('Formulas -> engineering functions', function() {
     });
 
     expect(hot.getDataAtCell(1, 1)).toBe('#NUM!');
-    expect(hot.getDataAtCell(2, 1)).toBe('0.005174473184019398+0.03627588962862602i');
+    // expect(hot.getDataAtCell(2, 1)).toBe('0.005174473184019398+0.03627588962862602i');
+    expect(parseFloat(hot.getDataAtCell(2, 1).split('+')[0])).toBeCloseTo(0.005174473184019398, 12);
+    expect(parseFloat(hot.getDataAtCell(2, 1).split('+')[1])).toBeCloseTo(0.03627588962862602, 12);
   });
 
   it('IMDIV', function() {
@@ -483,7 +486,8 @@ describe('Formulas -> engineering functions', function() {
     });
 
     expect(hot.getDataAtCell(1, 1)).toBe('#VALUE!');
-    expect(hot.getDataAtCell(2, 1)).toBe('-13.128783081462158-15.200784463067954i');
+    expect(parseFloat(hot.getDataAtCell(2, 1).split('-')[1])).toBeCloseTo(13.128783081462158, 12);
+    expect(parseFloat(hot.getDataAtCell(2, 1).split('-')[2])).toBeCloseTo(15.200784463067954, 12);
   });
 
   it('IMLN', function() {
@@ -496,7 +500,8 @@ describe('Formulas -> engineering functions', function() {
     });
 
     expect(hot.getDataAtCell(1, 1)).toBe('#VALUE!');
-    expect(hot.getDataAtCell(2, 1)).toBe('1.6094379124341003+0.9272952180016122i');
+    expect(parseFloat(hot.getDataAtCell(2, 1).split('+')[0])).toBeCloseTo(1.6094379124341003, 12);
+    expect(parseFloat(hot.getDataAtCell(2, 1).split('+')[1])).toBeCloseTo(0.9272952180016122, 12);
   });
 
   it('IMLOG10', function() {
@@ -593,7 +598,8 @@ describe('Formulas -> engineering functions', function() {
     });
 
     expect(hot.getDataAtCell(1, 1)).toBe('#VALUE!');
-    expect(hot.getDataAtCell(2, 1)).toBe('-0.06529402785794704+0.07522496030277322i');
+    expect(parseFloat(hot.getDataAtCell(2, 1).split('+')[0])).toBeCloseTo(-0.06529402785794704);
+    expect(parseFloat(hot.getDataAtCell(2, 1).split('+')[1])).toBeCloseTo(0.07522496030277322);
   });
 
   it('IMSIN', function() {
@@ -622,7 +628,8 @@ describe('Formulas -> engineering functions', function() {
     });
 
     expect(hot.getDataAtCell(1, 1)).toBe('#VALUE!');
-    expect(hot.getDataAtCell(2, 1)).toBe('-6.5481200409110025-7.61923172032141i');
+    expect(parseFloat(hot.getDataAtCell(2, 1).split('-')[1])).toBeCloseTo(6.5481200409110025, 12);
+    expect(parseFloat(hot.getDataAtCell(2, 1).split('-')[2])).toBeCloseTo(7.61923172032141, 12);
   });
 
   it('IMSQRT', function() {
@@ -635,7 +642,7 @@ describe('Formulas -> engineering functions', function() {
     });
 
     expect(hot.getDataAtCell(1, 1)).toBe('#VALUE!');
-    expect(hot.getDataAtCell(2, 1)).toBe('2+i');
+    expect(parseFloat(hot.getDataAtCell(2, 1).split('+')[0])).toBeCloseTo(2, 12);
   });
 
   it('IMSUB', function() {

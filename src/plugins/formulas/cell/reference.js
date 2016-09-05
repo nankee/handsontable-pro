@@ -2,8 +2,8 @@ import {BaseCell} from './_base';
 import {toLabel} from 'hot-formula-parser';
 
 /**
- * @plugin Formulas
- * @pro
+ * @class CellReference
+ * @util
  */
 class CellReference extends BaseCell {
   constructor(row, column) {

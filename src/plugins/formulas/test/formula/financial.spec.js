@@ -48,7 +48,7 @@ describe('Formulas -> financial functions', function() {
     });
 
     expect(hot.getDataAtCell(1, 1)).toBe('#VALUE!');
-    expect(hot.getDataAtCell(2, 1)).toBeCloseTo(-614.0863271085149, 12);
+    expect(hot.getDataAtCell(2, 1)).toBeCloseTo(-614.0863271085149, 10);
   });
 
   it('DB', function() {
@@ -126,7 +126,7 @@ describe('Formulas -> financial functions', function() {
     });
 
     expect(hot.getDataAtCell(1, 1)).toBe('#VALUE!');
-    expect(hot.getDataAtCell(2, 1)).toBeCloseTo(1137082.79396825, 12);
+    expect(hot.getDataAtCell(2, 1)).toBeCloseTo(1137082.79396825, 8);
   });
 
   it('FVSCHEDULE', function() {

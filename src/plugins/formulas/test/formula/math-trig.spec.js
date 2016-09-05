@@ -1084,7 +1084,7 @@ describe('Formulas -> math trig functions', function() {
     });
 
     expect(hot.getDataAtCell(0, 1)).toBe('#VALUE!');
-    expect(hot.getDataAtCell(1, 1)).toBe(1.8508157176809255);
+    expect(hot.getDataAtCell(1, 1)).toBeCloseTo(1.8508157176809255, 12);
   });
 
   it('SECH', function() {

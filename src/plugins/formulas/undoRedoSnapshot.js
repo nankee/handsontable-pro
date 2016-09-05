@@ -5,8 +5,7 @@ import {Stack} from 'handsontable/utils/dataStructures/stack';
 
 /**
  * @class UndoRedoSnapshot
- * @plugin Formulas
- * @pro
+ * @util
  */
 class UndoRedoSnapshot {
   constructor(sheet) {
@@ -24,6 +23,13 @@ class UndoRedoSnapshot {
     this.stack = new Stack();
   }
 
+  /**
+   * Save snapshot for specified action.
+   *
+   * @param {String} axis Alter action which triggers snapshot.
+   * @param {Number} index Alter operation stared at.
+   * @param {Number} amount Amount of items to operate.
+   */
   save(axis, index, amount) {
     const {matrix, dataProvider} = this.sheet;
     const changes = [];
@@ -41,6 +47,9 @@ class UndoRedoSnapshot {
     this.stack.push({axis, index, amount, changes});
   }
 
+  /**
+   * Restore state to the previous one.
+   */
   restore() {
     const {matrix, dataProvider} = this.sheet;
     const {axis, index, amount, changes} = this.stack.pop();

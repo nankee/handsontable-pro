@@ -7,8 +7,7 @@ import {ExpressionModifier} from './expressionModifier';
 
 /**
  * @class AlterManager
- * @plugin Formulas
- * @pro
+ * @util
  */
 class AlterManager {
   constructor(sheet) {
@@ -37,7 +36,7 @@ class AlterManager {
    *
    * @param {Number} row Row index.
    * @param {Number} amount An amount of rows to add.
-   * @param {Boolean} [modifyFormula=true] Indicate if alter operation should change formula expression.
+   * @param {Boolean} [modifyFormula=true] Indicate if alter operation should change formula expressions.
    */
   insertRow(row, amount, modifyFormula) {
     this._alter('insert', 'row', row, amount, modifyFormula);
@@ -48,7 +47,7 @@ class AlterManager {
    *
    * @param {Number} row Row index.
    * @param {Number} amount An amount of rows to remove.
-   * @param {Boolean} [modifyFormula=true] Indicate if alter operation should change formula expression.
+   * @param {Boolean} [modifyFormula=true] Indicate if alter operation should change formula expressions.
    */
   removeRow(row, amount, modifyFormula) {
     this._alter('remove', 'row', row, -amount, modifyFormula);
@@ -59,7 +58,7 @@ class AlterManager {
    *
    * @param {Number} column Column index.
    * @param {Number} amount An amount of columns to add.
-   * @param {Boolean} [modifyFormula=true] Indicates if alter operation should change formula expression.
+   * @param {Boolean} [modifyFormula=true] Indicates if alter operation should change formula expressions.
    */
   insertColumn(column, amount, modifyFormula) {
     this._alter('insert', 'column', column, amount, modifyFormula);
@@ -70,7 +69,7 @@ class AlterManager {
    *
    * @param {Number} column Column index.
    * @param {Number} amount An amount of columns to remove.
-   * @param {Boolean} [modifyFormula=true] Indicate if alter operation should change formula expression.
+   * @param {Boolean} [modifyFormula=true] Indicate if alter operation should change formula expressions.
    */
   removeColumn(column, amount, modifyFormula) {
     this._alter('remove', 'column', column, -amount, modifyFormula);
@@ -84,7 +83,7 @@ class AlterManager {
    * @param {String} axis For what axis action will be performed (`row` or `column`).
    * @param {Number} start Index which from action will be applied.
    * @param {Number} amount An amount of items to add/remove.
-   * @param {Boolean} [modifyFormula=true] Indicate if alter operation should change formula expression.
+   * @param {Boolean} [modifyFormula=true] Indicate if alter operation should change formula expressions.
    */
   _alter(action, axis, start, amount, modifyFormula = true) {
     const startCoord = (cell) => {

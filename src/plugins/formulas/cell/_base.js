@@ -2,8 +2,8 @@ import {isObject} from 'handsontable/helpers/object';
 import {toLabel} from 'hot-formula-parser';
 
 /**
- * @plugin Formulas
- * @pro
+ * @class BaseCell
+ * @util
  */
 class BaseCell {
   constructor(row, column) {
