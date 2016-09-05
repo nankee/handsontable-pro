@@ -521,6 +521,10 @@ class DataManager {
   spliceData(index, amount, element) {
     index = this.translateTrimmedRow(index);
 
+    if (index == null) {
+      return;
+    }
+
     let previousElement = this.getDataObject(index - 1);
     let newRowParent = null;
     let indexWithinParent = null;

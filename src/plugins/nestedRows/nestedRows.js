@@ -112,6 +112,7 @@ class NestedRows extends BasePlugin {
     this.addHook('beforeDetachChild', (parent, element) => this.onBeforeDetachChild(parent, element));
     this.addHook('afterDetachChild', (parent, element) => this.onAfterDetachChild(parent, element));
     this.addHook('modifyRowHeaderWidth', (rowHeaderWidth) => this.onModifyRowHeaderWidth(rowHeaderWidth));
+    this.addHook('afterCreateRow', () => this.onAfterCreateRow());
 
     this.addHook('beforeRowMove', (rows, target, blockMoving) => this.onBeforeRowMove(rows, target, blockMoving));
     this.addHook('afterRowMove', (rows, target) => this.onAfterRowMove(rows, target));
@@ -515,6 +516,10 @@ class NestedRows extends BasePlugin {
     this.collapsingUI.collapsedRowsStash.applyStash();
 
     this.headersUI.updateRowHeaderWidth();
+  }
+
+  onAfterCreateRow() {
+    this.dataManager.rewriteCache();
   }
 
   /**
