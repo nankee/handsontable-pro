@@ -1,20 +1,16 @@
 import {registerFormula} from './../formulaRegisterer';
+import {createArrayAssertion} from './../utils';
 
 export const FORMULA_NAME = 'by_value';
 
 function formula(dataRow, [value] = inputValues) {
-  // Check value and type
-  let result = value.indexOf(dataRow.value) >= 0;
-
-  if (!result) {
-    // Treat `null` and `undefined` as blank cell
-    result = value.indexOf(dataRow.value == null ? '' : dataRow.value) >= 0;
-  }
-
-  return result;
+  return value(dataRow.value);
 }
 
 registerFormula(FORMULA_NAME, formula, {
   name: 'By value',
-  inputsCount: 0
+  inputsCount: 0,
+  inputValuesDecorator: function([data] = inputValues) {
+    return [createArrayAssertion(data)];
+  }
 });

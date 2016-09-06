@@ -117,6 +117,8 @@ class DropdownMenu extends BasePlugin {
         className: 'htDropdownMenu',
         keepInViewport: true
       });
+      this.hot.runHooks('beforeDropdownMenuSetItems', menuItems);
+
       this.menu.setMenuItems(menuItems);
 
       this.menu.addLocalHook('afterOpen', () => this.onMenuAfterOpen());

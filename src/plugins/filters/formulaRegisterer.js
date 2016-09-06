@@ -10,12 +10,17 @@ const formulas = {};
  * @returns {Function}
  */
 export function getFormula(name, args) {
-  return function(dataRow) {
-    if (!formulas[name]) {
-      throw Error(`Filter formula "${name}" does not exist.`);
-    }
+  if (!formulas[name]) {
+    throw Error(`Filter formula "${name}" does not exist.`);
+  }
+  const {formula, descriptor} = formulas[name];
 
-    return formulas[name].formula.apply(dataRow.meta.instance, [].concat([dataRow], [args]));
+  if (descriptor.inputValuesDecorator) {
+    args = descriptor.inputValuesDecorator(args);
+  }
+
+  return function(dataRow) {
+    return formula.apply(dataRow.meta.instance, [].concat([dataRow], [args]));
   };
 }
 

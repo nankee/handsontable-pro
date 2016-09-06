@@ -565,4 +565,53 @@ xdescribe('DropdownMenu', function () {
       Handsontable.hooks.remove('afterDropdownMenuDefaultOptions', afterDropdownMenuDefaultOptions);
     });
   });
+
+  describe("beforeDropdownMenuSetItems hook", function() {
+    it("should add new menu item even when item is excluded from plugin settings", function () {
+      Handsontable.hooks.add('beforeDropdownMenuSetItems', function(options) {
+        if (this === hot || !hot) {
+          options.push({
+            key: 'test',
+            name: 'Test'
+          });
+        }
+      });
+
+      var hot = handsontable({
+        dropdownMenu: ['make_read_only'],
+        height: 100
+      });
+
+      dropdownMenu();
+
+      var items = $('.htDropdownMenu tbody td');
+      var actions = items.not('.htSeparator');
+
+      expect(actions.text()).toEqual([
+        'Read only',
+        'Test',
+      ].join(''));
+    });
+
+    it("should be called only with items selected in plugin settings", function () {
+      var keys = [];
+
+      Handsontable.hooks.add('beforeDropdownMenuSetItems', function(items) {
+        if (this === hot || !hot) {
+          keys = items.map(function(v) {
+            return v.key;
+          });
+        }
+      });
+
+      var hot = handsontable({
+        dropdownMenu: ['make_read_only', 'col_left'],
+        height: 100
+      });
+
+      dropdownMenu();
+
+      expect(keys).toEqual(['make_read_only', 'col_left']);
+    });
+  });
 });
