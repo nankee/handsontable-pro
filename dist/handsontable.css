@@ -151,9 +151,8 @@ YOU SHALL OBTAIN A COMMERCIAL LICENSE FOR THIS SOFTWARE AT HANDSONTABLE.COM.
   border-top: 1px solid #CCC;
 }
 
-.ht_master:not(.innerBorderLeft) ~ .handsontable tbody tr th,
-.ht_master:not(.innerBorderLeft) ~ .handsontable:not(.ht_clone_top) thead tr th:first-child
-{
+.ht_master:not(.innerBorderLeft):not(.emptyColumns) ~ .handsontable tbody tr th,
+.ht_master:not(.innerBorderLeft):not(.emptyColumns) ~ .handsontable:not(.ht_clone_top) thead tr th:first-child {
   border-right-width: 0;
 }
 
@@ -165,7 +164,7 @@ YOU SHALL OBTAIN A COMMERCIAL LICENSE FOR THIS SOFTWARE AT HANDSONTABLE.COM.
 }
 
 .handsontable th {
-  background-color: #EEE;
+  background-color: #f3f3f3;
   color: #222;
   text-align: center;
   font-weight: normal;
@@ -179,9 +178,19 @@ YOU SHALL OBTAIN A COMMERCIAL LICENSE FOR THIS SOFTWARE AT HANDSONTABLE.COM.
 .handsontable th.active {
   background-color: #CCC;
 }
-
 .handsontable thead th .relative {
   padding: 2px 4px;
+}
+
+/* selection */
+.handsontable tbody th.ht__highlight,
+.handsontable thead th.ht__highlight {
+  background-color: #dddddd;
+}
+.handsontable.ht__selection--columns thead th.ht__highlight,
+.handsontable.ht__selection--rows tbody th.ht__highlight {
+  background-color: #8fb1e8;
+  color: #000;
 }
 
 /* plugins */
@@ -197,19 +206,7 @@ YOU SHALL OBTAIN A COMMERCIAL LICENSE FOR THIS SOFTWARE AT HANDSONTABLE.COM.
   cursor: move;
 }
 
-.handsontable .manualRowMover {
-  position: fixed;
-  left: -4px;
-  top: 0;
-  background-color: transparent;
-  height: 5px;
-  width: 50px;
-  z-index: 999;
-  cursor: move;
-}
-
-.handsontable .manualColumnMoverGuide,
-.handsontable .manualRowMoverGuide {
+.handsontable .manualColumnMoverGuide {
   position: fixed;
   left: 0;
   top: 0;
@@ -220,16 +217,13 @@ YOU SHALL OBTAIN A COMMERCIAL LICENSE FOR THIS SOFTWARE AT HANDSONTABLE.COM.
   display: none;
 }
 
-.handsontable .manualColumnMoverGuide.active,
-.handsontable .manualRowMoverGuide.active {
+.handsontable .manualColumnMoverGuide.active {
   display: block;
   z-index: 199;
 }
 
 .handsontable .manualColumnMover:hover,
-.handsontable .manualColumnMover.active,
-.handsontable .manualRowMover:hover,
-.handsontable .manualRowMover.active{
+.handsontable .manualColumnMover.active {
   background-color: #88F;
 }
 
@@ -1096,7 +1090,7 @@ thead .htCollapseButton:after {
 }
 
 .htContextMenu table.htCore {
-  border: 1px solid #bbb;
+  border: 1px solid #ccc;
   border-bottom-width: 2px;
   border-right-width: 2px;
 }
@@ -1126,7 +1120,7 @@ thead .htCollapseButton:after {
 
 .htContextMenu table tbody tr td.current,
 .htContextMenu table tbody tr td.zeroclipboard-is-hover {
-  background: #e9e9e9;
+  background: #f3f3f3;
 }
 
 .htContextMenu table tbody tr td.htSeparator {
@@ -1163,6 +1157,49 @@ thead .htCollapseButton:after {
 
 .htContextMenu .ht_master .wtHolder {
   overflow: hidden;
+}
+.handsontable .wtHider {
+  position: relative;
+}
+.handsontable.ht__manualRowMove.after-selection--rows tbody th.ht__highlight {
+  cursor: move;
+  cursor: -moz-grab;
+  cursor: -webkit-grab;
+  cursor: grab;
+}
+.handsontable.ht__manualRowMove.on-moving--rows,
+.handsontable.ht__manualRowMove.on-moving--rows tbody th.ht__highlight {
+  cursor: move;
+  cursor: -moz-grabbing;
+  cursor: -webkit-grabbing;
+  cursor: grabbing;
+}
+.handsontable.ht__manualRowMove.on-moving--rows .manualRowResizer {
+  display: none;
+}
+.handsontable .ht__manualRowMove--guideline,
+.handsontable .ht__manualRowMove--backlight {
+  position: absolute;
+  width: 100%;
+  display: none;
+}
+.handsontable .ht__manualRowMove--guideline {
+  background: #777;
+  height: 2px;
+  left: 0;
+  margin-top: -1px;
+  z-index: 105;
+}
+.handsontable .ht__manualRowMove--backlight {
+  background: #333;
+  background: rgba(51, 51, 51, 0.25);
+  display: none;
+  z-index: 105;
+  pointer-events: none;
+}
+.handsontable.on-moving--rows.show-ui .ht__manualRowMove--guideline,
+.handsontable.on-moving--rows .ht__manualRowMove--backlight {
+  display: block;
 }
 /*!
  * Handsontable HiddenColumns
@@ -1559,176 +1596,42 @@ thead .htCollapseButton:after {
   padding: 3px;
   width: 161px;
 }
-.handsontable.ganttChart td:not(.rangeBar) {
-    border: 0;
-    border-right: 1px solid #F3F3F3;
-    border-top: 1px solid #F1EAEA;
+.handsontable.ganttChart tr:first-child th div.relative {
+  padding-right: 21px;
 }
-
+.handsontable.ganttChart .colHeader {
+  display: block;
+}
 .handsontable.ganttChart td.rangeBar {
-    border-right: 0;
-    /*border-top: 3px solid #fff;*/
-    -webkit-box-shadow: inset 0px 3px 0px 0px rgba(255,255,255,1);
-    -moz-box-shadow: inset 0px 3px 0px 0px rgba(255,255,255,1);
-    box-shadow: inset 0px 3px 0px 0px rgba(255,255,255,1);
+  background: #48b703;
+  border-right-width: 0;
+  position: relative;
+  -webkit-box-shadow: inset 0 3px 0 #ffffff;
+  -moz-box-shadow: inset 0 3px 0 #ffffff;
+  box-shadow: inset 0 3px 0 #ffffff;
 }
-
-.handsontable.ganttChart tbody tr th {
-    padding-top: 3px;
+.handsontable.ganttChart td.rangeBar.last {
+  border-right-width: 1px;
 }
-
-.handsontable.ganttChart tr:first-of-type td {
-    border-top: 1px solid #CCC;
+.handsontable.ganttChart td.rangeBar.area {
+  background: #7EC481;
 }
-
-.handsontable.ganttChart tr td:first-of-type {
-    border-left: 1px solid #CCC;
+.handsontable.ganttChart td.rangeBar.partial {
+  background: #8edf5a;
 }
-
-.handsontable.ganttChart td.rangeBar.color-1 {
-    background: #002F32
+.handsontable.ganttChart td.rangeBar.area.partial {
+  background: #A1D8AD;
 }
-
-.handsontable.ganttChart td.rangeBar.color-1.partial {
-    background: #00464a
-}
-
-.handsontable.ganttChart td.rangeBar.color-2 {
-    background: #42826C
-}
-
-.handsontable.ganttChart td.rangeBar.color-2.partial {
-    background: #5bb394
-}
-
-.handsontable.ganttChart td.rangeBar.color-3 {
-    background: #A5C77F
-}
-
-.handsontable.ganttChart td.rangeBar.color-3.partial {
-    background: #d0faa0
-}
-
-.handsontable.ganttChart td.rangeBar.color-4 {
-    background: #FFC861
-}
-
-.handsontable.ganttChart td.rangeBar.color-4.partial {
-    background: #ffe272
-}
-
-.handsontable.ganttChart td.rangeBar.color-5 {
-    background: #C84663
-}
-
-.handsontable.ganttChart td.rangeBar.color-5.partial {
-    background: #fa577d
-}
-
-.handsontable.ganttChart td.rangeBar.color-6 {
-    background: #5A1F00
-}
-
-.handsontable.ganttChart td.rangeBar.color-6.partial {
-    background: #8c2f00
-}
-
-.handsontable.ganttChart td.rangeBar.color-7 {
-    background: #D1570D
-}
-
-.handsontable.ganttChart td.rangeBar.color-7.partial {
-    background: #ff6912
-}
-
-.handsontable.ganttChart td.rangeBar.color-8 {
-    background: #FDE792
-}
-
-.handsontable.ganttChart td.rangeBar.color-8.partial {
-    background: #fdf5ad
-}
-
-.handsontable.ganttChart td.rangeBar.color-9 {
-    background: #477725
-}
-
-.handsontable.ganttChart td.rangeBar.color-9.partial {
-    background: #66a836
-}
-
-.handsontable.ganttChart td.rangeBar.color-10 {
-    background: #A9CC66
-}
-
-.handsontable.ganttChart td.rangeBar.color-10.partial {
-    background: #b7cc89
-}
-
-/*.rangeBar.red {*/
-/*background: #b71700;*/
-/*}*/
-/*.rangeBar.red.partial {*/
-/*background: #ff6162;*/
-/*}*/
-
-.handsontable.ganttChart td.rangeBar.color-green {
-    background: #48b703;
-}
-
-.handsontable.ganttChart td.rangeBar.color-green.partial {
-    background: #8edf5a;
-}
-
-/*.rangeBar.blue {*/
-/*background: #1a46b7;*/
-/*}*/
-/*.rangeBar.blue.partial {*/
-/*background: #6294ea;*/
-/*}*/
-
-/*.rangeBar.yellow {*/
-/*background: #e9dd00;*/
-/*}*/
-/*.rangeBar.yellow.partial {*/
-/*background: #f4f272;*/
-/*}*/
-
-/*.rangeBar.pink {*/
-/*background: #e869e2;*/
-/*}*/
-/*.rangeBar.pink.partial {*/
-/*background: #e8afe8;*/
-/*}*/
-
-/*.rangeBar.orange {*/
-/*background: #e8811b;*/
-/*}*/
-/*.rangeBar.orange.partial {*/
-/*background: #e8a45c;*/
-/*}*/
-
-/*.rangeBar.violet {*/
-/*background: #9730e8;*/
-/*}*/
-/*.rangeBar.violet.partial {*/
-/*background: #c482e8;*/
-/*}*/
-
-/*.rangeBar.lightblue {*/
-/*background: #10cce8;*/
-/*}*/
-/*.rangeBar.lightblue.partial {*/
-/*background: #89d2e8;*/
-/*}*//*!
+/*!
  * Handsontable HiddenRows
  */
-.handsontable th.beforeHiddenRow::after,
-.handsontable th.afterHiddenRow::before {
+.handsontable th.beforeHiddenRow::before,
+.handsontable th.afterHiddenRow::after {
   color: #bbb;
   font-size: 6pt;
+  line-height: 6pt;
   position: absolute;
-  left: 1px;
+  left: 2px;
 }
 
 .handsontable th.beforeHiddenRow,
@@ -1736,17 +1639,75 @@ thead .htCollapseButton:after {
   position: relative;
 }
 
-.handsontable th.beforeHiddenRow::after {
+.handsontable th.beforeHiddenRow::before {
   content: '▲';
-  bottom: -6px;
+  bottom: 2px;
 }
 
-.handsontable th.afterHiddenRow::before {
+.handsontable th.afterHiddenRow::after {
   content: '▼';
-  top: -5px;
+  top: 2px;
 }
-
+.handsontable.ht__selection--rows tbody th.beforeHiddenRow.ht__highlight:before,
+.handsontable.ht__selection--rows tbody th.afterHiddenRow.ht__highlight:after {
+  color: #eee;
+}
 .handsontable td.afterHiddenRow.firstVisibleRow,
 .handsontable th.afterHiddenRow.firstVisibleRow {
   border-top: 1px solid #CCC;
+}
+.handsontable th.ht_nestingLevels {
+    text-align: left;
+    padding-left: 7px;
+}
+
+.handsontable th div.ht_nestingLevels {
+    display: inline-block;
+    position: absolute;
+    left: 11px;
+}
+
+.handsontable.innerBorderLeft th div.ht_nestingLevels,
+.handsontable.innerBorderLeft ~ .handsontable th div.ht_nestingLevels {
+    right: 10px;
+}
+
+.handsontable th span.ht_nestingLevel {
+    display: inline-block;
+}
+
+.handsontable th span.ht_nestingLevel_empty {
+    display: inline-block;
+    width: 10px;
+    height: 1px;
+    float: left;
+}
+
+.handsontable th span.ht_nestingLevel::after {
+    content: "\2510";
+    font-size: 9px;
+    display: inline-block;
+    position: relative;
+    bottom: 3px;
+}
+
+
+.handsontable th div.ht_nestingButton {
+    display: inline-block;
+    position: absolute;
+    right: -2px;
+    cursor: pointer;
+}
+
+.handsontable th div.ht_nestingButton.ht_nestingExpand::after {
+    content: "\002B";
+}
+
+.handsontable th div.ht_nestingButton.ht_nestingCollapse::after {
+    content: "\002D";
+}
+
+.handsontable.innerBorderLeft th div.ht_nestingButton,
+.handsontable.innerBorderLeft ~ .handsontable th div.ht_nestingButton {
+    right: 0;
 }

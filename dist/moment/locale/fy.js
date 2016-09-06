@@ -22,11 +22,9 @@
                 return monthsShortWithDots[m.month()];
             }
         },
-        monthsParseExact : true,
         weekdays : 'snein_moandei_tiisdei_woansdei_tongersdei_freed_sneon'.split('_'),
         weekdaysShort : 'si._mo._ti._wo._to._fr._so.'.split('_'),
         weekdaysMin : 'Si_Mo_Ti_Wo_To_Fr_So'.split('_'),
-        weekdaysParseExact : true,
         longDateFormat : {
             LT : 'HH:mm',
             LTS : 'HH:mm:ss',
@@ -65,6 +63,12 @@
         week : {
             dow : 1, // Monday is the first day of the week.
             doy : 4  // The week that contains Jan 4th is the first week of the year.
+        }
+    });
+
+    return fy;
+
+})); the first week of the year.
         }
     });
 

@@ -18,7 +18,7 @@ import BasePlugin from 'handsontable/plugins/_base';
  * @pro
  *
  * @description
- * Allows creating a nested header structure, using the HTML's colspan attribute.
+ * This plugin allows to create a nested header structure, using the HTML's colspan attribute.
  *
  * To make any header wider (covering multiple table columns), it's corresponding configuration array element should be provided as an object with `label` and `colspan` properties.
  * The `label` property defines the header's label, while the `colspan` property defines a number of columns that the header should cover.
@@ -111,7 +111,7 @@ class NestedHeaders extends BasePlugin {
   }
 
   /**
-   * Called after updating the plugin settings.
+   * Updates the plugin to use the latest options you have specified.
    */
   updatePlugin() {
     this.disablePlugin();
@@ -205,7 +205,7 @@ class NestedHeaders extends BasePlugin {
   }
 
   /**
-   * Create the internal array containing information about the headers with a colspan attribute.
+   * Create an internal array containing information of the headers with a colspan attribute.
    */
   setupColspanArray() {
     function checkIfExists(array, index) {
@@ -495,6 +495,7 @@ class NestedHeaders extends BasePlugin {
 
       if (colspan > 1) {
         blockCalculations.column = true;
+        blockCalculations.cell = true;
 
         this.hot.selection.setSelectedHeaders(false, true);
 

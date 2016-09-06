@@ -1,6 +1,7 @@
 import {arrayEach, arrayMap, arrayFilter} from 'handsontable/helpers/array';
 import {FormulaCollection} from './formulaCollection';
 import {DataFilter} from './dataFilter';
+import {createArrayAssertion} from './utils';
 import {mixin, objectEach} from 'handsontable/helpers/object';
 import {curry, debounce} from 'handsontable/helpers/function';
 import {localHooks} from 'handsontable/mixins/localHooks';
@@ -140,9 +141,9 @@ class FormulaUpdateObserver {
       }
       visibleRows = arrayMap(visibleRows, rowData => rowData.meta.visualRow);
 
-      return arrayFilter(allRows, (rowData) => {
-        return visibleRows.indexOf(rowData.meta.visualRow) >= 0;
-      });
+      const visibleRowsAssertion = createArrayAssertion(visibleRows);
+
+      return arrayFilter(allRows, (rowData) => visibleRowsAssertion(rowData.meta.visualRow));
     })(formulasBefore);
 
     let editedFormulas = [].concat(this.formulaCollection.getFormulas(column));

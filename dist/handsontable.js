@@ -22,7 +22,7 @@ YOU SHALL OBTAIN A COMMERCIAL LICENSE FOR THIS SOFTWARE AT HANDSONTABLE.COM.
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Handsontable = f()}})(function(){var define,module,exports;return (function outer (modules, cache, entry) {
   // Save the require from previous bundle to this closure if any
   var previousRequire = typeof require == "function" && require;
-  var globalNS = JSON.parse('{"zeroclipboard":"ZeroClipboard","moment":"moment","pikaday":"Pikaday"}') || {};
+  var globalNS = JSON.parse('{"zeroclipboard":"ZeroClipboard","moment":"moment","numbro":"numbro","pikaday":"Pikaday"}') || {};
 
   function newRequire(name, jumped){
     if(!cache[name]) {
@@ -64,6 +64,7861 @@ YOU SHALL OBTAIN A COMMERCIAL LICENSE FOR THIS SOFTWARE AT HANDSONTABLE.COM.
   return newRequire;
 })
 ({1:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  WalkontableBottomOverlay: {get: function() {
+      return WalkontableBottomOverlay;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_dom_47_element__,
+    $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__;
+var $__0 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
+    addClass = $__0.addClass,
+    getScrollbarWidth = $__0.getScrollbarWidth,
+    getScrollTop = $__0.getScrollTop,
+    getWindowScrollLeft = $__0.getWindowScrollLeft,
+    hasClass = $__0.hasClass,
+    outerHeight = $__0.outerHeight,
+    innerHeight = $__0.innerHeight,
+    removeClass = $__0.removeClass,
+    setOverlayPosition = $__0.setOverlayPosition,
+    resetCssTransform = $__0.resetCssTransform;
+var WalkontableOverlay = ($__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__ = _dereq_("../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js"), $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__ && $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__.__esModule && $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__ || {default: $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__}).WalkontableOverlay;
+var WalkontableBottomOverlay = function WalkontableBottomOverlay(wotInstance) {
+  $traceurRuntime.superConstructor($WalkontableBottomOverlay).call(this, wotInstance);
+  this.clone = this.makeClone(WalkontableOverlay.CLONE_BOTTOM);
+};
+var $WalkontableBottomOverlay = WalkontableBottomOverlay;
+($traceurRuntime.createClass)(WalkontableBottomOverlay, {
+  repositionOverlay: function() {
+    var scrollbarWidth = getScrollbarWidth();
+    var cloneRoot = this.clone.wtTable.holder.parentNode;
+    if (this.wot.wtTable.holder.clientHeight === this.wot.wtTable.holder.offsetHeight) {
+      scrollbarWidth = 0;
+    }
+    cloneRoot.style.top = '';
+    cloneRoot.style.bottom = scrollbarWidth + 'px';
+  },
+  shouldBeRendered: function() {
+    return this.wot.getSetting('fixedRowsBottom') ? true : false;
+  },
+  resetFixedPosition: function() {
+    if (!this.needFullRender || !this.wot.wtTable.holder.parentNode) {
+      return;
+    }
+    var overlayRoot = this.clone.wtTable.holder.parentNode;
+    var headerPosition = 0;
+    overlayRoot.style.top = '';
+    if (this.wot.wtOverlays.leftOverlay.trimmingContainer === window) {
+      var box = this.wot.wtTable.hider.getBoundingClientRect();
+      var bottom = Math.ceil(box.bottom);
+      var finalLeft;
+      var finalBottom;
+      var bodyHeight = document.body.offsetHeight;
+      finalLeft = this.wot.wtTable.hider.style.left;
+      finalLeft = finalLeft === '' ? 0 : finalLeft;
+      if (bottom > bodyHeight) {
+        finalBottom = (bottom - bodyHeight);
+      } else {
+        finalBottom = 0;
+      }
+      headerPosition = finalBottom;
+      finalBottom = finalBottom + 'px';
+      overlayRoot.style.top = '';
+      overlayRoot.style.left = finalLeft;
+      overlayRoot.style.bottom = finalBottom;
+    } else {
+      headerPosition = this.getScrollPosition();
+      resetCssTransform(overlayRoot);
+      this.repositionOverlay();
+    }
+    this.adjustHeaderBordersPosition(headerPosition);
+  },
+  setScrollPosition: function(pos) {
+    if (this.mainTableScrollableElement === window) {
+      window.scrollTo(getWindowScrollLeft(), pos);
+    } else {
+      this.mainTableScrollableElement.scrollTop = pos;
+    }
+  },
+  onScroll: function() {
+    this.wot.getSetting('onScrollVertically');
+  },
+  sumCellSizes: function(from, to) {
+    var sum = 0;
+    var defaultRowHeight = this.wot.wtSettings.settings.defaultRowHeight;
+    while (from < to) {
+      var height = this.wot.wtTable.getRowHeight(from);
+      sum += height === void 0 ? defaultRowHeight : height;
+      from++;
+    }
+    return sum;
+  },
+  adjustElementsSize: function() {
+    var force = arguments[0] !== (void 0) ? arguments[0] : false;
+    this.updateTrimmingContainer();
+    if (this.needFullRender || force) {
+      this.adjustRootElementSize();
+      this.adjustRootChildrenSize();
+      if (!force) {
+        this.areElementSizesAdjusted = true;
+      }
+    }
+  },
+  adjustRootElementSize: function() {
+    var masterHolder = this.wot.wtTable.holder;
+    var scrollbarWidth = masterHolder.clientWidth === masterHolder.offsetWidth ? 0 : getScrollbarWidth();
+    var overlayRoot = this.clone.wtTable.holder.parentNode;
+    var overlayRootStyle = overlayRoot.style;
+    var tableHeight;
+    if (this.trimmingContainer === window) {
+      overlayRootStyle.width = '';
+    } else {
+      overlayRootStyle.width = this.wot.wtViewport.getWorkspaceWidth() - scrollbarWidth + 'px';
+    }
+    this.clone.wtTable.holder.style.width = overlayRootStyle.width;
+    tableHeight = outerHeight(this.clone.wtTable.TABLE);
+    overlayRootStyle.height = (tableHeight === 0 ? tableHeight : tableHeight) + 'px';
+  },
+  adjustRootChildrenSize: function() {
+    var scrollbarWidth = getScrollbarWidth();
+    this.clone.wtTable.hider.style.width = this.hider.style.width;
+    this.clone.wtTable.holder.style.width = this.clone.wtTable.holder.parentNode.style.width;
+    if (scrollbarWidth === 0) {
+      scrollbarWidth = 30;
+    }
+    this.clone.wtTable.holder.style.height = parseInt(this.clone.wtTable.holder.parentNode.style.height, 10) + scrollbarWidth + 'px';
+  },
+  applyToDOM: function() {
+    var total = this.wot.getSetting('totalRows');
+    if (!this.areElementSizesAdjusted) {
+      this.adjustElementsSize();
+    }
+    if (typeof this.wot.wtViewport.rowsRenderCalculator.startPosition === 'number') {
+      this.spreader.style.top = this.wot.wtViewport.rowsRenderCalculator.startPosition + 'px';
+    } else if (total === 0) {
+      this.spreader.style.top = '0';
+    } else {
+      throw new Error('Incorrect value of the rowsRenderCalculator');
+    }
+    this.spreader.style.bottom = '';
+    if (this.needFullRender) {
+      this.syncOverlayOffset();
+    }
+  },
+  syncOverlayOffset: function() {
+    if (typeof this.wot.wtViewport.columnsRenderCalculator.startPosition === 'number') {
+      this.clone.wtTable.spreader.style.left = this.wot.wtViewport.columnsRenderCalculator.startPosition + 'px';
+    } else {
+      this.clone.wtTable.spreader.style.left = '';
+    }
+  },
+  scrollTo: function(sourceRow, bottomEdge) {
+    var newY = this.getTableParentOffset();
+    var sourceInstance = this.wot.cloneSource ? this.wot.cloneSource : this.wot;
+    var mainHolder = sourceInstance.wtTable.holder;
+    var scrollbarCompensation = 0;
+    if (bottomEdge && mainHolder.offsetHeight !== mainHolder.clientHeight) {
+      scrollbarCompensation = getScrollbarWidth();
+    }
+    if (bottomEdge) {
+      newY += this.sumCellSizes(0, sourceRow + 1);
+      newY -= this.wot.wtViewport.getViewportHeight();
+      newY += 1;
+    } else {
+      newY += this.sumCellSizes(this.wot.getSetting('fixedRowsBottom'), sourceRow);
+    }
+    newY += scrollbarCompensation;
+    this.setScrollPosition(newY);
+  },
+  getTableParentOffset: function() {
+    if (this.mainTableScrollableElement === window) {
+      return this.wot.wtTable.holderOffset.top;
+    }
+    return 0;
+  },
+  getScrollPosition: function() {
+    return getScrollTop(this.mainTableScrollableElement);
+  },
+  adjustHeaderBordersPosition: function(position) {
+    if (this.wot.getSetting('fixedRowsBottom') === 0 && this.wot.getSetting('columnHeaders').length > 0) {
+      var masterParent = this.wot.wtTable.holder.parentNode;
+      var previousState = hasClass(masterParent, 'innerBorderTop');
+      if (position) {
+        addClass(masterParent, 'innerBorderTop');
+      } else {
+        removeClass(masterParent, 'innerBorderTop');
+      }
+      if (!previousState && position || previousState && !position) {
+        this.wot.wtOverlays.adjustElementsSize();
+      }
+    }
+    if (this.wot.getSetting('rowHeaders').length === 0) {
+      var secondHeaderCell = this.clone.wtTable.THEAD.querySelector('th:nth-of-type(2)');
+      if (secondHeaderCell) {
+        secondHeaderCell.style['border-left-width'] = 0;
+      }
+    }
+  }
+}, {}, WalkontableOverlay);
+;
+window.WalkontableBottomOverlay = WalkontableBottomOverlay;
+WalkontableOverlay.registerOverlay(WalkontableOverlay.CLONE_BOTTOM, WalkontableBottomOverlay);
+
+//# 
+},{"../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js":81,"../../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":116}],2:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  WalkontableBottomLeftCornerOverlay: {get: function() {
+      return WalkontableBottomLeftCornerOverlay;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_dom_47_element__,
+    $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__;
+var $__0 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
+    getScrollbarWidth = $__0.getScrollbarWidth,
+    outerHeight = $__0.outerHeight,
+    outerWidth = $__0.outerWidth,
+    setOverlayPosition = $__0.setOverlayPosition,
+    resetCssTransform = $__0.resetCssTransform;
+var WalkontableOverlay = ($__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__ = _dereq_("../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js"), $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__ && $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__.__esModule && $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__ || {default: $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__}).WalkontableOverlay;
+var WalkontableBottomLeftCornerOverlay = function WalkontableBottomLeftCornerOverlay(wotInstance) {
+  $traceurRuntime.superConstructor($WalkontableBottomLeftCornerOverlay).call(this, wotInstance);
+  this.clone = this.makeClone(WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER);
+};
+var $WalkontableBottomLeftCornerOverlay = WalkontableBottomLeftCornerOverlay;
+($traceurRuntime.createClass)(WalkontableBottomLeftCornerOverlay, {
+  shouldBeRendered: function() {
+    return this.wot.getSetting('fixedRowsBottom') && (this.wot.getSetting('fixedColumnsLeft') || this.wot.getSetting('rowHeaders').length) ? true : false;
+  },
+  repositionOverlay: function() {
+    var scrollbarWidth = getScrollbarWidth();
+    var cloneRoot = this.clone.wtTable.holder.parentNode;
+    if (this.wot.wtTable.holder.clientHeight === this.wot.wtTable.holder.offsetHeight) {
+      scrollbarWidth = 0;
+    }
+    cloneRoot.style.top = '';
+    cloneRoot.style.bottom = scrollbarWidth + 'px';
+  },
+  resetFixedPosition: function() {
+    this.updateTrimmingContainer();
+    if (!this.wot.wtTable.holder.parentNode) {
+      return;
+    }
+    var overlayRoot = this.clone.wtTable.holder.parentNode;
+    var tableHeight = outerHeight(this.clone.wtTable.TABLE);
+    var tableWidth = outerWidth(this.clone.wtTable.TABLE);
+    overlayRoot.style.top = '';
+    if (this.trimmingContainer === window) {
+      var box = this.wot.wtTable.hider.getBoundingClientRect();
+      var bottom = Math.ceil(box.bottom);
+      var left = Math.ceil(box.left);
+      var finalLeft;
+      var finalBottom;
+      var bodyHeight = document.body.offsetHeight;
+      if (left < 0) {
+        finalLeft = -left;
+      } else {
+        finalLeft = 0;
+      }
+      if (bottom > bodyHeight) {
+        finalBottom = (bottom - bodyHeight);
+      } else {
+        finalBottom = 0;
+      }
+      finalBottom = finalBottom + 'px';
+      finalLeft = finalLeft + 'px';
+      overlayRoot.style.top = '';
+      overlayRoot.style.left = finalLeft;
+      overlayRoot.style.bottom = finalBottom;
+    } else {
+      resetCssTransform(overlayRoot);
+      this.repositionOverlay();
+    }
+    overlayRoot.style.height = (tableHeight === 0 ? tableHeight : tableHeight) + 'px';
+    overlayRoot.style.width = (tableWidth === 0 ? tableWidth : tableWidth) + 'px';
+  }
+}, {}, WalkontableOverlay);
+;
+window.WalkontableBottomLeftCornerOverlay = WalkontableBottomLeftCornerOverlay;
+WalkontableOverlay.registerOverlay(WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER, WalkontableBottomLeftCornerOverlay);
+
+//# 
+},{"../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js":81,"../../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":116}],3:[function(_dereq_,module,exports){
+"use strict";
+var $__handsontable_47_browser__,
+    $__3rdparty_47_walkontable_47_src_47_overlay_47_bottom__,
+    $__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner__;
+var Handsontable = ($__handsontable_47_browser__ = _dereq_("../node_modules/hot-builder/node_modules/handsontable/src/browser"), $__handsontable_47_browser__ && $__handsontable_47_browser__.__esModule && $__handsontable_47_browser__ || {default: $__handsontable_47_browser__}).default;
+var WalkontableBottomOverlay = ($__3rdparty_47_walkontable_47_src_47_overlay_47_bottom__ = _dereq_("3rdparty/walkontable/src/overlay/bottom"), $__3rdparty_47_walkontable_47_src_47_overlay_47_bottom__ && $__3rdparty_47_walkontable_47_src_47_overlay_47_bottom__.__esModule && $__3rdparty_47_walkontable_47_src_47_overlay_47_bottom__ || {default: $__3rdparty_47_walkontable_47_src_47_overlay_47_bottom__}).WalkontableBottomOverlay;
+var WalkontableBottomLeftCornerOverlay = ($__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner__ = _dereq_("3rdparty/walkontable/src/overlay/bottomLeftCorner"), $__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner__ && $__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner__.__esModule && $__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner__ || {default: $__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner__}).WalkontableBottomLeftCornerOverlay;
+module.exports = Handsontable;
+
+//# 
+},{"../node_modules/hot-builder/node_modules/handsontable/src/browser":93,"3rdparty/walkontable/src/overlay/bottom":1,"3rdparty/walkontable/src/overlay/bottomLeftCorner":2}],4:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  BindRowsWithHeaders: {get: function() {
+      return BindRowsWithHeaders;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_plugins_47__95_base__,
+    $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_helpers_47_number__,
+    $__handsontable_47_plugins__,
+    $__bindStrategy__;
+var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+var registerPlugin = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}).registerPlugin;
+var BindStrategy = ($__bindStrategy__ = _dereq_("bindStrategy"), $__bindStrategy__ && $__bindStrategy__.__esModule && $__bindStrategy__ || {default: $__bindStrategy__}).BindStrategy;
+var BindRowsWithHeaders = function BindRowsWithHeaders(hotInstance) {
+  $traceurRuntime.superConstructor($BindRowsWithHeaders).call(this, hotInstance);
+  this.bindStrategy = new BindStrategy();
+  this.removedRows = [];
+};
+var $BindRowsWithHeaders = BindRowsWithHeaders;
+($traceurRuntime.createClass)(BindRowsWithHeaders, {
+  isEnabled: function() {
+    return !!this.hot.getSettings().bindRowsWithHeaders;
+  },
+  enablePlugin: function() {
+    var $__5 = this;
+    if (this.enabled) {
+      return;
+    }
+    var bindStrategy = this.hot.getSettings().bindRowsWithHeaders;
+    if (typeof bindStrategy !== 'string') {
+      bindStrategy = BindStrategy.DEFAULT_STRATEGY;
+    }
+    this.bindStrategy.setStrategy(bindStrategy);
+    this.bindStrategy.createMap(this.hot.countSourceRows());
+    this.addHook('modifyRowHeader', (function(row) {
+      return $__5.onModifyRowHeader(row);
+    }));
+    this.addHook('afterCreateRow', (function(index, amount) {
+      return $__5.onAfterCreateRow(index, amount);
+    }));
+    this.addHook('beforeRemoveRow', (function(index, amount) {
+      return $__5.onBeforeRemoveRow(index, amount);
+    }));
+    this.addHook('afterRemoveRow', (function(index, amount) {
+      return $__5.onAfterRemoveRow(index, amount);
+    }));
+    this.addHook('afterLoadData', (function(firstRun) {
+      return $__5.onAfterLoadData(firstRun);
+    }));
+    $traceurRuntime.superGet(this, $BindRowsWithHeaders.prototype, "enablePlugin").call(this);
+  },
+  updatePlugin: function() {
+    $traceurRuntime.superGet(this, $BindRowsWithHeaders.prototype, "updatePlugin").call(this);
+  },
+  disablePlugin: function() {
+    this.removedRows.length = 0;
+    this.bindStrategy.clearMap();
+    $traceurRuntime.superGet(this, $BindRowsWithHeaders.prototype, "disablePlugin").call(this);
+  },
+  onModifyRowHeader: function(row) {
+    return this.bindStrategy.translate(this.hot.runHooks('modifyRow', row));
+  },
+  onAfterCreateRow: function(index, amount) {
+    this.bindStrategy.createRow(index, amount);
+  },
+  onBeforeRemoveRow: function(index, amount) {
+    var $__5 = this;
+    this.removedRows.length = 0;
+    if (index !== false) {
+      rangeEach(index, index + amount - 1, (function(removedIndex) {
+        $__5.removedRows.push($__5.hot.runHooks('modifyRow', removedIndex));
+      }));
+    }
+  },
+  onAfterRemoveRow: function(index, amount) {
+    this.bindStrategy.removeRow(this.removedRows);
+  },
+  onAfterLoadData: function(firstRun) {
+    if (!firstRun) {
+      this.bindStrategy.createMap(this.hot.countSourceRows());
+    }
+  },
+  destroy: function() {
+    this.bindStrategy.destroy();
+    $traceurRuntime.superGet(this, $BindRowsWithHeaders.prototype, "destroy").call(this);
+  }
+}, {}, BasePlugin);
+;
+registerPlugin('bindRowsWithHeaders', BindRowsWithHeaders);
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":131,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":132,"bindStrategy":5}],5:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  BindStrategy: {get: function() {
+      return BindStrategy;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47__46__46__47_browser__,
+    $__handsontable_47_mixins_47_arrayMapper__,
+    $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_helpers_47_number__;
+var Handsontable = ($___46__46__47__46__46__47_browser__ = _dereq_("../../browser"), $___46__46__47__46__46__47_browser__ && $___46__46__47__46__46__47_browser__.__esModule && $___46__46__47__46__46__47_browser__ || {default: $___46__46__47__46__46__47_browser__}).default;
+var arrayMapper = ($__handsontable_47_mixins_47_arrayMapper__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper"), $__handsontable_47_mixins_47_arrayMapper__ && $__handsontable_47_mixins_47_arrayMapper__.__esModule && $__handsontable_47_mixins_47_arrayMapper__ || {default: $__handsontable_47_mixins_47_arrayMapper__}).arrayMapper;
+var mixin = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).mixin;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+var strategies = {};
+var BindStrategy = function BindStrategy() {
+  this.strategy = null;
+};
+($traceurRuntime.createClass)(BindStrategy, {
+  setStrategy: function(name) {
+    var Strategy = strategies[name];
+    if (!Strategy) {
+      throw new Error(("Bind strategy \"" + name + "\" does not exist."));
+    }
+    this.strategy = new Strategy();
+  },
+  createMap: function(length) {
+    var strategy = this.strategy;
+    var originLength = length === void 0 ? strategy._arrayMap.length : length;
+    strategy._arrayMap.length = 0;
+    rangeEach(originLength - 1, (function(itemIndex) {
+      strategy._arrayMap.push(itemIndex);
+    }));
+  },
+  createRow: function() {
+    for (var params = [],
+        $__5 = 0; $__5 < arguments.length; $__5++)
+      params[$__5] = arguments[$__5];
+    this.strategy.createRow.apply(this.strategy, params);
+  },
+  removeRow: function() {
+    for (var params = [],
+        $__6 = 0; $__6 < arguments.length; $__6++)
+      params[$__6] = arguments[$__6];
+    this.strategy.removeRow.apply(this.strategy, params);
+  },
+  translate: function() {
+    for (var params = [],
+        $__7 = 0; $__7 < arguments.length; $__7++)
+      params[$__7] = arguments[$__7];
+    return this.strategy.getValueByIndex.apply(this.strategy, params);
+  },
+  clearMap: function() {
+    this.strategy.clearMap();
+  },
+  destroy: function() {
+    if (this.strategy) {
+      this.strategy.destroy();
+    }
+    this.strategy = null;
+  }
+}, {
+  get DEFAULT_STRATEGY() {
+    return 'loose';
+  },
+  registerStrategy: function(name, klass) {
+    strategies[name] = klass;
+  }
+});
+;
+Handsontable.utils.BindStrategy = BindStrategy;
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":126,"../../browser":3}],6:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  LooseBindStrategy: {get: function() {
+      return LooseBindStrategy;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_mixins_47_arrayMapper__,
+    $__handsontable_47_helpers_47_object__,
+    $___46__46__47_bindStrategy__;
+var arrayMapper = ($__handsontable_47_mixins_47_arrayMapper__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper"), $__handsontable_47_mixins_47_arrayMapper__ && $__handsontable_47_mixins_47_arrayMapper__.__esModule && $__handsontable_47_mixins_47_arrayMapper__ || {default: $__handsontable_47_mixins_47_arrayMapper__}).arrayMapper;
+var mixin = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).mixin;
+var BindStrategy = ($___46__46__47_bindStrategy__ = _dereq_("bindStrategy"), $___46__46__47_bindStrategy__ && $___46__46__47_bindStrategy__.__esModule && $___46__46__47_bindStrategy__ || {default: $___46__46__47_bindStrategy__}).BindStrategy;
+var LooseBindStrategy = function LooseBindStrategy() {};
+($traceurRuntime.createClass)(LooseBindStrategy, {
+  createRow: function(index, amount) {
+    this.shiftItems(index, amount);
+  },
+  removeRow: function(index, amount) {
+    this.unshiftItems(index, amount);
+  },
+  destroy: function() {
+    this._arrayMap = null;
+  }
+}, {get STRATEGY_NAME() {
+    return 'loose';
+  }});
+mixin(LooseBindStrategy, arrayMapper);
+BindStrategy.registerStrategy(LooseBindStrategy.STRATEGY_NAME, LooseBindStrategy);
+;
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":126,"bindStrategy":5}],7:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  StrictBindStrategy: {get: function() {
+      return StrictBindStrategy;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_mixins_47_arrayMapper__,
+    $__handsontable_47_helpers_47_object__,
+    $___46__46__47_bindStrategy__;
+var arrayMapper = ($__handsontable_47_mixins_47_arrayMapper__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper"), $__handsontable_47_mixins_47_arrayMapper__ && $__handsontable_47_mixins_47_arrayMapper__.__esModule && $__handsontable_47_mixins_47_arrayMapper__ || {default: $__handsontable_47_mixins_47_arrayMapper__}).arrayMapper;
+var mixin = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).mixin;
+var BindStrategy = ($___46__46__47_bindStrategy__ = _dereq_("bindStrategy"), $___46__46__47_bindStrategy__ && $___46__46__47_bindStrategy__.__esModule && $___46__46__47_bindStrategy__ || {default: $___46__46__47_bindStrategy__}).BindStrategy;
+var StrictBindStrategy = function StrictBindStrategy() {};
+($traceurRuntime.createClass)(StrictBindStrategy, {
+  createRow: function(index, amount) {
+    this.insertItems(index, amount);
+  },
+  removeRow: function(index, amount) {
+    this.removeItems(index, amount);
+  },
+  destroy: function() {
+    this._arrayMap = null;
+  }
+}, {get STRATEGY_NAME() {
+    return 'strict';
+  }});
+mixin(StrictBindStrategy, arrayMapper);
+BindStrategy.registerStrategy(StrictBindStrategy.STRATEGY_NAME, StrictBindStrategy);
+;
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":126,"bindStrategy":5}],8:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  CollapsibleColumns: {get: function() {
+      return CollapsibleColumns;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_helpers_47_number__,
+    $__handsontable_47_helpers_47_dom_47_element__,
+    $__handsontable_47_eventManager__,
+    $__handsontable_47_plugins__,
+    $__handsontable_47_helpers_47_dom_47_event__,
+    $__handsontable_47_eventManager__,
+    $__handsontable_47_plugins_47__95_base__;
+var objectEach = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).objectEach;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+var $__3 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
+    addClass = $__3.addClass,
+    hasClass = $__3.hasClass,
+    fastInnerText = $__3.fastInnerText;
+var EventManager = ($__handsontable_47_eventManager__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager"), $__handsontable_47_eventManager__ && $__handsontable_47_eventManager__.__esModule && $__handsontable_47_eventManager__ || {default: $__handsontable_47_eventManager__}).EventManager;
+var $__5 = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}),
+    registerPlugin = $__5.registerPlugin,
+    getPlugin = $__5.getPlugin;
+var stopImmediatePropagation = ($__handsontable_47_helpers_47_dom_47_event__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event"), $__handsontable_47_helpers_47_dom_47_event__ && $__handsontable_47_helpers_47_dom_47_event__.__esModule && $__handsontable_47_helpers_47_dom_47_event__ || {default: $__handsontable_47_helpers_47_dom_47_event__}).stopImmediatePropagation;
+var eventManager = ($__handsontable_47_eventManager__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager"), $__handsontable_47_eventManager__ && $__handsontable_47_eventManager__.__esModule && $__handsontable_47_eventManager__ || {default: $__handsontable_47_eventManager__}).eventManager;
+var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
+var CollapsibleColumns = function CollapsibleColumns(hotInstance) {
+  $traceurRuntime.superConstructor($CollapsibleColumns).call(this, hotInstance);
+  this.settings = null;
+  this.buttonEnabledList = {};
+  this.hiddenColumnsPlugin = null;
+  this.nestedHeadersPlugin = null;
+  this.collapsedSections = {};
+  this.columnHeaderLevelCount = null;
+  this.eventManager = null;
+};
+var $CollapsibleColumns = CollapsibleColumns;
+($traceurRuntime.createClass)(CollapsibleColumns, {
+  isEnabled: function() {
+    return !!this.hot.getSettings().collapsibleColumns;
+  },
+  enablePlugin: function() {
+    var $__9 = this;
+    if (this.enabled) {
+      return;
+    }
+    this.settings = this.hot.getSettings().collapsibleColumns;
+    if (typeof this.settings !== 'boolean') {
+      this.parseSettings();
+    }
+    this.hiddenColumnsPlugin = this.hot.getPlugin('hiddenColumns');
+    this.nestedHeadersPlugin = this.hot.getPlugin('nestedHeaders');
+    this.checkDependencies();
+    this.addHook('afterRender', (function() {
+      return $__9.onAfterRender();
+    }));
+    this.addHook('afterInit', (function() {
+      return $__9.onAfterInit();
+    }));
+    this.addHook('afterGetColHeader', (function(col, TH) {
+      return $__9.onAfterGetColHeader(col, TH);
+    }));
+    this.addHook('beforeOnCellMouseDown', (function(event, coords, TD) {
+      return $__9.onBeforeOnCellMouseDown(event, coords, TD);
+    }));
+    this.eventManager = eventManager(this.hot);
+    $traceurRuntime.superGet(this, $CollapsibleColumns.prototype, "enablePlugin").call(this);
+  },
+  disablePlugin: function() {
+    this.settings = null;
+    this.buttonEnabledList = {};
+    this.hiddenColumnsPlugin = null;
+    this.collapsedSections = {};
+    this.clearButtons();
+    $traceurRuntime.superGet(this, $CollapsibleColumns.prototype, "disablePlugin").call(this);
+  },
+  clearButtons: function() {
+    if (!this.hot.view) {
+      return;
+    }
+    var headerLevels = this.hot.view.wt.getSetting('columnHeaders').length;
+    var mainHeaders = this.hot.view.wt.wtTable.THEAD;
+    var topHeaders = this.hot.view.wt.wtOverlays.topOverlay.clone.wtTable.THEAD;
+    var topLeftCornerHeaders = this.hot.view.wt.wtOverlays.topLeftCornerOverlay ? this.hot.view.wt.wtOverlays.topLeftCornerOverlay.clone.wtTable.THEAD : null;
+    var removeButton = function(button) {
+      if (button) {
+        button.parentNode.removeChild(button);
+      }
+    };
+    rangeEach(0, headerLevels - 1, (function(i) {
+      var masterLevel = mainHeaders.childNodes[i];
+      var topLevel = topHeaders.childNodes[i];
+      var topLeftCornerLevel = topLeftCornerHeaders ? topLeftCornerHeaders.childNodes[i] : null;
+      rangeEach(0, masterLevel.childNodes.length - 1, (function(j) {
+        var button = masterLevel.childNodes[j].querySelector('.collapsibleIndicator');
+        removeButton(button);
+        if (topLevel && topLevel.childNodes[j]) {
+          button = topLevel.childNodes[j].querySelector('.collapsibleIndicator');
+          removeButton(button);
+        }
+        if (topLeftCornerHeaders && topLeftCornerLevel && topLeftCornerLevel.childNodes[j]) {
+          button = topLeftCornerLevel.childNodes[j].querySelector('.collapsibleIndicator');
+          removeButton(button);
+        }
+      }));
+    }), true);
+  },
+  parseSettings: function() {
+    var $__9 = this;
+    objectEach(this.settings, (function(val) {
+      if (!$__9.buttonEnabledList[val.row]) {
+        $__9.buttonEnabledList[val.row] = {};
+      }
+      $__9.buttonEnabledList[val.row][val.col] = val.collapsible;
+    }));
+  },
+  meetsDependencies: function() {
+    var settings = this.hot.getSettings();
+    return settings.nestedHeaders && settings.hiddenColumns;
+  },
+  checkDependencies: function() {
+    var settings = this.hot.getSettings();
+    if (this.meetsDependencies()) {
+      return;
+    }
+    if (!settings.nestedHeaders) {
+      console.warn('You need to configure the Nested Headers plugin in order to use collapsible headers.');
+    }
+    if (!settings.hiddenColumns) {
+      console.warn('You need to configure the Hidden Columns plugin in order to use collapsible headers.');
+    }
+  },
+  generateIndicator: function(col, TH) {
+    var TR = TH.parentNode;
+    var THEAD = TR.parentNode;
+    var row = (-1) * THEAD.childNodes.length + Array.prototype.indexOf.call(THEAD.childNodes, TR);
+    if (Object.keys(this.buttonEnabledList).length > 0 && (!this.buttonEnabledList[row] || !this.buttonEnabledList[row][col])) {
+      return null;
+    }
+    var divEl = document.createElement('DIV');
+    addClass(divEl, 'collapsibleIndicator');
+    if (this.collapsedSections[row] && this.collapsedSections[row][col] === true) {
+      addClass(divEl, 'collapsed');
+      fastInnerText(divEl, '+');
+    } else {
+      addClass(divEl, 'expanded');
+      fastInnerText(divEl, '-');
+    }
+    return divEl;
+  },
+  markSectionAs: function(state, row, column, recursive) {
+    if (!this.collapsedSections[row]) {
+      this.collapsedSections[row] = {};
+    }
+    switch (state) {
+      case 'collapsed':
+        this.collapsedSections[row][column] = true;
+        break;
+      case 'expanded':
+        this.collapsedSections[row][column] = void 0;
+        break;
+    }
+    if (recursive) {
+      var nestedHeadersColspans = this.nestedHeadersPlugin.colspanArray;
+      var level = this.nestedHeadersPlugin.rowCoordsToLevel(row);
+      var childHeaders = this.nestedHeadersPlugin.getChildHeaders(row, column);
+      var childColspanLevel = nestedHeadersColspans[level + 1];
+      for (var i = 1; i < childHeaders.length; i++) {
+        if (childColspanLevel && childColspanLevel[childHeaders[i]].colspan > 1) {
+          this.markSectionAs(state, row + 1, childHeaders[i], true);
+        }
+      }
+    }
+  },
+  expandSection: function(coords) {
+    this.markSectionAs('expanded', coords.row, coords.col, true);
+    this.toggleCollapsibleSection(coords, 'expand');
+  },
+  collapseSection: function(coords) {
+    this.markSectionAs('collapsed', coords.row, coords.col, true);
+    this.toggleCollapsibleSection(coords, 'collapse');
+  },
+  toggleAllCollapsibleSections: function(action) {
+    var $__9 = this;
+    var nestedHeadersColspanArray = this.nestedHeadersPlugin.colspanArray;
+    if (this.settings === true) {
+      arrayEach(nestedHeadersColspanArray, (function(headerLevel, i) {
+        arrayEach(headerLevel, (function(header, j) {
+          if (header.colspan > 1) {
+            var row = $__9.nestedHeadersPlugin.levelToRowCoords(i);
+            var col = j;
+            $__9.markSectionAs(action === 'collapse' ? 'collapsed' : 'expanded', row, col, true);
+            $__9.toggleCollapsibleSection({
+              row: row,
+              col: col
+            }, action);
+          }
+        }));
+      }));
+    } else {
+      objectEach(this.buttonEnabledList, (function(headerRow, i) {
+        objectEach(headerRow, (function(header, j) {
+          $__9.markSectionAs(action === 'collapse' ? 'collapsed' : 'expanded', i, j, true);
+          $__9.toggleCollapsibleSection({
+            row: i,
+            col: j
+          }, action);
+        }));
+      }));
+    }
+  },
+  collapseAll: function() {
+    this.toggleAllCollapsibleSections('collapse');
+  },
+  expandAll: function() {
+    this.toggleAllCollapsibleSections('expand');
+  },
+  toggleCollapsibleSection: function(coords, action) {
+    var $__9 = this;
+    if (coords.row) {
+      coords.row = parseInt(coords.row, 10);
+    }
+    if (coords.col) {
+      coords.col = parseInt(coords.col, 10);
+    }
+    var hiddenColumns = this.hiddenColumnsPlugin.hiddenColumns;
+    var colspanArray = this.nestedHeadersPlugin.colspanArray;
+    var level = this.nestedHeadersPlugin.rowCoordsToLevel(coords.row);
+    var currentHeaderColspan = colspanArray[level][coords.col].colspan;
+    var childHeaders = this.nestedHeadersPlugin.getChildHeaders(coords.row, coords.col);
+    var nextLevel = level + 1;
+    var childColspanLevel = colspanArray[nextLevel];
+    var firstChildColspan = childColspanLevel ? childColspanLevel[childHeaders[0]].colspan || 1 : 1;
+    while (firstChildColspan === currentHeaderColspan && nextLevel < this.columnHeaderLevelCount) {
+      nextLevel += 1;
+      childColspanLevel = colspanArray[nextLevel];
+      firstChildColspan = childColspanLevel ? childColspanLevel[childHeaders[0]].colspan || 1 : 1;
+    }
+    rangeEach(firstChildColspan, currentHeaderColspan - 1, (function(i) {
+      var colToHide = coords.col + i;
+      switch (action) {
+        case 'collapse':
+          if (!$__9.hiddenColumnsPlugin.isHidden(colToHide)) {
+            hiddenColumns.push(colToHide);
+          }
+          break;
+        case 'expand':
+          if ($__9.hiddenColumnsPlugin.isHidden(colToHide)) {
+            hiddenColumns.splice(hiddenColumns.indexOf(colToHide), 1);
+          }
+          break;
+      }
+    }));
+    this.hot.render();
+  },
+  onAfterGetColHeader: function(column, TH) {
+    if (TH.hasAttribute('colspan') && TH.getAttribute('colspan') > 1 && column >= this.hot.getSettings().fixedColumnsLeft) {
+      var button = this.generateIndicator(column, TH);
+      if (button !== null) {
+        TH.querySelector('div:first-child').appendChild(button);
+      }
+    }
+  },
+  onBeforeOnCellMouseDown: function(event, coords) {
+    if (hasClass(event.target, 'collapsibleIndicator')) {
+      if (hasClass(event.target, 'expanded')) {
+        if (!this.collapsedSections[coords.row]) {
+          this.collapsedSections[coords.row] = [];
+        }
+        this.markSectionAs('collapsed', coords.row, coords.col, true);
+        this.eventManager.fireEvent(event.target, 'mouseup');
+        this.toggleCollapsibleSection(coords, 'collapse');
+      } else if (hasClass(event.target, 'collapsed')) {
+        this.markSectionAs('expanded', coords.row, coords.col, true);
+        this.eventManager.fireEvent(event.target, 'mouseup');
+        this.toggleCollapsibleSection(coords, 'expand');
+      }
+      stopImmediatePropagation(event);
+      return false;
+    }
+  },
+  onAfterInit: function() {
+    this.columnHeaderLevelCount = this.hot.view.wt.getSetting('columnHeaders').length;
+  },
+  onAfterRender: function() {
+    if (!this.nestedHeadersPlugin.enabled || !this.hiddenColumnsPlugin.enabled) {
+      this.disablePlugin();
+    }
+  },
+  destroy: function() {
+    this.settings = null;
+    this.buttonEnabledList = null;
+    this.hiddenColumnsPlugin = null;
+    this.nestedHeadersPlugin = null;
+    this.collapsedSections = null;
+    this.columnHeaderLevelCount = null;
+    $traceurRuntime.superGet(this, $CollapsibleColumns.prototype, "destroy").call(this);
+  }
+}, {}, BasePlugin);
+;
+registerPlugin('collapsibleColumns', CollapsibleColumns);
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":111,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":116,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":117,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":131,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":132}],9:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  ColumnSummary: {get: function() {
+      return ColumnSummary;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_plugins_47__95_base_46_js__,
+    $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_plugins_46_js__;
+var BasePlugin = ($__handsontable_47_plugins_47__95_base_46_js__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js"), $__handsontable_47_plugins_47__95_base_46_js__ && $__handsontable_47_plugins_47__95_base_46_js__.__esModule && $__handsontable_47_plugins_47__95_base_46_js__ || {default: $__handsontable_47_plugins_47__95_base_46_js__}).default;
+var $__1 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
+    deepClone = $__1.deepClone,
+    objectEach = $__1.objectEach;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var $__3 = ($__handsontable_47_plugins_46_js__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js"), $__handsontable_47_plugins_46_js__ && $__handsontable_47_plugins_46_js__.__esModule && $__handsontable_47_plugins_46_js__ || {default: $__handsontable_47_plugins_46_js__}),
+    registerPlugin = $__3.registerPlugin,
+    getPlugin = $__3.getPlugin;
+var ColumnSummary = function ColumnSummary(hotInstance) {
+  $traceurRuntime.superConstructor($ColumnSummary).call(this, hotInstance);
+  this.endpoints = [];
+  this.settings = null;
+  this.currentEndpoint = null;
+};
+var $ColumnSummary = ColumnSummary;
+($traceurRuntime.createClass)(ColumnSummary, {
+  isEnabled: function() {
+    return !!this.hot.getSettings().columnSummary;
+  },
+  enablePlugin: function() {
+    var $__4 = this;
+    if (this.enabled) {
+      return;
+    }
+    this.settings = this.hot.getSettings().columnSummary;
+    this.hot.addHook('afterInit', (function() {
+      return $__4.onAfterInit();
+    }));
+    this.hot.addHook('afterChange', (function(changes, source) {
+      return $__4.onAfterChange(changes, source);
+    }));
+    this.hot.addHook('afterCreateRow', (function(index, num, auto) {
+      return $__4.resetSetupAfterStructureAlteration('insert_row', index, num, auto);
+    }));
+    this.hot.addHook('afterCreateCol', (function(index, num, auto) {
+      return $__4.resetSetupAfterStructureAlteration('insert_col', index, num, auto);
+    }));
+    this.hot.addHook('afterRemoveRow', (function(index, num, auto) {
+      return $__4.resetSetupAfterStructureAlteration('remove_row', index, num, auto);
+    }));
+    this.hot.addHook('afterRemoveCol', (function(index, num, auto) {
+      return $__4.resetSetupAfterStructureAlteration('remove_col', index, num, auto);
+    }));
+    $traceurRuntime.superGet(this, $ColumnSummary.prototype, "enablePlugin").call(this);
+  },
+  disablePlugin: function() {
+    this.endpoints = null;
+    this.settings = null;
+    this.currentEndpoint = null;
+  },
+  resetSetupAfterStructureAlteration: function(action, index, number, createdAutomatically) {
+    if (createdAutomatically) {
+      return;
+    }
+    var type = action.indexOf('row') > -1 ? 'row' : 'col';
+    var oldEndpoints = deepClone(this.endpoints);
+    objectEach(oldEndpoints, (function(val, key, obj) {
+      if (type === 'row' && val.destinationRow >= index) {
+        if (action === 'insert_row') {
+          val.alterRowOffset = number;
+        } else if (action === 'remove_row') {
+          val.alterRowOffset = (-1) * number;
+        }
+      }
+      if (type === 'col' && val.destinationColumn >= index) {
+        if (action === 'insert_col') {
+          val.alterColumnOffset = number;
+        } else if (action === 'remove_col') {
+          val.alterColumnOffset = (-1) * number;
+        }
+      }
+    }));
+    this.endpoints = [];
+    this.resetAllEndpoints(oldEndpoints);
+    this.parseSettings();
+    objectEach(this.endpoints, (function(val, key, obj) {
+      if (type === 'row' && val.destinationRow >= index) {
+        if (action === 'insert_row') {
+          val.alterRowOffset = number;
+        } else if (action === 'remove_row') {
+          val.alterRowOffset = (-1) * number;
+        }
+      }
+      if (type === 'col' && val.destinationColumn >= index) {
+        if (action === 'insert_col') {
+          val.alterColumnOffset = number;
+        } else if (action === 'remove_col') {
+          val.alterColumnOffset = (-1) * number;
+        }
+      }
+    }));
+    this.refreshAllEndpoints(true);
+  },
+  onAfterInit: function() {
+    this.parseSettings(this.settings);
+    this.refreshAllEndpoints(true);
+  },
+  onAfterChange: function(changes, source) {
+    if (changes && source !== 'columnSummary' && source !== 'loadData') {
+      this.refreshChangedEndpoints(changes);
+    }
+  },
+  parseSettings: function() {
+    var $__4 = this;
+    objectEach(this.settings, (function(val, key, obj) {
+      var newEndpoint = {};
+      $__4.assignSetting(val, newEndpoint, 'ranges', [[0, $__4.hot.countRows() - 1]]);
+      $__4.assignSetting(val, newEndpoint, 'reversedRowCoords', false);
+      $__4.assignSetting(val, newEndpoint, 'destinationRow', new Error('You must provide a destination row for the Column Summary plugin in order to work properly!'));
+      $__4.assignSetting(val, newEndpoint, 'destinationColumn', new Error('You must provide a destination column for the Column Summary plugin in order to work properly!'));
+      $__4.assignSetting(val, newEndpoint, 'sourceColumn', val.destinationColumn);
+      $__4.assignSetting(val, newEndpoint, 'type', 'sum');
+      $__4.assignSetting(val, newEndpoint, 'forceNumeric', false);
+      $__4.assignSetting(val, newEndpoint, 'suppressDataTypeErrors', true);
+      $__4.assignSetting(val, newEndpoint, 'suppressDataTypeErrors', true);
+      $__4.assignSetting(val, newEndpoint, 'customFunction', null);
+      $__4.assignSetting(val, newEndpoint, 'readOnly', true);
+      $__4.assignSetting(val, newEndpoint, 'roundFloat', false);
+      $__4.endpoints.push(newEndpoint);
+    }));
+  },
+  assignSetting: function(settings, endpoint, name, defaultValue) {
+    if (name === 'ranges' && settings[name] === void 0) {
+      endpoint[name] = defaultValue;
+      return;
+    } else if (name === 'ranges' && settings[name].length === 0) {
+      return;
+    }
+    if (settings[name] === void 0) {
+      if (defaultValue instanceof Error) {
+        throw defaultValue;
+      }
+      endpoint[name] = defaultValue;
+    } else {
+      if (name === 'destinationRow' && endpoint.reversedRowCoords) {
+        endpoint[name] = this.hot.countRows() - settings[name] - 1;
+      } else {
+        endpoint[name] = settings[name];
+      }
+    }
+  },
+  calculate: function(endpoint) {
+    switch (endpoint.type.toLowerCase()) {
+      case 'sum':
+        endpoint.result = this.calculateSum(endpoint);
+        break;
+      case 'min':
+        endpoint.result = this.calculateMinMax(endpoint, endpoint.type);
+        break;
+      case 'max':
+        endpoint.result = this.calculateMinMax(endpoint, endpoint.type);
+        break;
+      case 'count':
+        endpoint.result = this.countEntries(endpoint);
+        break;
+      case 'average':
+        endpoint.result = this.calculateAverage(endpoint);
+        break;
+      case 'custom':
+        endpoint.result = endpoint.customFunction.call(this, endpoint);
+        break;
+    }
+  },
+  resetAllEndpoints: function(endpoints) {
+    var $__4 = this;
+    if (!endpoints) {
+      endpoints = this.endpoints;
+    }
+    arrayEach(endpoints, (function(value) {
+      $__4.resetEndpointValue(value);
+    }));
+  },
+  refreshAllEndpoints: function(init) {
+    var $__4 = this;
+    arrayEach(this.endpoints, (function(value) {
+      $__4.currentEndpoint = value;
+      $__4.calculate(value);
+      $__4.setEndpointValue(value, 'init');
+    }));
+    this.currentEndpoint = null;
+  },
+  refreshChangedEndpoints: function(changes) {
+    var $__4 = this;
+    var needToRefresh = [];
+    arrayEach(changes, (function(value, key, changes) {
+      if ((value[2] || '') + '' === value[3] + '') {
+        return;
+      }
+      arrayEach($__4.endpoints, (function(value, j) {
+        if ($__4.hot.propToCol(changes[key][1]) === value.sourceColumn && needToRefresh.indexOf(j) === -1) {
+          needToRefresh.push(j);
+        }
+      }));
+    }));
+    arrayEach(needToRefresh, (function(value) {
+      $__4.refreshEndpoint($__4.endpoints[value]);
+    }));
+  },
+  refreshEndpoint: function(endpoint) {
+    this.currentEndpoint = endpoint;
+    this.calculate(endpoint);
+    this.setEndpointValue(endpoint);
+    this.currentEndpoint = null;
+  },
+  resetEndpointValue: function(endpoint) {
+    var alterRowOffset = endpoint.alterRowOffset || 0;
+    var alterColOffset = endpoint.alterColumnOffset || 0;
+    if (endpoint.destinationRow + alterRowOffset > this.hot.countRows() || endpoint.destinationColumn + alterColOffset > this.hot.countCols()) {
+      this.throwOutOfBoundsWarning();
+      return;
+    }
+    this.hot.setCellMeta(endpoint.destinationRow, endpoint.destinationColumn, 'readOnly', false);
+    this.hot.setCellMeta(endpoint.destinationRow, endpoint.destinationColumn, 'className', '');
+    this.hot.setDataAtCell(endpoint.destinationRow + alterRowOffset, endpoint.destinationColumn + alterColOffset, '', 'columnSummary');
+  },
+  setEndpointValue: function(endpoint, source) {
+    var alterRowOffset = endpoint.alterRowOffset || 0;
+    var alterColumnOffset = endpoint.alterColumnOffset || 0;
+    var rowOffset = Math.max(-alterRowOffset, 0);
+    var colOffset = Math.max(-alterColumnOffset, 0);
+    if (endpoint.destinationRow + rowOffset > this.hot.countRows() || endpoint.destinationColumn + colOffset > this.hot.countCols()) {
+      this.throwOutOfBoundsWarning();
+      return;
+    }
+    if (source === 'init') {
+      this.hot.setCellMeta(endpoint.destinationRow + rowOffset, endpoint.destinationColumn + colOffset, 'readOnly', endpoint.readOnly);
+      this.hot.setCellMeta(endpoint.destinationRow + rowOffset, endpoint.destinationColumn + colOffset, 'className', 'columnSummaryResult');
+    }
+    if (endpoint.roundFloat && !isNaN(endpoint.result)) {
+      endpoint.result = endpoint.result.toFixed(endpoint.roundFloat);
+    }
+    this.hot.setDataAtCell(endpoint.destinationRow, endpoint.destinationColumn, endpoint.result, 'columnSummary');
+    endpoint.alterRowOffset = void 0;
+    endpoint.alterColOffset = void 0;
+  },
+  throwOutOfBoundsWarning: function() {
+    console.warn('One of the  Column Summary plugins\' destination points you provided is beyond the table boundaries!');
+  },
+  calculateSum: function(endpoint) {
+    var sum = 0;
+    for (var r in endpoint.ranges) {
+      if (endpoint.ranges.hasOwnProperty(r)) {
+        sum += this.getPartialSum(endpoint.ranges[r], endpoint.sourceColumn);
+      }
+    }
+    return sum;
+  },
+  getPartialSum: function(rowRange, col) {
+    var sum = 0;
+    var i = rowRange[1] || rowRange[0];
+    do {
+      sum += this.getCellValue(i, col) || 0;
+      i--;
+    } while (i >= rowRange[0]);
+    return sum;
+  },
+  calculateMinMax: function(endpoint, type) {
+    var result = null;
+    for (var r in endpoint.ranges) {
+      if (endpoint.ranges.hasOwnProperty(r)) {
+        var partialResult = this.getPartialMinMax(endpoint.ranges[r], endpoint.sourceColumn, type);
+        if (result === null && partialResult !== null) {
+          result = partialResult;
+        }
+        if (partialResult !== null) {
+          switch (type) {
+            case 'min':
+              result = Math.min(result, partialResult);
+              break;
+            case 'max':
+              result = Math.max(result, partialResult);
+              break;
+          }
+        }
+      }
+    }
+    return result === null ? 'Not enough data' : result;
+  },
+  getPartialMinMax: function(rowRange, col, type) {
+    var result = null;
+    var i = rowRange[1] || rowRange[0];
+    var cellValue;
+    do {
+      cellValue = this.getCellValue(i, col) || null;
+      if (result === null) {
+        result = cellValue;
+      } else if (cellValue !== null) {
+        switch (type) {
+          case 'min':
+            result = Math.min(result, cellValue);
+            break;
+          case 'max':
+            result = Math.max(result, cellValue);
+            break;
+        }
+      }
+      i--;
+    } while (i >= rowRange[0]);
+    return result;
+  },
+  countEmpty: function(rowRange, col) {
+    var cellValue;
+    var counter = 0;
+    var i = rowRange[1] || rowRange[0];
+    do {
+      cellValue = this.getCellValue(i, col);
+      if (!cellValue) {
+        counter++;
+      }
+      i--;
+    } while (i >= rowRange[0]);
+    return counter;
+  },
+  countEntries: function(endpoint) {
+    var result = 0;
+    var ranges = endpoint.ranges;
+    for (var r in ranges) {
+      if (ranges.hasOwnProperty(r)) {
+        var partial = ranges[r][1] === void 0 ? 1 : ranges[r][1] - ranges[r][0] + 1;
+        var emptyCount = this.countEmpty(ranges[r], endpoint.sourceColumn);
+        result += partial;
+        result -= emptyCount;
+      }
+    }
+    return result;
+  },
+  calculateAverage: function(endpoint) {
+    var sum = this.calculateSum(endpoint);
+    var entriesCount = this.countEntries(endpoint);
+    return sum / entriesCount;
+  },
+  getCellValue: function(row, col) {
+    var cellValue = this.hot.getDataAtCell(row, col);
+    var cellClassName = this.hot.getCellMeta(row, col).className || '';
+    if (cellClassName.indexOf('columnSummaryResult') > -1) {
+      return null;
+    }
+    if (this.currentEndpoint.forceNumeric) {
+      if (typeof cellValue === 'string') {
+        cellValue = cellValue.replace(/,/, '.');
+      }
+      cellValue = parseFloat(cellValue, 10);
+    }
+    if (isNaN(cellValue)) {
+      if (!this.currentEndpoint.suppressDataTypeErrors) {
+        throw new Error('ColumnSummary plugin: cell at (${row}, ${col}) is not in a numeric format. Cannot do the calculation.');
+      }
+    }
+    return cellValue;
+  }
+}, {}, BasePlugin);
+;
+registerPlugin('columnSummary', ColumnSummary);
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":131,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":132}],10:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  DropdownMenu: {get: function() {
+      return DropdownMenu;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47__46__46__47_browser__,
+    $__handsontable_47_plugins_47__95_base__,
+    $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_plugins_47_contextMenu_47_commandExecutor__,
+    $__handsontable_47_eventManager__,
+    $__handsontable_47_helpers_47_dom_47_element__,
+    $__handsontable_47_plugins_47_contextMenu_47_itemsFactory__,
+    $__handsontable_47_plugins_47_contextMenu_47_menu__,
+    $__handsontable_47_plugins__,
+    $__handsontable_47_helpers_47_dom_47_event__,
+    $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__;
+var Handsontable = ($___46__46__47__46__46__47_browser__ = _dereq_("../../browser"), $___46__46__47__46__46__47_browser__ && $___46__46__47__46__46__47_browser__.__esModule && $___46__46__47__46__46__47_browser__ || {default: $___46__46__47__46__46__47_browser__}).default;
+var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var objectEach = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).objectEach;
+var CommandExecutor = ($__handsontable_47_plugins_47_contextMenu_47_commandExecutor__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/commandExecutor"), $__handsontable_47_plugins_47_contextMenu_47_commandExecutor__ && $__handsontable_47_plugins_47_contextMenu_47_commandExecutor__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_commandExecutor__ || {default: $__handsontable_47_plugins_47_contextMenu_47_commandExecutor__}).CommandExecutor;
+var EventManager = ($__handsontable_47_eventManager__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager"), $__handsontable_47_eventManager__ && $__handsontable_47_eventManager__.__esModule && $__handsontable_47_eventManager__ || {default: $__handsontable_47_eventManager__}).EventManager;
+var $__6 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
+    getWindowScrollTop = $__6.getWindowScrollTop,
+    getWindowScrollLeft = $__6.getWindowScrollLeft,
+    hasClass = $__6.hasClass,
+    closest = $__6.closest;
+var ItemsFactory = ($__handsontable_47_plugins_47_contextMenu_47_itemsFactory__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/itemsFactory"), $__handsontable_47_plugins_47_contextMenu_47_itemsFactory__ && $__handsontable_47_plugins_47_contextMenu_47_itemsFactory__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_itemsFactory__ || {default: $__handsontable_47_plugins_47_contextMenu_47_itemsFactory__}).ItemsFactory;
+var Menu = ($__handsontable_47_plugins_47_contextMenu_47_menu__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu"), $__handsontable_47_plugins_47_contextMenu_47_menu__ && $__handsontable_47_plugins_47_contextMenu_47_menu__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_menu__ || {default: $__handsontable_47_plugins_47_contextMenu_47_menu__}).Menu;
+var registerPlugin = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}).registerPlugin;
+var stopPropagation = ($__handsontable_47_helpers_47_dom_47_event__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event"), $__handsontable_47_helpers_47_dom_47_event__ && $__handsontable_47_helpers_47_dom_47_event__.__esModule && $__handsontable_47_helpers_47_dom_47_event__ || {default: $__handsontable_47_helpers_47_dom_47_event__}).stopPropagation;
+var $__11 = ($__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems"), $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ || {default: $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__}),
+    COLUMN_LEFT = $__11.COLUMN_LEFT,
+    COLUMN_RIGHT = $__11.COLUMN_RIGHT,
+    REMOVE_COLUMN = $__11.REMOVE_COLUMN,
+    CLEAR_COLUMN = $__11.CLEAR_COLUMN,
+    READ_ONLY = $__11.READ_ONLY,
+    ALIGNMENT = $__11.ALIGNMENT,
+    SEPARATOR = $__11.SEPARATOR;
+var BUTTON_CLASS_NAME = 'changeType';
+var DropdownMenu = function DropdownMenu(hotInstance) {
+  var $__12 = this;
+  $traceurRuntime.superConstructor($DropdownMenu).call(this, hotInstance);
+  this.eventManager = new EventManager(this);
+  this.commandExecutor = new CommandExecutor(this.hot);
+  this.itemsFactory = null;
+  this.menu = null;
+  this.hot.addHook('afterGetColHeader', (function(col, TH) {
+    return $__12.onAfterGetColHeader(col, TH);
+  }));
+};
+var $DropdownMenu = DropdownMenu;
+($traceurRuntime.createClass)(DropdownMenu, {
+  isEnabled: function() {
+    return this.hot.getSettings().dropdownMenu;
+  },
+  enablePlugin: function() {
+    var $__12 = this;
+    if (this.enabled) {
+      return;
+    }
+    this.itemsFactory = new ItemsFactory(this.hot, $DropdownMenu.DEFAULT_ITEMS);
+    var settings = this.hot.getSettings().dropdownMenu;
+    var predefinedItems = {items: this.itemsFactory.getItems(settings)};
+    this.registerEvents();
+    if (typeof settings.callback === 'function') {
+      this.commandExecutor.setCommonCallback(settings.callback);
+    }
+    $traceurRuntime.superGet(this, $DropdownMenu.prototype, "enablePlugin").call(this);
+    this.callOnPluginsReady((function() {
+      $__12.hot.runHooks('afterDropdownMenuDefaultOptions', predefinedItems);
+      $__12.itemsFactory.setPredefinedItems(predefinedItems.items);
+      var menuItems = $__12.itemsFactory.getItems(settings);
+      $__12.menu = new Menu($__12.hot, {
+        className: 'htDropdownMenu',
+        keepInViewport: true
+      });
+      $__12.hot.runHooks('beforeDropdownMenuSetItems', menuItems);
+      $__12.menu.setMenuItems(menuItems);
+      $__12.menu.addLocalHook('afterOpen', (function() {
+        return $__12.onMenuAfterOpen();
+      }));
+      $__12.menu.addLocalHook('afterClose', (function() {
+        return $__12.onMenuAfterClose();
+      }));
+      $__12.menu.addLocalHook('executeCommand', (function() {
+        for (var params = [],
+            $__14 = 0; $__14 < arguments.length; $__14++)
+          params[$__14] = arguments[$__14];
+        return $__12.executeCommand.apply($__12, params);
+      }));
+      arrayEach(menuItems, (function(command) {
+        return $__12.commandExecutor.registerCommand(command.key, command);
+      }));
+    }));
+  },
+  updatePlugin: function() {
+    this.disablePlugin();
+    this.enablePlugin();
+    $traceurRuntime.superGet(this, $DropdownMenu.prototype, "updatePlugin").call(this);
+  },
+  disablePlugin: function() {
+    this.close();
+    if (this.menu) {
+      this.menu.destroy();
+    }
+    $traceurRuntime.superGet(this, $DropdownMenu.prototype, "disablePlugin").call(this);
+  },
+  registerEvents: function() {
+    var $__12 = this;
+    this.eventManager.addEventListener(this.hot.rootElement, 'click', (function(event) {
+      return $__12.onTableClick(event);
+    }));
+  },
+  open: function(event) {
+    if (!this.menu) {
+      return;
+    }
+    this.menu.open();
+    if (event.width) {
+      this.menu.setOffset('left', event.width);
+    }
+    this.menu.setPosition(event);
+    this.menu.hotMenu.isHotTableEnv = this.hot.isHotTableEnv;
+    Handsontable.eventManager.isHotTableEnv = this.hot.isHotTableEnv;
+  },
+  close: function() {
+    if (!this.menu) {
+      return;
+    }
+    this.menu.close();
+  },
+  executeCommand: function() {
+    for (var params = [],
+        $__14 = 0; $__14 < arguments.length; $__14++)
+      params[$__14] = arguments[$__14];
+    this.commandExecutor.execute.apply(this.commandExecutor, params);
+  },
+  onTableClick: function(event) {
+    stopPropagation(event);
+    if (hasClass(event.target, BUTTON_CLASS_NAME) && !this.menu.isOpened()) {
+      var rect = event.target.getBoundingClientRect();
+      this.open({
+        left: rect.left,
+        top: rect.top + event.target.offsetHeight + 3,
+        width: rect.width,
+        height: rect.height
+      });
+    }
+  },
+  onAfterGetColHeader: function(col, TH) {
+    var headerRow = TH.parentNode;
+    if (!headerRow) {
+      return;
+    }
+    var headerRowList = headerRow.parentNode.childNodes;
+    var level = Array.prototype.indexOf.call(headerRowList, headerRow);
+    if (col < 0 || level !== headerRowList.length - 1) {
+      return;
+    }
+    var existingButton = TH.querySelector('.' + BUTTON_CLASS_NAME);
+    if (this.enabled && existingButton) {
+      return;
+    }
+    if (!this.enabled) {
+      if (existingButton) {
+        existingButton.parentNode.removeChild(existingButton);
+      }
+      return;
+    }
+    var button = document.createElement('button');
+    button.className = BUTTON_CLASS_NAME;
+    button.onclick = function() {
+      return false;
+    };
+    TH.firstChild.insertBefore(button, TH.firstChild.firstChild);
+  },
+  onMenuAfterOpen: function() {
+    this.hot.runHooks('afterDropdownMenuShow', this);
+  },
+  onMenuAfterClose: function() {
+    this.hot.listen();
+    this.hot.runHooks('afterDropdownMenuHide', this);
+  },
+  destroy: function() {
+    this.close();
+    if (this.menu) {
+      this.menu.destroy();
+    }
+    $traceurRuntime.superGet(this, $DropdownMenu.prototype, "destroy").call(this);
+  }
+}, {get DEFAULT_ITEMS() {
+    return [COLUMN_LEFT, COLUMN_RIGHT, SEPARATOR, REMOVE_COLUMN, SEPARATOR, CLEAR_COLUMN, SEPARATOR, READ_ONLY, SEPARATOR, ALIGNMENT];
+  }}, BasePlugin);
+DropdownMenu.SEPARATOR = {name: SEPARATOR};
+Handsontable.hooks.register('afterDropdownMenuDefaultOptions');
+Handsontable.hooks.register('afterDropdownMenuShow');
+Handsontable.hooks.register('afterDropdownMenuHide');
+Handsontable.hooks.register('afterDropdownMenuExecute');
+;
+registerPlugin('dropdownMenu', DropdownMenu);
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":111,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":116,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":117,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":131,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":132,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/commandExecutor":139,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/itemsFactory":142,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":143,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":144,"../../browser":3}],11:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  DataProvider: {get: function() {
+      return DataProvider;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_helpers_47_number__;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var $__1 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
+    extend = $__1.extend,
+    clone = $__1.clone;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+var DataProvider = function DataProvider(hotInstance) {
+  this.hot = hotInstance;
+  this.options = {};
+};
+($traceurRuntime.createClass)(DataProvider, {
+  setOptions: function(options) {
+    this.options = options;
+  },
+  getData: function() {
+    var $__3 = this;
+    var $__5 = this._getDataRange(),
+        startRow = $__5.startRow,
+        startCol = $__5.startCol,
+        endRow = $__5.endRow,
+        endCol = $__5.endCol;
+    var options = this.options;
+    var data = [];
+    rangeEach(startRow, endRow, (function(rowIndex) {
+      var row = [];
+      if (!options.exportHiddenRows && $__3._isHiddenRow(rowIndex)) {
+        return;
+      }
+      rangeEach(startCol, endCol, (function(colIndex) {
+        if (!options.exportHiddenColumns && $__3._isHiddenColumn(colIndex)) {
+          return;
+        }
+        row.push($__3.hot.getDataAtCell(rowIndex, colIndex));
+      }));
+      data.push(row);
+    }));
+    return data;
+  },
+  getRowHeaders: function() {
+    var $__3 = this;
+    var headers = [];
+    if (this.options.rowHeaders) {
+      var $__5 = this._getDataRange(),
+          startRow = $__5.startRow,
+          endRow = $__5.endRow;
+      var rowHeaders = this.hot.getRowHeader();
+      rangeEach(startRow, endRow, (function(row) {
+        if (!$__3.options.exportHiddenRows && $__3._isHiddenRow(row)) {
+          return;
+        }
+        headers.push(rowHeaders[row]);
+      }));
+    }
+    return headers;
+  },
+  getColumnHeaders: function() {
+    var $__3 = this;
+    var headers = [];
+    if (this.options.columnHeaders) {
+      var $__5 = this._getDataRange(),
+          startCol = $__5.startCol,
+          endCol = $__5.endCol;
+      var colHeaders = this.hot.getColHeader();
+      rangeEach(startCol, endCol, (function(column) {
+        if (!$__3.options.exportHiddenColumns && $__3._isHiddenColumn(column)) {
+          return;
+        }
+        headers.push(colHeaders[column]);
+      }));
+    }
+    return headers;
+  },
+  _getDataRange: function() {
+    var $__6,
+        $__7,
+        $__8,
+        $__9;
+    var cols = this.hot.countCols() - 1;
+    var rows = this.hot.countRows() - 1;
+    var $__5 = this.options.range,
+        startRow = ($__6 = $__5[0]) === void 0 ? 0 : $__6,
+        startCol = ($__7 = $__5[1]) === void 0 ? 0 : $__7,
+        endRow = ($__8 = $__5[2]) === void 0 ? rows : $__8,
+        endCol = ($__9 = $__5[3]) === void 0 ? cols : $__9;
+    startRow = Math.max(startRow, 0);
+    startCol = Math.max(startCol, 0);
+    endRow = Math.min(endRow, rows);
+    endCol = Math.min(endCol, cols);
+    return {
+      startRow: startRow,
+      startCol: startCol,
+      endRow: endRow,
+      endCol: endCol
+    };
+  },
+  _isHiddenRow: function(row) {
+    return this.hot.hasHook('hiddenRow') && this.hot.runHooks('hiddenRow', row);
+  },
+  _isHiddenColumn: function(column) {
+    return this.hot.hasHook('hiddenColumn') && this.hot.runHooks('hiddenColumn', column);
+  }
+}, {});
+;
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122}],12:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  ExportFile: {get: function() {
+      return ExportFile;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_plugins_47__95_base__,
+    $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_plugins__,
+    $__dataProvider__,
+    $__typeFactory__;
+var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
+var $__1 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
+    objectEach = $__1.objectEach,
+    extend = $__1.extend,
+    clone = $__1.clone;
+var registerPlugin = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}).registerPlugin;
+var DataProvider = ($__dataProvider__ = _dereq_("dataProvider"), $__dataProvider__ && $__dataProvider__.__esModule && $__dataProvider__ || {default: $__dataProvider__}).DataProvider;
+var $__4 = ($__typeFactory__ = _dereq_("typeFactory"), $__typeFactory__ && $__typeFactory__.__esModule && $__typeFactory__ || {default: $__typeFactory__}),
+    typeFactory = $__4.typeFactory,
+    EXPORT_TYPES = $__4.EXPORT_TYPES;
+var ExportFile = function ExportFile(hotInstance) {
+  $traceurRuntime.superConstructor($ExportFile).call(this, hotInstance);
+};
+var $ExportFile = ExportFile;
+($traceurRuntime.createClass)(ExportFile, {
+  isEnabled: function() {
+    return true;
+  },
+  exportAsString: function(format) {
+    var options = arguments[1] !== (void 0) ? arguments[1] : {};
+    return this._createTypeFormatter(format, options).export();
+  },
+  exportAsBlob: function(format) {
+    var options = arguments[1] !== (void 0) ? arguments[1] : {};
+    return this._createBlob(this._createTypeFormatter(format, options));
+  },
+  downloadFile: function(format) {
+    var options = arguments[1] !== (void 0) ? arguments[1] : {};
+    var formatter = this._createTypeFormatter(format, options);
+    var blob = this._createBlob(formatter);
+    var URL = (window.URL || window.webkitURL);
+    var a = document.createElement('a');
+    var name = (formatter.options.filename + "." + formatter.options.fileExtension);
+    if (a.download !== void 0) {
+      var url = URL.createObjectURL(blob);
+      a.style.display = 'none';
+      a.setAttribute('href', url);
+      a.setAttribute('download', name);
+      document.body.appendChild(a);
+      a.dispatchEvent(new MouseEvent('click'));
+      document.body.removeChild(a);
+      setTimeout(function() {
+        URL.revokeObjectURL(url);
+      }, 100);
+    } else if (navigator.msSaveOrOpenBlob) {
+      navigator.msSaveOrOpenBlob(blob, name);
+    }
+  },
+  _createTypeFormatter: function(format) {
+    var options = arguments[1] !== (void 0) ? arguments[1] : {};
+    if (!EXPORT_TYPES[format]) {
+      throw new Error(("Export format type \"" + format + "\" is not supported."));
+    }
+    return typeFactory(format, new DataProvider(this.hot), options);
+  },
+  _createBlob: function(typeFormatter) {
+    var formatter = null;
+    if (typeof Blob !== 'undefined') {
+      formatter = new Blob([typeFormatter.export()], {type: (typeFormatter.options.mimeType + ";charset=" + typeFormatter.options.encoding)});
+    }
+    return formatter;
+  }
+}, {}, BasePlugin);
+;
+registerPlugin('exportFile', ExportFile);
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":131,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":132,"dataProvider":11,"typeFactory":13}],13:[function(_dereq_,module,exports){
+"use strict";
+var $__1;
+Object.defineProperties(exports, {
+  TYPE_CSV: {get: function() {
+      return TYPE_CSV;
+    }},
+  TYPE_EXCEL: {get: function() {
+      return TYPE_EXCEL;
+    }},
+  TYPE_PDF: {get: function() {
+      return TYPE_PDF;
+    }},
+  EXPORT_TYPES: {get: function() {
+      return EXPORT_TYPES;
+    }},
+  typeFactory: {get: function() {
+      return typeFactory;
+    }},
+  __esModule: {value: true}
+});
+var $__types_47_csv_46_js__;
+var Csv = ($__types_47_csv_46_js__ = _dereq_("types/csv.js"), $__types_47_csv_46_js__ && $__types_47_csv_46_js__.__esModule && $__types_47_csv_46_js__ || {default: $__types_47_csv_46_js__}).Csv;
+var TYPE_CSV = 'csv';
+var TYPE_EXCEL = 'excel';
+var TYPE_PDF = 'pdf';
+var EXPORT_TYPES = ($__1 = {}, Object.defineProperty($__1, TYPE_CSV, {
+  value: Csv,
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), $__1);
+function typeFactory(type, dataProvider, options) {
+  if (typeof EXPORT_TYPES[type] === 'function') {
+    return new EXPORT_TYPES[type](dataProvider, options);
+  }
+  return null;
+}
+
+//# 
+},{"types/csv.js":15}],14:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  BaseType: {get: function() {
+      return BaseType;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_helpers_47_number__,
+    $__handsontable_47_helpers_47_string__;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var $__1 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
+    extend = $__1.extend,
+    clone = $__1.clone;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+var $__3 = ($__handsontable_47_helpers_47_string__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string"), $__handsontable_47_helpers_47_string__ && $__handsontable_47_helpers_47_string__.__esModule && $__handsontable_47_helpers_47_string__ || {default: $__handsontable_47_helpers_47_string__}),
+    substitute = $__3.substitute,
+    padStart = $__3.padStart;
+var BaseType = function BaseType(dataProvider, options) {
+  this.dataProvider = dataProvider;
+  this.options = this._mergeOptions(options);
+  this.dataProvider.setOptions(this.options);
+};
+var $BaseType = BaseType;
+($traceurRuntime.createClass)(BaseType, {_mergeOptions: function(options) {
+    var _options = clone(this.constructor.DEFAULT_OPTIONS);
+    var date = new Date();
+    _options = extend(clone($BaseType.DEFAULT_OPTIONS), _options);
+    _options = extend(_options, options);
+    _options.filename = substitute(_options.filename, {
+      YYYY: date.getFullYear(),
+      MM: padStart(date.getMonth() + 1, 2, '0'),
+      DD: padStart(date.getDate(), 2, '0')
+    });
+    return _options;
+  }}, {get DEFAULT_OPTIONS() {
+    return {
+      mimeType: 'text/plain',
+      fileExtension: 'txt',
+      filename: 'Handsontable [YYYY]-[MM]-[DD]',
+      encoding: 'utf-8',
+      columnHeaders: false,
+      rowHeaders: false,
+      exportHiddenColumns: false,
+      exportHiddenRows: false,
+      range: []
+    };
+  }});
+;
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":124}],15:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  Csv: {get: function() {
+      return Csv;
+    }},
+  __esModule: {value: true}
+});
+var $___95_base_46_js__,
+    $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_helpers_47_mixed__;
+var BaseType = ($___95_base_46_js__ = _dereq_("_base.js"), $___95_base_46_js__ && $___95_base_46_js__.__esModule && $___95_base_46_js__ || {default: $___95_base_46_js__}).BaseType;
+var $__1 = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
+    arrayEach = $__1.arrayEach,
+    arrayMap = $__1.arrayMap;
+var stringify = ($__handsontable_47_helpers_47_mixed__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed"), $__handsontable_47_helpers_47_mixed__ && $__handsontable_47_helpers_47_mixed__.__esModule && $__handsontable_47_helpers_47_mixed__ || {default: $__handsontable_47_helpers_47_mixed__}).stringify;
+var CHAR_CARRIAGE_RETURN = String.fromCharCode(13);
+var CHAR_DOUBLE_QUOTES = String.fromCharCode(34);
+var CHAR_LINE_FEED = String.fromCharCode(10);
+var Csv = function Csv(dataProvider, options) {
+  $traceurRuntime.superConstructor($Csv).call(this, dataProvider, options);
+};
+var $Csv = Csv;
+($traceurRuntime.createClass)(Csv, {
+  export: function() {
+    var $__3 = this;
+    var options = this.options;
+    var data = this.dataProvider.getData();
+    var columnHeaders = this.dataProvider.getColumnHeaders();
+    var hasColumnHeaders = columnHeaders.length > 0;
+    var rowHeaders = this.dataProvider.getRowHeaders();
+    var hasRowHeaders = rowHeaders.length > 0;
+    var result = '\ufeff';
+    if (hasColumnHeaders) {
+      columnHeaders = arrayMap(columnHeaders, (function(value) {
+        return $__3._escapeCell(value, true);
+      }));
+      if (hasRowHeaders) {
+        result += options.columnDelimiter;
+      }
+      result += columnHeaders.join(options.columnDelimiter);
+      result += options.rowDelimiter;
+    }
+    arrayEach(data, (function(value, index) {
+      if (index > 0) {
+        result += options.rowDelimiter;
+      }
+      if (hasRowHeaders) {
+        result += $__3._escapeCell(rowHeaders[index]) + options.columnDelimiter;
+      }
+      result += value.map((function(value) {
+        return $__3._escapeCell(value);
+      })).join(options.columnDelimiter);
+    }));
+    return result;
+  },
+  _escapeCell: function(value) {
+    var force = arguments[1] !== (void 0) ? arguments[1] : false;
+    value = stringify(value);
+    if (value !== '' && (force || value.indexOf(CHAR_CARRIAGE_RETURN) >= 0 || value.indexOf(CHAR_DOUBLE_QUOTES) >= 0 || value.indexOf(CHAR_LINE_FEED) >= 0 || value.indexOf(this.options.columnDelimiter) >= 0)) {
+      value = value.replace(new RegExp('"', 'g'), '""');
+      value = ("\"" + value + "\"");
+    }
+    return value;
+  }
+}, {get DEFAULT_OPTIONS() {
+    return {
+      mimeType: 'text/csv',
+      fileExtension: 'csv',
+      columnDelimiter: ',',
+      rowDelimiter: '\r\n'
+    };
+  }}, BaseType);
+;
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":120,"_base.js":14}],16:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  BaseComponent: {get: function() {
+      return BaseComponent;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_mixins_47_localHooks__,
+    $__handsontable_47_mixins_47_stateSaver__;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var mixin = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).mixin;
+var localHooks = ($__handsontable_47_mixins_47_localHooks__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks"), $__handsontable_47_mixins_47_localHooks__ && $__handsontable_47_mixins_47_localHooks__.__esModule && $__handsontable_47_mixins_47_localHooks__ || {default: $__handsontable_47_mixins_47_localHooks__}).localHooks;
+var stateSaver = ($__handsontable_47_mixins_47_stateSaver__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/stateSaver"), $__handsontable_47_mixins_47_stateSaver__ && $__handsontable_47_mixins_47_stateSaver__.__esModule && $__handsontable_47_mixins_47_stateSaver__ || {default: $__handsontable_47_mixins_47_stateSaver__}).stateSaver;
+var BaseComponent = function BaseComponent(hotInstance) {
+  this.hot = hotInstance;
+  this.elements = [];
+  this.hidden = false;
+};
+($traceurRuntime.createClass)(BaseComponent, {
+  reset: function() {
+    arrayEach(this.elements, (function(ui) {
+      return ui.reset();
+    }));
+  },
+  hide: function() {
+    this.hidden = true;
+  },
+  show: function() {
+    this.hidden = false;
+  },
+  isHidden: function() {
+    return this.hidden;
+  },
+  destroy: function() {
+    this.clearLocalHooks();
+    arrayEach(this.elements, (function(ui) {
+      return ui.destroy();
+    }));
+    this.elements = null;
+    this.hot = null;
+  }
+}, {});
+mixin(BaseComponent, localHooks);
+mixin(BaseComponent, stateSaver);
+;
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":127,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/stateSaver":128}],17:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  ActionBarComponent: {get: function() {
+      return ActionBarComponent;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_dom_47_element__,
+    $__handsontable_47_helpers_47_array__,
+    $___95_base__,
+    $___46__46__47_ui_47_input__,
+    $___46__46__47_ui_47_select__;
+var addClass = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).addClass;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var BaseComponent = ($___95_base__ = _dereq_("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseComponent;
+var InputUI = ($___46__46__47_ui_47_input__ = _dereq_("ui/input"), $___46__46__47_ui_47_input__ && $___46__46__47_ui_47_input__.__esModule && $___46__46__47_ui_47_input__ || {default: $___46__46__47_ui_47_input__}).InputUI;
+var SelectUI = ($___46__46__47_ui_47_select__ = _dereq_("ui/select"), $___46__46__47_ui_47_select__ && $___46__46__47_ui_47_select__.__esModule && $___46__46__47_ui_47_select__ || {default: $___46__46__47_ui_47_select__}).SelectUI;
+var ActionBarComponent = function ActionBarComponent(hotInstance) {
+  $traceurRuntime.superConstructor($ActionBarComponent).call(this, hotInstance);
+  this.elements.push(new InputUI(this.hot, {
+    type: 'button',
+    value: 'OK',
+    className: 'htUIButton htUIButtonOK',
+    identifier: $ActionBarComponent.BUTTON_OK
+  }));
+  this.elements.push(new InputUI(this.hot, {
+    type: 'button',
+    value: 'Cancel',
+    className: 'htUIButton htUIButtonCancel',
+    identifier: $ActionBarComponent.BUTTON_CANCEL
+  }));
+  this.registerHooks();
+};
+var $ActionBarComponent = ActionBarComponent;
+($traceurRuntime.createClass)(ActionBarComponent, {
+  registerHooks: function() {
+    var $__5 = this;
+    arrayEach(this.elements, (function(element) {
+      element.addLocalHook('click', (function(event, button) {
+        return $__5.onButtonClick(event, button);
+      }));
+    }));
+  },
+  getMenuItemDescriptor: function() {
+    var $__5 = this;
+    return {
+      key: 'filter_action_bar',
+      name: 'Action bar',
+      isCommand: false,
+      disableSelection: true,
+      hidden: (function() {
+        return $__5.isHidden();
+      }),
+      renderer: (function(hot, wrapper, row, col, prop, value) {
+        addClass(wrapper.parentNode, 'htFiltersMenuActionBar');
+        arrayEach($__5.elements, (function(ui) {
+          return wrapper.appendChild(ui.element);
+        }));
+        return wrapper;
+      })
+    };
+  },
+  accept: function() {
+    this.runLocalHooks('accept');
+  },
+  cancel: function() {
+    this.runLocalHooks('cancel');
+  },
+  onButtonClick: function(event, button) {
+    if (button.options.identifier === $ActionBarComponent.BUTTON_OK) {
+      this.accept();
+    } else {
+      this.cancel();
+    }
+  }
+}, {
+  get BUTTON_OK() {
+    return 'ok';
+  },
+  get BUTTON_CANCEL() {
+    return 'cancel';
+  }
+}, BaseComponent);
+;
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":116,"_base":16,"ui/input":48,"ui/select":50}],18:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  ConditionComponent: {get: function() {
+      return ConditionComponent;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_dom_47_element__,
+    $__handsontable_47_helpers_47_dom_47_event__,
+    $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_helpers_47_unicode__,
+    $___95_base__,
+    $___46__46__47_constants__,
+    $___46__46__47_ui_47_input__,
+    $___46__46__47_ui_47_select__,
+    $___46__46__47_formulaRegisterer__;
+var addClass = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).addClass;
+var stopImmediatePropagation = ($__handsontable_47_helpers_47_dom_47_event__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event"), $__handsontable_47_helpers_47_dom_47_event__ && $__handsontable_47_helpers_47_dom_47_event__.__esModule && $__handsontable_47_helpers_47_dom_47_event__ || {default: $__handsontable_47_helpers_47_dom_47_event__}).stopImmediatePropagation;
+var $__2 = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
+    arrayEach = $__2.arrayEach,
+    arrayFilter = $__2.arrayFilter;
+var extend = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).extend;
+var isKey = ($__handsontable_47_helpers_47_unicode__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode"), $__handsontable_47_helpers_47_unicode__ && $__handsontable_47_helpers_47_unicode__.__esModule && $__handsontable_47_helpers_47_unicode__ || {default: $__handsontable_47_helpers_47_unicode__}).isKey;
+var BaseComponent = ($___95_base__ = _dereq_("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseComponent;
+var $__6 = ($___46__46__47_constants__ = _dereq_("constants"), $___46__46__47_constants__ && $___46__46__47_constants__.__esModule && $___46__46__47_constants__ || {default: $___46__46__47_constants__}),
+    getOptionsList = $__6.getOptionsList,
+    FORMULA_NONE = $__6.FORMULA_NONE,
+    FORMULA_BY_VALUE = $__6.FORMULA_BY_VALUE;
+var InputUI = ($___46__46__47_ui_47_input__ = _dereq_("ui/input"), $___46__46__47_ui_47_input__ && $___46__46__47_ui_47_input__.__esModule && $___46__46__47_ui_47_input__ || {default: $___46__46__47_ui_47_input__}).InputUI;
+var SelectUI = ($___46__46__47_ui_47_select__ = _dereq_("ui/select"), $___46__46__47_ui_47_select__ && $___46__46__47_ui_47_select__.__esModule && $___46__46__47_ui_47_select__ || {default: $___46__46__47_ui_47_select__}).SelectUI;
+var getFormulaDescriptor = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).getFormulaDescriptor;
+var ConditionComponent = function ConditionComponent(hotInstance) {
+  $traceurRuntime.superConstructor($ConditionComponent).call(this, hotInstance);
+  this.elements.push(new SelectUI(this.hot));
+  this.elements.push(new InputUI(this.hot, {placeholder: 'Value'}));
+  this.elements.push(new InputUI(this.hot, {placeholder: 'Second value'}));
+  this.registerHooks();
+};
+var $ConditionComponent = ConditionComponent;
+($traceurRuntime.createClass)(ConditionComponent, {
+  registerHooks: function() {
+    var $__10 = this;
+    this.getSelectElement().addLocalHook('select', (function(command) {
+      return $__10.onConditionSelect(command);
+    }));
+    arrayEach(this.getInputElements(), (function(input) {
+      input.addLocalHook('keydown', (function(event) {
+        return $__10.onInputKeyDown(event);
+      }));
+    }));
+  },
+  setState: function(value) {
+    var $__10 = this;
+    this.reset();
+    if (value) {
+      this.getSelectElement().setValue(value.command);
+      arrayEach(value.args, (function(arg, index) {
+        var element = $__10.getInputElement(index);
+        element.setValue(arg);
+        element[value.command.inputsCount > index ? 'show' : 'hide']();
+        if (!index) {
+          setTimeout((function() {
+            return element.focus();
+          }), 10);
+        }
+      }));
+    }
+  },
+  getState: function() {
+    var command = this.getSelectElement().getValue() || getFormulaDescriptor(FORMULA_NONE);
+    var args = [];
+    arrayEach(this.getInputElements(), (function(element, index) {
+      if (command.inputsCount > index) {
+        args.push(element.getValue());
+      }
+    }));
+    return {
+      command: command,
+      args: args
+    };
+  },
+  updateState: function($__12) {
+    var $__13 = $__12,
+        column = $__13.column,
+        currentFormulas = $__13.formulas;
+    var formula = arrayFilter(currentFormulas, (function(formula) {
+      return formula.name !== FORMULA_BY_VALUE;
+    }))[0];
+    if (formula && formula.name === FORMULA_BY_VALUE) {
+      return;
+    }
+    this.setCachedState(column, {
+      command: formula ? getFormulaDescriptor(formula.name) : getFormulaDescriptor(FORMULA_NONE),
+      args: formula ? formula.args : []
+    });
+  },
+  getSelectElement: function() {
+    return this.elements.filter((function(element) {
+      return element instanceof SelectUI;
+    }))[0];
+  },
+  getInputElement: function() {
+    var index = arguments[0] !== (void 0) ? arguments[0] : 0;
+    return this.getInputElements()[index];
+  },
+  getInputElements: function() {
+    return this.elements.filter((function(element) {
+      return element instanceof InputUI;
+    }));
+  },
+  getMenuItemDescriptor: function() {
+    var $__10 = this;
+    return {
+      key: 'filter_by_condition',
+      name: '',
+      isCommand: false,
+      disableSelection: true,
+      hidden: (function() {
+        return $__10.isHidden();
+      }),
+      renderer: (function(hot, wrapper, row, col, prop, value) {
+        addClass(wrapper.parentNode, 'htFiltersMenuCondition');
+        var label = document.createElement('div');
+        addClass(label, 'htFiltersMenuLabel');
+        label.textContent = 'Filter by condition:';
+        wrapper.appendChild(label);
+        arrayEach($__10.elements, (function(ui) {
+          return wrapper.appendChild(ui.element);
+        }));
+        return wrapper;
+      })
+    };
+  },
+  reset: function() {
+    var lastSelectedColumn = this.hot.getPlugin('filters').getSelectedColumn();
+    var columnType = this.hot.getDataType.apply(this.hot, this.hot.getSelected() || [0, lastSelectedColumn]);
+    var items = getOptionsList(columnType);
+    arrayEach(this.getInputElements(), (function(element) {
+      return element.hide();
+    }));
+    this.getSelectElement().setItems(items);
+    $traceurRuntime.superGet(this, $ConditionComponent.prototype, "reset").call(this);
+    this.getSelectElement().setValue(items[0]);
+  },
+  onConditionSelect: function(command) {
+    arrayEach(this.getInputElements(), (function(element, index) {
+      element[command.inputsCount > index ? 'show' : 'hide']();
+      if (!index) {
+        setTimeout((function() {
+          return element.focus();
+        }), 10);
+      }
+    }));
+  },
+  onInputKeyDown: function(event) {
+    if (isKey(event.keyCode, 'ENTER')) {
+      this.runLocalHooks('accept');
+      stopImmediatePropagation(event);
+    } else if (isKey(event.keyCode, 'ESCAPE')) {
+      this.runLocalHooks('cancel');
+      stopImmediatePropagation(event);
+    }
+  }
+}, {}, BaseComponent);
+;
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":116,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":117,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode":125,"_base":16,"constants":20,"formulaRegisterer":45,"ui/input":48,"ui/select":50}],19:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  ValueComponent: {get: function() {
+      return ValueComponent;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_dom_47_element__,
+    $__handsontable_47_helpers_47_dom_47_event__,
+    $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_helpers_47_string__,
+    $___46__46__47_utils__,
+    $___95_base__,
+    $__handsontable_47_helpers_47_unicode__,
+    $___46__46__47_ui_47_multipleSelect__,
+    $___46__46__47_constants__,
+    $___46__46__47_formulaRegisterer__;
+var addClass = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).addClass;
+var stopImmediatePropagation = ($__handsontable_47_helpers_47_dom_47_event__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event"), $__handsontable_47_helpers_47_dom_47_event__ && $__handsontable_47_helpers_47_dom_47_event__.__esModule && $__handsontable_47_helpers_47_dom_47_event__ || {default: $__handsontable_47_helpers_47_dom_47_event__}).stopImmediatePropagation;
+var $__2 = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
+    arrayEach = $__2.arrayEach,
+    arrayUnique = $__2.arrayUnique,
+    arrayFilter = $__2.arrayFilter,
+    arrayMap = $__2.arrayMap;
+var stringify = ($__handsontable_47_helpers_47_string__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string"), $__handsontable_47_helpers_47_string__ && $__handsontable_47_helpers_47_string__.__esModule && $__handsontable_47_helpers_47_string__ || {default: $__handsontable_47_helpers_47_string__}).stringify;
+var $__4 = ($___46__46__47_utils__ = _dereq_("utils"), $___46__46__47_utils__ && $___46__46__47_utils__.__esModule && $___46__46__47_utils__ || {default: $___46__46__47_utils__}),
+    unifyColumnValues = $__4.unifyColumnValues,
+    intersectValues = $__4.intersectValues,
+    toEmptyString = $__4.toEmptyString;
+var BaseComponent = ($___95_base__ = _dereq_("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseComponent;
+var isKey = ($__handsontable_47_helpers_47_unicode__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode"), $__handsontable_47_helpers_47_unicode__ && $__handsontable_47_helpers_47_unicode__.__esModule && $__handsontable_47_helpers_47_unicode__ || {default: $__handsontable_47_helpers_47_unicode__}).isKey;
+var MultipleSelectUI = ($___46__46__47_ui_47_multipleSelect__ = _dereq_("ui/multipleSelect"), $___46__46__47_ui_47_multipleSelect__ && $___46__46__47_ui_47_multipleSelect__.__esModule && $___46__46__47_ui_47_multipleSelect__ || {default: $___46__46__47_ui_47_multipleSelect__}).MultipleSelectUI;
+var $__8 = ($___46__46__47_constants__ = _dereq_("constants"), $___46__46__47_constants__ && $___46__46__47_constants__.__esModule && $___46__46__47_constants__ || {default: $___46__46__47_constants__}),
+    FORMULA_BY_VALUE = $__8.FORMULA_BY_VALUE,
+    FORMULA_NONE = $__8.FORMULA_NONE;
+var getFormulaDescriptor = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).getFormulaDescriptor;
+var ValueComponent = function ValueComponent(hotInstance) {
+  $traceurRuntime.superConstructor($ValueComponent).call(this, hotInstance);
+  this.elements.push(new MultipleSelectUI(this.hot));
+  this.registerHooks();
+};
+var $ValueComponent = ValueComponent;
+($traceurRuntime.createClass)(ValueComponent, {
+  registerHooks: function() {
+    var $__10 = this;
+    this.getMultipleSelectElement().addLocalHook('keydown', (function(event) {
+      return $__10.onInputKeyDown(event);
+    }));
+  },
+  setState: function(value) {
+    this.reset();
+    if (value && value.command.key === FORMULA_BY_VALUE) {
+      var select = this.getMultipleSelectElement();
+      select.setItems(value.itemsSnapshot);
+      select.setValue(value.args[0]);
+    }
+  },
+  getState: function() {
+    var select = this.getMultipleSelectElement();
+    var availableItems = select.getItems();
+    return {
+      command: {key: select.isSelectedAllValues() || !availableItems.length ? FORMULA_NONE : FORMULA_BY_VALUE},
+      args: [select.getValue()],
+      itemsSnapshot: availableItems
+    };
+  },
+  updateState: function(editedFormulaStack, dependentFormulaStacks, filteredRowsFactory) {
+    var $__10 = this;
+    var $__12 = editedFormulaStack,
+        column = $__12.column,
+        formulas = $__12.formulas;
+    var updateColumnState = (function(column, formulas, formulasStack) {
+      var formula = arrayFilter(formulas, (function(formula) {
+        return formula.name === FORMULA_BY_VALUE;
+      }))[0];
+      var state = {};
+      if (formula) {
+        var rowValues = arrayMap(filteredRowsFactory(column, formulasStack), (function(row) {
+          return row.value;
+        }));
+        rowValues = unifyColumnValues(rowValues);
+        var selectedValues = [];
+        var itemsSnapshot = intersectValues(rowValues, formula.args[0], (function(item) {
+          if (item.checked) {
+            selectedValues.push(item.value);
+          }
+        }));
+        state.args = [selectedValues];
+        state.command = getFormulaDescriptor(FORMULA_BY_VALUE);
+        state.itemsSnapshot = itemsSnapshot;
+      } else {
+        state.args = [];
+        state.command = getFormulaDescriptor(FORMULA_NONE);
+      }
+      $__10.setCachedState(column, state);
+    });
+    updateColumnState(column, formulas);
+    if (dependentFormulaStacks.length) {
+      var $__13 = dependentFormulaStacks[0],
+          column$__14 = $__13.column,
+          formulas$__15 = $__13.formulas;
+      updateColumnState(column$__14, formulas$__15, editedFormulaStack);
+    }
+  },
+  getMultipleSelectElement: function() {
+    return this.elements.filter((function(element) {
+      return element instanceof MultipleSelectUI;
+    }))[0];
+  },
+  getMenuItemDescriptor: function() {
+    var $__10 = this;
+    return {
+      key: 'filter_by_value',
+      name: 'Filter by value',
+      isCommand: false,
+      disableSelection: true,
+      hidden: (function() {
+        return $__10.isHidden();
+      }),
+      renderer: (function(hot, wrapper, row, col, prop, value) {
+        addClass(wrapper.parentNode, 'htFiltersMenuValue');
+        var label = document.createElement('div');
+        addClass(label, 'htFiltersMenuLabel');
+        label.textContent = 'Filter by value:';
+        wrapper.appendChild(label);
+        arrayEach($__10.elements, (function(ui) {
+          return wrapper.appendChild(ui.element);
+        }));
+        return wrapper;
+      })
+    };
+  },
+  reset: function() {
+    var values = unifyColumnValues(this._getColumnVisibleValues());
+    var items = intersectValues(values, values);
+    this.getMultipleSelectElement().setItems(items);
+    $traceurRuntime.superGet(this, $ValueComponent.prototype, "reset").call(this);
+    this.getMultipleSelectElement().setValue(values);
+  },
+  onInputKeyDown: function(event) {
+    if (isKey(event.keyCode, 'ESCAPE')) {
+      this.runLocalHooks('cancel');
+      stopImmediatePropagation(event);
+    }
+  },
+  _getColumnVisibleValues: function() {
+    var lastSelectedColumn = this.hot.getPlugin('filters').getSelectedColumn();
+    return arrayMap(this.hot.getDataAtCol(lastSelectedColumn), (function(v) {
+      return toEmptyString(v);
+    }));
+  }
+}, {}, BaseComponent);
+;
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":116,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":117,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":124,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode":125,"_base":16,"constants":20,"formulaRegisterer":45,"ui/multipleSelect":49,"utils":51}],20:[function(_dereq_,module,exports){
+"use strict";
+var $__25;
+Object.defineProperties(exports, {
+  FORMULA_NONE: {get: function() {
+      return FORMULA_NONE;
+    }},
+  FORMULA_EMPTY: {get: function() {
+      return FORMULA_EMPTY;
+    }},
+  FORMULA_NOT_EMPTY: {get: function() {
+      return FORMULA_NOT_EMPTY;
+    }},
+  FORMULA_EQUAL: {get: function() {
+      return FORMULA_EQUAL;
+    }},
+  FORMULA_NOT_EQUAL: {get: function() {
+      return FORMULA_NOT_EQUAL;
+    }},
+  FORMULA_GREATER_THAN: {get: function() {
+      return FORMULA_GREATER_THAN;
+    }},
+  FORMULA_GREATER_THAN_OR_EQUAL: {get: function() {
+      return FORMULA_GREATER_THAN_OR_EQUAL;
+    }},
+  FORMULA_LESS_THAN: {get: function() {
+      return FORMULA_LESS_THAN;
+    }},
+  FORMULA_LESS_THAN_OR_EQUAL: {get: function() {
+      return FORMULA_LESS_THAN_OR_EQUAL;
+    }},
+  FORMULA_BETWEEN: {get: function() {
+      return FORMULA_BETWEEN;
+    }},
+  FORMULA_NOT_BETWEEN: {get: function() {
+      return FORMULA_NOT_BETWEEN;
+    }},
+  FORMULA_BEGINS_WITH: {get: function() {
+      return FORMULA_BEGINS_WITH;
+    }},
+  FORMULA_ENDS_WITH: {get: function() {
+      return FORMULA_ENDS_WITH;
+    }},
+  FORMULA_CONTAINS: {get: function() {
+      return FORMULA_CONTAINS;
+    }},
+  FORMULA_NOT_CONTAINS: {get: function() {
+      return FORMULA_NOT_CONTAINS;
+    }},
+  FORMULA_DATE_BEFORE: {get: function() {
+      return FORMULA_DATE_BEFORE;
+    }},
+  FORMULA_DATE_AFTER: {get: function() {
+      return FORMULA_DATE_AFTER;
+    }},
+  FORMULA_TOMORROW: {get: function() {
+      return FORMULA_TOMORROW;
+    }},
+  FORMULA_TODAY: {get: function() {
+      return FORMULA_TODAY;
+    }},
+  FORMULA_YESTERDAY: {get: function() {
+      return FORMULA_YESTERDAY;
+    }},
+  FORMULA_BY_VALUE: {get: function() {
+      return FORMULA_BY_VALUE;
+    }},
+  TYPE_NUMERIC: {get: function() {
+      return TYPE_NUMERIC;
+    }},
+  TYPE_TEXT: {get: function() {
+      return TYPE_TEXT;
+    }},
+  TYPE_DATE: {get: function() {
+      return TYPE_DATE;
+    }},
+  TYPES: {get: function() {
+      return TYPES;
+    }},
+  getOptionsList: {get: function() {
+      return getOptionsList;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__,
+    $__formulaRegisterer__,
+    $__formula_47_none__,
+    $__formula_47_empty__,
+    $__formula_47_notEmpty__,
+    $__formula_47_equal__,
+    $__formula_47_notEqual__,
+    $__formula_47_greaterThan__,
+    $__formula_47_greaterThanOrEqual__,
+    $__formula_47_lessThan__,
+    $__formula_47_lessThanOrEqual__,
+    $__formula_47_between__,
+    $__formula_47_notBetween__,
+    $__formula_47_beginsWith__,
+    $__formula_47_endsWith__,
+    $__formula_47_contains__,
+    $__formula_47_notContains__,
+    $__formula_47_date_47_before__,
+    $__formula_47_date_47_after__,
+    $__formula_47_date_47_tomorrow__,
+    $__formula_47_date_47_today__,
+    $__formula_47_date_47_yesterday__,
+    $__formula_47_byValue__;
+var clone = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).clone;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var SEPARATOR = ($__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems"), $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ || {default: $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__}).SEPARATOR;
+var getFormulaDescriptor = ($__formulaRegisterer__ = _dereq_("formulaRegisterer"), $__formulaRegisterer__ && $__formulaRegisterer__.__esModule && $__formulaRegisterer__ || {default: $__formulaRegisterer__}).getFormulaDescriptor;
+var FORMULA_NONE = ($__formula_47_none__ = _dereq_("formula/none"), $__formula_47_none__ && $__formula_47_none__.__esModule && $__formula_47_none__ || {default: $__formula_47_none__}).FORMULA_NAME;
+var FORMULA_EMPTY = ($__formula_47_empty__ = _dereq_("formula/empty"), $__formula_47_empty__ && $__formula_47_empty__.__esModule && $__formula_47_empty__ || {default: $__formula_47_empty__}).FORMULA_NAME;
+var FORMULA_NOT_EMPTY = ($__formula_47_notEmpty__ = _dereq_("formula/notEmpty"), $__formula_47_notEmpty__ && $__formula_47_notEmpty__.__esModule && $__formula_47_notEmpty__ || {default: $__formula_47_notEmpty__}).FORMULA_NAME;
+var FORMULA_EQUAL = ($__formula_47_equal__ = _dereq_("formula/equal"), $__formula_47_equal__ && $__formula_47_equal__.__esModule && $__formula_47_equal__ || {default: $__formula_47_equal__}).FORMULA_NAME;
+var FORMULA_NOT_EQUAL = ($__formula_47_notEqual__ = _dereq_("formula/notEqual"), $__formula_47_notEqual__ && $__formula_47_notEqual__.__esModule && $__formula_47_notEqual__ || {default: $__formula_47_notEqual__}).FORMULA_NAME;
+var FORMULA_GREATER_THAN = ($__formula_47_greaterThan__ = _dereq_("formula/greaterThan"), $__formula_47_greaterThan__ && $__formula_47_greaterThan__.__esModule && $__formula_47_greaterThan__ || {default: $__formula_47_greaterThan__}).FORMULA_NAME;
+var FORMULA_GREATER_THAN_OR_EQUAL = ($__formula_47_greaterThanOrEqual__ = _dereq_("formula/greaterThanOrEqual"), $__formula_47_greaterThanOrEqual__ && $__formula_47_greaterThanOrEqual__.__esModule && $__formula_47_greaterThanOrEqual__ || {default: $__formula_47_greaterThanOrEqual__}).FORMULA_NAME;
+var FORMULA_LESS_THAN = ($__formula_47_lessThan__ = _dereq_("formula/lessThan"), $__formula_47_lessThan__ && $__formula_47_lessThan__.__esModule && $__formula_47_lessThan__ || {default: $__formula_47_lessThan__}).FORMULA_NAME;
+var FORMULA_LESS_THAN_OR_EQUAL = ($__formula_47_lessThanOrEqual__ = _dereq_("formula/lessThanOrEqual"), $__formula_47_lessThanOrEqual__ && $__formula_47_lessThanOrEqual__.__esModule && $__formula_47_lessThanOrEqual__ || {default: $__formula_47_lessThanOrEqual__}).FORMULA_NAME;
+var FORMULA_BETWEEN = ($__formula_47_between__ = _dereq_("formula/between"), $__formula_47_between__ && $__formula_47_between__.__esModule && $__formula_47_between__ || {default: $__formula_47_between__}).FORMULA_NAME;
+var FORMULA_NOT_BETWEEN = ($__formula_47_notBetween__ = _dereq_("formula/notBetween"), $__formula_47_notBetween__ && $__formula_47_notBetween__.__esModule && $__formula_47_notBetween__ || {default: $__formula_47_notBetween__}).FORMULA_NAME;
+var FORMULA_BEGINS_WITH = ($__formula_47_beginsWith__ = _dereq_("formula/beginsWith"), $__formula_47_beginsWith__ && $__formula_47_beginsWith__.__esModule && $__formula_47_beginsWith__ || {default: $__formula_47_beginsWith__}).FORMULA_NAME;
+var FORMULA_ENDS_WITH = ($__formula_47_endsWith__ = _dereq_("formula/endsWith"), $__formula_47_endsWith__ && $__formula_47_endsWith__.__esModule && $__formula_47_endsWith__ || {default: $__formula_47_endsWith__}).FORMULA_NAME;
+var FORMULA_CONTAINS = ($__formula_47_contains__ = _dereq_("formula/contains"), $__formula_47_contains__ && $__formula_47_contains__.__esModule && $__formula_47_contains__ || {default: $__formula_47_contains__}).FORMULA_NAME;
+var FORMULA_NOT_CONTAINS = ($__formula_47_notContains__ = _dereq_("formula/notContains"), $__formula_47_notContains__ && $__formula_47_notContains__.__esModule && $__formula_47_notContains__ || {default: $__formula_47_notContains__}).FORMULA_NAME;
+var FORMULA_DATE_BEFORE = ($__formula_47_date_47_before__ = _dereq_("formula/date/before"), $__formula_47_date_47_before__ && $__formula_47_date_47_before__.__esModule && $__formula_47_date_47_before__ || {default: $__formula_47_date_47_before__}).FORMULA_NAME;
+var FORMULA_DATE_AFTER = ($__formula_47_date_47_after__ = _dereq_("formula/date/after"), $__formula_47_date_47_after__ && $__formula_47_date_47_after__.__esModule && $__formula_47_date_47_after__ || {default: $__formula_47_date_47_after__}).FORMULA_NAME;
+var FORMULA_TOMORROW = ($__formula_47_date_47_tomorrow__ = _dereq_("formula/date/tomorrow"), $__formula_47_date_47_tomorrow__ && $__formula_47_date_47_tomorrow__.__esModule && $__formula_47_date_47_tomorrow__ || {default: $__formula_47_date_47_tomorrow__}).FORMULA_NAME;
+var FORMULA_TODAY = ($__formula_47_date_47_today__ = _dereq_("formula/date/today"), $__formula_47_date_47_today__ && $__formula_47_date_47_today__.__esModule && $__formula_47_date_47_today__ || {default: $__formula_47_date_47_today__}).FORMULA_NAME;
+var FORMULA_YESTERDAY = ($__formula_47_date_47_yesterday__ = _dereq_("formula/date/yesterday"), $__formula_47_date_47_yesterday__ && $__formula_47_date_47_yesterday__.__esModule && $__formula_47_date_47_yesterday__ || {default: $__formula_47_date_47_yesterday__}).FORMULA_NAME;
+var FORMULA_BY_VALUE = ($__formula_47_byValue__ = _dereq_("formula/byValue"), $__formula_47_byValue__ && $__formula_47_byValue__.__esModule && $__formula_47_byValue__ || {default: $__formula_47_byValue__}).FORMULA_NAME;
+;
+var TYPE_NUMERIC = 'numeric';
+var TYPE_TEXT = 'text';
+var TYPE_DATE = 'date';
+var TYPES = ($__25 = {}, Object.defineProperty($__25, TYPE_NUMERIC, {
+  value: [FORMULA_NONE, SEPARATOR, FORMULA_EMPTY, FORMULA_NOT_EMPTY, SEPARATOR, FORMULA_EQUAL, FORMULA_NOT_EQUAL, SEPARATOR, FORMULA_GREATER_THAN, FORMULA_GREATER_THAN_OR_EQUAL, FORMULA_LESS_THAN, FORMULA_LESS_THAN_OR_EQUAL, FORMULA_BETWEEN, FORMULA_NOT_BETWEEN],
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__25, TYPE_TEXT, {
+  value: [FORMULA_NONE, SEPARATOR, FORMULA_EMPTY, FORMULA_NOT_EMPTY, SEPARATOR, FORMULA_EQUAL, FORMULA_NOT_EQUAL, SEPARATOR, FORMULA_BEGINS_WITH, FORMULA_ENDS_WITH, SEPARATOR, FORMULA_CONTAINS, FORMULA_NOT_CONTAINS],
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__25, TYPE_DATE, {
+  value: [FORMULA_NONE, SEPARATOR, FORMULA_EMPTY, FORMULA_NOT_EMPTY, SEPARATOR, FORMULA_EQUAL, FORMULA_NOT_EQUAL, SEPARATOR, FORMULA_DATE_BEFORE, FORMULA_DATE_AFTER, FORMULA_BETWEEN, SEPARATOR, FORMULA_TOMORROW, FORMULA_TODAY, FORMULA_YESTERDAY],
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), $__25);
+function getOptionsList(type) {
+  var items = [];
+  if (!TYPES[type]) {
+    type = TYPE_TEXT;
+  }
+  arrayEach(TYPES[type], (function(type) {
+    var option;
+    if (type === SEPARATOR) {
+      option = {name: SEPARATOR};
+    } else {
+      option = clone(getFormulaDescriptor(type));
+    }
+    items.push(option);
+  }));
+  return items;
+}
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":144,"formula/beginsWith":23,"formula/between":24,"formula/byValue":25,"formula/contains":26,"formula/date/after":27,"formula/date/before":28,"formula/date/today":29,"formula/date/tomorrow":30,"formula/date/yesterday":31,"formula/empty":32,"formula/endsWith":33,"formula/equal":34,"formula/greaterThan":35,"formula/greaterThanOrEqual":36,"formula/lessThan":37,"formula/lessThanOrEqual":38,"formula/none":39,"formula/notBetween":40,"formula/notContains":41,"formula/notEmpty":42,"formula/notEqual":43,"formulaRegisterer":45}],21:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  DataFilter: {get: function() {
+      return DataFilter;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47__46__46__47_browser__,
+    $__handsontable_47_helpers_47_array__;
+var Handsontable = ($___46__46__47__46__46__47_browser__ = _dereq_("../../browser"), $___46__46__47__46__46__47_browser__ && $___46__46__47__46__46__47_browser__.__esModule && $___46__46__47__46__46__47_browser__ || {default: $___46__46__47__46__46__47_browser__}).default;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var DataFilter = function DataFilter(formulaCollection) {
+  var columnDataFactory = arguments[1] !== (void 0) ? arguments[1] : (function(column) {
+    return [];
+  });
+  this.formulaCollection = formulaCollection;
+  this.columnDataFactory = columnDataFactory;
+};
+($traceurRuntime.createClass)(DataFilter, {
+  filter: function() {
+    var $__2 = this;
+    var filteredData = [];
+    if (!this.formulaCollection.isEmpty()) {
+      arrayEach(this.formulaCollection.orderStack, (function(column, index) {
+        var columnData = $__2.columnDataFactory(column);
+        if (index) {
+          columnData = $__2._getIntersectData(columnData, filteredData);
+        }
+        filteredData = $__2.filterByColumn(column, columnData);
+      }));
+    }
+    return filteredData;
+  },
+  filterByColumn: function(column) {
+    var dataSource = arguments[1] !== (void 0) ? arguments[1] : [];
+    var $__2 = this;
+    var filteredData = [];
+    arrayEach(dataSource, (function(dataRow) {
+      if (dataRow !== void 0 && $__2.formulaCollection.isMatch(dataRow, column)) {
+        filteredData.push(dataRow);
+      }
+    }));
+    return filteredData;
+  },
+  _getIntersectData: function(data, needles) {
+    var result = [];
+    arrayEach(needles, (function(needleRow) {
+      var row = needleRow.meta.visualRow;
+      if (data[row] !== void 0) {
+        result[row] = data[row];
+      }
+    }));
+    return result;
+  }
+}, {});
+;
+Handsontable.utils.FiltersDataFilter = DataFilter;
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../browser":3}],22:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  Filters: {get: function() {
+      return Filters;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_plugins_47__95_base__,
+    $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_helpers_47_number__,
+    $__handsontable_47_eventManager__,
+    $__handsontable_47_helpers_47_dom_47_element__,
+    $__handsontable_47_plugins__,
+    $__component_47_condition__,
+    $__component_47_value__,
+    $__component_47_actionBar__,
+    $__formulaCollection__,
+    $__dataFilter__,
+    $__formulaUpdateObserver__,
+    $__utils__,
+    $__constants__,
+    $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__;
+var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
+var $__1 = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
+    arrayEach = $__1.arrayEach,
+    arrayMap = $__1.arrayMap;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+var EventManager = ($__handsontable_47_eventManager__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager"), $__handsontable_47_eventManager__ && $__handsontable_47_eventManager__.__esModule && $__handsontable_47_eventManager__ || {default: $__handsontable_47_eventManager__}).EventManager;
+var $__4 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
+    addClass = $__4.addClass,
+    removeClass = $__4.removeClass,
+    closest = $__4.closest;
+var registerPlugin = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}).registerPlugin;
+var ConditionComponent = ($__component_47_condition__ = _dereq_("component/condition"), $__component_47_condition__ && $__component_47_condition__.__esModule && $__component_47_condition__ || {default: $__component_47_condition__}).ConditionComponent;
+var ValueComponent = ($__component_47_value__ = _dereq_("component/value"), $__component_47_value__ && $__component_47_value__.__esModule && $__component_47_value__ || {default: $__component_47_value__}).ValueComponent;
+var ActionBarComponent = ($__component_47_actionBar__ = _dereq_("component/actionBar"), $__component_47_actionBar__ && $__component_47_actionBar__.__esModule && $__component_47_actionBar__ || {default: $__component_47_actionBar__}).ActionBarComponent;
+var FormulaCollection = ($__formulaCollection__ = _dereq_("formulaCollection"), $__formulaCollection__ && $__formulaCollection__.__esModule && $__formulaCollection__ || {default: $__formulaCollection__}).FormulaCollection;
+var DataFilter = ($__dataFilter__ = _dereq_("dataFilter"), $__dataFilter__ && $__dataFilter__.__esModule && $__dataFilter__ || {default: $__dataFilter__}).DataFilter;
+var FormulaUpdateObserver = ($__formulaUpdateObserver__ = _dereq_("formulaUpdateObserver"), $__formulaUpdateObserver__ && $__formulaUpdateObserver__.__esModule && $__formulaUpdateObserver__ || {default: $__formulaUpdateObserver__}).FormulaUpdateObserver;
+var $__12 = ($__utils__ = _dereq_("utils"), $__utils__ && $__utils__.__esModule && $__utils__ || {default: $__utils__}),
+    createArrayAssertion = $__12.createArrayAssertion,
+    toEmptyString = $__12.toEmptyString;
+var FORMULA_NONE = ($__constants__ = _dereq_("constants"), $__constants__ && $__constants__.__esModule && $__constants__ || {default: $__constants__}).FORMULA_NONE;
+var SEPARATOR = ($__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems"), $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ || {default: $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__}).SEPARATOR;
+var Filters = function Filters(hotInstance) {
+  var $__15 = this;
+  $traceurRuntime.superConstructor($Filters).call(this, hotInstance);
+  this.eventManager = new EventManager(this);
+  this.trimRowsPlugin = null;
+  this.dropdownMenuPlugin = null;
+  this.formulaCollection = null;
+  this.formulaUpdateObserver = null;
+  this.conditionComponent = null;
+  this.valueComponent = null;
+  this.actionBarComponent = null;
+  this.lastSelectedColumn = null;
+  this.hot.addHook('afterGetColHeader', (function(col, TH) {
+    return $__15.onAfterGetColHeader(col, TH);
+  }));
+};
+var $Filters = Filters;
+($traceurRuntime.createClass)(Filters, {
+  isEnabled: function() {
+    return this.hot.getSettings().filters ? true : false;
+  },
+  enablePlugin: function() {
+    var $__15 = this;
+    if (this.enabled) {
+      return;
+    }
+    this.trimRowsPlugin = this.hot.getPlugin('trimRows');
+    this.dropdownMenuPlugin = this.hot.getPlugin('dropdownMenu');
+    var addConfirmationHooks = (function(component) {
+      component.addLocalHook('accept', (function() {
+        return $__15.onActionBarSubmit('accept');
+      }));
+      component.addLocalHook('cancel', (function() {
+        return $__15.onActionBarSubmit('cancel');
+      }));
+      return component;
+    });
+    if (!this.conditionComponent) {
+      this.conditionComponent = addConfirmationHooks(new ConditionComponent(this.hot));
+    }
+    if (!this.valueComponent) {
+      this.valueComponent = addConfirmationHooks(new ValueComponent(this.hot));
+    }
+    if (!this.actionBarComponent) {
+      this.actionBarComponent = addConfirmationHooks(new ActionBarComponent(this.hot));
+    }
+    if (!this.formulaCollection) {
+      this.formulaCollection = new FormulaCollection();
+    }
+    if (!this.formulaUpdateObserver) {
+      this.formulaUpdateObserver = new FormulaUpdateObserver(this.formulaCollection, (function(column) {
+        return $__15.getDataMapAtColumn(column);
+      }));
+      this.formulaUpdateObserver.addLocalHook('update', (function() {
+        var $__20;
+        for (var params = [],
+            $__17 = 0; $__17 < arguments.length; $__17++)
+          params[$__17] = arguments[$__17];
+        return ($__20 = $__15.conditionComponent).updateState.apply($__20, $traceurRuntime.spread(params));
+      }));
+      this.formulaUpdateObserver.addLocalHook('update', (function() {
+        var $__20;
+        for (var params = [],
+            $__18 = 0; $__18 < arguments.length; $__18++)
+          params[$__18] = arguments[$__18];
+        return ($__20 = $__15.valueComponent).updateState.apply($__20, $traceurRuntime.spread(params));
+      }));
+    }
+    this.conditionComponent.show();
+    this.valueComponent.show();
+    this.actionBarComponent.show();
+    this.registerEvents();
+    this.addHook('beforeDropdownMenuSetItems', (function(items) {
+      return $__15.onBeforeDropdownMenuSetItems(items);
+    }));
+    this.addHook('afterDropdownMenuDefaultOptions', (function(defaultOptions) {
+      return $__15.onAfterDropdownMenuDefaultOptions(defaultOptions);
+    }));
+    this.addHook('afterDropdownMenuShow', (function() {
+      return $__15.onAfterDropdownMenuShow();
+    }));
+    this.addHook('afterDropdownMenuHide', (function() {
+      return $__15.onAfterDropdownMenuHide();
+    }));
+    this.hot.getSettings().trimRows = true;
+    this.trimRowsPlugin.enablePlugin();
+    if (this.hot.getSettings().dropdownMenu) {
+      this.dropdownMenuPlugin.disablePlugin();
+      this.dropdownMenuPlugin.enablePlugin();
+    }
+    $traceurRuntime.superGet(this, $Filters.prototype, "enablePlugin").call(this);
+  },
+  registerEvents: function() {
+    var $__15 = this;
+    this.eventManager.addEventListener(this.hot.rootElement, 'click', (function(event) {
+      return $__15.onTableClick(event);
+    }));
+  },
+  disablePlugin: function() {
+    if (this.enabled) {
+      this.conditionComponent.hide();
+      this.valueComponent.hide();
+      this.actionBarComponent.hide();
+      this.formulaCollection.clean();
+      this.trimRowsPlugin.untrimAll();
+    }
+    $traceurRuntime.superGet(this, $Filters.prototype, "disablePlugin").call(this);
+  },
+  addFormula: function(column, name, args) {
+    this.formulaCollection.addFormula(column, {
+      command: {key: name},
+      args: args
+    });
+  },
+  removeFormulas: function(column) {
+    this.formulaCollection.removeFormulas(column);
+  },
+  clearFormulas: function(column) {
+    if (column === void 0) {
+      this.formulaCollection.clean();
+    } else {
+      this.formulaCollection.clearFormulas(column);
+    }
+  },
+  filter: function() {
+    var dataFilter = this._createDataFilter();
+    var needToFilter = !this.formulaCollection.isEmpty();
+    var visibleVisualRows = [];
+    var formulas = this.formulaCollection.exportAllFormulas();
+    var allowFiltering = this.hot.runHooks('beforeFilter', formulas);
+    if (allowFiltering !== false) {
+      if (needToFilter) {
+        var trimmedRows = [];
+        this.trimRowsPlugin.trimmedRows.length = 0;
+        visibleVisualRows = arrayMap(dataFilter.filter(), (function(rowData) {
+          return rowData.meta.visualRow;
+        }));
+        var visibleVisualRowsAssertion = createArrayAssertion(visibleVisualRows);
+        rangeEach(this.hot.countSourceRows() - 1, (function(row) {
+          if (!visibleVisualRowsAssertion(row)) {
+            trimmedRows.push(row);
+          }
+        }));
+        this.trimRowsPlugin.trimRows(trimmedRows);
+        if (!visibleVisualRows.length) {
+          this.hot.deselectCell();
+        }
+      } else {
+        this.trimRowsPlugin.untrimAll();
+      }
+    }
+    this.hot.view.wt.wtOverlays.adjustElementsSize(true);
+    this.hot.render();
+    this.clearColumnSelection();
+    this.hot.runHooks('afterFilter', formulas);
+  },
+  getSelectedColumn: function() {
+    return this.lastSelectedColumn;
+  },
+  clearColumnSelection: function() {
+    var $__19 = this.hot.getSelected() || [],
+        row = $__19[0],
+        col = $__19[1];
+    if (row !== void 0 && col !== void 0) {
+      this.hot.selectCell(row, col);
+    }
+  },
+  getDataMapAtColumn: function(column) {
+    var $__15 = this;
+    var data = [];
+    arrayEach(this.hot.getSourceDataAtCol(column), (function(value, rowIndex) {
+      var $__19 = $__15.hot.getCellMeta(rowIndex, column),
+          row = $__19.row,
+          col = $__19.col,
+          visualCol = $__19.visualCol,
+          visualRow = $__19.visualRow,
+          type = $__19.type,
+          instance = $__19.instance,
+          dateFormat = $__19.dateFormat;
+      data.push({
+        meta: {
+          row: row,
+          col: col,
+          visualCol: visualCol,
+          visualRow: visualRow,
+          type: type,
+          instance: instance,
+          dateFormat: dateFormat
+        },
+        value: toEmptyString(value)
+      });
+    }));
+    return data;
+  },
+  onAfterDropdownMenuShow: function() {
+    var column = this.getSelectedColumn();
+    var conditionComponent = this.conditionComponent;
+    var valueComponent = this.valueComponent;
+    if (!conditionComponent.isHidden()) {
+      conditionComponent.restoreState(column);
+    }
+    if (!valueComponent.isHidden()) {
+      valueComponent.restoreState(column);
+    }
+  },
+  onAfterDropdownMenuHide: function() {
+    this.conditionComponent.getSelectElement().closeOptions();
+  },
+  onBeforeDropdownMenuSetItems: function(items) {
+    var menuKeys = arrayMap(items, (function(item) {
+      return item.key;
+    }));
+    var conditionComponent = this.conditionComponent;
+    var valueComponent = this.valueComponent;
+    conditionComponent[menuKeys.indexOf(conditionComponent.getMenuItemDescriptor().key) === -1 ? 'hide' : 'show']();
+    valueComponent[menuKeys.indexOf(valueComponent.getMenuItemDescriptor().key) === -1 ? 'hide' : 'show']();
+  },
+  onAfterDropdownMenuDefaultOptions: function(defaultOptions) {
+    defaultOptions.items.push({name: SEPARATOR});
+    defaultOptions.items.push(this.conditionComponent.getMenuItemDescriptor());
+    defaultOptions.items.push(this.valueComponent.getMenuItemDescriptor());
+    defaultOptions.items.push(this.actionBarComponent.getMenuItemDescriptor());
+  },
+  onActionBarSubmit: function(submitType) {
+    if (submitType === 'accept') {
+      var column = this.getSelectedColumn();
+      var byConditionState = this.conditionComponent.getState();
+      var byValueState = this.valueComponent.getState();
+      this.formulaUpdateObserver.groupChanges();
+      this.formulaCollection.clearFormulas(column);
+      if (byConditionState.command.key === FORMULA_NONE && byValueState.command.key === FORMULA_NONE) {
+        this.formulaCollection.removeFormulas(column);
+      }
+      if (byConditionState.command.key !== FORMULA_NONE) {
+        this.formulaCollection.addFormula(column, byConditionState);
+      }
+      if (byValueState.command.key !== FORMULA_NONE) {
+        this.formulaCollection.addFormula(column, byValueState);
+      }
+      this.formulaUpdateObserver.flush();
+      this.conditionComponent.saveState(column);
+      this.valueComponent.saveState(column);
+      this.filter();
+    }
+    this.dropdownMenuPlugin.close();
+  },
+  onAfterGetColHeader: function(col, TH) {
+    if (this.enabled && this.formulaCollection.hasFormulas(col)) {
+      addClass(TH, 'htFiltersActive');
+    } else {
+      removeClass(TH, 'htFiltersActive');
+    }
+  },
+  onTableClick: function(event) {
+    var th = closest(event.target, 'TH');
+    if (th) {
+      this.lastSelectedColumn = this.hot.getCoords(th).col;
+    }
+  },
+  destroy: function() {
+    if (this.enabled) {
+      this.conditionComponent.destroy();
+      this.valueComponent.destroy();
+      this.actionBarComponent.destroy();
+      this.formulaCollection.destroy();
+      this.formulaUpdateObserver.destroy();
+    }
+    $traceurRuntime.superGet(this, $Filters.prototype, "destroy").call(this);
+  },
+  _createDataFilter: function() {
+    var formulaCollection = arguments[0] !== (void 0) ? arguments[0] : this.formulaCollection;
+    var $__15 = this;
+    return new DataFilter(formulaCollection, (function(column) {
+      return $__15.getDataMapAtColumn(column);
+    }));
+  }
+}, {}, BasePlugin);
+;
+registerPlugin('filters', Filters);
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":111,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":116,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":131,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":132,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":144,"component/actionBar":17,"component/condition":18,"component/value":19,"constants":20,"dataFilter":21,"formulaCollection":44,"formulaUpdateObserver":46,"utils":51}],23:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_formulaRegisterer__,
+    $__handsontable_47_helpers_47_string__,
+    $__handsontable_47_helpers_47_mixed__;
+var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
+var startsWith = ($__handsontable_47_helpers_47_string__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string"), $__handsontable_47_helpers_47_string__ && $__handsontable_47_helpers_47_string__.__esModule && $__handsontable_47_helpers_47_string__ || {default: $__handsontable_47_helpers_47_string__}).startsWith;
+var stringify = ($__handsontable_47_helpers_47_mixed__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed"), $__handsontable_47_helpers_47_mixed__ && $__handsontable_47_helpers_47_mixed__.__esModule && $__handsontable_47_helpers_47_mixed__ || {default: $__handsontable_47_helpers_47_mixed__}).stringify;
+var FORMULA_NAME = 'begins_with';
+function formula(dataRow) {
+  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
+  return startsWith(stringify(dataRow.value).toLowerCase(), stringify(value));
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Begins with',
+  inputsCount: 1
+});
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":120,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":124,"formulaRegisterer":45}],24:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_formulaRegisterer__,
+    $__date_47_after__,
+    $__date_47_before__;
+var $__0 = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}),
+    registerFormula = $__0.registerFormula,
+    getFormula = $__0.getFormula;
+var FORMULA_DATE_AFTER = ($__date_47_after__ = _dereq_("date/after"), $__date_47_after__ && $__date_47_after__.__esModule && $__date_47_after__ || {default: $__date_47_after__}).FORMULA_NAME;
+var FORMULA_DATE_BEFORE = ($__date_47_before__ = _dereq_("date/before"), $__date_47_before__ && $__date_47_before__.__esModule && $__date_47_before__ || {default: $__date_47_before__}).FORMULA_NAME;
+var FORMULA_NAME = 'between';
+function formula(dataRow) {
+  var $__3 = arguments[1] !== (void 0) ? arguments[1] : inputValues,
+      from = $__3[0],
+      to = $__3[1];
+  if (dataRow.meta.type === 'numeric') {
+    var _from = parseFloat(from, 10);
+    var _to = parseFloat(to, 10);
+    from = Math.min(_from, _to);
+    to = Math.max(_from, _to);
+  } else if (dataRow.meta.type === 'date') {
+    var dateBefore = getFormula(FORMULA_DATE_BEFORE, [to]);
+    var dateAfter = getFormula(FORMULA_DATE_AFTER, [from]);
+    return dateBefore(dataRow) && dateAfter(dataRow);
+  }
+  return dataRow.value >= from && dataRow.value <= to;
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Is between',
+  inputsCount: 2
+});
+
+//# 
+},{"date/after":27,"date/before":28,"formulaRegisterer":45}],25:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_formulaRegisterer__,
+    $___46__46__47_utils__;
+var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
+var createArrayAssertion = ($___46__46__47_utils__ = _dereq_("utils"), $___46__46__47_utils__ && $___46__46__47_utils__.__esModule && $___46__46__47_utils__ || {default: $___46__46__47_utils__}).createArrayAssertion;
+var FORMULA_NAME = 'by_value';
+function formula(dataRow) {
+  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
+  return value(dataRow.value);
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'By value',
+  inputsCount: 0,
+  inputValuesDecorator: function() {
+    var data = (arguments[0] !== (void 0) ? arguments[0] : inputValues)[0];
+    return [createArrayAssertion(data)];
+  }
+});
+
+//# 
+},{"formulaRegisterer":45,"utils":51}],26:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_formulaRegisterer__,
+    $__handsontable_47_helpers_47_mixed__;
+var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
+var stringify = ($__handsontable_47_helpers_47_mixed__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed"), $__handsontable_47_helpers_47_mixed__ && $__handsontable_47_helpers_47_mixed__.__esModule && $__handsontable_47_helpers_47_mixed__ || {default: $__handsontable_47_helpers_47_mixed__}).stringify;
+var FORMULA_NAME = 'contains';
+function formula(dataRow) {
+  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
+  return stringify(dataRow.value).toLowerCase().indexOf(stringify(value)) >= 0;
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Contains',
+  inputsCount: 1
+});
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":120,"formulaRegisterer":45}],27:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47__46__46__47_formulaRegisterer__,
+    $__moment__;
+var registerFormula = ($___46__46__47__46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47__46__46__47_formulaRegisterer__ && $___46__46__47__46__46__47_formulaRegisterer__.__esModule && $___46__46__47__46__46__47_formulaRegisterer__ || {default: $___46__46__47__46__46__47_formulaRegisterer__}).registerFormula;
+var moment = ($__moment__ = _dereq_("moment"), $__moment__ && $__moment__.__esModule && $__moment__ || {default: $__moment__}).default;
+var FORMULA_NAME = 'date_after';
+function formula(dataRow) {
+  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
+  var date = moment(dataRow.value, dataRow.meta.dateFormat);
+  var inputDate = moment(value, dataRow.meta.dateFormat);
+  if (!date.isValid() || !inputDate.isValid()) {
+    return false;
+  }
+  return date.diff(inputDate) >= 0;
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'After',
+  inputsCount: 1
+});
+
+//# 
+},{"formulaRegisterer":45,"moment":undefined}],28:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47__46__46__47_formulaRegisterer__,
+    $__moment__;
+var registerFormula = ($___46__46__47__46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47__46__46__47_formulaRegisterer__ && $___46__46__47__46__46__47_formulaRegisterer__.__esModule && $___46__46__47__46__46__47_formulaRegisterer__ || {default: $___46__46__47__46__46__47_formulaRegisterer__}).registerFormula;
+var moment = ($__moment__ = _dereq_("moment"), $__moment__ && $__moment__.__esModule && $__moment__ || {default: $__moment__}).default;
+var FORMULA_NAME = 'date_before';
+function formula(dataRow) {
+  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
+  var date = moment(dataRow.value, dataRow.meta.dateFormat);
+  var inputDate = moment(value, dataRow.meta.dateFormat);
+  if (!date.isValid() || !inputDate.isValid()) {
+    return false;
+  }
+  return date.diff(inputDate) <= 0;
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Before',
+  inputsCount: 1
+});
+
+//# 
+},{"formulaRegisterer":45,"moment":undefined}],29:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47__46__46__47_formulaRegisterer__,
+    $__moment__;
+var registerFormula = ($___46__46__47__46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47__46__46__47_formulaRegisterer__ && $___46__46__47__46__46__47_formulaRegisterer__.__esModule && $___46__46__47__46__46__47_formulaRegisterer__ || {default: $___46__46__47__46__46__47_formulaRegisterer__}).registerFormula;
+var moment = ($__moment__ = _dereq_("moment"), $__moment__ && $__moment__.__esModule && $__moment__ || {default: $__moment__}).default;
+var FORMULA_NAME = 'date_today';
+function formula(dataRow) {
+  var date = moment(dataRow.value, dataRow.meta.dateFormat);
+  if (!date.isValid()) {
+    return false;
+  }
+  return date.isSame(moment().startOf('day'), 'd');
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Today',
+  inputsCount: 0
+});
+
+//# 
+},{"formulaRegisterer":45,"moment":undefined}],30:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47__46__46__47_formulaRegisterer__,
+    $__moment__;
+var registerFormula = ($___46__46__47__46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47__46__46__47_formulaRegisterer__ && $___46__46__47__46__46__47_formulaRegisterer__.__esModule && $___46__46__47__46__46__47_formulaRegisterer__ || {default: $___46__46__47__46__46__47_formulaRegisterer__}).registerFormula;
+var moment = ($__moment__ = _dereq_("moment"), $__moment__ && $__moment__.__esModule && $__moment__ || {default: $__moment__}).default;
+var FORMULA_NAME = 'date_tomorrow';
+function formula(dataRow) {
+  var date = moment(dataRow.value, dataRow.meta.dateFormat);
+  if (!date.isValid()) {
+    return false;
+  }
+  return date.isSame(moment().subtract(-1, 'days').startOf('day'), 'd');
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Tomorrow',
+  inputsCount: 0
+});
+
+//# 
+},{"formulaRegisterer":45,"moment":undefined}],31:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47__46__46__47_formulaRegisterer__,
+    $__moment__;
+var registerFormula = ($___46__46__47__46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47__46__46__47_formulaRegisterer__ && $___46__46__47__46__46__47_formulaRegisterer__.__esModule && $___46__46__47__46__46__47_formulaRegisterer__ || {default: $___46__46__47__46__46__47_formulaRegisterer__}).registerFormula;
+var moment = ($__moment__ = _dereq_("moment"), $__moment__ && $__moment__.__esModule && $__moment__ || {default: $__moment__}).default;
+var FORMULA_NAME = 'date_yesterday';
+function formula(dataRow) {
+  var date = moment(dataRow.value, dataRow.meta.dateFormat);
+  if (!date.isValid()) {
+    return false;
+  }
+  return date.isSame(moment().subtract(1, 'days').startOf('day'), 'd');
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Yesterday',
+  inputsCount: 0
+});
+
+//# 
+},{"formulaRegisterer":45,"moment":undefined}],32:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_formulaRegisterer__;
+var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
+var FORMULA_NAME = 'empty';
+function formula(dataRow) {
+  return dataRow.value === '' || dataRow.value === null || dataRow.value === void 0;
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Is empty',
+  inputsCount: 0
+});
+
+//# 
+},{"formulaRegisterer":45}],33:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_formulaRegisterer__,
+    $__handsontable_47_helpers_47_string__,
+    $__handsontable_47_helpers_47_mixed__;
+var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
+var endsWith = ($__handsontable_47_helpers_47_string__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string"), $__handsontable_47_helpers_47_string__ && $__handsontable_47_helpers_47_string__.__esModule && $__handsontable_47_helpers_47_string__ || {default: $__handsontable_47_helpers_47_string__}).endsWith;
+var stringify = ($__handsontable_47_helpers_47_mixed__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed"), $__handsontable_47_helpers_47_mixed__ && $__handsontable_47_helpers_47_mixed__.__esModule && $__handsontable_47_helpers_47_mixed__ || {default: $__handsontable_47_helpers_47_mixed__}).stringify;
+var FORMULA_NAME = 'ends_with';
+function formula(dataRow) {
+  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
+  return endsWith(stringify(dataRow.value).toLowerCase(), stringify(value));
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Ends with',
+  inputsCount: 1
+});
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":120,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":124,"formulaRegisterer":45}],34:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_mixed__,
+    $___46__46__47_formulaRegisterer__;
+var stringify = ($__handsontable_47_helpers_47_mixed__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed"), $__handsontable_47_helpers_47_mixed__ && $__handsontable_47_helpers_47_mixed__.__esModule && $__handsontable_47_helpers_47_mixed__ || {default: $__handsontable_47_helpers_47_mixed__}).stringify;
+var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
+var FORMULA_NAME = 'eq';
+function formula(dataRow) {
+  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
+  return stringify(dataRow.value).toLowerCase() === stringify(value);
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Is equal to',
+  inputsCount: 1
+});
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":120,"formulaRegisterer":45}],35:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_formulaRegisterer__;
+var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
+var FORMULA_NAME = 'gt';
+function formula(dataRow) {
+  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
+  if (dataRow.meta.type === 'numeric') {
+    value = parseFloat(value, 10);
+  }
+  return dataRow.value > value;
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Greater than',
+  inputsCount: 1
+});
+
+//# 
+},{"formulaRegisterer":45}],36:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_formulaRegisterer__;
+var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
+var FORMULA_NAME = 'gte';
+function formula(dataRow) {
+  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
+  if (dataRow.meta.type === 'numeric') {
+    value = parseFloat(value, 10);
+  }
+  return dataRow.value >= value;
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Greater than or equal to',
+  inputsCount: 1
+});
+
+//# 
+},{"formulaRegisterer":45}],37:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_formulaRegisterer__;
+var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
+var FORMULA_NAME = 'lt';
+function formula(dataRow) {
+  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
+  if (dataRow.meta.type === 'numeric') {
+    value = parseFloat(value, 10);
+  }
+  return dataRow.value < value;
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Less than',
+  inputsCount: 1
+});
+
+//# 
+},{"formulaRegisterer":45}],38:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_formulaRegisterer__;
+var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
+var FORMULA_NAME = 'lte';
+function formula(dataRow) {
+  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
+  if (dataRow.meta.type === 'numeric') {
+    value = parseFloat(value, 10);
+  }
+  return dataRow.value <= value;
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Less than or equal to',
+  inputsCount: 1
+});
+
+//# 
+},{"formulaRegisterer":45}],39:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_formulaRegisterer__;
+var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
+var FORMULA_NAME = 'none';
+function formula() {
+  return true;
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'None',
+  inputsCount: 0
+});
+
+//# 
+},{"formulaRegisterer":45}],40:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_formulaRegisterer__,
+    $__between__;
+var $__0 = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}),
+    registerFormula = $__0.registerFormula,
+    getFormula = $__0.getFormula;
+var FORMULA_BETWEEN = ($__between__ = _dereq_("between"), $__between__ && $__between__.__esModule && $__between__ || {default: $__between__}).FORMULA_NAME;
+var FORMULA_NAME = 'not_between';
+function formula(dataRow, inputValues) {
+  return !getFormula(FORMULA_BETWEEN, inputValues)(dataRow);
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Is not between',
+  inputsCount: 2
+});
+
+//# 
+},{"between":24,"formulaRegisterer":45}],41:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_formulaRegisterer__,
+    $__contains__;
+var $__0 = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}),
+    registerFormula = $__0.registerFormula,
+    getFormula = $__0.getFormula;
+var FORMULA_CONTAINS = ($__contains__ = _dereq_("contains"), $__contains__ && $__contains__.__esModule && $__contains__ || {default: $__contains__}).FORMULA_NAME;
+var FORMULA_NAME = 'not_contains';
+function formula(dataRow, inputValues) {
+  return !getFormula(FORMULA_CONTAINS, inputValues)(dataRow);
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Does not contain',
+  inputsCount: 1
+});
+
+//# 
+},{"contains":26,"formulaRegisterer":45}],42:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_formulaRegisterer__,
+    $__empty__;
+var $__0 = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}),
+    registerFormula = $__0.registerFormula,
+    getFormula = $__0.getFormula;
+var FORMULA_EMPTY = ($__empty__ = _dereq_("empty"), $__empty__ && $__empty__.__esModule && $__empty__ || {default: $__empty__}).FORMULA_NAME;
+var FORMULA_NAME = 'not_empty';
+function formula(dataRow, inputValues) {
+  return !getFormula(FORMULA_EMPTY, inputValues)(dataRow);
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Is not empty',
+  inputsCount: 0
+});
+
+//# 
+},{"empty":32,"formulaRegisterer":45}],43:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FORMULA_NAME: {get: function() {
+      return FORMULA_NAME;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_formulaRegisterer__,
+    $__equal__;
+var $__0 = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}),
+    registerFormula = $__0.registerFormula,
+    getFormula = $__0.getFormula;
+var FORMULA_EQUAL = ($__equal__ = _dereq_("equal"), $__equal__ && $__equal__.__esModule && $__equal__ || {default: $__equal__}).FORMULA_NAME;
+var FORMULA_NAME = 'neq';
+function formula(dataRow, inputValues) {
+  return !getFormula(FORMULA_EQUAL, inputValues)(dataRow);
+}
+registerFormula(FORMULA_NAME, formula, {
+  name: 'Is not equal to',
+  inputsCount: 1
+});
+
+//# 
+},{"equal":34,"formulaRegisterer":45}],44:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FormulaCollection: {get: function() {
+      return FormulaCollection;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_helpers_47_object__,
+    $__formulaRegisterer__,
+    $__handsontable_47_mixins_47_localHooks__;
+var $__0 = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
+    arrayEach = $__0.arrayEach,
+    arrayMap = $__0.arrayMap,
+    arrayFilter = $__0.arrayFilter;
+var $__1 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
+    objectEach = $__1.objectEach,
+    mixin = $__1.mixin;
+var getFormula = ($__formulaRegisterer__ = _dereq_("formulaRegisterer"), $__formulaRegisterer__ && $__formulaRegisterer__.__esModule && $__formulaRegisterer__ || {default: $__formulaRegisterer__}).getFormula;
+var localHooks = ($__handsontable_47_mixins_47_localHooks__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks"), $__handsontable_47_mixins_47_localHooks__ && $__handsontable_47_mixins_47_localHooks__.__esModule && $__handsontable_47_mixins_47_localHooks__ || {default: $__handsontable_47_mixins_47_localHooks__}).localHooks;
+var FormulaCollection = function FormulaCollection() {
+  this.formulas = Object.create(null);
+  this.orderStack = [];
+};
+($traceurRuntime.createClass)(FormulaCollection, {
+  isEmpty: function() {
+    return !this.orderStack.length;
+  },
+  isMatch: function(value, column) {
+    var $__4 = this;
+    var result = true;
+    if (column === void 0) {
+      objectEach(this.formulas, (function(formulas) {
+        result = $__4.isMatchInFormulas(formulas, value);
+        return result;
+      }));
+    } else {
+      result = this.isMatchInFormulas(this.getFormulas(column), value);
+    }
+    return result;
+  },
+  isMatchInFormulas: function(formulas, value) {
+    var result = false;
+    if (formulas.length) {
+      arrayEach(formulas, (function(formula) {
+        return result = formula.func(value);
+      }));
+    } else {
+      result = true;
+    }
+    return result;
+  },
+  addFormula: function(column, formulaDefinition) {
+    var args = arrayMap(formulaDefinition.args, (function(v) {
+      return typeof v === 'string' ? v.toLowerCase() : v;
+    }));
+    var name = formulaDefinition.name || formulaDefinition.command.key;
+    this.runLocalHooks('beforeAdd', column);
+    if (this.orderStack.indexOf(column) === -1) {
+      this.orderStack.push(column);
+    }
+    if (this.hasFormulas(column, name)) {
+      arrayEach(this.getFormulas(column), (function(formula) {
+        if (formula.name === name) {
+          formula.func = getFormula(formula.name, args);
+          formula.args = args;
+          return false;
+        }
+      }));
+    } else {
+      this.getFormulas(column).push({
+        name: name,
+        args: args,
+        func: getFormula(name, args)
+      });
+    }
+    this.runLocalHooks('afterAdd', column);
+  },
+  getFormulas: function(column) {
+    if (!this.formulas[column]) {
+      this.formulas[column] = [];
+    }
+    return this.formulas[column];
+  },
+  exportAllFormulas: function() {
+    var $__4 = this;
+    var result = [];
+    arrayEach(this.orderStack, (function(column) {
+      var formulas = arrayMap($__4.getFormulas(column), (function() {
+        var $__6 = arguments[0] !== (void 0) ? arguments[0] : formula,
+            name = $__6.name,
+            args = $__6.args;
+        return {
+          name: name,
+          args: args
+        };
+      }));
+      result.push({
+        column: column,
+        formulas: formulas
+      });
+    }));
+    return result;
+  },
+  importAllFormulas: function(formulas) {
+    var $__4 = this;
+    this.clean();
+    arrayEach(formulas, (function(stack) {
+      $__4.orderStack.push(stack.column);
+      arrayEach(stack.formulas, (function(formula) {
+        return $__4.addFormula(stack.column, formula);
+      }));
+    }));
+  },
+  removeFormulas: function(column) {
+    this.runLocalHooks('beforeRemove', column);
+    if (this.orderStack.indexOf(column) >= 0) {
+      this.orderStack.splice(this.orderStack.indexOf(column), 1);
+    }
+    this.clearFormulas(column);
+    this.runLocalHooks('afterRemove', column);
+  },
+  clearFormulas: function(column) {
+    this.runLocalHooks('beforeClear', column);
+    this.getFormulas(column).length = 0;
+    this.runLocalHooks('afterClear', column);
+  },
+  hasFormulas: function(column, name) {
+    var result = false;
+    var formulas = this.getFormulas(column);
+    if (name) {
+      result = arrayFilter(formulas, (function(formula) {
+        return formula.name === name;
+      })).length > 0;
+    } else {
+      result = formulas.length > 0;
+    }
+    return result;
+  },
+  clean: function() {
+    this.runLocalHooks('beforeClean');
+    this.formulas = Object.create(null);
+    this.orderStack.length = 0;
+    this.runLocalHooks('afterClean');
+  },
+  destroy: function() {
+    this.clearLocalHooks();
+    this.formulas = null;
+    this.orderStack = null;
+  }
+}, {});
+mixin(FormulaCollection, localHooks);
+;
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":127,"formulaRegisterer":45}],45:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  getFormula: {get: function() {
+      return getFormula;
+    }},
+  getFormulaDescriptor: {get: function() {
+      return getFormulaDescriptor;
+    }},
+  registerFormula: {get: function() {
+      return registerFormula;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47__46__46__47_browser__;
+var Handsontable = ($___46__46__47__46__46__47_browser__ = _dereq_("../../browser"), $___46__46__47__46__46__47_browser__ && $___46__46__47__46__46__47_browser__.__esModule && $___46__46__47__46__46__47_browser__ || {default: $___46__46__47__46__46__47_browser__}).default;
+var formulas = {};
+function getFormula(name, args) {
+  if (!formulas[name]) {
+    throw Error(("Filter formula \"" + name + "\" does not exist."));
+  }
+  var $__1 = formulas[name],
+      formula = $__1.formula,
+      descriptor = $__1.descriptor;
+  if (descriptor.inputValuesDecorator) {
+    args = descriptor.inputValuesDecorator(args);
+  }
+  return function(dataRow) {
+    return formula.apply(dataRow.meta.instance, [].concat([dataRow], [args]));
+  };
+}
+function getFormulaDescriptor(name) {
+  if (!formulas[name]) {
+    throw Error(("Filter formula \"" + name + "\" does not exist."));
+  }
+  return formulas[name].descriptor;
+}
+function registerFormula(name, formula, descriptor) {
+  descriptor.key = name;
+  formulas[name] = {
+    formula: formula,
+    descriptor: descriptor
+  };
+}
+Handsontable.utils.FiltersFormulaRegisterer = {
+  getFormula: getFormula,
+  registerFormula: registerFormula,
+  getFormulaDescriptor: getFormulaDescriptor,
+  formulas: formulas
+};
+
+//# 
+},{"../../browser":3}],46:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  FormulaUpdateObserver: {get: function() {
+      return FormulaUpdateObserver;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_array__,
+    $__formulaCollection__,
+    $__dataFilter__,
+    $__utils__,
+    $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_helpers_47_function__,
+    $__handsontable_47_mixins_47_localHooks__;
+var $__0 = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
+    arrayEach = $__0.arrayEach,
+    arrayMap = $__0.arrayMap,
+    arrayFilter = $__0.arrayFilter;
+var FormulaCollection = ($__formulaCollection__ = _dereq_("formulaCollection"), $__formulaCollection__ && $__formulaCollection__.__esModule && $__formulaCollection__ || {default: $__formulaCollection__}).FormulaCollection;
+var DataFilter = ($__dataFilter__ = _dereq_("dataFilter"), $__dataFilter__ && $__dataFilter__.__esModule && $__dataFilter__ || {default: $__dataFilter__}).DataFilter;
+var createArrayAssertion = ($__utils__ = _dereq_("utils"), $__utils__ && $__utils__.__esModule && $__utils__ || {default: $__utils__}).createArrayAssertion;
+var $__4 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
+    mixin = $__4.mixin,
+    objectEach = $__4.objectEach;
+var $__5 = ($__handsontable_47_helpers_47_function__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/function"), $__handsontable_47_helpers_47_function__ && $__handsontable_47_helpers_47_function__.__esModule && $__handsontable_47_helpers_47_function__ || {default: $__handsontable_47_helpers_47_function__}),
+    curry = $__5.curry,
+    debounce = $__5.debounce;
+var localHooks = ($__handsontable_47_mixins_47_localHooks__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks"), $__handsontable_47_mixins_47_localHooks__ && $__handsontable_47_mixins_47_localHooks__.__esModule && $__handsontable_47_mixins_47_localHooks__ || {default: $__handsontable_47_mixins_47_localHooks__}).localHooks;
+var FormulaUpdateObserver = function FormulaUpdateObserver(formulaCollection) {
+  var columnDataFactory = arguments[1] !== (void 0) ? arguments[1] : (function(column) {
+    return [];
+  });
+  var $__7 = this;
+  this.formulaCollection = formulaCollection;
+  this.columnDataFactory = columnDataFactory;
+  this.changes = [];
+  this.grouping = false;
+  this.latestEditedColumnPosition = -1;
+  this.latestOrderStack = [];
+  this.formulaCollection.addLocalHook('beforeRemove', (function(column) {
+    return $__7._onFormulaBeforeModify(column);
+  }));
+  this.formulaCollection.addLocalHook('afterAdd', (function(column) {
+    return $__7._onFormulaAfterModify(column);
+  }));
+  this.formulaCollection.addLocalHook('afterClear', (function(column) {
+    return $__7._onFormulaAfterModify(column);
+  }));
+  this.formulaCollection.addLocalHook('beforeClean', (function() {
+    return $__7._onFormulaBeforeClean();
+  }));
+  this.formulaCollection.addLocalHook('afterClean', (function() {
+    return $__7._onFormulaAfterClean();
+  }));
+};
+($traceurRuntime.createClass)(FormulaUpdateObserver, {
+  groupChanges: function() {
+    this.grouping = true;
+  },
+  flush: function() {
+    var $__7 = this;
+    this.grouping = false;
+    arrayEach(this.changes, (function(column) {
+      return $__7._onFormulaAfterModify(column);
+    }));
+    this.changes.length = 0;
+  },
+  _onFormulaBeforeModify: function(column) {
+    this.latestEditedColumnPosition = this.formulaCollection.orderStack.indexOf(column);
+  },
+  _onFormulaAfterModify: function(column) {
+    var $__7 = this;
+    if (this.grouping) {
+      if (this.changes.indexOf(column) === -1) {
+        this.changes.push(column);
+      }
+      return;
+    }
+    var allFormulas = this.formulaCollection.exportAllFormulas();
+    var editedColumnPosition = this.formulaCollection.orderStack.indexOf(column);
+    if (editedColumnPosition === -1) {
+      editedColumnPosition = this.latestEditedColumnPosition;
+    }
+    var formulasBefore = allFormulas.slice(0, editedColumnPosition);
+    var formulasAfter = allFormulas.slice(editedColumnPosition);
+    if (formulasAfter.length && formulasAfter[0].column === column) {
+      formulasAfter.shift();
+    }
+    var visibleDataFactory = curry((function(formulasBefore, column) {
+      var formulasStack = arguments[2] !== (void 0) ? arguments[2] : [];
+      var splitFormulaCollection = new FormulaCollection();
+      formulasBefore = [].concat(formulasBefore, formulasStack);
+      splitFormulaCollection.importAllFormulas(formulasBefore);
+      var allRows = $__7.columnDataFactory(column);
+      var visibleRows;
+      if (splitFormulaCollection.isEmpty()) {
+        visibleRows = allRows;
+      } else {
+        visibleRows = (new DataFilter(splitFormulaCollection, (function(column) {
+          return $__7.columnDataFactory(column);
+        }))).filter();
+      }
+      visibleRows = arrayMap(visibleRows, (function(rowData) {
+        return rowData.meta.visualRow;
+      }));
+      var visibleRowsAssertion = createArrayAssertion(visibleRows);
+      return arrayFilter(allRows, (function(rowData) {
+        return visibleRowsAssertion(rowData.meta.visualRow);
+      }));
+    }))(formulasBefore);
+    var editedFormulas = [].concat(this.formulaCollection.getFormulas(column));
+    this.runLocalHooks('update', {
+      column: column,
+      formulas: editedFormulas
+    }, formulasAfter, visibleDataFactory);
+  },
+  _onFormulaBeforeClean: function() {
+    this.latestOrderStack = [].concat(this.formulaCollection.orderStack);
+  },
+  _onFormulaAfterClean: function() {
+    var $__7 = this;
+    arrayEach(this.latestOrderStack, (function(column) {
+      return $__7._onFormulaAfterModify(column);
+    }));
+  },
+  destroy: function() {
+    var $__7 = this;
+    this.clearLocalHooks();
+    objectEach(this, (function(value, property) {
+      return $__7[property] = null;
+    }));
+  }
+}, {});
+mixin(FormulaUpdateObserver, localHooks);
+;
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/function":119,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":127,"dataFilter":21,"formulaCollection":44,"utils":51}],47:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  BaseUI: {get: function() {
+      return BaseUI;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_mixins_47_localHooks__,
+    $__handsontable_47_eventManager__,
+    $__handsontable_47_helpers_47_dom_47_element__,
+    $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_helpers_47_object__;
+var $__0 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
+    clone = $__0.clone,
+    extend = $__0.extend,
+    mixin = $__0.mixin;
+var localHooks = ($__handsontable_47_mixins_47_localHooks__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks"), $__handsontable_47_mixins_47_localHooks__ && $__handsontable_47_mixins_47_localHooks__.__esModule && $__handsontable_47_mixins_47_localHooks__ || {default: $__handsontable_47_mixins_47_localHooks__}).localHooks;
+var EventManager = ($__handsontable_47_eventManager__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager"), $__handsontable_47_eventManager__ && $__handsontable_47_eventManager__.__esModule && $__handsontable_47_eventManager__ || {default: $__handsontable_47_eventManager__}).EventManager;
+var addClass = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).addClass;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var objectEach = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).objectEach;
+var STATE_BUILT = 'built';
+var STATE_BUILDING = 'building';
+var EVENTS_TO_REGISTER = ['click', 'input', 'keydown', 'keypress', 'keyup', 'focus', 'blur'];
+var BaseUI = function BaseUI(hotInstance, options) {
+  this.hot = hotInstance;
+  this.eventManager = new EventManager(this);
+  this.options = extend($BaseUI.DEFAULTS, options);
+  this._element = document.createElement(this.options.wrapIt ? 'div' : this.options.tagName);
+  this.buildState = false;
+};
+var $BaseUI = BaseUI;
+($traceurRuntime.createClass)(BaseUI, {
+  setValue: function(value) {
+    this.options.value = value;
+    this.update();
+  },
+  getValue: function() {
+    return this.options.value;
+  },
+  get element() {
+    if (this.buildState === STATE_BUILDING) {
+      return this._element;
+    }
+    if (this.buildState === STATE_BUILT) {
+      this.update();
+      return this._element;
+    }
+    this.buildState = STATE_BUILDING;
+    this.build();
+    this.buildState = STATE_BUILT;
+    return this._element;
+  },
+  isBuilt: function() {
+    return this.buildState === STATE_BUILT;
+  },
+  build: function() {
+    var $__6 = this;
+    var registerEvent = (function(element, eventName) {
+      $__6.eventManager.addEventListener(element, eventName, (function(event) {
+        return $__6.runLocalHooks(eventName, event, $__6);
+      }));
+    });
+    if (!this.buildState) {
+      this.buildState = STATE_BUILDING;
+    }
+    if (this.options.className) {
+      addClass(this._element, this.options.className);
+    }
+    if (this.options.children.length) {
+      arrayEach(this.options.children, (function(element) {
+        return $__6._element.appendChild(element.element);
+      }));
+    } else if (this.options.wrapIt) {
+      var element = document.createElement(this.options.tagName);
+      objectEach(this.options, (function(value, key) {
+        if (element[key] !== void 0 && key !== 'className' && key !== 'tagName' && key !== 'children') {
+          element[key] = value;
+        }
+      }));
+      this._element.appendChild(element);
+      arrayEach(EVENTS_TO_REGISTER, (function(eventName) {
+        return registerEvent(element, eventName);
+      }));
+    } else {
+      arrayEach(EVENTS_TO_REGISTER, (function(eventName) {
+        return registerEvent($__6._element, eventName);
+      }));
+    }
+  },
+  update: function() {},
+  reset: function() {
+    this.options.value = '';
+    this.update();
+  },
+  show: function() {
+    this.element.style.display = '';
+  },
+  hide: function() {
+    this.element.style.display = 'none';
+  },
+  focus: function() {},
+  destroy: function() {
+    this.eventManager.destroy();
+    this.eventManager = null;
+    this.hot = null;
+    if (this._element.parentNode) {
+      this._element.parentNode.removeChild(this._element);
+    }
+    this._element = null;
+  }
+}, {get DEFAULTS() {
+    return clone({
+      className: '',
+      value: '',
+      tagName: 'div',
+      children: [],
+      wrapIt: true
+    });
+  }});
+mixin(BaseUI, localHooks);
+;
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":111,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":116,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":127}],48:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  InputUI: {get: function() {
+      return InputUI;
+    }},
+  __esModule: {value: true}
+});
+var $___95_base__,
+    $__handsontable_47_helpers_47_dom_47_element__,
+    $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_helpers_47_array__;
+var BaseUI = ($___95_base__ = _dereq_("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseUI;
+var addClass = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).addClass;
+var $__2 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
+    clone = $__2.clone,
+    extend = $__2.extend;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var privatePool = new WeakMap();
+var InputUI = function InputUI(hotInstance, options) {
+  privatePool.set(this, {});
+  $traceurRuntime.superConstructor($InputUI).call(this, hotInstance, extend($InputUI.DEFAULTS, options));
+  this.registerHooks();
+};
+var $InputUI = InputUI;
+($traceurRuntime.createClass)(InputUI, {
+  registerHooks: function() {
+    var $__4 = this;
+    this.addLocalHook('click', (function(event) {
+      return $__4.onClick(event);
+    }));
+    this.addLocalHook('keyup', (function(event) {
+      return $__4.onKeyup(event);
+    }));
+  },
+  build: function() {
+    $traceurRuntime.superGet(this, $InputUI.prototype, "build").call(this);
+    var priv = privatePool.get(this);
+    var icon = document.createElement('div');
+    priv.input = this._element.firstChild;
+    addClass(this._element, 'htUIInput');
+    addClass(icon, 'htUIInputIcon');
+    this._element.appendChild(icon);
+    this.update();
+  },
+  update: function() {
+    if (!this.isBuilt()) {
+      return;
+    }
+    var input = privatePool.get(this).input;
+    input.type = this.options.type;
+    input.value = this.options.value;
+  },
+  focus: function() {
+    if (this.isBuilt()) {
+      privatePool.get(this).input.focus();
+    }
+  },
+  onClick: function(event) {},
+  onKeyup: function(event) {
+    this.options.value = event.target.value;
+  }
+}, {get DEFAULTS() {
+    return clone({
+      placeholder: '',
+      type: 'text',
+      tagName: 'input'
+    });
+  }}, BaseUI);
+;
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":116,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"_base":47}],49:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  MultipleSelectUI: {get: function() {
+      return MultipleSelectUI;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47__46__46__47__46__46__47_browser__,
+    $___95_base__,
+    $__handsontable_47_helpers_47_dom_47_element__,
+    $__handsontable_47_plugins_47_contextMenu_47_menu__,
+    $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_helpers_47_string__,
+    $__handsontable_47_helpers_47_unicode__,
+    $__handsontable_47_helpers_47_function__,
+    $__handsontable_47_helpers_47_dom_47_event__,
+    $__input__,
+    $___46__46__47_utils__;
+var Handsontable = ($___46__46__47__46__46__47__46__46__47_browser__ = _dereq_("../../../browser"), $___46__46__47__46__46__47__46__46__47_browser__ && $___46__46__47__46__46__47__46__46__47_browser__.__esModule && $___46__46__47__46__46__47__46__46__47_browser__ || {default: $___46__46__47__46__46__47__46__46__47_browser__}).default;
+var BaseUI = ($___95_base__ = _dereq_("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseUI;
+var addClass = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).addClass;
+var Menu = ($__handsontable_47_plugins_47_contextMenu_47_menu__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu"), $__handsontable_47_plugins_47_contextMenu_47_menu__ && $__handsontable_47_plugins_47_contextMenu_47_menu__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_menu__ || {default: $__handsontable_47_plugins_47_contextMenu_47_menu__}).Menu;
+var $__4 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
+    clone = $__4.clone,
+    extend = $__4.extend;
+var $__5 = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
+    arrayFilter = $__5.arrayFilter,
+    arrayMap = $__5.arrayMap,
+    arrayEach = $__5.arrayEach;
+var startsWith = ($__handsontable_47_helpers_47_string__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string"), $__handsontable_47_helpers_47_string__ && $__handsontable_47_helpers_47_string__.__esModule && $__handsontable_47_helpers_47_string__ || {default: $__handsontable_47_helpers_47_string__}).startsWith;
+var isKey = ($__handsontable_47_helpers_47_unicode__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode"), $__handsontable_47_helpers_47_unicode__ && $__handsontable_47_helpers_47_unicode__.__esModule && $__handsontable_47_helpers_47_unicode__ || {default: $__handsontable_47_helpers_47_unicode__}).isKey;
+var partial = ($__handsontable_47_helpers_47_function__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/function"), $__handsontable_47_helpers_47_function__ && $__handsontable_47_helpers_47_function__.__esModule && $__handsontable_47_helpers_47_function__ || {default: $__handsontable_47_helpers_47_function__}).partial;
+var stopImmediatePropagation = ($__handsontable_47_helpers_47_dom_47_event__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event"), $__handsontable_47_helpers_47_dom_47_event__ && $__handsontable_47_helpers_47_dom_47_event__.__esModule && $__handsontable_47_helpers_47_dom_47_event__ || {default: $__handsontable_47_helpers_47_dom_47_event__}).stopImmediatePropagation;
+var InputUI = ($__input__ = _dereq_("input"), $__input__ && $__input__.__esModule && $__input__ || {default: $__input__}).InputUI;
+var createArrayAssertion = ($___46__46__47_utils__ = _dereq_("utils"), $___46__46__47_utils__ && $___46__46__47_utils__.__esModule && $___46__46__47_utils__ || {default: $___46__46__47_utils__}).createArrayAssertion;
+var privatePool = new WeakMap();
+var MultipleSelectUI = function MultipleSelectUI(hotInstance, options) {
+  privatePool.set(this, {});
+  $traceurRuntime.superConstructor($MultipleSelectUI).call(this, hotInstance, extend($MultipleSelectUI.DEFAULTS, options));
+  this.searchInput = new InputUI(this.hot, {
+    placeholder: 'Search...',
+    className: 'htUIMultipleSelectSearch'
+  });
+  this.selectAllUI = new BaseUI(this.hot, {
+    tagName: 'a',
+    textContent: 'Select all',
+    href: '#',
+    className: 'htUISelectAll'
+  });
+  this.clearAllUI = new BaseUI(this.hot, {
+    tagName: 'a',
+    textContent: 'Clear',
+    href: '#',
+    className: 'htUIClearAll'
+  });
+  this.items = [];
+  this.itemsBox = null;
+  this.registerHooks();
+};
+var $MultipleSelectUI = MultipleSelectUI;
+($traceurRuntime.createClass)(MultipleSelectUI, {
+  registerHooks: function() {
+    var $__12 = this;
+    this.searchInput.addLocalHook('keydown', (function(event) {
+      return $__12.onInputKeyDown(event);
+    }));
+    this.searchInput.addLocalHook('input', (function(event) {
+      return $__12.onInput(event);
+    }));
+    this.selectAllUI.addLocalHook('click', (function(event) {
+      return $__12.onSelectAllClick(event);
+    }));
+    this.clearAllUI.addLocalHook('click', (function(event) {
+      return $__12.onClearAllClick(event);
+    }));
+  },
+  setItems: function(items) {
+    this.items = items;
+    if (this.itemsBox) {
+      this.itemsBox.loadData(this.items);
+    }
+  },
+  getItems: function() {
+    return $traceurRuntime.spread(this.items);
+  },
+  getValue: function() {
+    return itemsToValue(this.items);
+  },
+  isSelectedAllValues: function() {
+    return this.items.length === this.getValue().length;
+  },
+  build: function() {
+    var $__12 = this;
+    $traceurRuntime.superGet(this, $MultipleSelectUI.prototype, "build").call(this);
+    var itemsBoxWrapper = document.createElement('div');
+    var selectionControl = new BaseUI(this.hot, {
+      className: 'htUISelectionControls',
+      children: [this.selectAllUI, this.clearAllUI]
+    });
+    this._element.appendChild(this.searchInput.element);
+    this._element.appendChild(selectionControl.element);
+    this._element.appendChild(itemsBoxWrapper);
+    var hotInitializer = (function(wrapper) {
+      if (!$__12._element) {
+        return;
+      }
+      if ($__12.itemsBox) {
+        $__12.itemsBox.destroy();
+      }
+      addClass(wrapper, 'htUIMultipleSelectHot');
+      $__12.itemsBox = new Handsontable(wrapper, {
+        data: $__12.items,
+        columns: [{
+          data: 'checked',
+          type: 'checkbox',
+          label: {
+            property: 'visualValue',
+            position: 'after'
+          }
+        }],
+        autoWrapCol: true,
+        colWidths: 150,
+        height: 110,
+        width: 168,
+        copyPaste: false,
+        disableVisualSelection: 'area',
+        fillHandle: false,
+        fragmentSelection: 'cell',
+        tabMoves: {
+          row: 1,
+          col: 0
+        },
+        beforeKeyDown: (function(event) {
+          return $__12.onItemsBoxBeforeKeyDown(event);
+        })
+      });
+    });
+    hotInitializer(itemsBoxWrapper);
+    setTimeout((function() {
+      return hotInitializer(itemsBoxWrapper);
+    }), 100);
+  },
+  reset: function() {
+    this.searchInput.reset();
+  },
+  update: function() {
+    if (!this.isBuilt()) {
+      return;
+    }
+    this.itemsBox.loadData(valueToItems(this.items, this.options.value));
+    $traceurRuntime.superGet(this, $MultipleSelectUI.prototype, "update").call(this);
+  },
+  destroy: function() {
+    if (this.itemsBox) {
+      this.itemsBox.destroy();
+    }
+    this.itemsBox = null;
+    this.searchInput = null;
+    this.items = null;
+    $traceurRuntime.superGet(this, $MultipleSelectUI.prototype, "destroy").call(this);
+  },
+  onInput: function(event) {
+    var value = event.target.value.toLowerCase();
+    var filteredItems;
+    if (value === '') {
+      filteredItems = $traceurRuntime.spread(this.items);
+    } else {
+      filteredItems = arrayFilter(this.items, (function(item) {
+        return (item.value + '').toLowerCase().indexOf(value) >= 0;
+      }));
+    }
+    this.itemsBox.loadData(filteredItems);
+  },
+  onInputKeyDown: function(event) {
+    this.runLocalHooks('keydown', event, this);
+    var isKeyCode = partial(isKey, event.keyCode);
+    if (isKeyCode('ARROW_DOWN|TAB') && !this.itemsBox.isListening()) {
+      stopImmediatePropagation(event);
+      this.itemsBox.listen();
+      this.itemsBox.selectCell(0, 0);
+    }
+  },
+  onItemsBoxBeforeKeyDown: function(event) {
+    var isKeyCode = partial(isKey, event.keyCode);
+    if (isKeyCode('ESCAPE')) {
+      this.runLocalHooks('keydown', event, this);
+    }
+    if (!isKeyCode('ARROW_UP|ARROW_DOWN|ARROW_LEFT|ARROW_RIGHT|TAB|SPACE|ENTER')) {
+      stopImmediatePropagation(event);
+      this.itemsBox.unlisten();
+      this.itemsBox.deselectCell();
+      this.searchInput.focus();
+    }
+  },
+  onSelectAllClick: function(event) {
+    event.preventDefault();
+    arrayEach(this.itemsBox.getSourceData(), (function(row) {
+      row.checked = true;
+    }));
+    this.itemsBox.render();
+  },
+  onClearAllClick: function(event) {
+    event.preventDefault();
+    arrayEach(this.itemsBox.getSourceData(), (function(row) {
+      row.checked = false;
+    }));
+    this.itemsBox.render();
+  }
+}, {get DEFAULTS() {
+    return clone({
+      className: 'htUIMultipleSelect',
+      value: []
+    });
+  }}, BaseUI);
+;
+function valueToItems(availableItems, selectedValue) {
+  var arrayAssertion = createArrayAssertion(selectedValue);
+  return arrayMap(availableItems, (function(item) {
+    item.checked = arrayAssertion(item.value);
+    return item;
+  }));
+}
+function itemsToValue(availableItems) {
+  var items = [];
+  arrayEach(availableItems, (function(item) {
+    if (item.checked) {
+      items.push(item.value);
+    }
+  }));
+  return items;
+}
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":116,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":117,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/function":119,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":124,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode":125,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":143,"../../../browser":3,"_base":47,"input":48,"utils":51}],50:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  SelectUI: {get: function() {
+      return SelectUI;
+    }},
+  __esModule: {value: true}
+});
+var $___95_base__,
+    $__handsontable_47_helpers_47_dom_47_element__,
+    $__handsontable_47_plugins_47_contextMenu_47_menu__,
+    $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__;
+var BaseUI = ($___95_base__ = _dereq_("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseUI;
+var $__1 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
+    addClass = $__1.addClass,
+    getWindowScrollTop = $__1.getWindowScrollTop,
+    getWindowScrollLeft = $__1.getWindowScrollLeft;
+var Menu = ($__handsontable_47_plugins_47_contextMenu_47_menu__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu"), $__handsontable_47_plugins_47_contextMenu_47_menu__ && $__handsontable_47_plugins_47_contextMenu_47_menu__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_menu__ || {default: $__handsontable_47_plugins_47_contextMenu_47_menu__}).Menu;
+var $__3 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
+    clone = $__3.clone,
+    extend = $__3.extend;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var SEPARATOR = ($__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems"), $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ || {default: $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__}).SEPARATOR;
+var privatePool = new WeakMap();
+var SelectUI = function SelectUI(hotInstance, options) {
+  privatePool.set(this, {});
+  $traceurRuntime.superConstructor($SelectUI).call(this, hotInstance, extend($SelectUI.DEFAULTS, options));
+  this.menu = null;
+  this.items = [];
+  this.registerHooks();
+};
+var $SelectUI = SelectUI;
+($traceurRuntime.createClass)(SelectUI, {
+  registerHooks: function() {
+    var $__6 = this;
+    this.addLocalHook('click', (function(event) {
+      return $__6.onClick(event);
+    }));
+  },
+  setItems: function(items) {
+    this.items = items;
+    if (this.menu) {
+      this.menu.setMenuItems(this.items);
+    }
+  },
+  build: function() {
+    var $__6 = this;
+    $traceurRuntime.superGet(this, $SelectUI.prototype, "build").call(this);
+    this.menu = new Menu(this.hot, {
+      className: 'htSelectUI htFiltersConditionsMenu',
+      keepInViewport: false,
+      standalone: true
+    });
+    this.menu.setMenuItems(this.items);
+    var caption = new BaseUI(this.hot, {className: 'htUISelectCaption'});
+    var dropdown = new BaseUI(this.hot, {className: 'htUISelectDropdown'});
+    privatePool.get(this).caption = caption.element;
+    arrayEach([caption, dropdown], (function(element) {
+      return $__6._element.appendChild(element.element);
+    }));
+    this.menu.addLocalHook('select', (function(command) {
+      return $__6.onMenuSelect(command);
+    }));
+    this.update();
+  },
+  update: function() {
+    if (!this.isBuilt()) {
+      return;
+    }
+    privatePool.get(this).caption.textContent = this.options.value ? this.options.value.name : 'None';
+    $traceurRuntime.superGet(this, $SelectUI.prototype, "update").call(this);
+  },
+  openOptions: function() {
+    var rect = this.element.getBoundingClientRect();
+    if (this.menu) {
+      this.menu.open();
+      this.menu.setPosition({
+        left: rect.left - 5,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height
+      });
+    }
+  },
+  closeOptions: function() {
+    if (this.menu) {
+      this.menu.close();
+    }
+  },
+  onMenuSelect: function(command) {
+    if (command.name !== SEPARATOR) {
+      this.options.value = command;
+      this.closeOptions();
+      this.update();
+      this.runLocalHooks('select', this.options.value);
+    }
+  },
+  onClick: function(event) {
+    this.openOptions();
+  },
+  destroy: function() {
+    if (this.menu) {
+      this.menu.destroy();
+      this.menu = null;
+    }
+    $traceurRuntime.superGet(this, $SelectUI.prototype, "destroy").call(this);
+  }
+}, {get DEFAULTS() {
+    return clone({
+      className: 'htUISelect',
+      wrapIt: false
+    });
+  }}, BaseUI);
+;
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":116,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":143,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":144,"_base":47}],51:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  sortComparison: {get: function() {
+      return sortComparison;
+    }},
+  toVisualValue: {get: function() {
+      return toVisualValue;
+    }},
+  createArrayAssertion: {get: function() {
+      return createArrayAssertion;
+    }},
+  toEmptyString: {get: function() {
+      return toEmptyString;
+    }},
+  unifyColumnValues: {get: function() {
+      return unifyColumnValues;
+    }},
+  intersectValues: {get: function() {
+      return intersectValues;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_feature__,
+    $__handsontable_47_helpers_47_array__;
+var getComparisonFunction = ($__handsontable_47_helpers_47_feature__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/feature"), $__handsontable_47_helpers_47_feature__ && $__handsontable_47_helpers_47_feature__.__esModule && $__handsontable_47_helpers_47_feature__ || {default: $__handsontable_47_helpers_47_feature__}).getComparisonFunction;
+var $__1 = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
+    arrayMap = $__1.arrayMap,
+    arrayUnique = $__1.arrayUnique,
+    arrayEach = $__1.arrayEach;
+var sortCompare = getComparisonFunction();
+function sortComparison(a, b) {
+  if (typeof a === 'number' && typeof b === 'number') {
+    return a - b;
+  }
+  return sortCompare(a, b);
+}
+function toVisualValue(value) {
+  if (value === '') {
+    value = '(Blank cells)';
+  }
+  return value;
+}
+var SUPPORT_SET_CONSTRUCTOR = new Set([1]).has(1);
+var SUPPORT_FAST_DEDUPE = SUPPORT_SET_CONSTRUCTOR && typeof Array.from === 'function';
+function createArrayAssertion(initialData) {
+  if (SUPPORT_SET_CONSTRUCTOR) {
+    initialData = new Set(initialData);
+  }
+  return function(value) {
+    var result;
+    if (SUPPORT_SET_CONSTRUCTOR) {
+      result = initialData.has(value);
+    } else {
+      result = !!~initialData.indexOf(value);
+    }
+    return result;
+  };
+}
+function toEmptyString(value) {
+  return value == null ? '' : value;
+}
+function unifyColumnValues(values) {
+  if (SUPPORT_FAST_DEDUPE) {
+    values = Array.from(new Set(values));
+  } else {
+    values = arrayUnique(values);
+  }
+  values = values.sort(function(a, b) {
+    if (typeof a === 'number' && typeof b === 'number') {
+      return a - b;
+    }
+    if (a === b) {
+      return 0;
+    }
+    return a > b ? 1 : -1;
+  });
+  return values;
+}
+function intersectValues(base, selected, callback) {
+  var result = [];
+  var same = base === selected;
+  var selectedItemsAssertion;
+  if (!same) {
+    selectedItemsAssertion = createArrayAssertion(selected);
+  }
+  arrayEach(base, (function(value) {
+    var checked = false;
+    if (same || selectedItemsAssertion(value)) {
+      checked = true;
+    }
+    var item = {
+      checked: checked,
+      value: value,
+      visualValue: toVisualValue(value)
+    };
+    if (callback) {
+      callback(item);
+    }
+    result.push(item);
+  }));
+  return result;
+}
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/feature":118}],52:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  DateCalculator: {get: function() {
+      return DateCalculator;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_helpers_47_object__;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var objectEach = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).objectEach;
+var DateCalculator = function DateCalculator(year) {
+  this.year = year;
+  this.firstWeekDay = 'monday';
+  this.weekSectionCount = 0;
+  this.monthList = this.calculateMonthData();
+  this.daysInColumns = {};
+  this.calculateWeekStructure();
+};
+($traceurRuntime.createClass)(DateCalculator, {
+  setYear: function(year) {
+    this.year = year;
+    this.monthList = this.calculateMonthData();
+    this.calculateWeekStructure();
+  },
+  setFirstWeekDay: function(day) {
+    if (day.toLowerCase() !== 'monday' && day.toLowerCase() !== 'sunday') {
+      console.warn('First day of the week must be set to either Monday or Sunday');
+    }
+    this.firstWeekDay = day.toLowerCase();
+  },
+  countWeekSections: function() {
+    return this.weekSectionCount;
+  },
+  getFirstWeekDay: function() {
+    return this.firstWeekDay;
+  },
+  getYear: function() {
+    return this.year;
+  },
+  getMonthList: function() {
+    return this.monthList;
+  },
+  parseDate: function(date) {
+    if (!(date instanceof Date)) {
+      date = new Date(date);
+      if (date.toString() === 'Invalid Date') {
+        return null;
+      }
+    }
+    return date;
+  },
+  dateToColumn: function(date) {
+    date = this.parseDate(date);
+    if (!date || date.getFullYear() !== this.year) {
+      return false;
+    }
+    var month = date.getMonth();
+    var day = date.getDate() - 1;
+    var monthCache = this.daysInColumns[month];
+    var resultColumn = null;
+    objectEach(monthCache, (function(column, index) {
+      if (column.indexOf(day + 1) > -1) {
+        resultColumn = parseInt(index, 10);
+        return false;
+      }
+    }));
+    return resultColumn;
+  },
+  columnToDate: function(column) {
+    var month = null;
+    objectEach(this.daysInColumns, (function(monthCache, index) {
+      if (monthCache[column]) {
+        month = index;
+        return false;
+      }
+    }));
+    if (this.daysInColumns[month][column].length === 1) {
+      return new Date(this.year, month, this.daysInColumns[month][column][0]);
+    } else {
+      return this.daysInColumns[month][column];
+    }
+  },
+  isOnTheEdgeOfWeek: function(date) {
+    date = this.parseDate(date);
+    if (!date) {
+      return null;
+    }
+    var month = date.getMonth();
+    var day = date.getDate() - 1;
+    var monthCache = this.daysInColumns[month];
+    var isOnTheEdgeOfWeek = false;
+    objectEach(monthCache, (function(column) {
+      var indexOfDay = column.indexOf(day + 1);
+      if ((indexOfDay === 0)) {
+        isOnTheEdgeOfWeek = [1, 0];
+        return false;
+      } else if (indexOfDay === column.length - 1) {
+        isOnTheEdgeOfWeek = [0, 1];
+        return false;
+      }
+    }));
+    return isOnTheEdgeOfWeek;
+  },
+  addDaysToCache: function(monthNumber, columnNumber, start, end) {
+    if (!this.daysInColumns[monthNumber]) {
+      this.daysInColumns[monthNumber] = {};
+    }
+    if (!this.daysInColumns[monthNumber][columnNumber]) {
+      this.daysInColumns[monthNumber][columnNumber] = [];
+    }
+    for (var j = start; j <= end; j++) {
+      this.daysInColumns[monthNumber][columnNumber].push(j);
+    }
+  },
+  isValidRangeBarData: function(startDate, endDate) {
+    var startDateParsed = this.parseDate(startDate);
+    var endDateParsed = this.parseDate(endDate);
+    return startDateParsed && endDateParsed && startDateParsed.getTime() <= endDateParsed.getTime();
+  },
+  calculateMonthData: function() {
+    return [{
+      name: 'January',
+      days: 31
+    }, {
+      name: 'February',
+      days: new Date(this.year, 2, 0).getDate()
+    }, {
+      name: 'March',
+      days: 31
+    }, {
+      name: 'April',
+      days: 30
+    }, {
+      name: 'May',
+      days: 31
+    }, {
+      name: 'June',
+      days: 30
+    }, {
+      name: 'July',
+      days: 31
+    }, {
+      name: 'August',
+      days: 31
+    }, {
+      name: 'September',
+      days: 30
+    }, {
+      name: 'October',
+      days: 31
+    }, {
+      name: 'November',
+      days: 30
+    }, {
+      name: 'December',
+      days: 31
+    }];
+  },
+  countMonths: function() {
+    return this.monthList.length;
+  },
+  countMonthDays: function(month) {
+    return this.monthList[month - 1].days;
+  },
+  countMonthFullWeeks: function(month) {
+    return this.monthList[month - 1].fullWeeks;
+  },
+  calculateWeekStructure: function() {
+    var weekOffset = 0;
+    var weekSectionCount = 0;
+    var firstWeekDay = this.getFirstWeekDay();
+    var monthList = this.getMonthList();
+    var currentYear = this.getYear();
+    if (firstWeekDay === 'monday') {
+      weekOffset = 1;
+    }
+    arrayEach(monthList, (function(currentMonth, i) {
+      var firstMonthDay = new Date(currentYear, i, 1).getDay();
+      currentMonth.daysBeforeFullWeeks = (7 - firstMonthDay + weekOffset) % 7;
+      currentMonth.fullWeeks = Math.floor((currentMonth.days - currentMonth.daysBeforeFullWeeks) / 7);
+      currentMonth.daysAfterFullWeeks = currentMonth.days - currentMonth.daysBeforeFullWeeks - (7 * currentMonth.fullWeeks);
+      weekSectionCount += currentMonth.fullWeeks + (currentMonth.daysBeforeFullWeeks ? 1 : 0) + (currentMonth.daysAfterFullWeeks ? 1 : 0);
+    }));
+    this.weekSectionCount = weekSectionCount;
+  }
+}, {});
+;
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122}],53:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  GanttChart: {get: function() {
+      return GanttChart;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_dom_47_element__,
+    $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_helpers_47_number__,
+    $__handsontable_47_helpers_47_data__,
+    $__handsontable_47_plugins_46_js__,
+    $__dateCalculator__,
+    $__ganttChartDataFeed__,
+    $__handsontable_47_plugins_47__95_base_46_js__;
+var $__0 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
+    addClass = $__0.addClass,
+    removeClass = $__0.removeClass;
+var $__1 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
+    objectEach = $__1.objectEach,
+    deepClone = $__1.deepClone,
+    extend = $__1.extend;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+var createEmptySpreadsheetData = ($__handsontable_47_helpers_47_data__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/data"), $__handsontable_47_helpers_47_data__ && $__handsontable_47_helpers_47_data__.__esModule && $__handsontable_47_helpers_47_data__ || {default: $__handsontable_47_helpers_47_data__}).createEmptySpreadsheetData;
+var registerPlugin = ($__handsontable_47_plugins_46_js__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js"), $__handsontable_47_plugins_46_js__ && $__handsontable_47_plugins_46_js__.__esModule && $__handsontable_47_plugins_46_js__ || {default: $__handsontable_47_plugins_46_js__}).registerPlugin;
+var DateCalculator = ($__dateCalculator__ = _dereq_("dateCalculator"), $__dateCalculator__ && $__dateCalculator__.__esModule && $__dateCalculator__ || {default: $__dateCalculator__}).DateCalculator;
+var GanttChartDataFeed = ($__ganttChartDataFeed__ = _dereq_("ganttChartDataFeed"), $__ganttChartDataFeed__ && $__ganttChartDataFeed__.__esModule && $__ganttChartDataFeed__ || {default: $__ganttChartDataFeed__}).GanttChartDataFeed;
+var BasePlugin = ($__handsontable_47_plugins_47__95_base_46_js__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js"), $__handsontable_47_plugins_47__95_base_46_js__ && $__handsontable_47_plugins_47__95_base_46_js__.__esModule && $__handsontable_47_plugins_47__95_base_46_js__ || {default: $__handsontable_47_plugins_47__95_base_46_js__}).default;
+var GanttChart = function GanttChart(hotInstance) {
+  $traceurRuntime.superConstructor($GanttChart).call(this, hotInstance);
+  this.settings = {};
+  this.dateCalculator = null;
+  this.currentYear = null;
+  this.monthList = [];
+  this.monthHeadersArray = [];
+  this.weekHeadersArray = [];
+  this.rangeBars = {};
+  this.rangeList = {};
+  this.nestedHeadersPlugin = null;
+  this.hotSource = null;
+  this.overallWeekSectionCount = null;
+  this.initialSettings = null;
+  this.dataFeed = null;
+  this.colorData = {};
+  this.rangeBarMeta = Object.create(null);
+};
+var $GanttChart = GanttChart;
+($traceurRuntime.createClass)(GanttChart, {
+  checkDependencies: function() {
+    if (!this.hot.getSettings().colHeaders) {
+      console.warn('You need to enable the colHeaders property in your Gantt Chart Handsontable in order for it to work properly.');
+    }
+  },
+  isEnabled: function() {
+    return !!this.hot.getSettings().ganttChart;
+  },
+  enablePlugin: function() {
+    var $__9 = this;
+    if (this.enabled) {
+      return;
+    }
+    this.checkDependencies();
+    this.parseSettings();
+    this.currentYear = this.settings.startYear || new Date().getFullYear();
+    this.dateCalculator = new DateCalculator(this.currentYear);
+    this.dateCalculator.setFirstWeekDay(this.settings.firstWeekDay);
+    this.monthList = this.dateCalculator.getMonthList();
+    this.monthHeadersArray = this.generateMonthHeaders();
+    this.weekHeadersArray = this.generateWeekHeaders();
+    this.overallWeekSectionCount = this.dateCalculator.countWeekSections();
+    this.assignGanttSettings();
+    if (this.nestedHeadersPlugin) {
+      this.applyDataSource();
+      if (this.colorData) {
+        this.setRangeBarColors(this.colorData);
+      }
+    }
+    this.addHook('afterInit', (function() {
+      return $__9.onAfterInit();
+    }));
+    addClass(this.hot.rootElement, 'ganttChart');
+    $traceurRuntime.superGet(this, $GanttChart.prototype, "enablePlugin").call(this);
+  },
+  disablePlugin: function() {
+    if (this.internalUpdateSettings) {
+      return;
+    }
+    if (this.dataFeed && this.dataFeed.hotSource) {
+      this.dataFeed.removeSourceHotHooks(this.dataFeed.hotSource);
+    }
+    this.settings = {};
+    this.dataFeed = {};
+    this.currentYear = null;
+    this.monthList = [];
+    this.rangeBars = {};
+    this.rangeList = {};
+    this.rangeBarMeta = {};
+    this.hotSource = null;
+    this.deassignGanttSettings();
+    this.hot.getPlugin('collapsibleColumns').disablePlugin();
+    this.hot.getPlugin('nestedHeaders').disablePlugin();
+    removeClass(this.hot.rootElement, 'ganttChart');
+    $traceurRuntime.superGet(this, $GanttChart.prototype, "disablePlugin").call(this);
+  },
+  updatePlugin: function() {
+    this.disablePlugin();
+    this.enablePlugin();
+    $traceurRuntime.superGet(this, $GanttChart.prototype, "updatePlugin").call(this);
+  },
+  parseSettings: function() {
+    this.settings = this.hot.getSettings().ganttChart;
+    if (typeof this.settings === 'boolean') {
+      this.settings = {};
+    }
+    if (!this.settings.firstWeekDay) {
+      this.settings.firstWeekDay = 'monday';
+    }
+  },
+  applyDataSource: function() {
+    if (this.settings.dataSource) {
+      var source = this.settings.dataSource;
+      if (source.instance) {
+        this.loadData(source.instance, source.startDateColumn, source.endDateColumn, source.additionalData, source.asyncUpdates);
+      } else {
+        this.loadData(source);
+      }
+    }
+  },
+  loadData: function(data, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
+    if (data.length > 1) {
+      this.hot.alter('insert_row', 0, data.length - 1);
+    }
+    this.dataFeed = new GanttChartDataFeed(this.hot, data, startDateColumn, endDateColumn, additionalData, asyncUpdates);
+    this.hot.render();
+  },
+  clearRangeBars: function() {
+    this.rangeBars = {};
+  },
+  clearRangeList: function() {
+    this.rangeList = {};
+  },
+  getRangeBarCoordinates: function(row) {
+    return this.rangeList[row];
+  },
+  generateHeaderSet: function(type) {
+    var $__9 = this;
+    var headers = [];
+    objectEach(this.monthList, (function(month, index) {
+      var areDaysBeforeFullWeeks = month.daysBeforeFullWeeks > 0 ? 1 : 0;
+      var areDaysAfterFullWeeks = month.daysAfterFullWeeks > 0 ? 1 : 0;
+      var headerCount = month.fullWeeks + areDaysBeforeFullWeeks + areDaysAfterFullWeeks;
+      var monthNumber = parseInt(index, 10);
+      if (type === 'months') {
+        headers.push({
+          label: month.name,
+          colspan: headerCount
+        });
+      } else if (type === 'weeks') {
+        for (var i = 0; i < headerCount; i++) {
+          if (areDaysBeforeFullWeeks && i === 0) {
+            var start = i + 1;
+            var end = month.daysBeforeFullWeeks;
+            if (start === end) {
+              headers.push(start);
+            } else {
+              headers.push(start + ' - ' + end);
+            }
+            $__9.dateCalculator.addDaysToCache(monthNumber, headers.length - 1, start, end);
+          } else if (areDaysAfterFullWeeks && i === headerCount - 1) {
+            var start$__11 = month.days - month.daysAfterFullWeeks + 1;
+            var end$__12 = month.days;
+            if (start$__11 === end$__12) {
+              headers.push(start$__11);
+            } else {
+              headers.push(start$__11 + ' - ' + end$__12);
+            }
+            $__9.dateCalculator.addDaysToCache(monthNumber, headers.length - 1, start$__11, end$__12);
+          } else {
+            var start$__13 = month.daysBeforeFullWeeks + (i - areDaysBeforeFullWeeks) * 7 + 1;
+            var end$__14 = start$__13 + 6;
+            headers.push(start$__13 + ' - ' + end$__14);
+            $__9.dateCalculator.addDaysToCache(monthNumber, headers.length - 1, start$__13, end$__14);
+          }
+        }
+      } else if (type === 'days') {
+        for (var i$__15 = 0; i$__15 < month.days; i$__15++) {
+          headers.push(i$__15 + 1);
+        }
+      }
+    }));
+    return headers;
+  },
+  generateMonthHeaders: function() {
+    return this.generateHeaderSet('months');
+  },
+  generateWeekHeaders: function() {
+    return this.generateHeaderSet('weeks');
+  },
+  generateDayHeaders: function() {
+    return this.generateHeaderSet('days');
+  },
+  assignGanttSettings: function() {
+    var $__9 = this;
+    this.initialSettings = deepClone(this.hot.getSettings());
+    var additionalSettings = {
+      data: createEmptySpreadsheetData(1, this.overallWeekSectionCount),
+      readOnly: true,
+      renderer: (function(instance, TD, row, col, prop, value, cellProperties) {
+        return $__9.uniformBackgroundRenderer(instance, TD, row, col, prop, value, cellProperties);
+      }),
+      colWidths: 60,
+      hiddenColumns: true,
+      nestedHeaders: [this.monthHeadersArray.slice(), this.weekHeadersArray.slice()],
+      collapsibleColumns: true,
+      columnSorting: false
+    };
+    this.internalUpdateSettings = true;
+    this.hot.updateSettings(additionalSettings);
+    this.internalUpdateSettings = void 0;
+  },
+  deassignGanttSettings: function() {
+    this.internalUpdateSettings = true;
+    if (this.initialSettings) {
+      this.hot.updateSettings(this.initialSettings);
+    }
+    this.internalUpdateSettings = void 0;
+  },
+  cacheRangeBarMeta: function(row, col, key, value) {
+    if (!this.rangeBarMeta[row]) {
+      this.rangeBarMeta[row] = {};
+    }
+    if (!this.rangeBarMeta[row][col]) {
+      this.rangeBarMeta[row][col] = {};
+    }
+    this.rangeBarMeta[row][col][key] = value;
+  },
+  applyRangeBarMetaCache: function() {
+    var $__9 = this;
+    objectEach(this.rangeBarMeta, (function(rowArr, row) {
+      objectEach(rowArr, (function(cell, col) {
+        objectEach(cell, (function(value, key) {
+          $__9.hot.setCellMeta(row, col, key, value);
+        }));
+      }));
+    }));
+  },
+  addRangeBar: function(row, startDate, endDate, additionalData) {
+    var $__9 = this;
+    var startDateColumn = this.dateCalculator.dateToColumn(startDate);
+    var endDateColumn = this.dateCalculator.dateToColumn(endDate);
+    if (!this.dateCalculator.isValidRangeBarData(startDate, endDate) || !startDateColumn || !endDateColumn) {
+      return false;
+    }
+    if (!this.rangeBars[row]) {
+      this.rangeBars[row] = {};
+    }
+    this.rangeBars[row][startDateColumn] = {
+      barLength: endDateColumn - startDateColumn + 1,
+      partialStart: !this.dateCalculator.isOnTheEdgeOfWeek(startDate)[0],
+      partialEnd: !this.dateCalculator.isOnTheEdgeOfWeek(endDate)[1],
+      additionalData: {}
+    };
+    objectEach(additionalData, (function(prop, i) {
+      $__9.rangeBars[row][startDateColumn].additionalData[i] = prop;
+    }));
+    if (this.colorData[row]) {
+      this.rangeBars[row][startDateColumn].colors = this.colorData[row];
+    }
+    this.rangeList[row] = [row, startDateColumn];
+    this.renderRangeBar(row, startDateColumn, endDateColumn, additionalData);
+    return [row, startDateColumn];
+  },
+  getRangeBarData: function(row, column) {
+    var rangeBarCoords = this.getRangeBarCoordinates(row);
+    if (!rangeBarCoords) {
+      return false;
+    }
+    var rangeBarData = this.rangeBars[rangeBarCoords[0]][rangeBarCoords[1]];
+    if (rangeBarData && row === rangeBarCoords[0] && (column === rangeBarCoords[1] || column > rangeBarCoords[1] && column < rangeBarCoords[1] + rangeBarData.barLength)) {
+      return rangeBarData;
+    } else {
+      return false;
+    }
+  },
+  updateRangeBarData: function(row, column, data) {
+    var rangeBar = this.getRangeBarData(row, column);
+    objectEach(data, (function(val, prop) {
+      if (rangeBar[prop] !== val) {
+        rangeBar[prop] = val;
+      }
+    }));
+  },
+  renderRangeBar: function(row, startDateColumn, endDateColumn, additionalData) {
+    var currentBar = this.rangeBars[row][startDateColumn];
+    for (var i = startDateColumn; i <= endDateColumn; i++) {
+      var cellMeta = this.hot.getCellMeta(row, i);
+      var newClassName = (cellMeta.className || '') + ' rangeBar';
+      if ((i === startDateColumn && currentBar.partialStart) || (i === endDateColumn && currentBar.partialEnd)) {
+        newClassName += ' partial';
+      }
+      if (i === endDateColumn) {
+        newClassName += ' last';
+      }
+      this.hot.setCellMeta(row, i, 'originalClassName', cellMeta.className);
+      this.hot.setCellMeta(row, i, 'className', newClassName);
+      this.hot.setCellMeta(row, i, 'additionalData', currentBar.additionalData);
+      this.cacheRangeBarMeta(row, i, 'originalClassName', cellMeta.className);
+      this.cacheRangeBarMeta(row, i, 'className', newClassName);
+      this.cacheRangeBarMeta(row, i, 'additionalData', currentBar.additionalData);
+    }
+  },
+  removeRangeBarByDate: function(row, startDate) {
+    var startDateColumn = this.dateCalculator.dateToColumn(startDate);
+    this.removeRangeBarByColumn(row, startDateColumn);
+  },
+  removeRangeBarByColumn: function(row, startDateColumn) {
+    var $__9 = this;
+    var rangeBar = this.rangeBars[row][startDateColumn];
+    if (!rangeBar) {
+      return;
+    }
+    this.unrenderRangeBar(row, startDateColumn, startDateColumn + rangeBar.barLength - 1);
+    this.rangeBars[row][startDateColumn] = null;
+    objectEach(this.rangeList, (function(prop, i) {
+      i = parseInt(i, 10);
+      if (JSON.stringify(prop) === JSON.stringify([row, startDateColumn])) {
+        $__9.rangeList[i] = null;
+      }
+    }));
+  },
+  removeAllRangeBars: function() {
+    var $__9 = this;
+    objectEach(this.rangeBars, (function(row, i) {
+      objectEach(row, (function(bar, j) {
+        $__9.removeRangeBarByColumn(i, j);
+      }));
+    }));
+  },
+  unrenderRangeBar: function(row, startDateColumn, endDateColumn) {
+    for (var i = startDateColumn; i <= endDateColumn; i++) {
+      var cellMeta = this.hot.getCellMeta(row, i);
+      this.hot.setCellMeta(row, i, 'className', cellMeta.originalClassName);
+      this.hot.setCellMeta(row, i, 'originalClassName', void 0);
+      this.cacheRangeBarMeta(row, i, 'className', cellMeta.originalClassName);
+      this.cacheRangeBarMeta(row, i, 'originalClassName', void 0);
+    }
+    this.hot.render();
+  },
+  uniformBackgroundRenderer: function(instance, TD, row, col, prop, value, cellProperties) {
+    var rangeBarInfo = this.getRangeBarData(row, col);
+    var rangeBarCoords = this.getRangeBarCoordinates(row);
+    if (cellProperties.className) {
+      TD.className = cellProperties.className;
+    }
+    var titleValue = '';
+    objectEach(cellProperties.additionalData, (function(prop, i) {
+      titleValue += i + ': ' + prop + '\n';
+    }));
+    titleValue = titleValue.replace(/\n$/, '');
+    TD.title = titleValue;
+    if (rangeBarInfo && rangeBarInfo.colors) {
+      if (col === rangeBarCoords[1] && rangeBarInfo.partialStart || col === (rangeBarCoords[1] + rangeBarInfo.barLength - 1) && rangeBarInfo.partialEnd) {
+        TD.style.background = rangeBarInfo.colors[1];
+      } else {
+        TD.style.background = rangeBarInfo.colors[0];
+      }
+    } else {
+      TD.style.background = '';
+    }
+  },
+  setRangeBarColors: function(rows) {
+    var $__9 = this;
+    this.colorData = rows;
+    objectEach(rows, (function(colors, i) {
+      var barCoords = $__9.getRangeBarCoordinates(i);
+      if (barCoords) {
+        $__9.updateRangeBarData(barCoords[0], barCoords[1], {colors: colors});
+      }
+    }));
+    this.hot.render();
+  },
+  setYear: function(year) {
+    var newSettings = extend(this.hot.getSettings().ganttChart, {startYear: year});
+    this.hot.updateSettings({ganttChart: newSettings});
+  },
+  onAfterInit: function() {
+    this.nestedHeadersPlugin = this.hot.getPlugin('nestedHeaders');
+    this.applyDataSource();
+  },
+  onUpdateSettings: function() {
+    if (this.internalUpdateSettings) {
+      this.applyRangeBarMetaCache();
+      return;
+    }
+    $traceurRuntime.superGet(this, $GanttChart.prototype, "onUpdateSettings").call(this);
+  },
+  destroy: function() {
+    if (this.hotSource) {
+      this.dataFeed.removeSourceHotHooks(this.hotSource);
+    }
+    $traceurRuntime.superGet(this, $GanttChart.prototype, "destroy").call(this);
+  }
+}, {}, BasePlugin);
+;
+registerPlugin('ganttChart', GanttChart);
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/data":114,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":116,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":131,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":132,"dateCalculator":52,"ganttChartDataFeed":54}],54:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  GanttChartDataFeed: {get: function() {
+      return GanttChartDataFeed;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_helpers_47_array__,
+    $__dateCalculator__;
+var $__0 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
+    objectEach = $__0.objectEach,
+    deepClone = $__0.deepClone;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var DateCalculator = ($__dateCalculator__ = _dereq_("dateCalculator"), $__dateCalculator__ && $__dateCalculator__.__esModule && $__dateCalculator__ || {default: $__dateCalculator__}).DateCalculator;
+var GanttChartDataFeed = function GanttChartDataFeed(chartInstance, data, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
+  this.data = data;
+  this.chartInstance = chartInstance;
+  this.chartPlugin = this.chartInstance.getPlugin('ganttChart');
+  this.hotSource = null;
+  this.sourceHooks = {};
+  this.ongoingAsync = false;
+  this.applyData(data, startDateColumn, endDateColumn, additionalData, asyncUpdates || false);
+};
+($traceurRuntime.createClass)(GanttChartDataFeed, {
+  applyData: function(data, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
+    if (Object.prototype.toString.call(data) === '[object Array]') {
+      this.loadData(data);
+    } else if (data.guid) {
+      this.bindWithHotInstance(data, startDateColumn, endDateColumn, additionalData, asyncUpdates);
+    }
+  },
+  bindWithHotInstance: function(instance, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
+    this.hotSource = {
+      instance: instance,
+      startColumn: startDateColumn,
+      endColumn: endDateColumn,
+      additionalData: additionalData,
+      asyncUpdates: asyncUpdates
+    };
+    this.addSourceHotHooks();
+    this.asyncCall(this.updateFromSource);
+  },
+  asyncCall: function(func) {
+    var $__3 = this;
+    if (!this.hotSource.asyncUpdates) {
+      func.call(this);
+      return;
+    }
+    this.asyncStart();
+    setTimeout((function() {
+      func.call($__3);
+      $__3.asyncEnd();
+    }), 0);
+  },
+  asyncStart: function() {
+    this.ongoingAsync = true;
+  },
+  asyncEnd: function() {
+    this.ongoingAsync = false;
+  },
+  addSourceHotHooks: function() {
+    var $__3 = this;
+    this.sourceHooks = {
+      afterLoadData: (function(firstRun) {
+        return $__3.onAfterSourceLoadData(firstRun);
+      }),
+      afterChange: (function(changes, source) {
+        return $__3.onAfterSourceChange(changes, source);
+      }),
+      afterColumnSort: (function(column, order) {
+        return $__3.onAfterColumnSort(column, order);
+      })
+    };
+    this.hotSource.instance.addHook('afterLoadData', this.sourceHooks.afterLoadData);
+    this.hotSource.instance.addHook('afterChange', this.sourceHooks.afterChange);
+    this.hotSource.instance.addHook('afterColumnSort', this.sourceHooks.afterColumnSort);
+  },
+  removeSourceHotHooks: function(hotSource) {
+    if (this.sourceHooks.afterLoadData) {
+      hotSource.instance.removeHook('afterLoadData', this.sourceHooks.afterLoadData);
+    }
+    if (this.sourceHooks.afterChange) {
+      hotSource.instance.removeHook('afterChange', this.sourceHooks.afterChange);
+    }
+    if (this.sourceHooks.afterColumnSort) {
+      hotSource.instance.removeHook('afterColumnSort', this.sourceHooks.afterColumnSort);
+    }
+  },
+  getDataFromSource: function(row) {
+    var additionalObjectData = {};
+    var hotSource = this.hotSource;
+    var sourceHotRows;
+    var rangeBarData = [];
+    if (row === void 0) {
+      sourceHotRows = hotSource.instance.getData(0, 0, hotSource.instance.countRows() - 1, hotSource.instance.countCols() - 1);
+    } else {
+      sourceHotRows = [];
+      sourceHotRows[row] = hotSource.instance.getDataAtRow(row);
+    }
+    var $__6 = function(i, dataLength) {
+      additionalObjectData = {};
+      var currentRow = sourceHotRows[i];
+      if (currentRow[hotSource.startColumn] === null || currentRow[hotSource.startColumn] === '') {
+        return 0;
+      }
+      objectEach(hotSource.additionalData, (function(prop, j) {
+        additionalObjectData[j] = currentRow[prop];
+      }));
+      rangeBarData.push([i, currentRow[hotSource.startColumn], currentRow[hotSource.endColumn], additionalObjectData, i]);
+    },
+        $__7;
+    $__5: for (var i = row || 0,
+        dataLength = sourceHotRows.length; i < (row ? row + 1 : dataLength); i++) {
+      $__7 = $__6(i, dataLength);
+      switch ($__7) {
+        case 0:
+          continue $__5;
+      }
+    }
+    return rangeBarData;
+  },
+  updateFromSource: function(row) {
+    var $__3 = this;
+    var dataFromSource = this.getDataFromSource(row);
+    if (!row && isNaN(row)) {
+      this.chartPlugin.clearRangeBars();
+      this.chartPlugin.clearRangeList();
+    }
+    arrayEach(dataFromSource, (function(bar) {
+      bar = $__3.trimRangeIfNeeded(bar);
+      $__3.chartPlugin.addRangeBar.apply($__3.chartPlugin, bar);
+    }));
+  },
+  loadData: function(data) {
+    var $__3 = this;
+    arrayEach(data, (function(bar, i) {
+      bar = $__3.trimRangeIfNeeded(bar);
+      $__3.chartPlugin.addRangeBar(i, bar.startDate, bar.endDate, bar.additionalData);
+    }));
+  },
+  trimRangeIfNeeded: function(bar) {
+    var startDate = new Date(bar[1]);
+    var endDate = new Date(bar[2]);
+    if (typeof startDate === 'string' || typeof endDate === 'string') {
+      return false;
+    }
+    var startYear = startDate.getFullYear();
+    var endYear = endDate.getFullYear();
+    if (startYear < this.chartPlugin.currentYear && endYear >= this.chartPlugin.currentYear) {
+      bar[1] = '01/01/' + this.chartPlugin.currentYear;
+    }
+    if (endYear > this.chartPlugin.currentYear && startYear <= this.chartPlugin.currentYear) {
+      bar[2] = '12/31/' + this.chartPlugin.currentYear;
+    }
+    return bar;
+  },
+  onAfterSourceChange: function(changes, source) {
+    var $__3 = this;
+    this.asyncCall((function() {
+      if (!changes) {
+        return;
+      }
+      var changesByRows = {};
+      for (var i = 0,
+          changesLength = changes.length; i < changesLength; i++) {
+        var currentChange = changes[i];
+        var row = parseInt(currentChange[0], 10);
+        var col = parseInt(currentChange[1], 10);
+        if (!changesByRows[row]) {
+          changesByRows[row] = {};
+        }
+        changesByRows[row][col] = [currentChange[2], currentChange[3]];
+      }
+      objectEach(changesByRows, (function(prop, i) {
+        i = parseInt(i, 10);
+        if ($__3.chartPlugin.getRangeBarCoordinates(i)) {
+          $__3.chartPlugin.removeRangeBarByColumn(i, $__3.chartPlugin.rangeList[i][1]);
+        }
+        $__3.updateFromSource(i);
+      }));
+    }));
+  },
+  onAfterSourceLoadData: function(firstRun) {
+    var $__3 = this;
+    this.asyncCall((function(firstRun) {
+      $__3.chartPlugin.removeAllRangeBars();
+      $__3.updateFromSource();
+    }));
+  },
+  onAfterColumnSort: function(column, order) {
+    var $__3 = this;
+    this.asyncCall((function() {
+      $__3.chartPlugin.removeAllRangeBars();
+      $__3.updateFromSource();
+    }));
+  }
+}, {});
+;
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"dateCalculator":52}],55:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  HeaderTooltips: {get: function() {
+      return HeaderTooltips;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_dom_47_element_46_js__,
+    $__handsontable_47_plugins_46_js__,
+    $__handsontable_47_helpers_47_number__,
+    $__handsontable_47_plugins_47__95_base_46_js__;
+var outerWidth = ($__handsontable_47_helpers_47_dom_47_element_46_js__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element.js"), $__handsontable_47_helpers_47_dom_47_element_46_js__ && $__handsontable_47_helpers_47_dom_47_element_46_js__.__esModule && $__handsontable_47_helpers_47_dom_47_element_46_js__ || {default: $__handsontable_47_helpers_47_dom_47_element_46_js__}).outerWidth;
+var registerPlugin = ($__handsontable_47_plugins_46_js__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js"), $__handsontable_47_plugins_46_js__ && $__handsontable_47_plugins_46_js__.__esModule && $__handsontable_47_plugins_46_js__ || {default: $__handsontable_47_plugins_46_js__}).registerPlugin;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+var BasePlugin = ($__handsontable_47_plugins_47__95_base_46_js__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js"), $__handsontable_47_plugins_47__95_base_46_js__ && $__handsontable_47_plugins_47__95_base_46_js__.__esModule && $__handsontable_47_plugins_47__95_base_46_js__ || {default: $__handsontable_47_plugins_47__95_base_46_js__}).default;
+var HeaderTooltips = function HeaderTooltips(hotInstance) {
+  $traceurRuntime.superConstructor($HeaderTooltips).call(this, hotInstance);
+  this.settings = null;
+};
+var $HeaderTooltips = HeaderTooltips;
+($traceurRuntime.createClass)(HeaderTooltips, {
+  isEnabled: function() {
+    return !!this.hot.getSettings().headerTooltips;
+  },
+  enablePlugin: function() {
+    var $__4 = this;
+    if (this.enabled) {
+      return;
+    }
+    this.settings = this.hot.getSettings().headerTooltips;
+    this.parseSettings();
+    this.addHook('afterGetColHeader', (function(col, TH) {
+      return $__4.onAfterGetHeader(col, TH);
+    }));
+    this.addHook('afterGetRowHeader', (function(col, TH) {
+      return $__4.onAfterGetHeader(col, TH);
+    }));
+    $traceurRuntime.superGet(this, $HeaderTooltips.prototype, "enablePlugin").call(this);
+  },
+  disablePlugin: function() {
+    this.settings = null;
+    this.clearTitleAttributes();
+    $traceurRuntime.superGet(this, $HeaderTooltips.prototype, "disablePlugin").call(this);
+  },
+  parseSettings: function() {
+    if (typeof this.settings === 'boolean') {
+      this.settings = {
+        rows: true,
+        columns: true,
+        onlyTrimmed: false
+      };
+    }
+  },
+  clearTitleAttributes: function() {
+    var headerLevels = this.hot.view.wt.getSetting('columnHeaders').length;
+    var mainHeaders = this.hot.view.wt.wtTable.THEAD;
+    var topHeaders = this.hot.view.wt.wtOverlays.topOverlay.clone.wtTable.THEAD;
+    var topLeftCornerHeaders = this.hot.view.wt.wtOverlays.topLeftCornerOverlay ? hot.view.wt.wtOverlays.topLeftCornerOverlay.clone.wtTable.THEAD : null;
+    rangeEach(0, headerLevels - 1, (function(i) {
+      var masterLevel = mainHeaders.childNodes[i];
+      var topLevel = topHeaders.childNodes[i];
+      var topLeftCornerLevel = topLeftCornerHeaders ? topLeftCornerHeaders.childNodes[i] : null;
+      rangeEach(0, masterLevel.childNodes.length - 1, (function(j) {
+        masterLevel.childNodes[j].removeAttribute('title');
+        if (topLevel && topLevel.childNodes[j]) {
+          topLevel.childNodes[j].removeAttribute('title');
+        }
+        if (topLeftCornerHeaders && topLeftCornerLevel && topLeftCornerLevel.childNodes[j]) {
+          topLeftCornerLevel.childNodes[j].removeAttribute('title');
+        }
+      }));
+    }), true);
+  },
+  onAfterGetHeader: function(index, TH) {
+    var innerSpan = TH.querySelector('span');
+    var isColHeader = TH.parentNode.parentNode.nodeName === 'THEAD';
+    if (isColHeader && this.settings.columns || !isColHeader && this.settings.rows) {
+      if (this.settings.onlyTrimmed) {
+        if (outerWidth(innerSpan) >= outerWidth(TH) && outerWidth(innerSpan) !== 0) {
+          TH.setAttribute('title', innerSpan.textContent);
+        }
+      } else {
+        TH.setAttribute('title', innerSpan.textContent);
+      }
+    }
+  },
+  destroy: function() {
+    this.settings = null;
+    $traceurRuntime.superGet(this, $HeaderTooltips.prototype, "destroy").call(this);
+  }
+}, {}, BasePlugin);
+;
+registerPlugin('headerTooltips', HeaderTooltips);
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element.js":116,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":131,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":132}],56:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  hideColumnItem: {get: function() {
+      return hideColumnItem;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_number__;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+function hideColumnItem(hiddenColumnsPlugin) {
+  return {
+    key: 'hidden_columns_hide',
+    name: 'Hide column',
+    callback: function() {
+      var $__1 = this.getSelectedRange(),
+          from = $__1.from,
+          to = $__1.to;
+      var start = Math.min(from.col, to.col);
+      var end = Math.max(from.col, to.col);
+      rangeEach(start, end, (function(i) {
+        return hiddenColumnsPlugin.hideColumn(hiddenColumnsPlugin.getLogicalColumnIndex(i));
+      }));
+      this.render();
+      this.view.wt.wtOverlays.adjustElementsSize(true);
+    },
+    disabled: false,
+    hidden: function() {
+      return !this.selection.selectedHeader.cols;
+    }
+  };
+}
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121}],57:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  showColumnItem: {get: function() {
+      return showColumnItem;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_number__;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+function showColumnItem(hiddenColumnsPlugin) {
+  var beforeHiddenColumns = [];
+  var afterHiddenColumns = [];
+  return {
+    key: 'hidden_columns_show',
+    name: 'Show column',
+    callback: function() {
+      var $__1 = this.getSelectedRange(),
+          from = $__1.from,
+          to = $__1.to;
+      var start = from.col;
+      var end = to.col;
+      if (end < start) {
+        start = to.col;
+        end = from.col;
+      }
+      if (start === end) {
+        if (beforeHiddenColumns.length === start) {
+          hiddenColumnsPlugin.showColumns(beforeHiddenColumns);
+          beforeHiddenColumns.length = 0;
+        }
+        if (afterHiddenColumns.length === this.countCols() - (start + 1)) {
+          hiddenColumnsPlugin.showColumns(afterHiddenColumns);
+          afterHiddenColumns.length = 0;
+        }
+      } else {
+        rangeEach(start, end, (function(i) {
+          return hiddenColumnsPlugin.showColumn(hiddenColumnsPlugin.getLogicalColumnIndex(i));
+        }));
+      }
+      this.render();
+    },
+    disabled: false,
+    hidden: function() {
+      if (!hiddenColumnsPlugin.hiddenColumns.length) {
+        return true;
+      }
+      if (!this.selection.selectedHeader.cols) {
+        return true;
+      }
+      beforeHiddenColumns.length = 0;
+      afterHiddenColumns.length = 0;
+      var $__1 = this.getSelectedRange(),
+          from = $__1.from,
+          to = $__1.to;
+      var start = from.col;
+      var end = to.col;
+      var hiddenInSelection = false;
+      if (start === end) {
+        var totalColumnLength = this.countCols();
+        rangeEach(0, totalColumnLength, (function(i) {
+          var partedHiddenLength = beforeHiddenColumns.length + afterHiddenColumns.length;
+          if (partedHiddenLength === hiddenColumnsPlugin.hiddenColumns.length) {
+            return false;
+          }
+          if (i < start) {
+            if (hiddenColumnsPlugin.isHidden(hiddenColumnsPlugin.getLogicalColumnIndex(i))) {
+              beforeHiddenColumns.push(hiddenColumnsPlugin.getLogicalColumnIndex(i));
+            }
+          } else {
+            if (hiddenColumnsPlugin.isHidden(hiddenColumnsPlugin.getLogicalColumnIndex(i))) {
+              afterHiddenColumns.push(hiddenColumnsPlugin.getLogicalColumnIndex(i));
+            }
+          }
+        }));
+        totalColumnLength = totalColumnLength - 1;
+        if ((beforeHiddenColumns.length === start && start > 0) || (afterHiddenColumns.length === totalColumnLength - start && start < totalColumnLength)) {
+          hiddenInSelection = true;
+        }
+      } else {
+        if (end < start) {
+          start = to.col;
+          end = from.col;
+        }
+        rangeEach(start, end, (function(i) {
+          if (hiddenColumnsPlugin.isHidden(hiddenColumnsPlugin.getLogicalColumnIndex(i))) {
+            hiddenInSelection = true;
+            return false;
+          }
+        }));
+      }
+      return !hiddenInSelection;
+    }
+  };
+}
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121}],58:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  HiddenColumns: {get: function() {
+      return HiddenColumns;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_plugins_47__95_base__,
+    $__handsontable_47_helpers_47_dom_47_element__,
+    $__handsontable_47_helpers_47_number__,
+    $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_plugins__,
+    $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__,
+    $__contextMenuItem_47_hideColumn__,
+    $__contextMenuItem_47_showColumn__;
+var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
+var $__1 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
+    addClass = $__1.addClass,
+    removeClass = $__1.removeClass;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var $__4 = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}),
+    registerPlugin = $__4.registerPlugin,
+    getPlugin = $__4.getPlugin;
+var SEPARATOR = ($__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems"), $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ || {default: $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__}).SEPARATOR;
+var hideColumnItem = ($__contextMenuItem_47_hideColumn__ = _dereq_("contextMenuItem/hideColumn"), $__contextMenuItem_47_hideColumn__ && $__contextMenuItem_47_hideColumn__.__esModule && $__contextMenuItem_47_hideColumn__ || {default: $__contextMenuItem_47_hideColumn__}).hideColumnItem;
+var showColumnItem = ($__contextMenuItem_47_showColumn__ = _dereq_("contextMenuItem/showColumn"), $__contextMenuItem_47_showColumn__ && $__contextMenuItem_47_showColumn__.__esModule && $__contextMenuItem_47_showColumn__ || {default: $__contextMenuItem_47_showColumn__}).showColumnItem;
+var HiddenColumns = function HiddenColumns(hotInstance) {
+  $traceurRuntime.superConstructor($HiddenColumns).call(this, hotInstance);
+  this.settings = {};
+  this.hiddenColumns = [];
+  this.lastSelectedColumn = -1;
+};
+var $HiddenColumns = HiddenColumns;
+($traceurRuntime.createClass)(HiddenColumns, {
+  isEnabled: function() {
+    return !!this.hot.getSettings().hiddenColumns;
+  },
+  enablePlugin: function() {
+    var $__8 = this;
+    if (this.enabled) {
+      return;
+    }
+    var settings = this.hot.getSettings().hiddenColumns;
+    if (typeof settings === 'object') {
+      this.settings = settings;
+      if (settings.copyPasteEnabled === void 0) {
+        settings.copyPasteEnabled = true;
+      }
+      if (Array.isArray(settings.columns)) {
+        this.hideColumns(settings.columns);
+      }
+      if (!settings.copyPasteEnabled) {
+        this.addHook('modifyCopyableRange', (function(ranges) {
+          return $__8.onModifyCopyableRange(ranges);
+        }));
+      }
+    }
+    if (this.hot.hasColHeaders()) {
+      this.addHook('afterGetColHeader', (function(col, TH) {
+        return $__8.onAfterGetColHeader(col, TH);
+      }));
+    } else {
+      this.addHook('afterRenderer', (function(TD, row, col) {
+        return $__8.onAfterGetColHeader(col, TD);
+      }));
+    }
+    this.addHook('afterContextMenuDefaultOptions', (function(options) {
+      return $__8.onAfterContextMenuDefaultOptions(options);
+    }));
+    this.addHook('afterGetCellMeta', (function(row, col, cellProperties) {
+      return $__8.onAfterGetCellMeta(row, col, cellProperties);
+    }));
+    this.addHook('modifyColWidth', (function(width, col) {
+      return $__8.onModifyColWidth(width, col);
+    }));
+    this.addHook('beforeSetRangeStartOnly', (function(coords) {
+      return $__8.onBeforeSetRangeStart(coords);
+    }));
+    this.addHook('beforeSetRangeEnd', (function(coords) {
+      return $__8.onBeforeSetRangeEnd(coords);
+    }));
+    this.addHook('hiddenColumn', (function(column) {
+      return $__8.isHidden(column);
+    }));
+    this.addHook('beforeStretchingColumnWidth', (function(width, column) {
+      return $__8.onBeforeStretchingColumnWidth(width, column);
+    }));
+    this.addHook('afterCreateCol', (function(index, amount) {
+      return $__8.onAfterCreateCol(index, amount);
+    }));
+    this.addHook('afterRemoveCol', (function(index, amount) {
+      return $__8.onAfterRemoveCol(index, amount);
+    }));
+    $traceurRuntime.superGet(this, $HiddenColumns.prototype, "enablePlugin").call(this);
+  },
+  updatePlugin: function() {
+    this.disablePlugin();
+    this.enablePlugin();
+    $traceurRuntime.superGet(this, $HiddenColumns.prototype, "updatePlugin").call(this);
+  },
+  disablePlugin: function() {
+    this.settings = {};
+    this.hiddenColumns = [];
+    this.lastSelectedColumn = -1;
+    this.hot.render();
+    $traceurRuntime.superGet(this, $HiddenColumns.prototype, "disablePlugin").call(this);
+    this.resetCellsMeta();
+  },
+  hideColumns: function(columns) {
+    var $__8 = this;
+    arrayEach(columns, (function(col) {
+      col = parseInt(col, 10);
+      if (!$__8.isHidden(col)) {
+        $__8.hiddenColumns.push(col);
+      }
+    }));
+  },
+  hideColumn: function() {
+    for (var column = [],
+        $__10 = 0; $__10 < arguments.length; $__10++)
+      column[$__10] = arguments[$__10];
+    this.hideColumns(column);
+  },
+  showColumns: function(columns) {
+    var $__8 = this;
+    arrayEach(columns, (function(col) {
+      col = parseInt(col, 10);
+      if ($__8.isHidden(col)) {
+        $__8.hiddenColumns.splice($__8.hiddenColumns.indexOf(col), 1);
+      }
+    }));
+  },
+  showColumn: function() {
+    for (var column = [],
+        $__11 = 0; $__11 < arguments.length; $__11++)
+      column[$__11] = arguments[$__11];
+    this.showColumns(column);
+  },
+  isHidden: function(column) {
+    return this.hiddenColumns.indexOf(column) > -1;
+  },
+  resetCellsMeta: function() {
+    arrayEach(this.hot.getCellsMeta(), (function(meta) {
+      if (meta) {
+        meta.skipColumnOnPaste = false;
+        if (meta.baseRenderer !== null) {
+          meta.renderer = meta.baseRenderer;
+          meta.baseRenderer = null;
+        }
+      }
+    }));
+  },
+  getLogicalColumnIndex: function(column) {
+    return this.hot.runHooks('modifyCol', column);
+  },
+  onBeforeStretchingColumnWidth: function(width, column) {
+    if (this.hiddenColumns.indexOf(column) > -1) {
+      width = 0;
+    }
+    return width;
+  },
+  onModifyColWidth: function(width, col) {
+    if (this.isHidden(this.getLogicalColumnIndex(col))) {
+      return 0.1;
+    } else if (this.settings.indicators && (this.isHidden(this.getLogicalColumnIndex(col + 1)) || this.isHidden(this.getLogicalColumnIndex(col - 1)))) {
+      return width + (this.hot.hasColHeaders() ? 15 : 0);
+    }
+  },
+  onAfterGetCellMeta: function(row, col, cellProperties) {
+    if (this.settings.copyPasteEnabled === false && this.isHidden(col)) {
+      cellProperties.skipColumnOnPaste = true;
+    }
+    if (this.isHidden(col)) {
+      if (cellProperties.renderer !== hiddenRenderer) {
+        cellProperties.baseRenderer = cellProperties.renderer;
+      }
+      cellProperties.renderer = hiddenRenderer;
+    } else {
+      if (cellProperties.baseRenderer !== null) {
+        cellProperties.renderer = cellProperties.baseRenderer;
+        cellProperties.baseRenderer = null;
+      }
+    }
+    if (this.isHidden(this.getLogicalColumnIndex(cellProperties.visualCol - 1))) {
+      var firstSectionHidden = true;
+      var i = cellProperties.visualCol - 1;
+      cellProperties.className = cellProperties.className || '';
+      if (cellProperties.className.indexOf('afterHiddenColumn') === -1) {
+        cellProperties.className += ' afterHiddenColumn';
+      }
+      do {
+        if (!this.isHidden(this.getLogicalColumnIndex(i))) {
+          firstSectionHidden = false;
+          break;
+        }
+        i--;
+      } while (i >= 0);
+      if (firstSectionHidden && cellProperties.className.indexOf('firstVisibleColumn') === -1) {
+        cellProperties.className += ' firstVisibleColumn';
+      }
+    } else if (cellProperties.className) {
+      var classArr = cellProperties.className.split(' ');
+      if (classArr.length) {
+        var containAfterHiddenColumn = classArr.indexOf('afterHiddenColumn');
+        var containFirstVisible = classArr.indexOf('firstVisibleColumn');
+        if (containAfterHiddenColumn > -1) {
+          classArr.splice(containAfterHiddenColumn, 1);
+        }
+        if (containFirstVisible > -1) {
+          classArr.splice(containFirstVisible, 1);
+        }
+        cellProperties.className = classArr.join(' ');
+      }
+    }
+  },
+  onModifyCopyableRange: function(ranges) {
+    var $__8 = this;
+    var newRanges = [];
+    var pushRange = (function(startRow, endRow, startCol, endCol) {
+      newRanges.push({
+        startRow: startRow,
+        endRow: endRow,
+        startCol: startCol,
+        endCol: endCol
+      });
+    });
+    arrayEach(ranges, (function(range) {
+      var isHidden = true;
+      var rangeStart = 0;
+      rangeEach(range.startCol, range.endCol, (function(col) {
+        if ($__8.isHidden(col)) {
+          if (!isHidden) {
+            pushRange(range.startRow, range.endRow, rangeStart, col - 1);
+          }
+          isHidden = true;
+        } else {
+          if (isHidden) {
+            rangeStart = col;
+          }
+          if (col === range.endCol) {
+            pushRange(range.startRow, range.endRow, rangeStart, col);
+          }
+          isHidden = false;
+        }
+      }));
+    }));
+    return newRanges;
+  },
+  onAfterGetColHeader: function(col, TH) {
+    if (this.isHidden(this.getLogicalColumnIndex(col))) {
+      return;
+    }
+    var firstSectionHidden = true;
+    var i = col - 1;
+    do {
+      if (!this.isHidden(this.getLogicalColumnIndex(i))) {
+        firstSectionHidden = false;
+        break;
+      }
+      i--;
+    } while (i >= 0);
+    if (firstSectionHidden) {
+      addClass(TH, 'firstVisibleColumn');
+    }
+    if (!this.settings.indicators) {
+      return;
+    }
+    if (this.isHidden(this.getLogicalColumnIndex(col - 1))) {
+      addClass(TH, 'afterHiddenColumn');
+    }
+    if (this.isHidden(this.getLogicalColumnIndex(col + 1)) && col > -1) {
+      addClass(TH, 'beforeHiddenColumn');
+    }
+  },
+  onBeforeSetRangeStart: function(coords) {
+    var $__8 = this;
+    if (coords.col > 0) {
+      return;
+    }
+    coords.col = 0;
+    var getNextColumn = (function(col) {
+      var logicalCol = $__8.getLogicalColumnIndex(col);
+      if ($__8.isHidden(logicalCol)) {
+        col = getNextColumn(++col);
+      }
+      return col;
+    });
+    coords.col = getNextColumn(coords.col);
+  },
+  onBeforeSetRangeEnd: function(coords) {
+    var $__8 = this;
+    var columnCount = this.hot.countCols();
+    var getNextColumn = (function(col) {
+      var logicalCol = $__8.getLogicalColumnIndex(col);
+      if ($__8.isHidden(logicalCol)) {
+        if ($__8.lastSelectedColumn > col || coords.col === columnCount - 1) {
+          if (col > 0) {
+            col = getNextColumn(--col);
+          } else {
+            rangeEach(0, $__8.lastSelectedColumn, (function(i) {
+              if (!$__8.isHidden($__8.getLogicalColumnIndex(i))) {
+                col = i;
+                return false;
+              }
+            }));
+          }
+        } else {
+          col = getNextColumn(++col);
+        }
+      }
+      return col;
+    });
+    coords.col = getNextColumn(coords.col);
+    this.lastSelectedColumn = coords.col;
+  },
+  onAfterContextMenuDefaultOptions: function(options) {
+    options.items.push({name: SEPARATOR}, hideColumnItem(this), showColumnItem(this));
+  },
+  onAfterCreateCol: function(index, amount) {
+    var tempHidden = [];
+    arrayEach(this.hiddenColumns, (function(col) {
+      if (col >= index) {
+        col += amount;
+      }
+      tempHidden.push(col);
+    }));
+    this.hiddenColumns = tempHidden;
+  },
+  onAfterRemoveCol: function(index, amount) {
+    var tempHidden = [];
+    arrayEach(this.hiddenColumns, (function(col) {
+      if (col >= index) {
+        col -= amount;
+      }
+      tempHidden.push(col);
+    }));
+    this.hiddenColumns = tempHidden;
+  },
+  destroy: function() {
+    $traceurRuntime.superGet(this, $HiddenColumns.prototype, "destroy").call(this);
+  }
+}, {}, BasePlugin);
+function hiddenRenderer(hotInstance, td) {
+  td.textContent = '';
+}
+;
+registerPlugin('hiddenColumns', HiddenColumns);
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":116,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":131,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":132,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":144,"contextMenuItem/hideColumn":56,"contextMenuItem/showColumn":57}],59:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  hideRowItem: {get: function() {
+      return hideRowItem;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_number__;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+function hideRowItem(hiddenRowsPlugin) {
+  return {
+    key: 'hidden_rows_hide',
+    name: 'Hide row',
+    callback: function() {
+      var $__1 = this.getSelectedRange(),
+          from = $__1.from,
+          to = $__1.to;
+      var start = Math.min(from.row, to.row);
+      var end = Math.max(from.row, to.row);
+      rangeEach(start, end, (function(i) {
+        return hiddenRowsPlugin.hideRow(i);
+      }));
+      this.render();
+      this.view.wt.wtOverlays.adjustElementsSize(true);
+    },
+    disabled: false,
+    hidden: function() {
+      return !this.selection.selectedHeader.rows;
+    }
+  };
+}
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121}],60:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  showRowItem: {get: function() {
+      return showRowItem;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_number__;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+function showRowItem(hiddenRowsPlugin) {
+  var beforeHiddenRows = [];
+  var afterHiddenRows = [];
+  return {
+    key: 'hidden_rows_show',
+    name: 'Show row',
+    callback: function() {
+      var $__1 = this.getSelectedRange(),
+          from = $__1.from,
+          to = $__1.to;
+      var start = Math.min(from.row, to.row);
+      var end = Math.max(from.row, to.row);
+      if (start === end) {
+        if (beforeHiddenRows.length === start) {
+          hiddenRowsPlugin.showRows(beforeHiddenRows);
+          beforeHiddenRows.length = 0;
+        }
+        if (afterHiddenRows.length === this.countSourceRows() - (start + 1)) {
+          hiddenRowsPlugin.showRows(afterHiddenRows);
+          afterHiddenRows.length = 0;
+        }
+      } else {
+        rangeEach(start, end, (function(i) {
+          return hiddenRowsPlugin.showRow(i);
+        }));
+      }
+      this.render();
+      this.view.wt.wtOverlays.adjustElementsSize(true);
+    },
+    disabled: false,
+    hidden: function() {
+      if (!hiddenRowsPlugin.hiddenRows.length || !this.selection.selectedHeader.rows) {
+        return true;
+      }
+      beforeHiddenRows.length = 0;
+      afterHiddenRows.length = 0;
+      var $__1 = this.getSelectedRange(),
+          from = $__1.from,
+          to = $__1.to;
+      var start = Math.min(from.row, to.row);
+      var end = Math.max(from.row, to.row);
+      var hiddenInSelection = false;
+      if (start === end) {
+        var totalRowsLength = this.countSourceRows();
+        rangeEach(0, totalRowsLength, (function(i) {
+          var partedHiddenLength = beforeHiddenRows.length + afterHiddenRows.length;
+          if (partedHiddenLength === hiddenRowsPlugin.hiddenRows.length) {
+            return false;
+          }
+          if (i < start) {
+            if (hiddenRowsPlugin.isHidden(i)) {
+              beforeHiddenRows.push(i);
+            }
+          } else {
+            if (hiddenRowsPlugin.isHidden(i)) {
+              afterHiddenRows.push(i);
+            }
+          }
+        }));
+        totalRowsLength = totalRowsLength - 1;
+        if ((beforeHiddenRows.length === start && start > 0) || (afterHiddenRows.length === totalRowsLength - start && start < totalRowsLength)) {
+          hiddenInSelection = true;
+        }
+      } else {
+        rangeEach(start, end, (function(i) {
+          if (hiddenRowsPlugin.isHidden(i)) {
+            hiddenInSelection = true;
+            return false;
+          }
+        }));
+      }
+      return !hiddenInSelection;
+    }
+  };
+}
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121}],61:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  HiddenRows: {get: function() {
+      return HiddenRows;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_plugins_47__95_base__,
+    $__handsontable_47_helpers_47_dom_47_element__,
+    $__handsontable_47_helpers_47_number__,
+    $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_plugins__,
+    $__contextMenuItem_47_hideRow__,
+    $__contextMenuItem_47_showRow__;
+var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
+var $__1 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
+    addClass = $__1.addClass,
+    removeClass = $__1.removeClass;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+var $__3 = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
+    arrayEach = $__3.arrayEach,
+    arrayFilter = $__3.arrayFilter;
+var $__4 = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}),
+    registerPlugin = $__4.registerPlugin,
+    getPlugin = $__4.getPlugin;
+var hideRowItem = ($__contextMenuItem_47_hideRow__ = _dereq_("contextMenuItem/hideRow"), $__contextMenuItem_47_hideRow__ && $__contextMenuItem_47_hideRow__.__esModule && $__contextMenuItem_47_hideRow__ || {default: $__contextMenuItem_47_hideRow__}).hideRowItem;
+var showRowItem = ($__contextMenuItem_47_showRow__ = _dereq_("contextMenuItem/showRow"), $__contextMenuItem_47_showRow__ && $__contextMenuItem_47_showRow__.__esModule && $__contextMenuItem_47_showRow__ || {default: $__contextMenuItem_47_showRow__}).showRowItem;
+var HiddenRows = function HiddenRows(hotInstance) {
+  $traceurRuntime.superConstructor($HiddenRows).call(this, hotInstance);
+  this.settings = {};
+  this.hiddenRows = [];
+  this.lastSelectedRow = -1;
+};
+var $HiddenRows = HiddenRows;
+($traceurRuntime.createClass)(HiddenRows, {
+  isEnabled: function() {
+    return !!this.hot.getSettings().hiddenRows;
+  },
+  enablePlugin: function() {
+    var $__7 = this;
+    if (this.enabled) {
+      return;
+    }
+    var settings = this.hot.getSettings().hiddenRows;
+    if (typeof settings === 'object') {
+      this.settings = settings;
+      if (settings.copyPasteEnabled === void 0) {
+        settings.copyPasteEnabled = true;
+      }
+      if (Array.isArray(settings.rows)) {
+        this.hideRows(settings.rows);
+      }
+      if (!settings.copyPasteEnabled) {
+        this.addHook('modifyCopyableRange', (function(ranges) {
+          return $__7.onModifyCopyableRange(ranges);
+        }));
+      }
+    }
+    if (this.hot.hasRowHeaders()) {
+      this.addHook('afterGetRowHeader', (function(row, TH) {
+        return $__7.onAfterGetRowHeader(row, TH);
+      }));
+    } else {
+      this.addHook('afterRenderer', (function(TD, row) {
+        return $__7.onAfterGetRowHeader(row, TD);
+      }));
+    }
+    this.addHook('afterContextMenuDefaultOptions', (function(options) {
+      return $__7.onAfterContextMenuDefaultOptions(options);
+    }));
+    this.addHook('afterGetCellMeta', (function(row, col, cellProperties) {
+      return $__7.onAfterGetCellMeta(row, col, cellProperties);
+    }));
+    this.addHook('modifyRowHeight', (function(height, row) {
+      return $__7.onModifyRowHeight(height, row);
+    }));
+    this.addHook('beforeSetRangeStartOnly', (function(coords) {
+      return $__7.onBeforeSetRangeStart(coords);
+    }));
+    this.addHook('beforeSetRangeEnd', (function(coords) {
+      return $__7.onBeforeSetRangeEnd(coords);
+    }));
+    this.addHook('hiddenRow', (function(row) {
+      return $__7.isHidden(row);
+    }));
+    this.addHook('afterCreateRow', (function(index, amount) {
+      return $__7.onAfterCreateRow(index, amount);
+    }));
+    this.addHook('afterRemoveRow', (function(index, amount) {
+      return $__7.onAfterRemoveRow(index, amount);
+    }));
+    $traceurRuntime.superGet(this, $HiddenRows.prototype, "enablePlugin").call(this);
+  },
+  updatePlugin: function() {
+    this.disablePlugin();
+    this.enablePlugin();
+    $traceurRuntime.superGet(this, $HiddenRows.prototype, "updatePlugin").call(this);
+  },
+  disablePlugin: function() {
+    this.settings = {};
+    this.hiddenRows = [];
+    this.lastSelectedRow = -1;
+    $traceurRuntime.superGet(this, $HiddenRows.prototype, "disablePlugin").call(this);
+    this.resetCellsMeta();
+  },
+  getLogicIndex: function(row) {
+    return this.hot.runHooks('modifyRow', row);
+  },
+  showRows: function(rows) {
+    var $__7 = this;
+    arrayEach(rows, (function(row) {
+      row = parseInt(row, 10);
+      row = $__7.getLogicIndex(row);
+      if ($__7.isHidden(row, true)) {
+        $__7.hiddenRows.splice($__7.hiddenRows.indexOf(row), 1);
+      }
+    }));
+  },
+  showRow: function() {
+    for (var row = [],
+        $__9 = 0; $__9 < arguments.length; $__9++)
+      row[$__9] = arguments[$__9];
+    this.showRows(row);
+  },
+  hideRows: function(rows) {
+    var $__7 = this;
+    arrayEach(rows, (function(row) {
+      row = parseInt(row, 10);
+      row = $__7.getLogicIndex(row);
+      if (!$__7.isHidden(row, true)) {
+        $__7.hiddenRows.push(row);
+      }
+    }));
+  },
+  hideRow: function() {
+    for (var row = [],
+        $__10 = 0; $__10 < arguments.length; $__10++)
+      row[$__10] = arguments[$__10];
+    this.hideRows(row);
+  },
+  isHidden: function(row, isLogicIndex) {
+    if (!isLogicIndex) {
+      row = this.getLogicIndex(row);
+    }
+    return this.hiddenRows.indexOf(row) > -1;
+  },
+  resetCellsMeta: function() {
+    arrayEach(this.hot.getCellsMeta(), (function(meta) {
+      if (meta) {
+        meta.skipRowOnPaste = false;
+      }
+    }));
+  },
+  onAfterGetCellMeta: function(row, col, cellProperties) {
+    row = this.hot.runHooks('unmodifyRow', row);
+    if (this.settings.copyPasteEnabled === false && this.isHidden(row)) {
+      cellProperties.skipRowOnPaste = true;
+    } else {
+      cellProperties.skipRowOnPaste = false;
+    }
+    if (this.isHidden(row - 1)) {
+      var firstSectionHidden = true;
+      var i = row - 1;
+      cellProperties.className = cellProperties.className || '';
+      if (cellProperties.className.indexOf('afterHiddenRow') === -1) {
+        cellProperties.className += ' afterHiddenRow';
+      }
+      do {
+        if (!this.isHidden(i)) {
+          firstSectionHidden = false;
+          break;
+        }
+        i--;
+      } while (i >= 0);
+      if (firstSectionHidden && cellProperties.className.indexOf('firstVisibleRow') === -1) {
+        cellProperties.className += ' firstVisibleRow';
+      }
+    } else if (cellProperties.className) {
+      var classArr = cellProperties.className.split(' ');
+      if (classArr.length) {
+        var containAfterHiddenColumn = classArr.indexOf('afterHiddenRow');
+        var containFirstVisible = classArr.indexOf('firstVisibleRow');
+        if (containAfterHiddenColumn > -1) {
+          classArr.splice(containAfterHiddenColumn, 1);
+        }
+        if (containFirstVisible > -1) {
+          classArr.splice(containFirstVisible, 1);
+        }
+        cellProperties.className = classArr.join(' ');
+      }
+    }
+  },
+  onAfterGetRowHeader: function(row, th) {
+    var tr = th.parentNode;
+    if (tr) {
+      if (this.isHidden(row)) {
+        addClass(tr, 'hide');
+      } else {
+        removeClass(tr, 'hide');
+      }
+    }
+    var firstSectionHidden = true;
+    var i = row - 1;
+    do {
+      if (!this.isHidden(i)) {
+        firstSectionHidden = false;
+        break;
+      }
+      i--;
+    } while (i >= 0);
+    if (firstSectionHidden) {
+      addClass(th, 'firstVisibleRow');
+    }
+    if (this.settings.indicators && this.hot.hasRowHeaders()) {
+      if (this.isHidden(row - 1)) {
+        addClass(th, 'afterHiddenRow');
+      }
+      if (this.isHidden(row + 1)) {
+        addClass(th, 'beforeHiddenRow');
+      }
+    }
+  },
+  onModifyRowHeight: function(height, row) {
+    if (this.isHidden(row)) {
+      return 0.1;
+    }
+    return height;
+  },
+  onModifyCopyableRange: function(ranges) {
+    var $__7 = this;
+    var newRanges = [];
+    var pushRange = (function(startRow, endRow, startCol, endCol) {
+      newRanges.push({
+        startRow: startRow,
+        endRow: endRow,
+        startCol: startCol,
+        endCol: endCol
+      });
+    });
+    arrayEach(ranges, (function(range) {
+      var isHidden = true;
+      var rangeStart = 0;
+      rangeEach(range.startRow, range.endRow, (function(row) {
+        if ($__7.isHidden(row)) {
+          if (!isHidden) {
+            pushRange(rangeStart, row - 1, range.startCol, range.endCol);
+          }
+          isHidden = true;
+        } else {
+          if (isHidden) {
+            rangeStart = row;
+          }
+          if (row === range.endRow) {
+            pushRange(rangeStart, row, range.startCol, range.endCol);
+          }
+          isHidden = false;
+        }
+      }));
+    }));
+    return newRanges;
+  },
+  onBeforeSetRangeStart: function(coords) {
+    var $__7 = this;
+    if (coords.row > 0) {
+      return;
+    }
+    coords.row = 0;
+    var getNextRow = (function(row) {
+      if ($__7.isHidden(row)) {
+        row = getNextRow(++row);
+      }
+      return row;
+    });
+    coords.row = getNextRow(coords.row);
+  },
+  onBeforeSetRangeEnd: function(coords) {
+    var $__7 = this;
+    var rowCount = this.hot.countRows();
+    var getNextRow = (function(row) {
+      if ($__7.isHidden(row)) {
+        if ($__7.lastSelectedRow > row || coords.row === rowCount - 1) {
+          if (row > 0) {
+            row = getNextRow(--row);
+          } else {
+            rangeEach(0, $__7.lastSelectedRow, (function(i) {
+              if (!$__7.isHidden(i)) {
+                row = i;
+                return false;
+              }
+            }));
+          }
+        } else {
+          row = getNextRow(++row);
+        }
+      }
+      return row;
+    });
+    coords.row = getNextRow(coords.row);
+    this.lastSelectedRow = coords.row;
+  },
+  onAfterContextMenuDefaultOptions: function(options) {
+    options.items.push(Handsontable.plugins.ContextMenu.SEPARATOR, hideRowItem(this), showRowItem(this));
+  },
+  onAfterCreateRow: function(index, amount) {
+    var tempHidden = [];
+    arrayEach(this.hiddenRows, (function(col) {
+      if (col >= index) {
+        col += amount;
+      }
+      tempHidden.push(col);
+    }));
+    this.hiddenRows = tempHidden;
+  },
+  onAfterRemoveRow: function(index, amount) {
+    var tempHidden = [];
+    arrayEach(this.hiddenRows, (function(col) {
+      if (col >= index) {
+        col -= amount;
+      }
+      tempHidden.push(col);
+    }));
+    this.hiddenRows = tempHidden;
+  },
+  destroy: function() {
+    $traceurRuntime.superGet(this, $HiddenRows.prototype, "destroy").call(this);
+  }
+}, {}, BasePlugin);
+;
+registerPlugin('hiddenRows', HiddenRows);
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":116,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":131,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":132,"contextMenuItem/hideRow":59,"contextMenuItem/showRow":60}],62:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  NestedHeaders: {get: function() {
+      return NestedHeaders;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_dom_47_element__,
+    $__handsontable_47_helpers_47_number__,
+    $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_plugins__,
+    $__handsontable_47_plugins_47__95_base__;
+var $__0 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
+    addClass = $__0.addClass,
+    removeClass = $__0.removeClass,
+    fastInnerHTML = $__0.fastInnerHTML,
+    empty = $__0.empty;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var objectEach = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).objectEach;
+var $__4 = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}),
+    registerPlugin = $__4.registerPlugin,
+    getPlugin = $__4.getPlugin;
+var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
+var NestedHeaders = function NestedHeaders(hotInstance) {
+  $traceurRuntime.superConstructor($NestedHeaders).call(this, hotInstance);
+  this.settings = [];
+  this.columnHeaderLevelCount = 0;
+  this.colspanArray = [];
+};
+var $NestedHeaders = NestedHeaders;
+($traceurRuntime.createClass)(NestedHeaders, {
+  isEnabled: function() {
+    return !!this.hot.getSettings().nestedHeaders;
+  },
+  enablePlugin: function() {
+    var $__6 = this;
+    if (this.enabled) {
+      return;
+    }
+    this.settings = this.hot.getSettings().nestedHeaders;
+    this.addHook('afterGetColumnHeaderRenderers', (function(array) {
+      return $__6.onAfterGetColumnHeaderRenderers(array);
+    }));
+    this.addHook('afterInit', (function() {
+      return $__6.onAfterInit();
+    }));
+    this.addHook('afterOnCellMouseDown', (function(event, coords, TD) {
+      return $__6.onAfterOnCellMouseDown(event, coords, TD);
+    }));
+    this.addHook('beforeOnCellMouseOver', (function(event, coords, TD, blockCalculations) {
+      return $__6.onBeforeOnCellMouseOver(event, coords, TD, blockCalculations);
+    }));
+    this.addHook('afterViewportColumnCalculatorOverride', (function(calc) {
+      return $__6.onAfterViewportColumnCalculatorOverride(calc);
+    }));
+    this.setupColspanArray();
+    this.checkForFixedColumnsCollision();
+    this.columnHeaderLevelCount = this.hot.view ? this.hot.view.wt.getSetting('columnHeaders').length : 0;
+    $traceurRuntime.superGet(this, $NestedHeaders.prototype, "enablePlugin").call(this);
+  },
+  disablePlugin: function() {
+    this.clearColspans();
+    this.settings = [];
+    this.columnHeaderLevelCount = 0;
+    this.colspanArray = [];
+    $traceurRuntime.superGet(this, $NestedHeaders.prototype, "disablePlugin").call(this);
+  },
+  updatePlugin: function() {
+    this.disablePlugin();
+    this.enablePlugin();
+    $traceurRuntime.superGet(this, $NestedHeaders.prototype, "updatePlugin").call(this);
+  },
+  clearColspans: function() {
+    if (!this.hot.view) {
+      return;
+    }
+    var headerLevels = this.hot.view.wt.getSetting('columnHeaders').length;
+    var mainHeaders = this.hot.view.wt.wtTable.THEAD;
+    var topHeaders = this.hot.view.wt.wtOverlays.topOverlay.clone.wtTable.THEAD;
+    var topLeftCornerHeaders = this.hot.view.wt.wtOverlays.topLeftCornerOverlay ? this.hot.view.wt.wtOverlays.topLeftCornerOverlay.clone.wtTable.THEAD : null;
+    for (var i = 0; i < headerLevels; i++) {
+      var masterLevel = mainHeaders.childNodes[i];
+      if (!masterLevel) {
+        break;
+      }
+      var topLevel = topHeaders.childNodes[i];
+      var topLeftCornerLevel = topLeftCornerHeaders ? topLeftCornerHeaders.childNodes[i] : null;
+      for (var j = 0,
+          masterNodes = masterLevel.childNodes.length; j < masterNodes; j++) {
+        masterLevel.childNodes[j].removeAttribute('colspan');
+        if (topLevel && topLevel.childNodes[j]) {
+          topLevel.childNodes[j].removeAttribute('colspan');
+        }
+        if (topLeftCornerHeaders && topLeftCornerLevel && topLeftCornerLevel.childNodes[j]) {
+          topLeftCornerLevel.childNodes[j].removeAttribute('colspan');
+        }
+      }
+    }
+  },
+  checkForFixedColumnsCollision: function() {
+    var $__6 = this;
+    var fixedColumnsLeft = this.hot.getSettings().fixedColumnsLeft;
+    arrayEach(this.colspanArray, (function(value, i) {
+      if ($__6.getNestedParent(i, fixedColumnsLeft) !== fixedColumnsLeft) {
+        console.warn('You have declared a Nested Header overlapping the Fixed Columns section - it may lead to visual glitches. ' + 'To prevent that kind of problems, split the nested headers between the fixed and non-fixed columns.');
+      }
+    }));
+  },
+  checkForOverlappingHeaders: function() {
+    var $__6 = this;
+    arrayEach(this.colspanArray, (function(level, i) {
+      arrayEach($__6.colspanArray[i], (function(header, j) {
+        if (header.colspan > 1) {
+          var row = $__6.levelToRowCoords(i);
+          var childHeaders = $__6.getChildHeaders(row, j);
+          if (childHeaders.length > 0) {
+            var childColspanSum = 0;
+            arrayEach(childHeaders, (function(col, i) {
+              childColspanSum += $__6.getColspan(row + 1, col);
+            }));
+            if (childColspanSum > header.colspan) {
+              console.warn('Your Nested Headers plugin setup contains overlapping headers. This kind of configuration is ' + 'currently not supported and might result in glitches.');
+            }
+            return false;
+          }
+        }
+      }));
+    }));
+  },
+  setupColspanArray: function() {
+    var $__6 = this;
+    function checkIfExists(array, index) {
+      if (!array[index]) {
+        array[index] = [];
+      }
+    }
+    objectEach(this.settings, (function(levelValue, level) {
+      objectEach(levelValue, (function(val, col, levelValue) {
+        checkIfExists($__6.colspanArray, level);
+        if (levelValue[col].colspan === void 0) {
+          $__6.colspanArray[level].push({
+            label: levelValue[col] || '',
+            colspan: 1,
+            hidden: false
+          });
+        } else {
+          var colspan = levelValue[col].colspan || 1;
+          $__6.colspanArray[level].push({
+            label: levelValue[col].label || '',
+            colspan: colspan,
+            hidden: false
+          });
+          $__6.fillColspanArrayWithDummies(colspan, level);
+        }
+      }));
+    }));
+  },
+  fillColspanArrayWithDummies: function(colspan, level) {
+    var $__6 = this;
+    rangeEach(0, colspan - 2, (function(i) {
+      $__6.colspanArray[level].push({
+        label: '',
+        colspan: 1,
+        hidden: true
+      });
+    }));
+  },
+  headerRendererFactory: function(headerRow) {
+    var _this = this;
+    return function(index, TH) {
+      TH.removeAttribute('colspan');
+      removeClass(TH, 'hiddenHeader');
+      if (_this.colspanArray[headerRow][index] && _this.colspanArray[headerRow][index].colspan) {
+        var colspan = _this.colspanArray[headerRow][index].colspan;
+        var fixedColumnsLeft = _this.hot.getSettings().fixedColumnsLeft || 0;
+        var topLeftCornerOverlay = _this.hot.view.wt.wtOverlays.topLeftCornerOverlay;
+        var leftOverlay = _this.hot.view.wt.wtOverlays.leftOverlay;
+        var isInTopLeftCornerOverlay = topLeftCornerOverlay ? topLeftCornerOverlay.clone.wtTable.THEAD.contains(TH) : false;
+        var isInLeftOverlay = leftOverlay ? leftOverlay.clone.wtTable.THEAD.contains(TH) : false;
+        if (colspan > 1) {
+          TH.setAttribute('colspan', isInTopLeftCornerOverlay || isInLeftOverlay ? Math.min(colspan, fixedColumnsLeft - index) : colspan);
+        }
+        if (isInTopLeftCornerOverlay || isInLeftOverlay && index === fixedColumnsLeft - 1) {
+          addClass(TH, 'overlayEdge');
+        }
+      }
+      if (_this.colspanArray[headerRow][index] && _this.colspanArray[headerRow][index].hidden) {
+        addClass(TH, 'hiddenHeader');
+      }
+      empty(TH);
+      var divEl = document.createElement('DIV');
+      addClass(divEl, 'relative');
+      var spanEl = document.createElement('SPAN');
+      addClass(spanEl, 'colHeader');
+      fastInnerHTML(spanEl, _this.colspanArray[headerRow][index] ? _this.colspanArray[headerRow][index].label || '' : '');
+      divEl.appendChild(spanEl);
+      TH.appendChild(divEl);
+      _this.hot.runHooks('afterGetColHeader', index, TH);
+    };
+  },
+  getColspan: function(row, column) {
+    return this.colspanArray[this.rowCoordsToLevel(row)][column].colspan;
+  },
+  levelToRowCoords: function(level) {
+    return level - this.columnHeaderLevelCount;
+  },
+  rowCoordsToLevel: function(row) {
+    return row + this.columnHeaderLevelCount;
+  },
+  getNestedParent: function(level, column) {
+    var colspan = this.colspanArray[level][column] ? this.colspanArray[level][column].colspan : 1;
+    var hidden = this.colspanArray[level][column] ? this.colspanArray[level][column].hidden : false;
+    if (colspan > 1 || (colspan === 1 && hidden === false)) {
+      return column;
+    } else {
+      var parentCol = column - 1;
+      do {
+        if (this.colspanArray[level][parentCol].colspan > 1) {
+          break;
+        }
+        parentCol--;
+      } while (column >= 0);
+      return parentCol;
+    }
+  },
+  getChildHeaders: function(row, column) {
+    var level = this.rowCoordsToLevel(row);
+    var childColspanLevel = this.colspanArray[level + 1];
+    var nestedParentCol = this.getNestedParent(level, column);
+    var colspan = this.colspanArray[level][column].colspan;
+    var childHeaderRange = [];
+    if (!childColspanLevel) {
+      return childHeaderRange;
+    }
+    rangeEach(nestedParentCol, nestedParentCol + colspan - 1, (function(i) {
+      if (childColspanLevel[i] && childColspanLevel[i].colspan > 1) {
+        colspan -= childColspanLevel[i].colspan - 1;
+      }
+      if (childColspanLevel[i] && !childColspanLevel[i].hidden && childHeaderRange.indexOf(i) === -1) {
+        childHeaderRange.push(i);
+      }
+    }));
+    return childHeaderRange;
+  },
+  fillTheRemainingColspans: function() {
+    var $__6 = this;
+    objectEach(this.settings, (function(levelValue, level) {
+      rangeEach($__6.colspanArray[level].length - 1, $__6.hot.countCols() - 1, (function(col) {
+        $__6.colspanArray[level].push({
+          label: levelValue[col] || '',
+          colspan: 1,
+          hidden: false
+        });
+      }), true);
+    }));
+  },
+  onAfterViewportColumnCalculatorOverride: function(calc) {
+    var $__6 = this;
+    var newStartColumn = calc.startColumn;
+    rangeEach(0, Math.max(this.columnHeaderLevelCount - 1, 0), (function(l) {
+      var startColumnNestedParent = $__6.getNestedParent(l, calc.startColumn);
+      if (startColumnNestedParent < calc.startColumn) {
+        var earlierColumn = Math.min(newStartColumn, startColumnNestedParent);
+        newStartColumn = earlierColumn;
+      }
+    }));
+    calc.startColumn = newStartColumn;
+  },
+  onAfterOnCellMouseDown: function(event, coords, TD) {
+    if (coords.row < 0) {
+      var colspan = this.getColspan(coords.row, coords.col);
+      var lastColIndex = coords.col + colspan - 1;
+      if (colspan > 1) {
+        var lastRowIndex = this.hot.countRows() - 1;
+        this.hot.selection.setRangeEnd(new WalkontableCellCoords(lastRowIndex, lastColIndex));
+      }
+    }
+  },
+  onBeforeOnCellMouseOver: function(event, coords, TD, blockCalculations) {
+    var $__9;
+    if (coords.row < 0 && coords.col >= 0 && this.hot.view.isMouseDown()) {
+      var $__8 = this.hot.getSelectedRange(),
+          from = $__8.from,
+          to = $__8.to;
+      var colspan = this.getColspan(coords.row, coords.col);
+      var lastColIndex = coords.col + colspan - 1;
+      var changeDirection = false;
+      if (from.col <= to.col) {
+        if ((coords.col < from.col && lastColIndex === to.col) || (coords.col < from.col && lastColIndex < from.col) || (coords.col < from.col && lastColIndex >= from.col && lastColIndex < to.col)) {
+          changeDirection = true;
+        }
+      } else {
+        if ((coords.col < to.col && lastColIndex > from.col) || (coords.col > from.col) || (coords.col <= to.col && lastColIndex > from.col) || (coords.col > to.col && lastColIndex > from.col)) {
+          changeDirection = true;
+        }
+      }
+      if (changeDirection) {
+        ($__9 = [to.col, from.col], from.col = $__9[0], to.col = $__9[1], $__9);
+      }
+      if (colspan > 1) {
+        blockCalculations.column = true;
+        blockCalculations.cell = true;
+        this.hot.selection.setSelectedHeaders(false, true);
+        if (from.col === to.col) {
+          if (lastColIndex <= from.col && coords.col < from.col) {
+            this.hot.selection.setRangeStartOnly(new WalkontableCellCoords(from.row, to.col));
+            this.hot.selection.setRangeEnd(new WalkontableCellCoords(to.row, coords.col));
+          } else {
+            this.hot.selection.setRangeStartOnly(new WalkontableCellCoords(from.row, coords.col < from.col ? coords.col : from.col));
+            this.hot.selection.setRangeEnd(new WalkontableCellCoords(to.row, lastColIndex > to.col ? lastColIndex : to.col));
+          }
+        }
+        if (from.col < to.col) {
+          this.hot.selection.setRangeStartOnly(new WalkontableCellCoords(from.row, coords.col < from.col ? coords.col : from.col));
+          this.hot.selection.setRangeEnd(new WalkontableCellCoords(to.row, lastColIndex));
+        }
+        if (from.col > to.col) {
+          this.hot.selection.setRangeStartOnly(new WalkontableCellCoords(from.row, from.col));
+          this.hot.selection.setRangeEnd(new WalkontableCellCoords(to.row, coords.col));
+        }
+      }
+    }
+  },
+  onAfterInit: function() {
+    this.columnHeaderLevelCount = this.hot.view.wt.getSetting('columnHeaders').length;
+    this.fillTheRemainingColspans();
+    this.checkForOverlappingHeaders();
+  },
+  onAfterGetColumnHeaderRenderers: function(renderersArray) {
+    if (renderersArray) {
+      renderersArray.length = 0;
+      for (var headersCount = this.colspanArray.length,
+          i = headersCount - 1; i >= 0; i--) {
+        renderersArray.push(this.headerRendererFactory(i));
+      }
+      renderersArray.reverse();
+    }
+  },
+  destroy: function() {
+    this.settings = null;
+    this.columnHeaderLevelCount = null;
+    this.colspanArray = null;
+    $traceurRuntime.superGet(this, $NestedHeaders.prototype, "destroy").call(this);
+  }
+}, {}, BasePlugin);
+;
+registerPlugin('nestedHeaders', NestedHeaders);
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":116,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":131,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":132}],63:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  DataManager: {get: function() {
+      return DataManager;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_number__,
+    $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_helpers_47_array__;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+var objectEach = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).objectEach;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var DataManager = function DataManager(nestedRowsPlugin, hotInstance, sourceData) {
+  this.hot = hotInstance;
+  this.data = sourceData;
+  this.plugin = nestedRowsPlugin;
+  this.parentReference = new WeakMap();
+  this.cache = {
+    levels: [],
+    levelCount: 0,
+    rows: [],
+    nodeInfo: new WeakMap()
+  };
+  this.rowCounter = 0;
+};
+($traceurRuntime.createClass)(DataManager, {
+  rewriteCache: function() {
+    var $__3 = this;
+    this.cache = {
+      levels: [],
+      levelCount: 0,
+      rows: [],
+      nodeInfo: new WeakMap()
+    };
+    rangeEach(0, this.data.length - 1, (function(i) {
+      $__3.cacheNode($__3.data[i], 0, null);
+    }));
+  },
+  cacheNode: function(node, level, parent) {
+    var $__3 = this;
+    if (!this.cache.levels[level]) {
+      this.cache.levels[level] = [];
+      this.cache.levelCount++;
+    }
+    this.cache.levels[level].push(node);
+    this.cache.rows.push(node);
+    this.cache.nodeInfo.set(node, {
+      parent: parent,
+      row: this.cache.rows.length - 1,
+      level: level
+    });
+    if (this.hasChildren(node)) {
+      arrayEach(node.__children, (function(elem, i) {
+        $__3.cacheNode(elem, level + 1, node);
+      }));
+    }
+  },
+  getDataObject: function(row) {
+    return row == null ? null : this.cache.rows[row];
+  },
+  readTreeNodes: function(parent, readCount, neededIndex, neededObject) {
+    var $__3 = this;
+    var rootLevel = false;
+    if (isNaN(readCount) && readCount.end) {
+      return readCount;
+    }
+    if (!parent) {
+      parent = {__children: this.data};
+      rootLevel = true;
+      readCount--;
+    }
+    if (neededIndex != null && readCount === neededIndex) {
+      return {
+        result: parent,
+        end: true
+      };
+    }
+    if (neededObject != null && parent === neededObject) {
+      return {
+        result: readCount,
+        end: true
+      };
+    }
+    readCount++;
+    if (parent.__children) {
+      arrayEach(parent.__children, (function(val, i) {
+        $__3.parentReference.set(val, rootLevel ? null : parent);
+        readCount = $__3.readTreeNodes(val, readCount, neededIndex, neededObject);
+        if (isNaN(readCount) && readCount.end) {
+          return false;
+        }
+      }));
+    }
+    return readCount;
+  },
+  updateParentReference: function() {
+    this.readTreeNodes({__children: this.data}, 0, this.hot.countRows());
+  },
+  mockParent: function() {
+    var fakeParent = this.mockNode();
+    fakeParent.__children = this.data;
+    return fakeParent;
+  },
+  mockNode: function() {
+    var fakeNode = {};
+    objectEach(this.data[0], (function(val, key) {
+      fakeNode[key] = null;
+    }));
+    return fakeNode;
+  },
+  getRowIndex: function(rowObj) {
+    return rowObj == null ? null : this.cache.nodeInfo.get(rowObj).row;
+  },
+  getRowIndexWithinParent: function(row) {
+    var rowObj = null;
+    if (isNaN(row)) {
+      rowObj = row;
+    } else {
+      rowObj = this.getDataObject(row);
+    }
+    var parent = this.getRowParent(row);
+    if (parent == null) {
+      return this.data.indexOf(rowObj);
+    } else {
+      return parent.__children.indexOf(rowObj);
+    }
+  },
+  countAllRows: function() {
+    var rootNodeMock = {__children: this.data};
+    return this.countChildren(rootNodeMock);
+  },
+  countChildren: function(parent) {
+    var $__3 = this;
+    var rowCount = 0;
+    if (!isNaN(parent)) {
+      parent = this.getDataObject(parent);
+    }
+    if (!parent || !parent.__children) {
+      return 0;
+    }
+    arrayEach(parent.__children, (function(elem, i) {
+      rowCount++;
+      if (elem.__children) {
+        rowCount += $__3.countChildren(elem);
+      }
+    }));
+    return rowCount;
+  },
+  getRowParent: function(row) {
+    var rowObject;
+    if (isNaN(row)) {
+      rowObject = row;
+    } else {
+      rowObject = this.getDataObject(row);
+    }
+    return this.getRowObjectParent(rowObject);
+  },
+  getRowObjectParent: function(rowObject) {
+    if (typeof rowObject !== 'object') {
+      return null;
+    }
+    return this.cache.nodeInfo.get(rowObject).parent;
+  },
+  getRowLevel: function(row) {
+    var rowObject = null;
+    if (isNaN(row)) {
+      rowObject = row;
+    } else {
+      rowObject = this.getDataObject(row);
+    }
+    return rowObject ? this.getRowObjectLevel(rowObject) : null;
+  },
+  getRowObjectLevel: function(rowObject) {
+    return rowObject == null ? null : this.cache.nodeInfo.get(rowObject).level;
+  },
+  hasChildren: function(row) {
+    if (!isNaN(row)) {
+      row = this.getDataObject(row);
+    }
+    return !!(row.__children && row.__children.length);
+  },
+  isParent: function(row) {
+    if (!isNaN(row)) {
+      row = this.getDataObject(row);
+    }
+    return !!(row.hasOwnProperty('__children'));
+  },
+  addChild: function(parent, element) {
+    this.hot.runHooks('beforeAddChild', parent, element);
+    var functionalParent = parent;
+    if (!parent) {
+      functionalParent = this.mockParent();
+    }
+    if (!functionalParent.__children) {
+      functionalParent.__children = [];
+    }
+    if (!element) {
+      element = this.mockNode();
+    }
+    functionalParent.__children.push(element);
+    this.rewriteCache();
+    var newRowIndex = this.getRowIndex(element);
+    this.hot.runHooks('afterCreateRow', newRowIndex, 1);
+    this.hot.runHooks('afterAddChild', parent, element);
+  },
+  addChildAtIndex: function(parent, index, element) {
+    this.hot.runHooks('beforeAddChild', parent, element, index);
+    var functionalParent = parent;
+    if (!parent) {
+      functionalParent = this.mockParent();
+    }
+    if (!functionalParent.__children) {
+      functionalParent.__children = [];
+    }
+    if (!element) {
+      element = this.mockNode();
+    }
+    functionalParent.__children.splice(index, null, element);
+    this.rewriteCache();
+    this.hot.runHooks('afterCreateRow', index + 1, 1);
+    this.hot.runHooks('afterAddChild', parent, element, index);
+  },
+  addSibling: function(index) {
+    var where = arguments[1] !== (void 0) ? arguments[1] : 'below';
+    var translatedIndex = this.translateTrimmedRow(index);
+    var parent = this.getRowParent(translatedIndex);
+    var indexWithinParent = this.getRowIndexWithinParent(translatedIndex);
+    switch (where) {
+      case 'below':
+        this.addChildAtIndex(parent, indexWithinParent + 1);
+        break;
+      case 'above':
+        this.addChildAtIndex(parent, indexWithinParent);
+        break;
+    }
+  },
+  detachFromParent: function(elements) {
+    var forceRender = arguments[1] !== (void 0) ? arguments[1] : true;
+    var $__3 = this;
+    var element = null;
+    var rowObjects = [];
+    if (Array.isArray(elements)) {
+      rangeEach(elements[0], elements[2], (function(i) {
+        var translatedIndex = $__3.translateTrimmedRow(i);
+        rowObjects.push($__3.getDataObject(translatedIndex));
+      }));
+      rangeEach(0, rowObjects.length - 2, (function(i) {
+        $__3.detachFromParent(rowObjects[i], false);
+      }));
+      element = rowObjects[rowObjects.length - 1];
+    } else {
+      element = elements;
+    }
+    var indexWithinParent = this.getRowIndexWithinParent(element);
+    var parent = this.getRowParent(element);
+    var grandparent = this.getRowParent(parent);
+    this.hot.runHooks('beforeDetachChild', parent, element);
+    if (indexWithinParent != null) {
+      parent.__children.splice(indexWithinParent, 1);
+      if (grandparent) {
+        grandparent.__children.push(element);
+      } else {
+        this.data.push(element);
+      }
+    }
+    this.rewriteCache();
+    if (forceRender) {
+      this.hot.render();
+    }
+    this.hot.runHooks('afterDetachChild', parent, element);
+  },
+  filterData: function(index, amount, logicRows) {
+    var $__3 = this;
+    var elementsToRemove = [];
+    arrayEach(logicRows, (function(elem, ind) {
+      elementsToRemove.push($__3.getDataObject(elem));
+    }));
+    arrayEach(elementsToRemove, (function(elem, ind) {
+      var indexWithinParent = $__3.getRowIndexWithinParent(elem);
+      var tempParent = $__3.getRowParent(elem);
+      if (tempParent === null) {
+        $__3.data.splice(indexWithinParent, 1);
+      } else {
+        tempParent.__children.splice(indexWithinParent, 1);
+      }
+    }));
+    this.rewriteCache();
+  },
+  spliceData: function(index, amount, element) {
+    index = this.translateTrimmedRow(index);
+    if (index == null) {
+      return;
+    }
+    var previousElement = this.getDataObject(index - 1);
+    var newRowParent = null;
+    var indexWithinParent = null;
+    if (previousElement && previousElement.__children && previousElement.__children.length === 0) {
+      newRowParent = previousElement;
+      indexWithinParent = 0;
+    } else {
+      newRowParent = this.getRowParent(index);
+      indexWithinParent = this.getRowIndexWithinParent(index);
+    }
+    if (newRowParent) {
+      if (element) {
+        newRowParent.__children.splice(indexWithinParent, amount, element);
+      } else {
+        newRowParent.__children.splice(indexWithinParent, amount);
+      }
+    } else {
+      if (element) {
+        this.data.splice(indexWithinParent, amount, element);
+      } else {
+        this.data.splice(indexWithinParent, amount);
+      }
+    }
+    this.rewriteCache();
+  },
+  moveRow: function(fromIndex, toIndex) {
+    var targetIsParent = this.isParent(toIndex);
+    var fromParent = this.getRowParent(fromIndex);
+    var indexInFromParent = this.getRowIndexWithinParent(fromIndex);
+    var toParent = this.getRowParent(toIndex);
+    if (toParent == null) {
+      toParent = this.getRowParent(toIndex - 1);
+    }
+    if (toParent == null) {
+      toParent = this.getDataObject(toIndex - 1);
+    }
+    if (!toParent) {
+      toParent = this.getDataObject(toIndex);
+      toParent.__children = [];
+    } else if (!toParent.__children) {
+      toParent.__children = [];
+    }
+    var previousToTargetParent = this.getRowParent(toIndex - 1);
+    var indexInToParent = targetIsParent ? this.countChildren(previousToTargetParent) : this.getRowIndexWithinParent(toIndex);
+    var elemToMove = fromParent.__children.slice(indexInFromParent, indexInFromParent + 1);
+    fromParent.__children.splice(indexInFromParent, 1);
+    toParent.__children.splice(indexInToParent, 0, elemToMove[0]);
+  },
+  translateTrimmedRow: function(row) {
+    if (this.plugin.collapsingUI) {
+      return this.plugin.collapsingUI.translateTrimmedRow(row);
+    } else {
+      return row;
+    }
+  }
+}, {});
+;
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122}],64:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  NestedRows: {get: function() {
+      return NestedRows;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_plugins_47__95_base__,
+    $__handsontable_47_plugins__,
+    $__handsontable_47_helpers_47_number__,
+    $__handsontable_47_helpers_47_array__,
+    $__data_47_dataManager__,
+    $__ui_47_collapsing__,
+    $__ui_47_headers__,
+    $__ui_47_contextMenu__;
+var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
+var registerPlugin = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}).registerPlugin;
+var $__2 = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}),
+    rangeEach = $__2.rangeEach,
+    rangeEachReverse = $__2.rangeEachReverse;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var DataManager = ($__data_47_dataManager__ = _dereq_("data/dataManager"), $__data_47_dataManager__ && $__data_47_dataManager__.__esModule && $__data_47_dataManager__ || {default: $__data_47_dataManager__}).DataManager;
+var CollapsingUI = ($__ui_47_collapsing__ = _dereq_("ui/collapsing"), $__ui_47_collapsing__ && $__ui_47_collapsing__.__esModule && $__ui_47_collapsing__ || {default: $__ui_47_collapsing__}).CollapsingUI;
+var HeadersUI = ($__ui_47_headers__ = _dereq_("ui/headers"), $__ui_47_headers__ && $__ui_47_headers__.__esModule && $__ui_47_headers__ || {default: $__ui_47_headers__}).HeadersUI;
+var ContextMenuUI = ($__ui_47_contextMenu__ = _dereq_("ui/contextMenu"), $__ui_47_contextMenu__ && $__ui_47_contextMenu__.__esModule && $__ui_47_contextMenu__ || {default: $__ui_47_contextMenu__}).ContextMenuUI;
+var privatePool = new WeakMap();
+var NestedRows = function NestedRows(hotInstance) {
+  privatePool.set(this, {
+    changeSelection: false,
+    movedToParentBegin: false,
+    target: void 0
+  });
+  this.sourceData = null;
+  this.trimRowsPlugin = null;
+  this.manualRowsMovePlugin = null;
+  this.bindRowsWithHeadersPlugin = null;
+  this.dataManager = null;
+  this.headersUI = null;
+  this.skipRender = null;
+  $traceurRuntime.superConstructor($NestedRows).call(this, hotInstance);
+};
+var $NestedRows = NestedRows;
+($traceurRuntime.createClass)(NestedRows, {
+  isEnabled: function() {
+    return !!this.hot.getSettings().nestedRows;
+  },
+  enablePlugin: function() {
+    var $__8 = this;
+    this.sourceData = this.hot.getSourceData();
+    this.trimRowsPlugin = this.hot.getPlugin('trimRows');
+    this.manualRowsMovePlugin = this.hot.getPlugin('manualRowMove');
+    this.bindRowsWithHeadersPlugin = this.hot.getPlugin('bindRowsWithHeaders');
+    this.dataManager = new DataManager(this, this.hot, this.sourceData);
+    this.collapsingUI = new CollapsingUI(this, this.hot, this.trimRowsPlugin);
+    this.headersUI = new HeadersUI(this, this.hot);
+    this.contextMenuUI = new ContextMenuUI(this, this.hot);
+    this.dataManager.rewriteCache();
+    this.addHook('beforeRender', (function(force, skipRender) {
+      return $__8.onBeforeRender(force, skipRender);
+    }));
+    this.addHook('modifyRowData', (function(row) {
+      return $__8.onModifyRowData(row);
+    }));
+    this.addHook('modifySourceLength', (function() {
+      return $__8.onModifySourceLength();
+    }));
+    this.addHook('beforeDataSplice', (function(index, amount, element) {
+      return $__8.onBeforeDataSplice(index, amount, element);
+    }));
+    this.addHook('beforeDataFilter', (function(index, amount, logicRows) {
+      return $__8.onBeforeDataFilter(index, amount, logicRows);
+    }));
+    this.addHook('afterContextMenuDefaultOptions', (function(defaultOptions) {
+      return $__8.onAfterContextMenuDefaultOptions(defaultOptions);
+    }));
+    this.addHook('afterGetRowHeader', (function(row, th) {
+      return $__8.onAfterGetRowHeader(row, th);
+    }));
+    this.addHook('beforeOnCellMouseDown', (function(event, coords, TD) {
+      return $__8.onBeforeOnCellMouseDown(event, coords, TD);
+    }));
+    this.addHook('afterRemoveRow', (function(index, amount) {
+      return $__8.onAfterRemoveRow(index, amount);
+    }));
+    this.addHook('modifyRemovedAmount', (function(amount, index) {
+      return $__8.onModifyRemovedAmount(amount, index);
+    }));
+    this.addHook('afterInit', (function() {
+      return $__8.onAfterInit();
+    }));
+    this.addHook('beforeAddChild', (function(parent, element) {
+      return $__8.onBeforeAddChild(parent, element);
+    }));
+    this.addHook('afterAddChild', (function(parent, element) {
+      return $__8.onAfterAddChild(parent, element);
+    }));
+    this.addHook('beforeDetachChild', (function(parent, element) {
+      return $__8.onBeforeDetachChild(parent, element);
+    }));
+    this.addHook('afterDetachChild', (function(parent, element) {
+      return $__8.onAfterDetachChild(parent, element);
+    }));
+    this.addHook('modifyRowHeaderWidth', (function(rowHeaderWidth) {
+      return $__8.onModifyRowHeaderWidth(rowHeaderWidth);
+    }));
+    this.addHook('afterCreateRow', (function() {
+      return $__8.onAfterCreateRow();
+    }));
+    this.addHook('beforeRowMove', (function(rows, target, blockMoving) {
+      return $__8.onBeforeRowMove(rows, target, blockMoving);
+    }));
+    this.addHook('afterRowMove', (function(rows, target) {
+      return $__8.onAfterRowMove(rows, target);
+    }));
+    if (!this.trimRowsPlugin.isEnabled()) {
+      this.trimRowsPlugin.enablePlugin();
+      this.hot.getSettings().trimRows = true;
+    }
+    if (!this.manualRowsMovePlugin.isEnabled()) {
+      this.manualRowsMovePlugin.enablePlugin();
+      this.hot.getSettings().manualRowsMovePlugin = true;
+    }
+    $traceurRuntime.superGet(this, $NestedRows.prototype, "enablePlugin").call(this);
+  },
+  disablePlugin: function() {
+    $traceurRuntime.superGet(this, $NestedRows.prototype, "disablePlugin").call(this);
+  },
+  updatePlugin: function() {
+    this.disablePlugin();
+    this.enablePlugin();
+    $traceurRuntime.superGet(this, $NestedRows.prototype, "updatePlugin").call(this);
+  },
+  onBeforeRowMove: function(rows, target, blockMoving) {
+    var $__10;
+    blockMoving.rows = true;
+    var priv = privatePool.get(this);
+    var allowMove = true;
+    var rowsLen = rows.length;
+    var i;
+    var translatedStartIndexes = [];
+    var translatedTargetIndex = this.dataManager.translateTrimmedRow(target);
+    for (i = 0; i < rowsLen; i++) {
+      translatedStartIndexes.push(this.dataManager.translateTrimmedRow(rows[i]));
+      if (this.dataManager.isParent(translatedStartIndexes[i])) {
+        allowMove = false;
+      }
+    }
+    if (translatedStartIndexes.indexOf(translatedTargetIndex) > -1 || !allowMove) {
+      return;
+    }
+    var fromParent = this.dataManager.getRowParent(translatedStartIndexes[0]);
+    var toParent = this.dataManager.getRowParent(translatedTargetIndex);
+    if (toParent == null) {
+      toParent = this.dataManager.getRowParent(translatedTargetIndex - 1);
+    }
+    if (toParent == null) {
+      toParent = this.dataManager.getDataObject(translatedTargetIndex - 1);
+      priv.movedToParentBegin = true;
+    }
+    if (!toParent) {
+      return;
+    }
+    var sameParent = fromParent === toParent;
+    priv.movedToCollapsed = this.collapsingUI.areChildrenCollapsed(toParent);
+    this.collapsingUI.collapsedRowsStash.stash();
+    if (!sameParent) {
+      if (($__10 = Math).max.apply($__10, $traceurRuntime.spread(translatedStartIndexes)) <= translatedTargetIndex) {
+        this.collapsingUI.collapsedRowsStash.shiftStash(translatedStartIndexes[0], (-1) * rows.length);
+      } else {
+        this.collapsingUI.collapsedRowsStash.shiftStash(translatedTargetIndex, rows.length);
+      }
+    }
+    priv.changeSelection = true;
+    if (translatedStartIndexes[rowsLen - 1] <= translatedTargetIndex && sameParent) {
+      rows.reverse();
+      translatedStartIndexes.reverse();
+      translatedTargetIndex--;
+    }
+    if (priv.movedToParentBegin === true) {
+      rows.reverse();
+      translatedStartIndexes.reverse();
+    }
+    for (i = 0; i < rowsLen; i++) {
+      this.dataManager.moveRow(translatedStartIndexes[i], translatedTargetIndex);
+    }
+    if ((translatedStartIndexes[rowsLen - 1] <= translatedTargetIndex && sameParent) || this.dataManager.isParent(translatedTargetIndex)) {
+      rows.reverse();
+    }
+    this.dataManager.rewriteCache();
+  },
+  onAfterRowMove: function(rows, target) {
+    var $__10;
+    var priv = privatePool.get(this);
+    if (!priv.changeSelection) {
+      return;
+    }
+    var startRow = 0;
+    var endRow = 0;
+    var rowsLen = rows.length;
+    this.collapsingUI.collapsedRowsStash.applyStash();
+    var translatedTargetIndex = this.dataManager.translateTrimmedRow(target);
+    if (priv.movedToParentBegin) {
+      priv.movedToParentBegin = false;
+      startRow = target;
+      endRow = target + rowsLen - 1;
+      if (target >= ($__10 = Math).max.apply($__10, $traceurRuntime.spread(rows))) {
+        startRow -= rowsLen;
+        endRow -= rowsLen;
+      }
+    } else if (priv.movedToCollapsed) {
+      var parentObject = this.dataManager.getRowParent(translatedTargetIndex - 1);
+      if (parentObject == null) {
+        parentObject = this.dataManager.getDataObject(translatedTargetIndex - 1);
+      }
+      var parentIndex = this.dataManager.getRowIndex(parentObject);
+      startRow = parentIndex;
+      endRow = startRow;
+    } else {
+      if (rows[rowsLen - 1] < target) {
+        endRow = target - 1;
+        startRow = endRow - rowsLen + 1;
+      } else {
+        startRow = target;
+        endRow = startRow + rowsLen - 1;
+      }
+    }
+    var selection = this.hot.selection;
+    var lastColIndex = this.hot.countCols() - 1;
+    selection.setRangeStart(new WalkontableCellCoords(startRow, 0));
+    selection.setRangeEnd(new WalkontableCellCoords(endRow, lastColIndex), true);
+    priv.changeSelection = false;
+  },
+  onBeforeOnCellMouseDown: function(event, coords, TD) {
+    this.collapsingUI.toggleState(event, coords, TD);
+  },
+  onModifyRowData: function(row) {
+    return this.dataManager.getDataObject(row);
+  },
+  onModifySourceLength: function() {
+    return this.dataManager.countAllRows();
+  },
+  onBeforeDataSplice: function(index, amount, element) {
+    this.dataManager.spliceData(index, amount, element);
+    return false;
+  },
+  onBeforeDataFilter: function(index, amount, logicRows) {
+    var realLogicRows = [];
+    var startIndex = this.dataManager.translateTrimmedRow(index);
+    rangeEach(startIndex, startIndex + amount - 1, (function(i) {
+      realLogicRows.push(i);
+    }));
+    this.collapsingUI.collapsedRowsStash.stash();
+    this.collapsingUI.collapsedRowsStash.trimStash(startIndex, amount);
+    this.collapsingUI.collapsedRowsStash.shiftStash(startIndex, (-1) * amount);
+    this.dataManager.filterData(index, amount, realLogicRows);
+    this.skipRender = true;
+    return false;
+  },
+  onAfterContextMenuDefaultOptions: function(defaultOptions) {
+    return this.contextMenuUI.appendOptions(defaultOptions);
+  },
+  onAfterGetRowHeader: function(row, TH) {
+    this.headersUI.appendLevelIndicators(row, TH);
+  },
+  onModifyRowHeaderWidth: function(rowHeaderWidth) {
+    return this.headersUI.rowHeaderWidthCache || rowHeaderWidth;
+  },
+  onAfterRemoveRow: function(index, amount) {
+    var $__8 = this;
+    setTimeout((function() {
+      $__8.skipRender = null;
+      $__8.headersUI.updateRowHeaderWidth();
+      $__8.collapsingUI.collapsedRowsStash.applyStash();
+    }), 0);
+  },
+  onModifyRemovedAmount: function(amount, index) {
+    var $__8 = this;
+    var childrenCount = 0;
+    var lastParents = [];
+    rangeEach(index, index + amount - 1, (function(i) {
+      var isChild = false;
+      var translated = $__8.collapsingUI.translateTrimmedRow(i);
+      var currentDataObj = $__8.dataManager.getDataObject(translated);
+      if ($__8.dataManager.hasChildren(currentDataObj)) {
+        lastParents.push(currentDataObj);
+        arrayEach(lastParents, (function(elem) {
+          if (elem.__children.indexOf(currentDataObj) > -1) {
+            isChild = true;
+            return false;
+          }
+        }));
+        if (!isChild) {
+          childrenCount += $__8.dataManager.countChildren(currentDataObj);
+        }
+      }
+      isChild = false;
+      arrayEach(lastParents, (function(elem) {
+        if (elem.__children.indexOf(currentDataObj) > -1) {
+          isChild = true;
+          return false;
+        }
+      }));
+      if (isChild) {
+        childrenCount--;
+      }
+    }));
+    return amount + childrenCount;
+  },
+  onBeforeAddChild: function(parent, element) {
+    this.collapsingUI.collapsedRowsStash.stash();
+  },
+  onAfterAddChild: function(parent, element) {
+    this.collapsingUI.collapsedRowsStash.shiftStash(this.dataManager.getRowIndex(element));
+    this.collapsingUI.collapsedRowsStash.applyStash();
+    this.headersUI.updateRowHeaderWidth();
+  },
+  onBeforeDetachChild: function(parent, element) {
+    this.collapsingUI.collapsedRowsStash.stash();
+  },
+  onAfterDetachChild: function(parent, element) {
+    this.collapsingUI.collapsedRowsStash.shiftStash(this.dataManager.getRowIndex(element));
+    this.collapsingUI.collapsedRowsStash.applyStash();
+    this.headersUI.updateRowHeaderWidth();
+  },
+  onAfterCreateRow: function() {
+    this.dataManager.rewriteCache();
+  },
+  onAfterInit: function() {
+    var $__10;
+    if (this.bindRowsWithHeadersPlugin.bindStrategy.strategy) {
+      this.bindRowsWithHeadersPlugin.bindStrategy.createMap(this.hot.countSourceRows());
+    }
+    var deepestLevel = ($__10 = Math).max.apply($__10, $traceurRuntime.spread(this.dataManager.cache.levels));
+    if (deepestLevel > 0) {
+      this.headersUI.updateRowHeaderWidth(deepestLevel);
+    }
+  },
+  onBeforeRender: function(force, skipRender) {
+    if (this.skipRender) {
+      skipRender.skipRender = true;
+    }
+  }
+}, {}, BasePlugin);
+;
+registerPlugin('nestedRows', NestedRows);
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":131,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":132,"data/dataManager":63,"ui/collapsing":66,"ui/contextMenu":67,"ui/headers":68}],65:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  BaseUI: {get: function() {
+      return BaseUI;
+    }},
+  __esModule: {value: true}
+});
+var BaseUI = function BaseUI(pluginInstance, hotInstance) {
+  this.hot = hotInstance;
+  this.plugin = pluginInstance;
+};
+($traceurRuntime.createClass)(BaseUI, {}, {});
+;
+
+//# 
+},{}],66:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  CollapsingUI: {get: function() {
+      return CollapsingUI;
+    }},
+  __esModule: {value: true}
+});
+var $___95_base__,
+    $__handsontable_47_helpers_47_dom_47_event__,
+    $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_helpers_47_number__,
+    $__handsontable_47_helpers_47_dom_47_element__,
+    $__headers__;
+var BaseUI = ($___95_base__ = _dereq_("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseUI;
+var stopImmediatePropagation = ($__handsontable_47_helpers_47_dom_47_event__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event"), $__handsontable_47_helpers_47_dom_47_event__ && $__handsontable_47_helpers_47_dom_47_event__.__esModule && $__handsontable_47_helpers_47_dom_47_event__ || {default: $__handsontable_47_helpers_47_dom_47_event__}).stopImmediatePropagation;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+var hasClass = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).hasClass;
+var HeadersUI = ($__headers__ = _dereq_("headers"), $__headers__ && $__headers__.__esModule && $__headers__ || {default: $__headers__}).HeadersUI;
+var CollapsingUI = function CollapsingUI(nestedRowsPlugin, hotInstance) {
+  var $__6 = this;
+  $traceurRuntime.superConstructor($CollapsingUI).call(this, nestedRowsPlugin, hotInstance);
+  this.trimRowsPlugin = nestedRowsPlugin.trimRowsPlugin;
+  this.dataManager = this.plugin.dataManager;
+  this.collapsedRows = [];
+  this.collapsedRowsStash = {
+    stash: (function() {
+      $__6.lastCollapsedRows = $__6.collapsedRows.slice(0);
+      $__6.expandMultipleChildren($__6.lastCollapsedRows, false);
+    }),
+    shiftStash: (function(elementIndex) {
+      var delta = arguments[1] !== (void 0) ? arguments[1] : 1;
+      elementIndex = $__6.translateTrimmedRow(elementIndex);
+      arrayEach($__6.lastCollapsedRows, (function(elem, i) {
+        if (elem > elementIndex - 1) {
+          $__6.lastCollapsedRows[i] = elem + delta;
+        }
+      }));
+    }),
+    applyStash: (function() {
+      $__6.hot.runHooks('skipLengthCache', 100);
+      $__6.collapseMultipleChildren($__6.lastCollapsedRows, true);
+      $__6.lastCollapsedRows = void 0;
+    }),
+    trimStash: (function(realElementIndex, amount) {
+      rangeEach(realElementIndex, realElementIndex + amount - 1, (function(i) {
+        var indexOfElement = $__6.lastCollapsedRows.indexOf(i);
+        if (indexOfElement > -1) {
+          $__6.lastCollapsedRows.splice(indexOfElement, 1);
+        }
+      }));
+    })
+  };
+};
+var $CollapsingUI = CollapsingUI;
+($traceurRuntime.createClass)(CollapsingUI, {
+  collapseChildren: function(row) {
+    var forceRender = arguments[1] !== (void 0) ? arguments[1] : true;
+    var doTrimming = arguments[2] !== (void 0) ? arguments[2] : true;
+    var $__6 = this;
+    var rowObject = null;
+    var rowIndex = null;
+    if (isNaN(row)) {
+      rowObject = row;
+      rowIndex = this.dataManager.getRowIndex(rowObject);
+    } else {
+      rowObject = this.dataManager.getDataObject(row);
+      rowIndex = row;
+    }
+    var rowsToCollapse = [];
+    if (this.dataManager.hasChildren(rowObject)) {
+      arrayEach(rowObject.__children, (function(elem, i) {
+        rowsToCollapse.push($__6.dataManager.getRowIndex(elem));
+      }));
+    }
+    var rowsToTrim = this.collapseRows(rowsToCollapse, true, false);
+    if (doTrimming) {
+      this.trimRowsPlugin.trimRows(rowsToTrim);
+    }
+    if (forceRender) {
+      this.renderAndAdjust();
+    }
+    if (this.collapsedRows.indexOf(rowIndex) === -1) {
+      this.collapsedRows.push(rowIndex);
+    }
+    return rowsToTrim;
+  },
+  collapseMultipleChildren: function(rows) {
+    var forceRender = arguments[1] !== (void 0) ? arguments[1] : true;
+    var doTrimming = arguments[2] !== (void 0) ? arguments[2] : true;
+    var $__6 = this;
+    var rowsToTrim = [];
+    arrayEach(rows, (function(elem, i) {
+      rowsToTrim = rowsToTrim.concat($__6.collapseChildren(elem, false, false));
+    }));
+    if (doTrimming) {
+      this.trimRowsPlugin.trimRows(rowsToTrim);
+    }
+    if (forceRender) {
+      this.renderAndAdjust();
+    }
+  },
+  collapseRow: function(rowIndex) {
+    var recursive = arguments[1] !== (void 0) ? arguments[1] : true;
+    this.collapseRows([rowIndex], recursive);
+  },
+  collapseRows: function(rowIndexes) {
+    var recursive = arguments[1] !== (void 0) ? arguments[1] : true;
+    var doTrimming = arguments[2] !== (void 0) ? arguments[2] : false;
+    var $__6 = this;
+    var rowsToTrim = [];
+    arrayEach(rowIndexes, (function(elem, i) {
+      rowsToTrim.push(elem);
+      if (recursive) {
+        $__6.collapseChildRows(elem, rowsToTrim);
+      }
+    }));
+    if (doTrimming) {
+      this.trimRowsPlugin.trimRows(rowsToTrim);
+    }
+    return rowsToTrim;
+  },
+  collapseChildRows: function(parentIndex) {
+    var rowsToTrim = arguments[1] !== (void 0) ? arguments[1] : [];
+    var recursive = arguments[2] !== (void 0) ? arguments[2] : true;
+    var doTrimming = arguments[3] !== (void 0) ? arguments[3] : false;
+    var $__6 = this;
+    if (this.dataManager.hasChildren(parentIndex)) {
+      var parentObject = this.dataManager.getDataObject(parentIndex);
+      arrayEach(parentObject.__children, (function(elem, i) {
+        var elemIndex = $__6.dataManager.getRowIndex(elem);
+        rowsToTrim.push(elemIndex);
+        $__6.collapseChildRows(elemIndex, rowsToTrim);
+      }));
+    }
+    if (doTrimming) {
+      this.trimRowsPlugin.trimRows(rowsToTrim);
+    }
+  },
+  expandRow: function(rowIndex) {
+    var recursive = arguments[1] !== (void 0) ? arguments[1] : true;
+    this.expandRows([rowIndex], recursive);
+  },
+  expandRows: function(rowIndexes) {
+    var recursive = arguments[1] !== (void 0) ? arguments[1] : true;
+    var doTrimming = arguments[2] !== (void 0) ? arguments[2] : false;
+    var $__6 = this;
+    var rowsToUntrim = [];
+    arrayEach(rowIndexes, (function(elem, i) {
+      rowsToUntrim.push(elem);
+      if (recursive) {
+        $__6.expandChildRows(elem, rowsToUntrim);
+      }
+    }));
+    if (doTrimming) {
+      this.trimRowsPlugin.untrimRows(rowsToUntrim);
+    }
+    return rowsToUntrim;
+  },
+  expandChildRows: function(parentIndex) {
+    var rowsToUntrim = arguments[1] !== (void 0) ? arguments[1] : [];
+    var recursive = arguments[2] !== (void 0) ? arguments[2] : true;
+    var doTrimming = arguments[3] !== (void 0) ? arguments[3] : false;
+    var $__6 = this;
+    if (this.dataManager.hasChildren(parentIndex)) {
+      var parentObject = this.dataManager.getDataObject(parentIndex);
+      arrayEach(parentObject.__children, (function(elem, i) {
+        if (!$__6.isAnyParentCollapsed(elem)) {
+          var elemIndex = $__6.dataManager.getRowIndex(elem);
+          rowsToUntrim.push(elemIndex);
+          $__6.expandChildRows(elemIndex, rowsToUntrim);
+        }
+      }));
+    }
+    if (doTrimming) {
+      this.trimRowsPlugin.untrimRows(rowsToUntrim);
+    }
+  },
+  expandChildren: function(row) {
+    var forceRender = arguments[1] !== (void 0) ? arguments[1] : true;
+    var doTrimming = arguments[2] !== (void 0) ? arguments[2] : true;
+    var $__6 = this;
+    var rowObject = null;
+    var rowIndex = null;
+    if (isNaN(row)) {
+      rowObject = row;
+      rowIndex = this.dataManager.getRowIndex(row);
+    } else {
+      rowObject = this.dataManager.getDataObject(row);
+      rowIndex = row;
+    }
+    var rowsToExpand = [];
+    this.collapsedRows.splice(this.collapsedRows.indexOf(rowIndex), 1);
+    if (this.dataManager.hasChildren(rowObject)) {
+      arrayEach(rowObject.__children, (function(elem, i) {
+        var childIndex = $__6.dataManager.getRowIndex(elem);
+        rowsToExpand.push(childIndex);
+      }));
+    }
+    var rowsToUntrim = this.expandRows(rowsToExpand, true, false);
+    if (doTrimming) {
+      this.trimRowsPlugin.untrimRows(rowsToUntrim);
+    }
+    if (forceRender) {
+      this.renderAndAdjust();
+    }
+    return rowsToUntrim;
+  },
+  expandMultipleChildren: function(rows) {
+    var forceRender = arguments[1] !== (void 0) ? arguments[1] : true;
+    var doTrimming = arguments[2] !== (void 0) ? arguments[2] : true;
+    var $__6 = this;
+    var rowsToUntrim = [];
+    arrayEach(rows, (function(elem, i) {
+      rowsToUntrim = rowsToUntrim.concat($__6.expandChildren(elem, false, false));
+    }));
+    if (doTrimming) {
+      this.trimRowsPlugin.untrimRows(rowsToUntrim);
+    }
+    if (forceRender) {
+      this.renderAndAdjust();
+    }
+  },
+  collapseAll: function() {
+    var $__6 = this;
+    var sourceData = this.hot.getSourceData();
+    var parentsToCollapse = [];
+    arrayEach(sourceData, (function(elem, i) {
+      if ($__6.dataManager.hasChildren(elem)) {
+        parentsToCollapse.push(elem);
+      }
+    }));
+    this.collapseMultipleChildren(parentsToCollapse);
+    this.renderAndAdjust();
+  },
+  expandAll: function() {
+    var $__6 = this;
+    var sourceData = this.hot.getSourceData();
+    var parentsToExpand = [];
+    arrayEach(sourceData, (function(elem, i) {
+      if ($__6.dataManager.hasChildren(elem)) {
+        parentsToExpand.push(elem);
+      }
+    }));
+    this.expandMultipleChildren(parentsToExpand);
+    this.renderAndAdjust();
+  },
+  areChildrenCollapsed: function(row) {
+    var $__6 = this;
+    var rowObj = null;
+    var allCollapsed = true;
+    if (isNaN(row)) {
+      rowObj = row;
+    } else {
+      rowObj = this.dataManager.getDataObject(row);
+    }
+    if (this.dataManager.hasChildren(rowObj)) {
+      arrayEach(rowObj.__children, (function(elem, i) {
+        var rowIndex = $__6.dataManager.getRowIndex(elem);
+        if (!$__6.trimRowsPlugin.isTrimmed(rowIndex)) {
+          allCollapsed = false;
+          return false;
+        }
+      }));
+    }
+    return allCollapsed;
+  },
+  isAnyParentCollapsed: function(rowObj) {
+    var parent = rowObj;
+    while (parent !== null) {
+      parent = this.dataManager.getRowParent(parent);
+      var parentIndex = this.dataManager.getRowIndex(parent);
+      if (this.collapsedRows.indexOf(parentIndex) > -1) {
+        return true;
+      }
+    }
+    return false;
+  },
+  toggleState: function(event, coords, TD) {
+    if (coords.col >= 0) {
+      return;
+    }
+    var row = this.translateTrimmedRow(coords.row);
+    if (hasClass(event.target, HeadersUI.CSS_CLASSES.button)) {
+      if (this.areChildrenCollapsed(row)) {
+        this.expandChildren(row);
+      } else {
+        this.collapseChildren(row);
+      }
+      stopImmediatePropagation(event);
+    }
+  },
+  translateTrimmedRow: function(row) {
+    return this.trimRowsPlugin.rowsMapper.getValueByIndex(row);
+  },
+  renderAndAdjust: function() {
+    this.hot.render();
+    this.hot.view.wt.wtOverlays.adjustElementsSize();
+  }
+}, {}, BaseUI);
+;
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":116,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":117,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121,"_base":65,"headers":68}],67:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  ContextMenuUI: {get: function() {
+      return ContextMenuUI;
+    }},
+  __esModule: {value: true}
+});
+var $___95_base__,
+    $__handsontable_47_helpers_47_number__,
+    $__handsontable_47_helpers_47_array__;
+var BaseUI = ($___95_base__ = _dereq_("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseUI;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var privatePool = new WeakMap();
+var ContextMenuUI = function ContextMenuUI(nestedRowsPlugin, hotInstance) {
+  var $__3 = this;
+  privatePool.set(this, {
+    row_above: (function(key, selection) {
+      $__3.dataManager.addSibling(selection.start.row, 'above');
+    }),
+    row_below: (function(key, selection) {
+      $__3.dataManager.addSibling(selection.start.row, 'below');
+    })
+  });
+  $traceurRuntime.superConstructor($ContextMenuUI).call(this, nestedRowsPlugin, hotInstance);
+  this.dataManager = this.plugin.dataManager;
+};
+var $ContextMenuUI = ContextMenuUI;
+($traceurRuntime.createClass)(ContextMenuUI, {
+  appendOptions: function(defaultOptions) {
+    var newEntries = [];
+    rangeEach(0, defaultOptions.items.length - 1, (function(i) {
+      if (i === 0) {
+        arrayEach(newEntries, (function(val, j) {
+          defaultOptions.items.splice(i + j, 0, val);
+        }));
+        return false;
+      }
+    }));
+    defaultOptions = this.modifyRowInsertingOptions(defaultOptions);
+    return defaultOptions;
+  },
+  modifyRowInsertingOptions: function(defaultOptions) {
+    var priv = privatePool.get(this);
+    rangeEach(0, defaultOptions.items.length - 1, (function(i) {
+      if (priv[defaultOptions.items[i].key] != null) {
+        defaultOptions.items[i].callback = priv[defaultOptions.items[i].key];
+      }
+    }));
+    return defaultOptions;
+  }
+}, {}, BaseUI);
+;
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121,"_base":65}],68:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  HeadersUI: {get: function() {
+      return HeadersUI;
+    }},
+  __esModule: {value: true}
+});
+var $___95_base__,
+    $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_helpers_47_number__,
+    $__handsontable_47_helpers_47_dom_47_element__;
+var BaseUI = ($___95_base__ = _dereq_("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseUI;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+var addClass = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).addClass;
+var HeadersUI = function HeadersUI(nestedRowsPlugin, hotInstance) {
+  $traceurRuntime.superConstructor($HeadersUI).call(this, nestedRowsPlugin, hotInstance);
+  this.dataManager = this.plugin.dataManager;
+  this.collapsingUI = this.plugin.collapsingUI;
+  this.rowHeaderWidthCache = null;
+  this.trimRowsPlugin = nestedRowsPlugin.trimRowsPlugin;
+};
+var $HeadersUI = HeadersUI;
+($traceurRuntime.createClass)(HeadersUI, {
+  appendLevelIndicators: function(row, TH) {
+    row = this.trimRowsPlugin.rowsMapper.getValueByIndex(row);
+    var rowLevel = this.dataManager.getRowLevel(row);
+    var rowObject = this.dataManager.getDataObject(row);
+    var innerDiv = TH.getElementsByTagName('DIV')[0];
+    var innerSpan = innerDiv.querySelector('span.rowHeader');
+    var previousIndicators = innerDiv.querySelectorAll('[class^="ht_nesting"]');
+    arrayEach(previousIndicators, (function(elem, i) {
+      if (elem) {
+        innerDiv.removeChild(elem);
+      }
+    }));
+    addClass(TH, $HeadersUI.CSS_CLASSES.indicatorContainer);
+    if (rowLevel) {
+      var initialContent = innerSpan.cloneNode(true);
+      innerDiv.innerHTML = '';
+      rangeEach(0, rowLevel - 1, (function(i) {
+        var levelIndicator = document.createElement('SPAN');
+        addClass(levelIndicator, $HeadersUI.CSS_CLASSES.emptyIndicator);
+        innerDiv.appendChild(levelIndicator);
+      }));
+      innerDiv.appendChild(initialContent);
+    }
+    if (this.dataManager.hasChildren(rowObject)) {
+      var buttonsContainer = document.createElement('DIV');
+      addClass(TH, $HeadersUI.CSS_CLASSES.parent);
+      if (this.collapsingUI.areChildrenCollapsed(row)) {
+        addClass(buttonsContainer, $HeadersUI.CSS_CLASSES.button + ' ' + $HeadersUI.CSS_CLASSES.expandButton);
+      } else {
+        addClass(buttonsContainer, $HeadersUI.CSS_CLASSES.button + ' ' + $HeadersUI.CSS_CLASSES.collapseButton);
+      }
+      innerDiv.appendChild(buttonsContainer);
+    }
+  },
+  updateRowHeaderWidth: function(deepestLevel) {
+    if (!deepestLevel) {
+      deepestLevel = this.dataManager.cache.levelCount;
+    }
+    this.rowHeaderWidthCache = Math.max(50, 11 + 10 * deepestLevel + 25);
+    this.hot.render();
+  }
+}, {get CSS_CLASSES() {
+    return {
+      indicatorContainer: 'ht_nestingLevels',
+      parent: 'ht_nestingParent',
+      indicator: 'ht_nestingLevel',
+      emptyIndicator: 'ht_nestingLevel_empty',
+      button: 'ht_nestingButton',
+      expandButton: 'ht_nestingExpand',
+      collapseButton: 'ht_nestingCollapse'
+    };
+  }}, BaseUI);
+;
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":116,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121,"_base":65}],69:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  RowsMapper: {get: function() {
+      return RowsMapper;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47__46__46__47_browser__,
+    $__handsontable_47_mixins_47_arrayMapper__,
+    $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_helpers_47_number__;
+var Handsontable = ($___46__46__47__46__46__47_browser__ = _dereq_("../../browser"), $___46__46__47__46__46__47_browser__ && $___46__46__47__46__46__47_browser__.__esModule && $___46__46__47__46__46__47_browser__ || {default: $___46__46__47__46__46__47_browser__}).default;
+var arrayMapper = ($__handsontable_47_mixins_47_arrayMapper__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper"), $__handsontable_47_mixins_47_arrayMapper__ && $__handsontable_47_mixins_47_arrayMapper__.__esModule && $__handsontable_47_mixins_47_arrayMapper__ || {default: $__handsontable_47_mixins_47_arrayMapper__}).arrayMapper;
+var mixin = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).mixin;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+var RowsMapper = function RowsMapper(trimRows) {
+  this.trimRows = trimRows;
+};
+($traceurRuntime.createClass)(RowsMapper, {
+  createMap: function(length) {
+    var $__4 = this;
+    var rowOffset = 0;
+    var originLength = length === void 0 ? this._arrayMap.length : length;
+    this._arrayMap.length = 0;
+    rangeEach(originLength - 1, (function(itemIndex) {
+      if ($__4.trimRows.isTrimmed(itemIndex)) {
+        rowOffset++;
+      } else {
+        $__4._arrayMap[itemIndex - rowOffset] = itemIndex;
+      }
+    }));
+  },
+  destroy: function() {
+    this._arrayMap = null;
+  }
+}, {});
+mixin(RowsMapper, arrayMapper);
+;
+Handsontable.utils.TrimRowsRowsMapper = RowsMapper;
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":122,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":126,"../../browser":3}],70:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  TrimRows: {get: function() {
+      return TrimRows;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_plugins_47__95_base__,
+    $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_helpers_47_number__,
+    $__handsontable_47_plugins__,
+    $__rowsMapper__;
+var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
+var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
+var registerPlugin = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}).registerPlugin;
+var RowsMapper = ($__rowsMapper__ = _dereq_("rowsMapper"), $__rowsMapper__ && $__rowsMapper__.__esModule && $__rowsMapper__ || {default: $__rowsMapper__}).RowsMapper;
+var TrimRows = function TrimRows(hotInstance) {
+  $traceurRuntime.superConstructor($TrimRows).call(this, hotInstance);
+  this.trimmedRows = [];
+  this.removedRows = [];
+  this.rowsMapper = new RowsMapper(this);
+};
+var $TrimRows = TrimRows;
+($traceurRuntime.createClass)(TrimRows, {
+  isEnabled: function() {
+    return !!this.hot.getSettings().trimRows;
+  },
+  enablePlugin: function() {
+    var $__5 = this;
+    if (this.enabled) {
+      return;
+    }
+    var settings = this.hot.getSettings().trimRows;
+    if (Array.isArray(settings)) {
+      this.trimmedRows = settings;
+    }
+    this.rowsMapper.createMap(this.hot.countSourceRows());
+    this.addHook('modifyRow', (function(row, source) {
+      return $__5.onModifyRow(row, source);
+    }));
+    this.addHook('afterCreateRow', (function(index, amount) {
+      return $__5.onAfterCreateRow(index, amount);
+    }));
+    this.addHook('beforeRemoveRow', (function(index, amount) {
+      return $__5.onBeforeRemoveRow(index, amount);
+    }));
+    this.addHook('afterRemoveRow', (function(index, amount) {
+      return $__5.onAfterRemoveRow(index, amount);
+    }));
+    this.addHook('afterLoadData', (function(firstRun) {
+      return $__5.onAfterLoadData(firstRun);
+    }));
+    $traceurRuntime.superGet(this, $TrimRows.prototype, "enablePlugin").call(this);
+  },
+  updatePlugin: function() {
+    this.disablePlugin();
+    this.enablePlugin();
+    $traceurRuntime.superGet(this, $TrimRows.prototype, "updatePlugin").call(this);
+  },
+  disablePlugin: function() {
+    this.trimmedRows = [];
+    this.removedRows.length = 0;
+    this.rowsMapper.clearMap();
+    $traceurRuntime.superGet(this, $TrimRows.prototype, "disablePlugin").call(this);
+  },
+  trimRows: function(rows) {
+    var $__5 = this;
+    arrayEach(rows, (function(row) {
+      row = parseInt(row, 10);
+      if (!$__5.isTrimmed(row)) {
+        $__5.trimmedRows.push(row);
+      }
+    }));
+    this.rowsMapper.createMap(this.hot.countSourceRows());
+    this.hot.runHooks('afterTrimRow', rows);
+  },
+  trimRow: function() {
+    for (var row = [],
+        $__7 = 0; $__7 < arguments.length; $__7++)
+      row[$__7] = arguments[$__7];
+    this.trimRows(row);
+  },
+  untrimRows: function(rows) {
+    var $__5 = this;
+    arrayEach(rows, (function(row) {
+      row = parseInt(row, 10);
+      if ($__5.isTrimmed(row)) {
+        $__5.trimmedRows.splice($__5.trimmedRows.indexOf(row), 1);
+      }
+    }));
+    this.rowsMapper.createMap(this.hot.countSourceRows());
+    this.hot.runHooks('afterUntrimRow', rows);
+  },
+  untrimRow: function() {
+    for (var row = [],
+        $__8 = 0; $__8 < arguments.length; $__8++)
+      row[$__8] = arguments[$__8];
+    this.untrimRows(row);
+  },
+  isTrimmed: function(row) {
+    return this.trimmedRows.indexOf(row) > -1;
+  },
+  untrimAll: function() {
+    this.untrimRows([].concat(this.trimmedRows));
+  },
+  onModifyRow: function(row, source) {
+    if (source !== this.pluginName) {
+      row = this.rowsMapper.getValueByIndex(row);
+    }
+    return row;
+  },
+  onAfterCreateRow: function(index, amount) {
+    this.rowsMapper.shiftItems(index, amount);
+  },
+  onBeforeRemoveRow: function(index, amount) {
+    var $__5 = this;
+    this.removedRows.length = 0;
+    if (index !== false) {
+      rangeEach(index, index + amount - 1, (function(removedIndex) {
+        $__5.removedRows.push($__5.hot.runHooks('modifyRow', removedIndex, $__5.pluginName));
+      }));
+    }
+  },
+  onAfterRemoveRow: function(index, amount) {
+    this.rowsMapper.unshiftItems(this.removedRows);
+  },
+  onAfterLoadData: function(firstRun) {
+    if (!firstRun) {
+      this.rowsMapper.createMap(this.hot.countSourceRows());
+    }
+  },
+  destroy: function() {
+    this.rowsMapper.destroy();
+    $traceurRuntime.superGet(this, $TrimRows.prototype, "destroy").call(this);
+  }
+}, {}, BasePlugin);
+;
+registerPlugin('trimRows', TrimRows);
+
+//# 
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":112,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":121,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":131,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":132,"rowsMapper":69}],71:[function(_dereq_,module,exports){
 if (window.jQuery) {
   (function ($) {
     $.fn.handsontable = function (action) {
@@ -120,7 +7975,7 @@ if (window.jQuery) {
 
 
 
-},{}],2:[function(_dereq_,module,exports){
+},{}],72:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableBorder: {get: function() {
@@ -474,22 +8329,23 @@ var WalkontableBorder = function WalkontableBorder(wotInstance, settings) {
       this.cornerStyle.left = left + width - 4 + 'px';
       this.cornerStyle.borderRightWidth = this.cornerDefaultStyle.borderWidth;
       this.cornerStyle.width = this.cornerDefaultStyle.width;
-      this.cornerStyle.display = 'block';
+      this.cornerStyle.display = 'none';
       trimmingContainer = getTrimmingContainer(this.wot.wtTable.TABLE);
       if (toColumn === this.wot.getSetting('totalColumns') - 1) {
-        cornerOverlappingContainer = toTD.offsetLeft + outerWidth(toTD) >= innerWidth(trimmingContainer);
+        cornerOverlappingContainer = toTD.offsetLeft + outerWidth(toTD) + (parseInt(this.cornerDefaultStyle.width) / 2) >= innerWidth(trimmingContainer);
         if (cornerOverlappingContainer) {
           this.cornerStyle.left = Math.floor(left + width - 3 - parseInt(this.cornerDefaultStyle.width) / 2) + 'px';
           this.cornerStyle.borderRightWidth = 0;
         }
       }
       if (toRow === this.wot.getSetting('totalRows') - 1) {
-        cornerOverlappingContainer = toTD.offsetTop + outerHeight(toTD) >= innerHeight(trimmingContainer);
+        cornerOverlappingContainer = toTD.offsetTop + outerHeight(toTD) + (parseInt(this.cornerDefaultStyle.height) / 2) >= innerHeight(trimmingContainer);
         if (cornerOverlappingContainer) {
           this.cornerStyle.top = Math.floor(top + height - 3 - parseInt(this.cornerDefaultStyle.height) / 2) + 'px';
           this.cornerStyle.borderBottomWidth = 0;
         }
       }
+      this.cornerStyle.display = 'block';
     }
     if (isMobileBrowser()) {
       this.updateMultipleSelectionHandlesPosition(fromRow, fromColumn, top, left, width, height);
@@ -517,7 +8373,7 @@ var WalkontableBorder = function WalkontableBorder(wotInstance, settings) {
 window.WalkontableBorder = WalkontableBorder;
 
 //# 
-},{"cell/coords":5,"eventManager":41,"helpers/browser":43,"helpers/dom/element":46,"helpers/dom/event":47,"overlay/_base.js":11}],3:[function(_dereq_,module,exports){
+},{"cell/coords":75,"eventManager":111,"helpers/browser":113,"helpers/dom/element":116,"helpers/dom/event":117,"overlay/_base.js":81}],73:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableViewportColumnsCalculator: {get: function() {
@@ -691,7 +8547,7 @@ var $WalkontableViewportColumnsCalculator = WalkontableViewportColumnsCalculator
 window.WalkontableViewportColumnsCalculator = WalkontableViewportColumnsCalculator;
 
 //# 
-},{}],4:[function(_dereq_,module,exports){
+},{}],74:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableViewportRowsCalculator: {get: function() {
@@ -782,7 +8638,7 @@ var $WalkontableViewportRowsCalculator = WalkontableViewportRowsCalculator;
 window.WalkontableViewportRowsCalculator = WalkontableViewportRowsCalculator;
 
 //# 
-},{}],5:[function(_dereq_,module,exports){
+},{}],75:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableCellCoords: {get: function() {
@@ -832,7 +8688,7 @@ var WalkontableCellCoords = function WalkontableCellCoords(row, col) {
 window.WalkontableCellCoords = WalkontableCellCoords;
 
 //# 
-},{}],6:[function(_dereq_,module,exports){
+},{}],76:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableCellRange: {get: function() {
@@ -1087,7 +8943,7 @@ var $WalkontableCellRange = WalkontableCellRange;
 window.WalkontableCellRange = WalkontableCellRange;
 
 //# 
-},{"cell/coords":5}],7:[function(_dereq_,module,exports){
+},{"cell/coords":75}],77:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Walkontable: {get: function() {
@@ -1263,7 +9119,7 @@ var Walkontable = function Walkontable(settings) {
 window.Walkontable = Walkontable;
 
 //# 
-},{"event":8,"helpers/dom/element":46,"helpers/object":52,"helpers/string":54,"overlay/_base.js":11,"overlay/debug.js":12,"overlay/left.js":13,"overlay/top.js":14,"overlay/topLeftCorner.js":15,"overlays":16,"scroll":17,"settings":19,"table":20,"viewport":22}],8:[function(_dereq_,module,exports){
+},{"event":78,"helpers/dom/element":116,"helpers/object":122,"helpers/string":124,"overlay/_base.js":81,"overlay/debug.js":82,"overlay/left.js":83,"overlay/top.js":84,"overlay/topLeftCorner.js":85,"overlays":86,"scroll":87,"settings":89,"table":90,"viewport":92}],78:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableEvent: {get: function() {
@@ -1275,7 +9131,7 @@ var $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__,
     $___46__46__47__46__46__47__46__46__47_helpers_47_browser__,
     $___46__46__47__46__46__47__46__46__47_eventManager__;
 var $__0 = ($___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__}),
-    closest = $__0.closest,
+    closestDown = $__0.closestDown,
     hasClass = $__0.hasClass,
     isChildOf = $__0.isChildOf;
 var isMobileBrowser = ($___46__46__47__46__46__47__46__46__47_helpers_47_browser__ = _dereq_("helpers/browser"), $___46__46__47__46__46__47__46__46__47_helpers_47_browser__ && $___46__46__47__46__46__47__46__46__47_helpers_47_browser__.__esModule && $___46__46__47__46__46__47__46__46__47_helpers_47_browser__ || {default: $___46__46__47__46__46__47__46__46__47_helpers_47_browser__}).isMobileBrowser;
@@ -1328,7 +9184,7 @@ function WalkontableEvent(instance) {
         mainWOT;
     if (that.instance.hasSetting('onCellMouseOver')) {
       table = that.instance.wtTable.TABLE;
-      td = closest(event.realTarget, ['TD', 'TH'], table);
+      td = closestDown(event.realTarget, ['TD', 'TH'], table);
       mainWOT = that.instance.cloneSource || that.instance;
       if (td && td !== mainWOT.lastMouseOver && isChildOf(td, table)) {
         mainWOT.lastMouseOver = td;
@@ -1348,11 +9204,14 @@ function WalkontableEvent(instance) {
         dblClickOrigin[0] = null;
         dblClickOrigin[1] = null;
       } else if (cell.TD === dblClickOrigin[0]) {
+        that.instance.getSetting('onCellMouseUp', event, cell.coords, cell.TD, that.instance);
         dblClickOrigin[1] = cell.TD;
         clearTimeout(that.dblClickTimeout[1]);
         that.dblClickTimeout[1] = setTimeout(function() {
           dblClickOrigin[1] = null;
         }, 500);
+      } else if (cell.TD && that.instance.hasSetting('onCellMouseUp')) {
+        that.instance.getSetting('onCellMouseUp', event, cell.coords, cell.TD, that.instance);
       }
     }
   };
@@ -1409,9 +9268,8 @@ function WalkontableEvent(instance) {
 WalkontableEvent.prototype.parentCell = function(elem) {
   var cell = {};
   var TABLE = this.instance.wtTable.TABLE;
-  var TD = closest(elem, ['TD', 'TH'], TABLE);
-  var referenceTABLE = closest(TD, ['TABLE']);
-  if (TD && isChildOf(TD, TABLE) && referenceTABLE == TABLE) {
+  var TD = closestDown(elem, ['TD', 'TH'], TABLE);
+  if (TD) {
     cell.coords = this.instance.wtTable.getCoords(TD);
     cell.TD = TD;
   } else if (hasClass(elem, 'wtBorder') && hasClass(elem, 'current')) {
@@ -1429,7 +9287,7 @@ WalkontableEvent.prototype.parentCell = function(elem) {
 window.WalkontableEvent = WalkontableEvent;
 
 //# 
-},{"eventManager":41,"helpers/browser":43,"helpers/dom/element":46}],9:[function(_dereq_,module,exports){
+},{"eventManager":111,"helpers/browser":113,"helpers/dom/element":116}],79:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableColumnFilter: {get: function() {
@@ -1472,7 +9330,7 @@ var WalkontableColumnFilter = function WalkontableColumnFilter(offset, total, co
 window.WalkontableColumnFilter = WalkontableColumnFilter;
 
 //# 
-},{}],10:[function(_dereq_,module,exports){
+},{}],80:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableRowFilter: {get: function() {
@@ -1515,7 +9373,7 @@ var WalkontableRowFilter = function WalkontableRowFilter(offset, total, countTH)
 window.WalkontableRowFilter = WalkontableRowFilter;
 
 //# 
-},{}],11:[function(_dereq_,module,exports){
+},{}],81:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableOverlay: {get: function() {
@@ -1637,7 +9495,7 @@ var $WalkontableOverlay = WalkontableOverlay;
 window.WalkontableOverlay = WalkontableOverlay;
 
 //# 
-},{"eventManager":41,"helpers/dom/element":46,"helpers/object":52}],12:[function(_dereq_,module,exports){
+},{"eventManager":111,"helpers/dom/element":116,"helpers/object":122}],82:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableDebugOverlay: {get: function() {
@@ -1663,7 +9521,7 @@ window.WalkontableDebugOverlay = WalkontableDebugOverlay;
 WalkontableOverlay.registerOverlay(WalkontableOverlay.CLONE_DEBUG, WalkontableDebugOverlay);
 
 //# 
-},{"_base":11,"helpers/dom/element":46}],13:[function(_dereq_,module,exports){
+},{"_base":81,"helpers/dom/element":116}],83:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableLeftOverlay: {get: function() {
@@ -1837,6 +9695,12 @@ var $WalkontableLeftOverlay = WalkontableLeftOverlay;
     var masterParent = this.wot.wtTable.holder.parentNode;
     var rowHeaders = this.wot.getSetting('rowHeaders');
     var fixedColumnsLeft = this.wot.getSetting('fixedColumnsLeft');
+    var totalRows = this.wot.getSetting('totalRows');
+    if (totalRows) {
+      removeClass(masterParent, 'emptyRows');
+    } else {
+      addClass(masterParent, 'emptyRows');
+    }
     if (fixedColumnsLeft && !rowHeaders.length) {
       addClass(masterParent, 'innerBorderLeft');
     } else if (!fixedColumnsLeft && rowHeaders.length) {
@@ -1857,7 +9721,7 @@ window.WalkontableLeftOverlay = WalkontableLeftOverlay;
 WalkontableOverlay.registerOverlay(WalkontableOverlay.CLONE_LEFT, WalkontableLeftOverlay);
 
 //# 
-},{"_base":11,"helpers/dom/element":46}],14:[function(_dereq_,module,exports){
+},{"_base":81,"helpers/dom/element":116}],84:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableTopOverlay: {get: function() {
@@ -2032,8 +9896,14 @@ var $WalkontableTopOverlay = WalkontableTopOverlay;
     return getScrollTop(this.mainTableScrollableElement);
   },
   adjustHeaderBordersPosition: function(position) {
+    var masterParent = this.wot.wtTable.holder.parentNode;
+    var totalColumns = this.wot.getSetting('totalColumns');
+    if (totalColumns) {
+      removeClass(masterParent, 'emptyColumns');
+    } else {
+      addClass(masterParent, 'emptyColumns');
+    }
     if (this.wot.getSetting('fixedRowsTop') === 0 && this.wot.getSetting('columnHeaders').length > 0) {
-      var masterParent = this.wot.wtTable.holder.parentNode;
       var previousState = hasClass(masterParent, 'innerBorderTop');
       if (position || this.wot.getSetting('totalRows') === 0) {
         addClass(masterParent, 'innerBorderTop');
@@ -2059,7 +9929,7 @@ window.WalkontableTopOverlay = WalkontableTopOverlay;
 WalkontableOverlay.registerOverlay(WalkontableOverlay.CLONE_TOP, WalkontableTopOverlay);
 
 //# 
-},{"_base":11,"helpers/dom/element":46}],15:[function(_dereq_,module,exports){
+},{"_base":81,"helpers/dom/element":116}],85:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableTopLeftCornerOverlay: {get: function() {
@@ -2124,7 +9994,7 @@ window.WalkontableTopLeftCornerOverlay = WalkontableTopLeftCornerOverlay;
 WalkontableOverlay.registerOverlay(WalkontableOverlay.CLONE_TOP_LEFT_CORNER, WalkontableTopLeftCornerOverlay);
 
 //# 
-},{"_base":11,"helpers/dom/element":46}],16:[function(_dereq_,module,exports){
+},{"_base":81,"helpers/dom/element":116}],86:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableOverlays: {get: function() {
@@ -2624,7 +10494,7 @@ var WalkontableOverlays = function WalkontableOverlays(wotInstance) {
 window.WalkontableOverlays = WalkontableOverlays;
 
 //# 
-},{"eventManager":41,"helpers/array":42,"helpers/browser":43,"helpers/dom/element":46,"helpers/unicode":55}],17:[function(_dereq_,module,exports){
+},{"eventManager":111,"helpers/array":112,"helpers/browser":113,"helpers/dom/element":116,"helpers/unicode":125}],87:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableScroll: {get: function() {
@@ -2660,10 +10530,10 @@ var WalkontableScroll = function WalkontableScroll(wotInstance) {
         fixedRowsTop = $__3.fixedRowsTop,
         fixedRowsBottom = $__3.fixedRowsBottom,
         fixedColumnsLeft = $__3.fixedColumnsLeft;
-    if (coords.row < 0 || coords.row > totalRows - 1) {
+    if (coords.row < 0 || coords.row > Math.max(totalRows - 1, 0)) {
       throw new Error(("row " + coords.row + " does not exist"));
     }
-    if (coords.col < 0 || coords.col > totalColumns - 1) {
+    if (coords.col < 0 || coords.col > Math.max(totalColumns - 1, 0)) {
       throw new Error(("column " + coords.col + " does not exist"));
     }
     if (coords.row >= fixedRowsTop && coords.row < this.getFirstVisibleRow()) {
@@ -2806,7 +10676,7 @@ var WalkontableScroll = function WalkontableScroll(wotInstance) {
 window.WalkontableScroll = WalkontableScroll;
 
 //# 
-},{"helpers/dom/element":46,"helpers/number":51}],18:[function(_dereq_,module,exports){
+},{"helpers/dom/element":116,"helpers/number":121}],88:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableSelection: {get: function() {
@@ -2891,8 +10761,15 @@ var WalkontableSelection = function WalkontableSelection(settings, cellRange) {
       sourceCol = wotInstance.wtTable.columnFilter.renderedToSource(column);
       if (sourceCol >= corners[1] && sourceCol <= corners[3]) {
         TH = wotInstance.wtTable.getColumnHeader(sourceCol);
-        if (TH && this.settings.highlightColumnClassName) {
-          addClass(TH, this.settings.highlightColumnClassName);
+        if (TH) {
+          var newClasses = [];
+          if (this.settings.highlightHeaderClassName) {
+            newClasses.push(this.settings.highlightHeaderClassName);
+          }
+          if (this.settings.highlightColumnClassName) {
+            newClasses.push(this.settings.highlightColumnClassName);
+          }
+          addClass(TH, newClasses);
         }
       }
     }
@@ -2900,12 +10777,19 @@ var WalkontableSelection = function WalkontableSelection(settings, cellRange) {
       sourceRow = wotInstance.wtTable.rowFilter.renderedToSource(row);
       if (sourceRow >= corners[0] && sourceRow <= corners[2]) {
         TH = wotInstance.wtTable.getRowHeader(sourceRow);
-        if (TH && this.settings.highlightRowClassName) {
-          addClass(TH, this.settings.highlightRowClassName);
+        if (TH) {
+          var newClasses$__5 = [];
+          if (this.settings.highlightHeaderClassName) {
+            newClasses$__5.push(this.settings.highlightHeaderClassName);
+          }
+          if (this.settings.highlightRowClassName) {
+            newClasses$__5.push(this.settings.highlightRowClassName);
+          }
+          addClass(TH, newClasses$__5);
         }
       }
-      for (var column$__5 = 0; column$__5 < renderedColumns; column$__5++) {
-        sourceCol = wotInstance.wtTable.columnFilter.renderedToSource(column$__5);
+      for (var column$__6 = 0; column$__6 < renderedColumns; column$__6++) {
+        sourceCol = wotInstance.wtTable.columnFilter.renderedToSource(column$__6);
         if (sourceRow >= corners[0] && sourceRow <= corners[2] && sourceCol >= corners[1] && sourceCol <= corners[3]) {
           if (this.settings.className) {
             this.addClassAtCoords(wotInstance, sourceRow, sourceCol, this.settings.className);
@@ -2923,9 +10807,9 @@ var WalkontableSelection = function WalkontableSelection(settings, cellRange) {
     }
     wotInstance.getSetting('onBeforeDrawBorders', corners, this.settings.className);
     if (this.settings.border) {
-      var border$__6 = this.getBorder(wotInstance);
-      if (border$__6) {
-        border$__6.appear(corners);
+      var border$__7 = this.getBorder(wotInstance);
+      if (border$__7) {
+        border$__7.appear(corners);
       }
     }
   }
@@ -2934,7 +10818,7 @@ var WalkontableSelection = function WalkontableSelection(settings, cellRange) {
 window.WalkontableSelection = WalkontableSelection;
 
 //# 
-},{"border":2,"cell/coords":5,"cell/range":6,"helpers/dom/element":46}],19:[function(_dereq_,module,exports){
+},{"border":72,"cell/coords":75,"cell/range":76,"helpers/dom/element":116}],89:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableSettings: {get: function() {
@@ -2989,6 +10873,7 @@ var WalkontableSettings = function WalkontableSettings(wotInstance, settings) {
     viewportColumnCalculatorOverride: null,
     onCellMouseDown: null,
     onCellMouseOver: null,
+    onCellMouseUp: null,
     onCellDblClick: null,
     onCellCornerMouseDown: null,
     onCellCornerDblClick: null,
@@ -3002,12 +10887,14 @@ var WalkontableSettings = function WalkontableSettings(wotInstance, settings) {
     onBeforeStretchingColumnWidth: (function(width) {
       return width;
     }),
+    onModifyRowHeaderWidth: null,
     scrollbarWidth: 10,
     scrollbarHeight: 10,
     renderAllRows: false,
     groups: false,
     rowHeaderWidth: null,
-    columnHeaderHeight: null
+    columnHeaderHeight: null,
+    headerClassName: null
   };
   this.settings = {};
   for (var i in this.defaults) {
@@ -3052,7 +10939,7 @@ var WalkontableSettings = function WalkontableSettings(wotInstance, settings) {
 window.WalkontableSettings = WalkontableSettings;
 
 //# 
-},{"helpers/dom/element":46}],20:[function(_dereq_,module,exports){
+},{"helpers/dom/element":116}],90:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableTable: {get: function() {
@@ -3264,6 +11151,9 @@ var WalkontableTable = function WalkontableTable(wotInstance, table) {
         if (this.wot.selections[i].settings.className) {
           this.removeClassFromCells(this.wot.selections[i].settings.className);
         }
+        if (this.wot.selections[i].settings.highlightHeaderClassName) {
+          this.removeClassFromCells(this.wot.selections[i].settings.highlightHeaderClassName);
+        }
         if (this.wot.selections[i].settings.highlightRowClassName) {
           this.removeClassFromCells(this.wot.selections[i].settings.highlightRowClassName);
         }
@@ -3357,19 +11247,19 @@ var WalkontableTable = function WalkontableTable(wotInstance, table) {
     return this.wot.wtViewport.columnsVisibleCalculator.endColumn;
   },
   isRowBeforeRenderedRows: function(row) {
-    return (this.rowFilter.sourceToRendered(row) < 0 && row >= 0);
+    return this.rowFilter && (this.rowFilter.sourceToRendered(row) < 0 && row >= 0);
   },
   isRowAfterViewport: function(row) {
-    return (this.rowFilter.sourceToRendered(row) > this.getLastVisibleRow());
+    return this.rowFilter && (this.rowFilter.sourceToRendered(row) > this.getLastVisibleRow());
   },
   isRowAfterRenderedRows: function(row) {
-    return (this.rowFilter.sourceToRendered(row) > this.getLastRenderedRow());
+    return this.rowFilter && (this.rowFilter.sourceToRendered(row) > this.getLastRenderedRow());
   },
   isColumnBeforeViewport: function(column) {
-    return this.columnFilter.sourceToRendered(column) < 0 && column >= 0;
+    return this.columnFilter && (this.columnFilter.sourceToRendered(column) < 0 && column >= 0);
   },
   isColumnAfterViewport: function(column) {
-    return (this.columnFilter.sourceToRendered(column) > this.getLastVisibleColumn());
+    return this.columnFilter && (this.columnFilter.sourceToRendered(column) > this.getLastVisibleColumn());
   },
   isLastRowFullyVisible: function() {
     return this.getLastVisibleRow() === this.getLastRenderedRow();
@@ -3453,7 +11343,7 @@ var WalkontableTable = function WalkontableTable(wotInstance, table) {
 window.WalkontableTable = WalkontableTable;
 
 //# 
-},{"cell/coords":5,"cell/range":6,"filter/column":9,"filter/row":10,"helpers/dom/element":46,"tableRenderer":21}],21:[function(_dereq_,module,exports){
+},{"cell/coords":75,"cell/range":76,"filter/column":79,"filter/row":80,"helpers/dom/element":116,"tableRenderer":91}],91:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableTableRenderer: {get: function() {
@@ -3490,7 +11380,11 @@ var WalkontableTableRenderer = function WalkontableTableRenderer(wtTable) {
 ($traceurRuntime.createClass)(WalkontableTableRenderer, {
   render: function() {
     if (!this.wtTable.isWorkingOnClone()) {
-      this.wot.getSetting('beforeDraw', true);
+      var skipRender = {};
+      this.wot.getSetting('beforeDraw', true, skipRender);
+      if (skipRender.skipRender === true) {
+        return;
+      }
     }
     this.rowHeaders = this.wot.getSetting('rowHeaders');
     this.rowHeaderCount = this.rowHeaders.length;
@@ -3508,7 +11402,7 @@ var WalkontableTableRenderer = function WalkontableTableRenderer(wtTable) {
       this.columnHeaders = [];
       this.columnHeaderCount = 0;
     }
-    if (totalColumns > 0) {
+    if (totalColumns >= 0) {
       this.adjustAvailableNodes();
       adjusted = true;
       this.renderColumnHeaders();
@@ -3531,17 +11425,18 @@ var WalkontableTableRenderer = function WalkontableTableRenderer(wtTable) {
     if (!this.wtTable.isWorkingOnClone()) {
       this.wot.wtViewport.createVisibleCalculators();
       this.wot.wtOverlays.refresh(false);
+      this.wot.wtOverlays.applyToDOM();
       var hiderWidth = outerWidth(this.wtTable.hider);
       var tableWidth = outerWidth(this.wtTable.TABLE);
       if (hiderWidth !== 0 && (tableWidth !== hiderWidth)) {
         this.adjustColumnWidths(columnsToRender);
       }
-      this.wot.wtOverlays.applyToDOM();
       if (workspaceWidth !== this.wot.wtViewport.getWorkspaceWidth()) {
         this.wot.wtViewport.containerWidth = null;
         var firstRendered = this.wtTable.getFirstRenderedColumn();
         var lastRendered = this.wtTable.getLastRenderedColumn();
         var rowHeaderWidthSetting = this.wot.getSetting('rowHeaderWidth');
+        rowHeaderWidthSetting = this.instance.getSetting('onModifyRowHeaderWidth', rowHeaderWidthSetting) || rowHeaderWidthSetting;
         if (rowHeaderWidthSetting != null) {
           for (var i = 0; i < this.rowHeaderCount; i++) {
             this.COLGROUP.childNodes[i].style.width = (isNaN(rowHeaderWidthSetting) ? rowHeaderWidthSetting[i] : rowHeaderWidthSetting) + 'px';
@@ -3726,6 +11621,7 @@ var WalkontableTableRenderer = function WalkontableTableRenderer(wtTable) {
     }
     this.wot.wtViewport.columnsRenderCalculator.refreshStretching(this.wot.wtViewport.getViewportWidth() - scrollbarCompensation);
     var rowHeaderWidthSetting = this.wot.getSetting('rowHeaderWidth');
+    rowHeaderWidthSetting = this.instance.getSetting('onModifyRowHeaderWidth', rowHeaderWidthSetting) || rowHeaderWidthSetting;
     if (rowHeaderWidthSetting != null) {
       for (var i = 0; i < this.rowHeaderCount; i++) {
         this.COLGROUP.childNodes[i].style.width = (isNaN(rowHeaderWidthSetting) ? rowHeaderWidthSetting[i] : rowHeaderWidthSetting) + 'px';
@@ -3785,7 +11681,6 @@ var WalkontableTableRenderer = function WalkontableTableRenderer(wtTable) {
     this.adjustThead();
   },
   renderColumnHeaders: function() {
-    var overlayName = this.wot.getOverlayName();
     if (!this.columnHeaderCount) {
       return;
     }
@@ -3886,7 +11781,7 @@ function replaceThWithTd(TH, TR) {
 window.WalkontableTableRenderer = WalkontableTableRenderer;
 
 //# 
-},{"helpers/dom/element":46}],22:[function(_dereq_,module,exports){
+},{"helpers/dom/element":116}],92:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableViewport: {get: function() {
@@ -4058,6 +11953,7 @@ var WalkontableViewport = function WalkontableViewport(wotInstance) {
         this.rowHeaderWidth = 0;
       }
     }
+    this.rowHeaderWidth = this.instance.getSetting('onModifyRowHeaderWidth', this.rowHeaderWidth) || this.rowHeaderWidth;
     return this.rowHeaderWidth;
   },
   getViewportWidth: function() {
@@ -4189,11 +12085,13 @@ var WalkontableViewport = function WalkontableViewport(wotInstance) {
 window.WalkontableViewport = WalkontableViewport;
 
 //# 
-},{"browser":23,"calculator/viewportColumns":3,"calculator/viewportRows":4,"eventManager":41,"helpers/dom/element":46}],23:[function(_dereq_,module,exports){
+},{"browser":93,"calculator/viewportColumns":73,"calculator/viewportRows":74,"eventManager":111,"helpers/dom/element":116}],93:[function(_dereq_,module,exports){
 "use strict";
 var $__shims_47_runtime__,
     $__es6collections__,
     $__pluginHooks__,
+    $__numbro__,
+    $__moment__,
     $__core__,
     $__renderers_47__95_cellDecorator__,
     $__cellTypes__,
@@ -4223,6 +12121,16 @@ Handsontable.utils = {};
 ($__shims_47_runtime__ = _dereq_("shims/runtime"), $__shims_47_runtime__ && $__shims_47_runtime__.__esModule && $__shims_47_runtime__ || {default: $__shims_47_runtime__});
 ($__es6collections__ = _dereq_("es6collections"), $__es6collections__ && $__es6collections__.__esModule && $__es6collections__ || {default: $__es6collections__});
 var Hooks = ($__pluginHooks__ = _dereq_("pluginHooks"), $__pluginHooks__ && $__pluginHooks__.__esModule && $__pluginHooks__ || {default: $__pluginHooks__}).Hooks;
+var numbro = ($__numbro__ = _dereq_("numbro"), $__numbro__ && $__numbro__.__esModule && $__numbro__ || {default: $__numbro__}).default;
+var moment = ($__moment__ = _dereq_("moment"), $__moment__ && $__moment__.__esModule && $__moment__ || {default: $__moment__}).default;
+if (typeof window === 'object') {
+  if (typeof window.numbro === 'undefined') {
+    window.numbro = numbro;
+  }
+  if (typeof window.moment === 'undefined') {
+    window.moment = moment;
+  }
+}
 if (!Handsontable.hooks) {
   Handsontable.hooks = new Hooks();
 }
@@ -4247,10 +12155,10 @@ var domHelpers = ($__helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"
 var domEventHelpers = ($__helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $__helpers_47_dom_47_event__ && $__helpers_47_dom_47_event__.__esModule && $__helpers_47_dom_47_event__ || {default: $__helpers_47_dom_47_event__});
 var HELPERS = [arrayHelpers, browserHelpers, dataHelpers, dateHelpers, featureHelpers, functionHelpers, mixedHelpers, numberHelpers, objectHelpers, settingHelpers, stringHelpers, unicodeHelpers];
 var DOM = [domHelpers, domEventHelpers];
-Handsontable.buildDate = 'Mon Jun 06 2016 13:39:18 GMT+0200 (CEST)';
+Handsontable.buildDate = 'Tue Sep 06 2016 14:40:09 GMT+0200 (CEST)';
 Handsontable.packageName = 'handsontable-pro';
-Handsontable.version = '1.4.1';
-var baseVersion = '0.25.1';
+Handsontable.version = '1.6.0';
+var baseVersion = '0.27.0';
 if (!/^@@/.test(baseVersion)) {
   Handsontable.baseVersion = baseVersion;
 }
@@ -4276,7 +12184,7 @@ arrayHelpers.arrayEach(DOM, (function(helper) {
 }));
 
 //# 
-},{"cellTypes":24,"core":25,"es6collections":"es6collections","helpers/array":42,"helpers/browser":43,"helpers/data":44,"helpers/date":45,"helpers/dom/element":46,"helpers/dom/event":47,"helpers/feature":48,"helpers/function":49,"helpers/mixed":50,"helpers/number":51,"helpers/object":52,"helpers/setting":53,"helpers/string":54,"helpers/unicode":55,"pluginHooks":60,"plugins":61,"plugins/jqueryHandsontable":1,"renderers/_cellDecorator":95,"shims/runtime":102}],24:[function(_dereq_,module,exports){
+},{"cellTypes":94,"core":95,"es6collections":"es6collections","helpers/array":112,"helpers/browser":113,"helpers/data":114,"helpers/date":115,"helpers/dom/element":116,"helpers/dom/event":117,"helpers/feature":118,"helpers/function":119,"helpers/mixed":120,"helpers/number":121,"helpers/object":122,"helpers/setting":123,"helpers/string":124,"helpers/unicode":125,"moment":undefined,"numbro":undefined,"pluginHooks":130,"plugins":131,"plugins/jqueryHandsontable":71,"renderers/_cellDecorator":181,"shims/runtime":188}],94:[function(_dereq_,module,exports){
 "use strict";
 var $__helpers_47_browser__,
     $__editors__,
@@ -4386,12 +12294,14 @@ Handsontable.cellLookup = {validator: {
   }};
 
 //# 
-},{"browser":23,"editors":29,"editors/autocompleteEditor":31,"editors/checkboxEditor":32,"editors/dateEditor":33,"editors/dropdownEditor":34,"editors/handsontableEditor":35,"editors/mobileTextEditor":36,"editors/numericEditor":37,"editors/passwordEditor":38,"editors/selectEditor":39,"editors/textEditor":40,"helpers/browser":43,"renderers":94,"renderers/autocompleteRenderer":96,"renderers/checkboxRenderer":97,"renderers/htmlRenderer":98,"renderers/numericRenderer":99,"renderers/passwordRenderer":100,"renderers/textRenderer":101,"validators/autocompleteValidator":107,"validators/dateValidator":108,"validators/numericValidator":109,"validators/timeValidator":110}],25:[function(_dereq_,module,exports){
+},{"browser":93,"editors":99,"editors/autocompleteEditor":101,"editors/checkboxEditor":102,"editors/dateEditor":103,"editors/dropdownEditor":104,"editors/handsontableEditor":105,"editors/mobileTextEditor":106,"editors/numericEditor":107,"editors/passwordEditor":108,"editors/selectEditor":109,"editors/textEditor":110,"helpers/browser":113,"renderers":180,"renderers/autocompleteRenderer":182,"renderers/checkboxRenderer":183,"renderers/htmlRenderer":184,"renderers/numericRenderer":185,"renderers/passwordRenderer":186,"renderers/textRenderer":187,"validators/autocompleteValidator":193,"validators/dateValidator":194,"validators/numericValidator":195,"validators/timeValidator":196}],95:[function(_dereq_,module,exports){
 "use strict";
 var $__browser__,
-    $__numeral__,
+    $__numbro__,
     $__helpers_47_dom_47_element__,
     $__helpers_47_setting__,
+    $__helpers_47_function__,
+    $__helpers_47_mixed__,
     $__helpers_47_browser__,
     $__dataMap__,
     $__editorManager__,
@@ -4407,41 +12317,45 @@ var $__browser__,
     $__helpers_47_data__,
     $__3rdparty_47_walkontable_47_src_47_cell_47_coords__,
     $__3rdparty_47_walkontable_47_src_47_cell_47_range__,
-    $__3rdparty_47_walkontable_47_src_47_selection__,
     $__3rdparty_47_walkontable_47_src_47_calculator_47_viewportColumns__;
 var Handsontable = ($__browser__ = _dereq_("browser"), $__browser__ && $__browser__.__esModule && $__browser__ || {default: $__browser__}).default;
-var numeral = ($__numeral__ = _dereq_("numeral"), $__numeral__ && $__numeral__.__esModule && $__numeral__ || {default: $__numeral__}).default;
+var numbro = ($__numbro__ = _dereq_("numbro"), $__numbro__ && $__numbro__.__esModule && $__numbro__ || {default: $__numbro__}).default;
 var $__2 = ($__helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $__helpers_47_dom_47_element__ && $__helpers_47_dom_47_element__.__esModule && $__helpers_47_dom_47_element__ || {default: $__helpers_47_dom_47_element__}),
     addClass = $__2.addClass,
     empty = $__2.empty,
     isChildOfWebComponentTable = $__2.isChildOfWebComponentTable,
     removeClass = $__2.removeClass;
 var columnFactory = ($__helpers_47_setting__ = _dereq_("helpers/setting"), $__helpers_47_setting__ && $__helpers_47_setting__.__esModule && $__helpers_47_setting__ || {default: $__helpers_47_setting__}).columnFactory;
+var isFunction = ($__helpers_47_function__ = _dereq_("helpers/function"), $__helpers_47_function__ && $__helpers_47_function__.__esModule && $__helpers_47_function__ || {default: $__helpers_47_function__}).isFunction;
+var $__5 = ($__helpers_47_mixed__ = _dereq_("helpers/mixed"), $__helpers_47_mixed__ && $__helpers_47_mixed__.__esModule && $__helpers_47_mixed__ || {default: $__helpers_47_mixed__}),
+    isDefined = $__5.isDefined,
+    isUndefined = $__5.isUndefined;
 var isMobileBrowser = ($__helpers_47_browser__ = _dereq_("helpers/browser"), $__helpers_47_browser__ && $__helpers_47_browser__.__esModule && $__helpers_47_browser__ || {default: $__helpers_47_browser__}).isMobileBrowser;
 var DataMap = ($__dataMap__ = _dereq_("dataMap"), $__dataMap__ && $__dataMap__.__esModule && $__dataMap__ || {default: $__dataMap__}).DataMap;
 var EditorManager = ($__editorManager__ = _dereq_("editorManager"), $__editorManager__ && $__editorManager__.__esModule && $__editorManager__ || {default: $__editorManager__}).EditorManager;
 var eventManagerObject = ($__eventManager__ = _dereq_("eventManager"), $__eventManager__ && $__eventManager__.__esModule && $__eventManager__ || {default: $__eventManager__}).eventManager;
-var $__8 = ($__helpers_47_object__ = _dereq_("helpers/object"), $__helpers_47_object__ && $__helpers_47_object__.__esModule && $__helpers_47_object__ || {default: $__helpers_47_object__}),
-    extend = $__8.extend,
-    duckSchema = $__8.duckSchema,
-    isObjectEquals = $__8.isObjectEquals,
-    deepClone = $__8.deepClone;
-var $__9 = ($__helpers_47_array__ = _dereq_("helpers/array"), $__helpers_47_array__ && $__helpers_47_array__.__esModule && $__helpers_47_array__ || {default: $__helpers_47_array__}),
-    arrayFlatten = $__9.arrayFlatten,
-    arrayMap = $__9.arrayMap;
+var $__10 = ($__helpers_47_object__ = _dereq_("helpers/object"), $__helpers_47_object__ && $__helpers_47_object__.__esModule && $__helpers_47_object__ || {default: $__helpers_47_object__}),
+    deepClone = $__10.deepClone,
+    duckSchema = $__10.duckSchema,
+    extend = $__10.extend,
+    isObject = $__10.isObject,
+    isObjectEquals = $__10.isObjectEquals,
+    deepObjectSize = $__10.deepObjectSize;
+var $__11 = ($__helpers_47_array__ = _dereq_("helpers/array"), $__helpers_47_array__ && $__helpers_47_array__.__esModule && $__helpers_47_array__ || {default: $__helpers_47_array__}),
+    arrayFlatten = $__11.arrayFlatten,
+    arrayMap = $__11.arrayMap;
 var getPlugin = ($__plugins__ = _dereq_("plugins"), $__plugins__ && $__plugins__.__esModule && $__plugins__ || {default: $__plugins__}).getPlugin;
 var getRenderer = ($__renderers__ = _dereq_("renderers"), $__renderers__ && $__renderers__.__esModule && $__renderers__ || {default: $__renderers__}).getRenderer;
 var randomString = ($__helpers_47_string__ = _dereq_("helpers/string"), $__helpers_47_string__ && $__helpers_47_string__.__esModule && $__helpers_47_string__ || {default: $__helpers_47_string__}).randomString;
 var rangeEach = ($__helpers_47_number__ = _dereq_("helpers/number"), $__helpers_47_number__ && $__helpers_47_number__.__esModule && $__helpers_47_number__ || {default: $__helpers_47_number__}).rangeEach;
 var TableView = ($__tableView__ = _dereq_("tableView"), $__tableView__ && $__tableView__.__esModule && $__tableView__ || {default: $__tableView__}).TableView;
 var DataSource = ($__dataSource__ = _dereq_("dataSource"), $__dataSource__ && $__dataSource__.__esModule && $__dataSource__ || {default: $__dataSource__}).DataSource;
-var $__16 = ($__helpers_47_data__ = _dereq_("helpers/data"), $__helpers_47_data__ && $__helpers_47_data__.__esModule && $__helpers_47_data__ || {default: $__helpers_47_data__}),
-    translateRowsToColumns = $__16.translateRowsToColumns,
-    cellMethodLookupFactory = $__16.cellMethodLookupFactory,
-    spreadsheetColumnLabel = $__16.spreadsheetColumnLabel;
+var $__18 = ($__helpers_47_data__ = _dereq_("helpers/data"), $__helpers_47_data__ && $__helpers_47_data__.__esModule && $__helpers_47_data__ || {default: $__helpers_47_data__}),
+    translateRowsToColumns = $__18.translateRowsToColumns,
+    cellMethodLookupFactory = $__18.cellMethodLookupFactory,
+    spreadsheetColumnLabel = $__18.spreadsheetColumnLabel;
 var WalkontableCellCoords = ($__3rdparty_47_walkontable_47_src_47_cell_47_coords__ = _dereq_("3rdparty/walkontable/src/cell/coords"), $__3rdparty_47_walkontable_47_src_47_cell_47_coords__ && $__3rdparty_47_walkontable_47_src_47_cell_47_coords__.__esModule && $__3rdparty_47_walkontable_47_src_47_cell_47_coords__ || {default: $__3rdparty_47_walkontable_47_src_47_cell_47_coords__}).WalkontableCellCoords;
 var WalkontableCellRange = ($__3rdparty_47_walkontable_47_src_47_cell_47_range__ = _dereq_("3rdparty/walkontable/src/cell/range"), $__3rdparty_47_walkontable_47_src_47_cell_47_range__ && $__3rdparty_47_walkontable_47_src_47_cell_47_range__.__esModule && $__3rdparty_47_walkontable_47_src_47_cell_47_range__ || {default: $__3rdparty_47_walkontable_47_src_47_cell_47_range__}).WalkontableCellRange;
-var WalkontableSelection = ($__3rdparty_47_walkontable_47_src_47_selection__ = _dereq_("3rdparty/walkontable/src/selection"), $__3rdparty_47_walkontable_47_src_47_selection__ && $__3rdparty_47_walkontable_47_src_47_selection__.__esModule && $__3rdparty_47_walkontable_47_src_47_selection__ || {default: $__3rdparty_47_walkontable_47_src_47_selection__}).WalkontableSelection;
 var WalkontableViewportColumnsCalculator = ($__3rdparty_47_walkontable_47_src_47_calculator_47_viewportColumns__ = _dereq_("3rdparty/walkontable/src/calculator/viewportColumns"), $__3rdparty_47_walkontable_47_src_47_calculator_47_viewportColumns__ && $__3rdparty_47_walkontable_47_src_47_calculator_47_viewportColumns__.__esModule && $__3rdparty_47_walkontable_47_src_47_calculator_47_viewportColumns__ || {default: $__3rdparty_47_walkontable_47_src_47_calculator_47_viewportColumns__}).WalkontableViewportColumnsCalculator;
 Handsontable.activeGuid = null;
 Handsontable.Core = function Core(rootElement, userSettings) {
@@ -4554,10 +12468,10 @@ Handsontable.Core = function Core(rootElement, userSettings) {
         case 'remove_col':
           var logicalColumnIndex = translateColIndex(index);
           datamap.removeCol(index, amount);
-          for (var row$__22 = 0,
-              len$__23 = instance.countSourceRows(); row$__22 < len$__23; row$__22++) {
-            if (priv.cellSettings[row$__22]) {
-              priv.cellSettings[row$__22].splice(logicalColumnIndex, amount);
+          for (var row$__24 = 0,
+              len$__25 = instance.countSourceRows(); row$__24 < len$__25; row$__24++) {
+            if (priv.cellSettings[row$__24]) {
+              priv.cellSettings[row$__24].splice(logicalColumnIndex, amount);
             }
           }
           var fixedColumnsLeft = instance.getSettings().fixedColumnsLeft;
@@ -4593,8 +12507,8 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       if (priv.settings.minSpareRows) {
         var emptyRows = instance.countEmptyRows(true);
         if (emptyRows < priv.settings.minSpareRows) {
-          for (; emptyRows < priv.settings.minSpareRows && instance.countRows() < priv.settings.maxRows; emptyRows++) {
-            datamap.createRow(instance.countRows(), 1, true);
+          for (; emptyRows < priv.settings.minSpareRows && instance.countSourceRows() < priv.settings.maxRows; emptyRows++) {
+            datamap.createRow(instance.countSourceRows(), 1, true);
           }
         }
       }
@@ -4785,7 +12699,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
               if (source === 'autofill') {
                 var result = instance.runHooks('beforeAutofillInsidePopulate', index, direction, input, deltas, {}, selected);
                 if (result) {
-                  value = typeof(result.value) === 'undefined' ? value : result.value;
+                  value = isUndefined(result.value) ? value : result.value;
                 }
               }
               if (value !== null && typeof value === 'object') {
@@ -4822,9 +12736,13 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       cols: false,
       rows: false
     },
-    setSelectedHeaders: function(rows, cols) {
+    setSelectedHeaders: function() {
+      var rows = arguments[0] !== (void 0) ? arguments[0] : false;
+      var cols = arguments[1] !== (void 0) ? arguments[1] : false;
+      var corner = arguments[2] !== (void 0) ? arguments[2] : false;
       instance.selection.selectedHeader.rows = rows;
       instance.selection.selectedHeader.cols = cols;
+      instance.selection.selectedHeader.corner = corner;
     },
     begin: function() {
       instance.selection.inProgress = true;
@@ -4881,7 +12799,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
         instance.view.wt.selections.area.add(priv.selRange.from);
         instance.view.wt.selections.area.add(priv.selRange.to);
       }
-      if (priv.settings.currentRowClassName || priv.settings.currentColClassName) {
+      if (priv.settings.currentHeaderClassName || priv.settings.currentRowClassName || priv.settings.currentColClassName) {
         instance.view.wt.selections.highlight.clear();
         instance.view.wt.selections.highlight.add(priv.selRange.from);
         instance.view.wt.selections.highlight.add(priv.selRange.to);
@@ -5018,11 +12936,12 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       priv.selRange = null;
       instance.view.wt.selections.current.clear();
       instance.view.wt.selections.area.clear();
-      if (priv.settings.currentRowClassName || priv.settings.currentColClassName) {
+      if (priv.settings.currentHeaderClassName || priv.settings.currentRowClassName || priv.settings.currentColClassName) {
         instance.view.wt.selections.highlight.clear();
       }
       editorManager.destroyEditor();
       selection.refreshBorders();
+      removeClass(instance.rootElement, ['ht__selection--rows', 'ht__selection--columns']);
       Handsontable.hooks.run(instance, 'afterDeselect');
     },
     selectAll: function() {
@@ -5104,15 +13023,19 @@ Handsontable.Core = function Core(rootElement, userSettings) {
         if (cellProperties.type === 'numeric' && typeof changes[i][3] === 'string') {
           if (changes[i][3].length > 0 && (/^-?[\d\s]*(\.|\,)?\d*$/.test(changes[i][3]) || cellProperties.format)) {
             var len = changes[i][3].length;
-            if (typeof cellProperties.language == 'undefined') {
-              numeral.language('en');
+            if (isUndefined(cellProperties.language)) {
+              numbro.culture('en-US');
             } else if (changes[i][3].indexOf('.') === len - 3 && changes[i][3].indexOf(',') === -1) {
-              numeral.language('en');
+              numbro.culture('en-US');
             } else {
-              numeral.language(cellProperties.language);
+              numbro.culture(cellProperties.language);
             }
-            if (numeral.validate(changes[i][3])) {
-              changes[i][3] = numeral().unformat(changes[i][3]);
+            var delimiters = numbro.cultureData(numbro.culture()).delimiters;
+            if (new RegExp('^\\' + delimiters.decimal + '[0-9]+$').test(changes[i][3] + '')) {
+              changes[i][3] = '0' + changes[i][3];
+            }
+            if (numbro.validate(changes[i][3]) || !isNaN(parseFloat(changes[i][3]))) {
+              changes[i][3] = numbro().unformat(changes[i][3]);
             }
           }
         }
@@ -5139,7 +13062,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       var beforeChangeResult;
       if (changes.length) {
         beforeChangeResult = Handsontable.hooks.run(instance, 'beforeChange', changes, source);
-        if (typeof beforeChangeResult === 'function') {
+        if (isFunction(beforeChangeResult)) {
           console.warn('Your beforeChange callback returns a function. It\'s not supported since Handsontable 0.12.1 (and the returned function will not be executed).');
         } else if (beforeChangeResult === false) {
           changes.splice(0, changes.length);
@@ -5198,7 +13121,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
         };
       })(validator);
     }
-    if (typeof validator == 'function') {
+    if (isFunction(validator)) {
       value = Handsontable.hooks.run(instance, 'beforeValidate', value, cellProperties.visualRow, cellProperties.prop, source);
       instance._registerTimeout(setTimeout(function() {
         validator.call(cellProperties, value, function(valid) {
@@ -5327,7 +13250,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
     GridSettings.prototype.data = data;
     if (Array.isArray(priv.settings.dataSchema) || Array.isArray(data[0])) {
       instance.dataType = 'array';
-    } else if (typeof priv.settings.dataSchema === 'function') {
+    } else if (isFunction(priv.settings.dataSchema)) {
       instance.dataType = 'function';
     } else {
       instance.dataType = 'object';
@@ -5355,7 +13278,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
     }
   };
   this.getData = function(r, c, r2, c2) {
-    if (typeof r === 'undefined') {
+    if (isUndefined(r)) {
       return datamap.getAll();
     } else {
       return datamap.getRange(new WalkontableCellCoords(r, c), new WalkontableCellCoords(r2, c2), datamap.DESTINATION_RENDERER);
@@ -5371,12 +13294,14 @@ Handsontable.Core = function Core(rootElement, userSettings) {
     return datamap.getSchema();
   };
   this.updateSettings = function(settings, init) {
-    var i,
-        clen;
-    if (typeof settings.rows !== 'undefined') {
+    var columnsAsFunc = false;
+    var i;
+    var j;
+    var clen;
+    if (isDefined(settings.rows)) {
       throw new Error('"rows" setting is no longer supported. do you mean startRows, minRows or maxRows?');
     }
-    if (typeof settings.cols !== 'undefined') {
+    if (isDefined(settings.cols)) {
       throw new Error('"cols" setting is no longer supported. do you mean startCols, minCols or maxCols?');
     }
     for (i in settings) {
@@ -5384,7 +13309,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
         continue;
       } else {
         if (Handsontable.hooks.getRegistered().indexOf(i) > -1) {
-          if (typeof settings[i] === 'function' || Array.isArray(settings[i])) {
+          if (isFunction(settings[i]) || Array.isArray(settings[i])) {
             instance.addHook(i, settings[i]);
           }
         } else {
@@ -5402,34 +13327,46 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       datamap.createMap();
     }
     clen = instance.countCols();
+    if (settings.columns && isFunction(settings.columns)) {
+      clen = instance.countSourceCols();
+      columnsAsFunc = true;
+    }
     if (settings.cell !== void 0 || settings.cells !== void 0 || settings.columns !== void 0) {
       priv.cellSettings.length = 0;
     }
     if (clen > 0) {
-      var proto,
-          column;
-      for (i = 0; i < clen; i++) {
-        priv.columnSettings[i] = columnFactory(GridSettings, priv.columnsSettingConflicts);
-        proto = priv.columnSettings[i].prototype;
+      var proto;
+      var column;
+      for (i = 0, j = 0; i < clen; i++) {
+        if (columnsAsFunc && !settings.columns(i)) {
+          continue;
+        }
+        priv.columnSettings[j] = columnFactory(GridSettings, priv.columnsSettingConflicts);
+        proto = priv.columnSettings[j].prototype;
         if (GridSettings.prototype.columns) {
-          column = GridSettings.prototype.columns[i];
+          if (columnsAsFunc) {
+            column = GridSettings.prototype.columns(i);
+          } else {
+            column = GridSettings.prototype.columns[j];
+          }
           if (column) {
             extend(proto, column);
             extend(proto, expandType(column));
           }
         }
+        j++;
       }
     }
-    if (typeof settings.cell !== 'undefined') {
-      for (i in settings.cell) {
-        if (settings.cell.hasOwnProperty(i)) {
-          var cell = settings.cell[i];
+    if (isDefined(settings.cell)) {
+      for (var key in settings.cell) {
+        if (settings.cell.hasOwnProperty(key)) {
+          var cell = settings.cell[key];
           instance.setCellMetaObject(cell.row, cell.col, cell);
         }
       }
     }
     Handsontable.hooks.run(instance, 'afterCellMetaReset');
-    if (typeof settings.className !== 'undefined') {
+    if (isDefined(settings.className)) {
       if (GridSettings.prototype.className) {
         removeClass(instance.rootElement, GridSettings.prototype.className);
       }
@@ -5442,7 +13379,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       currentHeight = parseInt(instance.rootElement.style.height, 10);
     }
     var height = settings.height;
-    if (typeof height == 'function') {
+    if (isFunction(height)) {
       height = height();
     }
     if (init) {
@@ -5452,9 +13389,9 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       }
     }
     if (height === null) {
-      var initialStyle$__24 = instance.rootElement.getAttribute('data-initialstyle');
-      if (initialStyle$__24 && (initialStyle$__24.indexOf('height') > -1 || initialStyle$__24.indexOf('overflow') > -1)) {
-        instance.rootElement.setAttribute('style', initialStyle$__24);
+      var initialStyle$__26 = instance.rootElement.getAttribute('data-initialstyle');
+      if (initialStyle$__26 && (initialStyle$__26.indexOf('height') > -1 || initialStyle$__26.indexOf('overflow') > -1)) {
+        instance.rootElement.setAttribute('style', initialStyle$__26);
       } else {
         instance.rootElement.style.height = '';
         instance.rootElement.style.overflow = '';
@@ -5465,7 +13402,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
     }
     if (typeof settings.width != 'undefined') {
       var width = settings.width;
-      if (typeof width == 'function') {
+      if (isFunction(width)) {
         width = width();
       }
       instance.rootElement.style.width = width + 'px';
@@ -5486,7 +13423,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
   this.getValue = function() {
     var sel = instance.getSelected();
     if (GridSettings.prototype.getValue) {
-      if (typeof GridSettings.prototype.getValue === 'function') {
+      if (isFunction(GridSettings.prototype.getValue)) {
         return GridSettings.prototype.getValue.call(instance);
       } else if (sel) {
         return instance.getData()[sel[0]][GridSettings.prototype.getValue];
@@ -5577,7 +13514,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
     return data[0];
   };
   this.getDataType = function(rowFrom, columnFrom, rowTo, columnTo) {
-    var $__21 = this;
+    var $__22 = this;
     var previousType = null;
     var currentType = null;
     if (rowFrom === void 0) {
@@ -5596,7 +13533,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
     rangeEach(Math.min(rowFrom, rowTo), Math.max(rowFrom, rowTo), (function(row) {
       var isTypeEqual = true;
       rangeEach(Math.min(columnFrom, columnTo), Math.max(columnFrom, columnTo), (function(column) {
-        var cellType = $__21.getCellMeta(row, column);
+        var cellType = $__22.getCellMeta(row, column);
         currentType = cellType.type;
         if (previousType) {
           isTypeEqual = previousType === currentType;
@@ -5727,7 +13664,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       }));
     } else if (Array.isArray(rowHeader) && rowHeader[row] !== void 0) {
       rowHeader = rowHeader[row];
-    } else if (typeof rowHeader === 'function') {
+    } else if (isFunction(rowHeader)) {
       rowHeader = rowHeader(row);
     } else if (rowHeader && typeof rowHeader !== 'string' && typeof rowHeader !== 'number') {
       rowHeader = row + 1;
@@ -5750,29 +13687,44 @@ Handsontable.Core = function Core(rootElement, userSettings) {
     return false;
   };
   this.getColHeader = function(col) {
+    var columnsAsFunc = priv.settings.columns && isFunction(priv.settings.columns);
+    var result = priv.settings.colHeaders;
     col = Handsontable.hooks.run(instance, 'modifyColHeader', col);
     if (col === void 0) {
       var out = [];
-      for (var i = 0,
-          ilen = instance.countCols(); i < ilen; i++) {
+      var ilen = columnsAsFunc ? instance.countSourceCols() : instance.countCols();
+      for (var i = 0; i < ilen; i++) {
         out.push(instance.getColHeader(i));
       }
-      return out;
+      result = out;
     } else {
+      var translateVisualIndexToColumns = function(col) {
+        var arr = [];
+        var columnsLen = instance.countSourceCols();
+        var index = 0;
+        for (; index < columnsLen; index++) {
+          if (isFunction(instance.getSettings().columns) && instance.getSettings().columns(index)) {
+            arr.push(index);
+          }
+        }
+        return arr[col];
+      };
       var baseCol = col;
       col = Handsontable.hooks.run(instance, 'modifyCol', col);
-      if (priv.settings.columns && priv.settings.columns[col] && priv.settings.columns[col].title) {
-        return priv.settings.columns[col].title;
+      var prop = translateVisualIndexToColumns(col);
+      if (priv.settings.columns && isFunction(priv.settings.columns) && priv.settings.columns(prop) && priv.settings.columns(prop).title) {
+        result = priv.settings.columns(prop).title;
+      } else if (priv.settings.columns && priv.settings.columns[col] && priv.settings.columns[col].title) {
+        result = priv.settings.columns[col].title;
       } else if (Array.isArray(priv.settings.colHeaders) && priv.settings.colHeaders[col] !== void 0) {
-        return priv.settings.colHeaders[col];
-      } else if (typeof priv.settings.colHeaders === 'function') {
-        return priv.settings.colHeaders(col);
+        result = priv.settings.colHeaders[col];
+      } else if (isFunction(priv.settings.colHeaders)) {
+        result = priv.settings.colHeaders(col);
       } else if (priv.settings.colHeaders && typeof priv.settings.colHeaders !== 'string' && typeof priv.settings.colHeaders !== 'number') {
-        return spreadsheetColumnLabel(baseCol);
-      } else {
-        return priv.settings.colHeaders;
+        result = spreadsheetColumnLabel(baseCol);
       }
     }
+    return result;
   };
   this._getColWidthFromSettings = function(col) {
     var cellProperties = instance.getCellMeta(0, col);
@@ -5826,27 +13778,54 @@ Handsontable.Core = function Core(rootElement, userSettings) {
     return height;
   };
   this.countSourceRows = function() {
-    return instance.getSourceData() ? instance.getSourceData().length : 0;
+    var sourceLength = Handsontable.hooks.run(instance, 'modifySourceLength');
+    return sourceLength || (instance.getSourceData() ? instance.getSourceData().length : 0);
+  };
+  this.countSourceCols = function() {
+    var len = 0;
+    var obj = instance.getSourceData() && instance.getSourceData()[0] ? instance.getSourceData()[0] : [];
+    if (isObject(obj)) {
+      len = deepObjectSize(obj);
+    } else {
+      len = obj.length || 0;
+    }
+    return len;
   };
   this.countRows = function() {
     return datamap.getLength();
   };
   this.countCols = function() {
-    if (instance.dataType === 'object' || instance.dataType === 'function') {
-      if (priv.settings.columns && priv.settings.columns.length) {
-        return priv.settings.columns.length;
+    var dataHasLength = false;
+    var dataLen = 0;
+    if (instance.dataType === 'array') {
+      dataHasLength = priv.settings.data && priv.settings.data[0] && priv.settings.data[0].length;
+    }
+    if (dataHasLength) {
+      dataLen = priv.settings.data[0].length;
+    }
+    if (priv.settings.columns) {
+      var columnsIsFunction = isFunction(priv.settings.columns);
+      if (columnsIsFunction) {
+        if (instance.dataType === 'array') {
+          var columnLen = 0;
+          for (var i = 0; i < dataLen; i++) {
+            if (priv.settings.columns(i)) {
+              columnLen++;
+            }
+          }
+          dataLen = columnLen;
+        } else if (instance.dataType === 'object' || instance.dataType === 'function') {
+          dataLen = datamap.colToPropCache.length;
+        }
       } else {
-        return datamap.colToPropCache.length;
+        dataLen = priv.settings.columns.length;
       }
-    } else if (instance.dataType === 'array') {
-      if (priv.settings.columns && priv.settings.columns.length) {
-        return priv.settings.columns.length;
-      } else if (priv.settings.data && priv.settings.data[0] && priv.settings.data[0].length) {
-        return priv.settings.data[0].length;
-      } else {
-        return 0;
+    } else {
+      if (instance.dataType === 'object' || instance.dataType === 'function') {
+        dataLen = datamap.colToPropCache.length;
       }
     }
+    return dataLen;
   };
   this.rowOffset = function() {
     return instance.view.wt.wtTable.getFirstRenderedRow();
@@ -5905,14 +13884,14 @@ Handsontable.Core = function Core(rootElement, userSettings) {
   };
   this.selectCell = function(row, col, endRow, endCol, scrollToCell, changeListener) {
     var coords;
-    changeListener = typeof changeListener === 'undefined' || changeListener === true;
+    changeListener = isUndefined(changeListener) || changeListener === true;
     if (typeof row !== 'number' || row < 0 || row >= instance.countRows()) {
       return false;
     }
     if (typeof col !== 'number' || col < 0 || col >= instance.countCols()) {
       return false;
     }
-    if (typeof endRow !== 'undefined') {
+    if (isDefined(endRow)) {
       if (typeof endRow !== 'number' || endRow < 0 || endRow >= instance.countRows()) {
         return false;
       }
@@ -5925,7 +13904,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
     if (changeListener) {
       instance.listen();
     }
-    if (typeof endRow === 'undefined') {
+    if (isUndefined(endRow)) {
       selection.setRangeEnd(priv.selRange.from, scrollToCell);
     } else {
       selection.setRangeEnd(new WalkontableCellCoords(endRow, endCol), scrollToCell);
@@ -5935,7 +13914,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
   };
   this.selectCellByProp = function(row, prop, endRow, endProp, scrollToCell) {
     arguments[1] = datamap.propToCol(arguments[1]);
-    if (typeof arguments[3] !== 'undefined') {
+    if (isDefined(arguments[3])) {
       arguments[3] = datamap.propToCol(arguments[3]);
     }
     return instance.selectCell.apply(instance, arguments);
@@ -5981,7 +13960,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
     Handsontable.hooks.destroy(instance);
     for (var i in instance) {
       if (instance.hasOwnProperty(i)) {
-        if (typeof instance[i] === 'function') {
+        if (isFunction(instance[i])) {
           instance[i] = postMortem;
         } else if (i !== 'guid') {
           instance[i] = null;
@@ -6089,6 +14068,7 @@ DefaultSettings.prototype = {
   persistentState: void 0,
   currentRowClassName: void 0,
   currentColClassName: void 0,
+  currentHeaderClassName: 'ht__highlight',
   className: void 0,
   tableClassName: void 0,
   stretchH: 'none',
@@ -6099,7 +14079,7 @@ DefaultSettings.prototype = {
         meta;
     for (col = 0, colLen = this.countCols(); col < colLen; col++) {
       value = this.getDataAtCell(row, col);
-      if (value !== '' && value !== null && typeof value !== 'undefined') {
+      if (value !== '' && value !== null && isDefined(value)) {
         if (typeof value === 'object') {
           meta = this.getCellMeta(row, col);
           return isObjectEquals(this.getSchema()[meta.prop], value);
@@ -6115,7 +14095,7 @@ DefaultSettings.prototype = {
         value;
     for (row = 0, rowLen = this.countRows(); row < rowLen; row++) {
       value = this.getDataAtCell(row, col);
-      if (value !== '' && value !== null && typeof value !== 'undefined') {
+      if (value !== '' && value !== null && isDefined(value)) {
         return false;
       }
     }
@@ -6199,7 +14179,7 @@ DefaultSettings.prototype = {
 Handsontable.DefaultSettings = DefaultSettings;
 
 //# 
-},{"3rdparty/walkontable/src/calculator/viewportColumns":3,"3rdparty/walkontable/src/cell/coords":5,"3rdparty/walkontable/src/cell/range":6,"3rdparty/walkontable/src/selection":18,"browser":23,"dataMap":26,"dataSource":27,"editorManager":28,"eventManager":41,"helpers/array":42,"helpers/browser":43,"helpers/data":44,"helpers/dom/element":46,"helpers/number":51,"helpers/object":52,"helpers/setting":53,"helpers/string":54,"numeral":"numeral","plugins":61,"renderers":94,"tableView":103}],26:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/calculator/viewportColumns":73,"3rdparty/walkontable/src/cell/coords":75,"3rdparty/walkontable/src/cell/range":76,"browser":93,"dataMap":96,"dataSource":97,"editorManager":98,"eventManager":111,"helpers/array":112,"helpers/browser":113,"helpers/data":114,"helpers/dom/element":116,"helpers/function":119,"helpers/mixed":120,"helpers/number":121,"helpers/object":122,"helpers/setting":123,"helpers/string":124,"numbro":undefined,"plugins":131,"renderers":180,"tableView":189}],96:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DataMap: {get: function() {
@@ -6223,7 +14203,9 @@ var columnFactory = ($__helpers_47_setting__ = _dereq_("helpers/setting"), $__he
 var $__4 = ($__helpers_47_object__ = _dereq_("helpers/object"), $__helpers_47_object__ && $__helpers_47_object__.__esModule && $__helpers_47_object__ || {default: $__helpers_47_object__}),
     duckSchema = $__4.duckSchema,
     deepExtend = $__4.deepExtend,
-    deepClone = $__4.deepClone;
+    deepClone = $__4.deepClone,
+    isObject = $__4.isObject,
+    deepObjectSize = $__4.deepObjectSize;
 var $__5 = ($__helpers_47_array__ = _dereq_("helpers/array"), $__helpers_47_array__ && $__helpers_47_array__.__esModule && $__helpers_47_array__ || {default: $__helpers_47_array__}),
     extendArray = $__5.extendArray,
     to2dArray = $__5.to2dArray;
@@ -6237,6 +14219,7 @@ function DataMap(instance, priv, GridSettings) {
   this.GridSettings = GridSettings;
   this.dataSource = this.instance.getSettings().data;
   this.cachedLength = null;
+  this.skipCache = false;
   this.latestSourceRowsCount = 0;
   if (this.dataSource[0]) {
     this.duckSchema = this.recursiveDuckSchema(this.dataSource[0]);
@@ -6247,6 +14230,9 @@ function DataMap(instance, priv, GridSettings) {
   this.interval = Interval.create((function() {
     return $__9.clearLengthCache();
   }), '15fps');
+  this.instance.addHook('skipLengthCache', (function(delay) {
+    return $__9.onSkipLengthCache(delay);
+  }));
 }
 DataMap.prototype.DESTINATION_RENDERER = 1;
 DataMap.prototype.DESTINATION_CLIPBOARD_GENERATOR = 2;
@@ -6277,9 +14263,8 @@ DataMap.prototype.recursiveDuckColumns = function(schema, lastCol, parent) {
   return lastCol;
 };
 DataMap.prototype.createMap = function() {
-  var i,
-      ilen,
-      schema = this.getSchema();
+  var i;
+  var schema = this.getSchema();
   if (typeof schema === 'undefined') {
     throw new Error('trying to create `columns` definition but you didnt\' provide `schema` nor `data`');
   }
@@ -6287,10 +14272,23 @@ DataMap.prototype.createMap = function() {
   this.propToColCache = new MultiMap();
   var columns = this.instance.getSettings().columns;
   if (columns) {
-    for (i = 0, ilen = columns.length; i < ilen; i++) {
-      if (typeof columns[i].data != 'undefined') {
-        this.colToPropCache[i] = columns[i].data;
-        this.propToColCache.set(columns[i].data, i);
+    var columnsLen = columns.length;
+    var filteredIndex = 0;
+    var columnsAsFunc = false;
+    var schemaLen = deepObjectSize(schema);
+    if (typeof columns === 'function') {
+      columnsLen = schemaLen > 0 ? schemaLen : this.instance.countSourceCols();
+      columnsAsFunc = true;
+    }
+    for (i = 0; i < columnsLen; i++) {
+      var column = columnsAsFunc ? columns(i) : columns[i];
+      if (isObject(column)) {
+        if (typeof column.data !== 'undefined') {
+          var index = columnsAsFunc ? filteredIndex : i;
+          this.colToPropCache[index] = column.data;
+          this.propToColCache.set(column.data, index);
+        }
+        filteredIndex++;
       }
     }
   } else {
@@ -6356,7 +14354,7 @@ DataMap.prototype.createRow = function(index, amount, createdAutomatically) {
     if (index === this.instance.countSourceRows()) {
       this.dataSource.push(row);
     } else {
-      this.dataSource.splice(index, 0, row);
+      this.spliceData(index, 0, row);
     }
     numberOfCreatedRows++;
     currentIndex++;
@@ -6385,11 +14383,15 @@ DataMap.prototype.createCol = function(index, amount, createdAutomatically) {
   while (numberOfCreatedCols < amount && this.instance.countCols() < maxCols) {
     constructor = columnFactory(this.GridSettings, this.priv.columnsSettingConflicts);
     if (typeof index !== 'number' || index >= this.instance.countCols()) {
-      for (var r = 0; r < rlen; r++) {
-        if (typeof data[r] === 'undefined') {
-          data[r] = [];
+      if (rlen > 0) {
+        for (var r = 0; r < rlen; r++) {
+          if (typeof data[r] === 'undefined') {
+            data[r] = [];
+          }
+          data[r].push(null);
         }
-        data[r].push(null);
+      } else {
+        data.push([null]);
       }
       this.priv.columnSettings.push(constructor);
     } else {
@@ -6412,22 +14414,20 @@ DataMap.prototype.removeRow = function(index, amount) {
   if (typeof index !== 'number') {
     index = -amount;
   }
+  amount = Handsontable.hooks.run(this.instance, 'modifyRemovedAmount', amount, index);
   index = (this.instance.countSourceRows() + index) % this.instance.countSourceRows();
   var logicRows = this.physicalRowsToLogical(index, amount);
-  var descendingLogicRows = logicRows.slice(0).sort(function(a, b) {
-    return b - a;
-  });
   var actionWasNotCancelled = Handsontable.hooks.run(this.instance, 'beforeRemoveRow', index, amount, logicRows);
   if (actionWasNotCancelled === false) {
     return;
   }
   var data = this.dataSource;
   var newData;
-  newData = data.filter(function(row, index) {
-    return logicRows.indexOf(index) == -1;
-  });
-  data.length = 0;
-  Array.prototype.push.apply(data, newData);
+  newData = this.filterData(index, amount);
+  if (newData) {
+    data.length = 0;
+    Array.prototype.push.apply(data, newData);
+  }
   Handsontable.hooks.run(this.instance, 'afterRemoveRow', index, amount, logicRows);
   this.instance.forceFullRender = true;
 };
@@ -6506,9 +14506,27 @@ DataMap.prototype.spliceRow = function(row, index, amount) {
   this.instance.populateFromArray(row, index, [elements], null, null, 'spliceRow');
   return removed;
 };
+DataMap.prototype.spliceData = function(index, amount, element) {
+  var continueSplicing = Handsontable.hooks.run(this.instance, 'beforeDataSplice', index, amount, element);
+  if (continueSplicing !== false) {
+    this.dataSource.splice(index, amount, element);
+  }
+};
+DataMap.prototype.filterData = function(index, amount) {
+  var logicRows = this.physicalRowsToLogical(index, amount);
+  var continueSplicing = Handsontable.hooks.run(this.instance, 'beforeDataFilter', index, amount, logicRows);
+  if (continueSplicing !== false) {
+    var newData = this.dataSource.filter(function(row, index) {
+      return logicRows.indexOf(index) == -1;
+    });
+    return newData;
+  }
+};
 DataMap.prototype.get = function(row, prop) {
   row = Handsontable.hooks.run(this.instance, 'modifyRow', row);
   var dataRow = this.dataSource[row];
+  var modifiedRowData = Handsontable.hooks.run(this.instance, 'modifyRowData', row);
+  dataRow = isNaN(modifiedRowData) ? modifiedRowData : dataRow;
   if (dataRow && dataRow.hasOwnProperty && dataRow.hasOwnProperty(prop)) {
     return dataRow[prop];
   } else if (typeof prop === 'string' && prop.indexOf('.') > -1) {
@@ -6540,6 +14558,8 @@ DataMap.prototype.getCopyable = function(row, prop) {
 DataMap.prototype.set = function(row, prop, value, source) {
   row = Handsontable.hooks.run(this.instance, 'modifyRow', row, source || 'datamapGet');
   var dataRow = this.dataSource[row];
+  var modifiedRowData = Handsontable.hooks.run(this.instance, 'modifyRowData', row);
+  dataRow = isNaN(modifiedRowData) ? modifiedRowData : dataRow;
   if (dataRow && dataRow.hasOwnProperty && dataRow.hasOwnProperty(prop)) {
     dataRow[prop] = value;
   } else if (typeof prop === 'string' && prop.indexOf('.') > -1) {
@@ -6600,7 +14620,7 @@ DataMap.prototype.getLength = function() {
   var $__9 = this;
   var length = this.instance.countSourceRows();
   if (Handsontable.hooks.has('modifyRow', this.instance)) {
-    var reValidate = false;
+    var reValidate = this.skipCache;
     this.interval.start();
     if (length !== this.latestSourceRowsCount) {
       reValidate = true;
@@ -6669,6 +14689,13 @@ DataMap.prototype.getText = function(start, end) {
 DataMap.prototype.getCopyableText = function(start, end) {
   return SheetClip.stringify(this.getRange(start, end, this.DESTINATION_CLIPBOARD_GENERATOR));
 };
+DataMap.prototype.onSkipLengthCache = function(delay) {
+  var $__9 = this;
+  this.skipCache = true;
+  setTimeout((function() {
+    $__9.skipCache = false;
+  }), delay);
+};
 DataMap.prototype.destroy = function() {
   this.interval.stop();
   this.interval = null;
@@ -6682,7 +14709,7 @@ DataMap.prototype.destroy = function() {
 ;
 
 //# 
-},{"SheetClip":"SheetClip","browser":23,"helpers/array":42,"helpers/data":44,"helpers/number":51,"helpers/object":52,"helpers/setting":53,"multiMap":59,"utils/interval":105}],27:[function(_dereq_,module,exports){
+},{"SheetClip":"SheetClip","browser":93,"helpers/array":112,"helpers/data":114,"helpers/number":121,"helpers/object":122,"helpers/setting":123,"multiMap":129,"utils/interval":191}],97:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DataSource: {get: function() {
@@ -6771,7 +14798,7 @@ var DataSource = function DataSource(hotInstance) {
 ;
 
 //# 
-},{"helpers/array":42,"helpers/data":44,"helpers/number":51,"helpers/object":52,"helpers/setting":53}],28:[function(_dereq_,module,exports){
+},{"helpers/array":112,"helpers/data":114,"helpers/number":121,"helpers/object":122,"helpers/setting":123}],98:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   EditorManager: {get: function() {
@@ -7069,7 +15096,7 @@ function EditorManager(instance, priv, selection) {
 }
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":5,"browser":23,"editors":29,"eventManager":41,"helpers/dom/event":47,"helpers/unicode":55}],29:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":75,"browser":93,"editors":99,"eventManager":111,"helpers/dom/event":117,"helpers/unicode":125}],99:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   registerEditor: {get: function() {
@@ -7153,7 +15180,7 @@ function hasEditor(editorName) {
 }
 
 //# 
-},{"browser":23,"helpers/string":54}],30:[function(_dereq_,module,exports){
+},{"browser":93,"helpers/string":124}],100:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BaseEditor: {get: function() {
@@ -7368,7 +15395,7 @@ BaseEditor.prototype.checkEditorSection = function() {
 };
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":5,"browser":23,"helpers/mixed":50}],31:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":75,"browser":93,"helpers/mixed":120}],101:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   AutocompleteEditor: {get: function() {
@@ -7376,29 +15403,27 @@ Object.defineProperties(exports, {
     }},
   __esModule: {value: true}
 });
-var $___46__46__47_browser__,
-    $___46__46__47_helpers_47_unicode__,
+var $___46__46__47_helpers_47_unicode__,
     $___46__46__47_helpers_47_mixed__,
     $___46__46__47_helpers_47_array__,
     $___46__46__47_helpers_47_dom_47_element__,
     $___46__46__47_editors__,
     $__handsontableEditor__;
-var Handsontable = ($___46__46__47_browser__ = _dereq_("browser"), $___46__46__47_browser__ && $___46__46__47_browser__.__esModule && $___46__46__47_browser__ || {default: $___46__46__47_browser__}).default;
-var $__1 = ($___46__46__47_helpers_47_unicode__ = _dereq_("helpers/unicode"), $___46__46__47_helpers_47_unicode__ && $___46__46__47_helpers_47_unicode__.__esModule && $___46__46__47_helpers_47_unicode__ || {default: $___46__46__47_helpers_47_unicode__}),
-    KEY_CODES = $__1.KEY_CODES,
-    isPrintableChar = $__1.isPrintableChar;
+var $__0 = ($___46__46__47_helpers_47_unicode__ = _dereq_("helpers/unicode"), $___46__46__47_helpers_47_unicode__ && $___46__46__47_helpers_47_unicode__.__esModule && $___46__46__47_helpers_47_unicode__ || {default: $___46__46__47_helpers_47_unicode__}),
+    KEY_CODES = $__0.KEY_CODES,
+    isPrintableChar = $__0.isPrintableChar;
 var stringify = ($___46__46__47_helpers_47_mixed__ = _dereq_("helpers/mixed"), $___46__46__47_helpers_47_mixed__ && $___46__46__47_helpers_47_mixed__.__esModule && $___46__46__47_helpers_47_mixed__ || {default: $___46__46__47_helpers_47_mixed__}).stringify;
 var pivot = ($___46__46__47_helpers_47_array__ = _dereq_("helpers/array"), $___46__46__47_helpers_47_array__ && $___46__46__47_helpers_47_array__.__esModule && $___46__46__47_helpers_47_array__ || {default: $___46__46__47_helpers_47_array__}).pivot;
-var $__4 = ($___46__46__47_helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $___46__46__47_helpers_47_dom_47_element__ && $___46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47_helpers_47_dom_47_element__}),
-    addClass = $__4.addClass,
-    getCaretPosition = $__4.getCaretPosition,
-    getScrollbarWidth = $__4.getScrollbarWidth,
-    getSelectionEndPosition = $__4.getSelectionEndPosition,
-    outerWidth = $__4.outerWidth,
-    outerHeight = $__4.outerHeight,
-    offset = $__4.offset,
-    getTrimmingContainer = $__4.getTrimmingContainer,
-    setCaretPosition = $__4.setCaretPosition;
+var $__3 = ($___46__46__47_helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $___46__46__47_helpers_47_dom_47_element__ && $___46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47_helpers_47_dom_47_element__}),
+    addClass = $__3.addClass,
+    getCaretPosition = $__3.getCaretPosition,
+    getScrollbarWidth = $__3.getScrollbarWidth,
+    getSelectionEndPosition = $__3.getSelectionEndPosition,
+    outerWidth = $__3.outerWidth,
+    outerHeight = $__3.outerHeight,
+    offset = $__3.offset,
+    getTrimmingContainer = $__3.getTrimmingContainer,
+    setCaretPosition = $__3.setCaretPosition;
 var registerEditor = ($___46__46__47_editors__ = _dereq_("editors"), $___46__46__47_editors__ && $___46__46__47_editors__.__esModule && $___46__46__47_editors__ || {default: $___46__46__47_editors__}).registerEditor;
 var HandsontableEditor = ($__handsontableEditor__ = _dereq_("handsontableEditor"), $__handsontableEditor__ && $__handsontableEditor__.__esModule && $__handsontableEditor__ || {default: $__handsontableEditor__}).HandsontableEditor;
 var AutocompleteEditor = HandsontableEditor.prototype.extend();
@@ -7499,9 +15524,9 @@ AutocompleteEditor.prototype.queryChoices = function(query) {
       var lowerCaseQuery = query.toLowerCase();
       choices = source.filter(function(choice) {
         if (filteringCaseSensitive) {
-          return choice.indexOf(query) != -1;
+          return choice.toString().indexOf(query) != -1;
         } else {
-          return choice.toLowerCase().indexOf(lowerCaseQuery) != -1;
+          return choice.toString().toLowerCase().indexOf(lowerCaseQuery) != -1;
         }
       });
     }
@@ -7517,6 +15542,7 @@ AutocompleteEditor.prototype.updateChoicesList = function(choices) {
   var filterSetting = this.cellProperties.filter;
   var orderByRelevance = null;
   var highlightIndex = null;
+  var flipped = null;
   if (sortByRelevanceSetting) {
     orderByRelevance = AutocompleteEditor.sortByRelevance(this.getValue(), choices, this.cellProperties.filteringCaseSensitive);
   }
@@ -7555,6 +15581,8 @@ AutocompleteEditor.prototype.flipDropdownIfNeeded = function() {
   var textareaHeight = outerHeight(this.TEXTAREA);
   var dropdownHeight = this.getDropdownHeight();
   var trimmingContainer = getTrimmingContainer(this.instance.view.wt.wtTable.TABLE);
+  var trimmingContainerScrollTop = trimmingContainer.scrollTop;
+  var headersHeight = outerHeight(this.instance.view.wt.wtTable.THEAD);
   var containerOffset = {
     row: 0,
     col: 0
@@ -7562,13 +15590,33 @@ AutocompleteEditor.prototype.flipDropdownIfNeeded = function() {
   if (trimmingContainer !== window) {
     containerOffset = offset(trimmingContainer);
   }
-  var spaceBelow = containerOffset.top + (trimmingContainer.scrollHeight - trimmingContainer.scrollTop);
-  var spaceAbove = containerOffset.top + trimmingContainer.scrollHeight;
-  var flipNeeded = (textareaOffset.top + textareaHeight + dropdownHeight > spaceBelow);
-  if (flipNeeded && spaceAbove > spaceBelow) {
+  var spaceAbove = textareaOffset.top - containerOffset.top - headersHeight + trimmingContainerScrollTop;
+  var spaceBelow = trimmingContainer.scrollHeight - spaceAbove - headersHeight - textareaHeight;
+  var flipNeeded = dropdownHeight > spaceBelow && spaceAbove > spaceBelow;
+  if (flipNeeded) {
     this.flipDropdown(dropdownHeight);
   } else {
     this.unflipDropdown();
+  }
+  this.limitDropdownIfNeeded(flipNeeded ? spaceAbove : spaceBelow, dropdownHeight);
+  return flipNeeded;
+};
+AutocompleteEditor.prototype.limitDropdownIfNeeded = function(spaceAvailable, dropdownHeight) {
+  if (dropdownHeight > spaceAvailable) {
+    var tempHeight = 0;
+    var i = 0;
+    var lastRowHeight = 0;
+    var height = null;
+    do {
+      lastRowHeight = this.htEditor.getRowHeight(i) || this.htEditor.view.wt.wtSettings.settings.defaultRowHeight;
+      tempHeight += lastRowHeight;
+      i++;
+    } while (tempHeight < spaceAvailable);
+    height = tempHeight - lastRowHeight;
+    if (this.htEditor.flipped) {
+      this.htEditor.rootElement.style.top = parseInt(this.htEditor.rootElement.style.top, 10) + dropdownHeight - height + 'px';
+    }
+    this.setDropdownHeight(tempHeight - lastRowHeight);
   }
 };
 AutocompleteEditor.prototype.flipDropdown = function(dropdownHeight) {
@@ -7593,6 +15641,9 @@ AutocompleteEditor.prototype.updateDropdownHeight = function() {
     width: trimDropdown ? void 0 : currentDropdownWidth
   });
   this.htEditor.view.wt.wtTable.alignOverlaysWithTrimmingContainer();
+};
+AutocompleteEditor.prototype.setDropdownHeight = function(height) {
+  this.htEditor.updateSettings({height: height});
 };
 AutocompleteEditor.prototype.finishEditing = function(restoreOriginalValue) {
   if (!restoreOriginalValue) {
@@ -7686,7 +15737,7 @@ AutocompleteEditor.prototype.allowKeyEventPropagation = function(keyCode) {
 registerEditor('autocomplete', AutocompleteEditor);
 
 //# 
-},{"browser":23,"editors":29,"handsontableEditor":35,"helpers/array":42,"helpers/dom/element":46,"helpers/mixed":50,"helpers/unicode":55}],32:[function(_dereq_,module,exports){
+},{"editors":99,"handsontableEditor":105,"helpers/array":112,"helpers/dom/element":116,"helpers/mixed":120,"helpers/unicode":125}],102:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   CheckboxEditor: {get: function() {
@@ -7725,7 +15776,7 @@ var $CheckboxEditor = CheckboxEditor;
 registerEditor('checkbox', CheckboxEditor);
 
 //# 
-},{"_baseEditor":30,"editors":29,"helpers/dom/element":46}],33:[function(_dereq_,module,exports){
+},{"_baseEditor":100,"editors":99,"helpers/dom/element":116}],103:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DateEditor: {get: function() {
@@ -7917,7 +15968,7 @@ var $DateEditor = DateEditor;
 registerEditor('date', DateEditor);
 
 //# 
-},{"browser":23,"editors":29,"eventManager":41,"helpers/dom/element":46,"helpers/dom/event":47,"helpers/object":52,"helpers/unicode":55,"moment":undefined,"pikaday":undefined,"textEditor":40}],34:[function(_dereq_,module,exports){
+},{"browser":93,"editors":99,"eventManager":111,"helpers/dom/element":116,"helpers/dom/event":117,"helpers/object":122,"helpers/unicode":125,"moment":undefined,"pikaday":undefined,"textEditor":110}],104:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DropdownEditor: {get: function() {
@@ -7956,7 +16007,7 @@ Handsontable.hooks.add('beforeValidate', function(value, row, col, source) {
 registerEditor('dropdown', DropdownEditor);
 
 //# 
-},{"autocompleteEditor":31,"browser":23,"editors":29}],35:[function(_dereq_,module,exports){
+},{"autocompleteEditor":101,"browser":93,"editors":99}],105:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   HandsontableEditor: {get: function() {
@@ -8120,7 +16171,7 @@ HandsontableEditor.prototype.assignHooks = function() {
 registerEditor('handsontable', HandsontableEditor);
 
 //# 
-},{"browser":23,"editors":29,"helpers/dom/element":46,"helpers/dom/event":47,"helpers/object":52,"helpers/unicode":55,"textEditor":40}],36:[function(_dereq_,module,exports){
+},{"browser":93,"editors":99,"helpers/dom/element":116,"helpers/dom/event":117,"helpers/object":122,"helpers/unicode":125,"textEditor":110}],106:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   MobileTextEditor: {get: function() {
@@ -8381,7 +16432,7 @@ MobileTextEditor.prototype.destroy = function() {
 registerEditor('mobile', MobileTextEditor);
 
 //# 
-},{"_baseEditor":30,"browser":23,"editors":29,"eventManager":41,"helpers/dom/element":46,"helpers/dom/event":47,"helpers/unicode":55}],37:[function(_dereq_,module,exports){
+},{"_baseEditor":100,"browser":93,"editors":99,"eventManager":111,"helpers/dom/element":116,"helpers/dom/event":117,"helpers/unicode":125}],107:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   NumericEditor: {get: function() {
@@ -8389,10 +16440,10 @@ Object.defineProperties(exports, {
     }},
   __esModule: {value: true}
 });
-var $__numeral__,
+var $__numbro__,
     $___46__46__47_editors__,
     $__textEditor__;
-var numeral = ($__numeral__ = _dereq_("numeral"), $__numeral__ && $__numeral__.__esModule && $__numeral__ || {default: $__numeral__}).default;
+var numbro = ($__numbro__ = _dereq_("numbro"), $__numbro__ && $__numbro__.__esModule && $__numbro__ || {default: $__numbro__}).default;
 var registerEditor = ($___46__46__47_editors__ = _dereq_("editors"), $___46__46__47_editors__ && $___46__46__47_editors__.__esModule && $___46__46__47_editors__ || {default: $___46__46__47_editors__}).registerEditor;
 var TextEditor = ($__textEditor__ = _dereq_("textEditor"), $__textEditor__ && $__textEditor__.__esModule && $__textEditor__ || {default: $__textEditor__}).TextEditor;
 var NumericEditor = function NumericEditor() {
@@ -8402,9 +16453,9 @@ var $NumericEditor = NumericEditor;
 ($traceurRuntime.createClass)(NumericEditor, {beginEditing: function(initialValue) {
     if (typeof initialValue === 'undefined' && this.originalValue) {
       if (typeof this.cellProperties.language !== 'undefined') {
-        numeral.language(this.cellProperties.language);
+        numbro.culture(this.cellProperties.language);
       }
-      var decimalDelimiter = numeral.languageData().delimiters.decimal;
+      var decimalDelimiter = numbro.cultureData().delimiters.decimal;
       initialValue = ('' + this.originalValue).replace('.', decimalDelimiter);
     }
     $traceurRuntime.superGet(this, $NumericEditor.prototype, "beginEditing").call(this, initialValue);
@@ -8413,7 +16464,7 @@ var $NumericEditor = NumericEditor;
 registerEditor('numeric', NumericEditor);
 
 //# 
-},{"editors":29,"numeral":"numeral","textEditor":40}],38:[function(_dereq_,module,exports){
+},{"editors":99,"numbro":undefined,"textEditor":110}],108:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   PasswordEditor: {get: function() {
@@ -8450,7 +16501,7 @@ var $PasswordEditor = PasswordEditor;
 registerEditor('password', PasswordEditor);
 
 //# 
-},{"browser":23,"editors":29,"helpers/dom/element":46,"textEditor":40}],39:[function(_dereq_,module,exports){
+},{"browser":93,"editors":99,"helpers/dom/element":116,"textEditor":110}],109:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   SelectEditor: {get: function() {
@@ -8677,7 +16728,7 @@ SelectEditor.prototype.getEditedCell = function() {
 registerEditor('select', SelectEditor);
 
 //# 
-},{"_baseEditor":30,"browser":23,"editors":29,"helpers/dom/element":46,"helpers/dom/event":47,"helpers/unicode":55}],40:[function(_dereq_,module,exports){
+},{"_baseEditor":100,"browser":93,"editors":99,"helpers/dom/element":116,"helpers/dom/event":117,"helpers/unicode":125}],110:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   TextEditor: {get: function() {
@@ -8997,7 +17048,7 @@ TextEditor.prototype.destroy = function() {
 registerEditor('text', TextEditor);
 
 //# 
-},{"_baseEditor":30,"autoResize":"autoResize","browser":23,"editors":29,"eventManager":41,"helpers/dom/element":46,"helpers/dom/event":47,"helpers/unicode":55}],41:[function(_dereq_,module,exports){
+},{"_baseEditor":100,"autoResize":"autoResize","browser":93,"editors":99,"eventManager":111,"helpers/dom/element":116,"helpers/dom/event":117,"helpers/unicode":125}],111:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   EventManager: {get: function() {
@@ -9185,7 +17236,7 @@ function eventManager(context) {
 }
 
 //# 
-},{"browser":23,"helpers/dom/element":46,"helpers/dom/event":47,"helpers/feature":48}],42:[function(_dereq_,module,exports){
+},{"browser":93,"helpers/dom/element":116,"helpers/dom/event":117,"helpers/feature":118}],112:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   to2dArray: {get: function() {
@@ -9344,7 +17395,7 @@ function arrayUnique(array) {
 }
 
 //# 
-},{}],43:[function(_dereq_,module,exports){
+},{}],113:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   isIE8: {get: function() {
@@ -9388,7 +17439,7 @@ function isMobileBrowser(userAgent) {
 }
 
 //# 
-},{}],44:[function(_dereq_,module,exports){
+},{}],114:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   spreadsheetColumnLabel: {get: function() {
@@ -9519,7 +17570,7 @@ function cellMethodLookupFactory(methodName, allowUndefined) {
 }
 
 //# 
-},{"browser":23,"object":52}],45:[function(_dereq_,module,exports){
+},{"browser":93,"object":122}],115:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   getNormalizedDate: {get: function() {
@@ -9536,11 +17587,14 @@ function getNormalizedDate(dateString) {
 }
 
 //# 
-},{}],46:[function(_dereq_,module,exports){
+},{}],116:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   closest: {get: function() {
       return closest;
+    }},
+  closestDown: {get: function() {
+      return closestDown;
     }},
   isChildOf: {get: function() {
       return isChildOf;
@@ -9689,6 +17743,23 @@ function closest(element, nodes, until) {
     }
   }
   return null;
+}
+function closestDown(element, nodes, until) {
+  var matched = [];
+  while (element) {
+    element = closest(element, nodes, until);
+    if (!element || (until && !until.contains(element))) {
+      break;
+    }
+    matched.push(element);
+    if (element.host && element.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+      element = element.host;
+    } else {
+      element = element.parentNode;
+    }
+  }
+  var length = matched.length;
+  return length ? matched[length - 1] : null;
 }
 function isChildOf(child, parent) {
   var node = child.parentNode;
@@ -10217,7 +18288,7 @@ function isOutsideInput(element) {
 }
 
 //# 
-},{"../browser":43,"../feature":48}],47:[function(_dereq_,module,exports){
+},{"../browser":113,"../feature":118}],117:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   stopImmediatePropagation: {get: function() {
@@ -10234,6 +18305,12 @@ Object.defineProperties(exports, {
     }},
   pageY: {get: function() {
       return pageY;
+    }},
+  isRightClick: {get: function() {
+      return isRightClick;
+    }},
+  isLeftClick: {get: function() {
+      return isLeftClick;
     }},
   __esModule: {value: true}
 });
@@ -10267,9 +18344,15 @@ function pageY(event) {
   }
   return event.clientY + getWindowScrollTop();
 }
+function isRightClick(event) {
+  return event.button === 2;
+}
+function isLeftClick(event) {
+  return event.button === 0;
+}
 
 //# 
-},{"element":46}],48:[function(_dereq_,module,exports){
+},{"element":116}],118:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   requestAnimationFrame: {get: function() {
@@ -10379,9 +18462,12 @@ function getComparisonFunction(language) {
 }
 
 //# 
-},{}],49:[function(_dereq_,module,exports){
+},{}],119:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
+  isFunction: {get: function() {
+      return isFunction;
+    }},
   proxy: {get: function() {
       return proxy;
     }},
@@ -10410,6 +18496,9 @@ Object.defineProperties(exports, {
 });
 var $__array__;
 var arrayReduce = ($__array__ = _dereq_("array"), $__array__ && $__array__.__esModule && $__array__ || {default: $__array__}).arrayReduce;
+function isFunction(func) {
+  return typeof func === 'function';
+}
 function proxy(func, context) {
   return function() {
     return func.apply(context, arguments);
@@ -10548,11 +18637,17 @@ function curryRight(func) {
 }
 
 //# 
-},{"array":42}],50:[function(_dereq_,module,exports){
+},{"array":112}],120:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   stringify: {get: function() {
       return stringify;
+    }},
+  isDefined: {get: function() {
+      return isDefined;
+    }},
+  isUndefined: {get: function() {
+      return isUndefined;
     }},
   __esModule: {value: true}
 });
@@ -10574,9 +18669,15 @@ function stringify(value) {
       return value.toString();
   }
 }
+function isDefined(variable) {
+  return typeof variable !== 'undefined';
+}
+function isUndefined(variable) {
+  return typeof variable === 'undefined';
+}
 
 //# 
-},{}],51:[function(_dereq_,module,exports){
+},{}],121:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   isNumeric: {get: function() {
@@ -10630,7 +18731,7 @@ function valueAccordingPercent(value, percent) {
 }
 
 //# 
-},{}],52:[function(_dereq_,module,exports){
+},{}],122:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   duckSchema: {get: function() {
@@ -10672,6 +18773,9 @@ Object.defineProperties(exports, {
   getProperty: {get: function() {
       return getProperty;
     }},
+  deepObjectSize: {get: function() {
+      return deepObjectSize;
+    }},
   __esModule: {value: true}
 });
 var $__array__;
@@ -10683,6 +18787,9 @@ function duckSchema(object) {
   } else {
     schema = {};
     objectEach(object, function(value, key) {
+      if (key === '__children') {
+        return;
+      }
       if (value && typeof value === 'object' && !Array.isArray(value)) {
         schema[key] = duckSchema(value);
       } else if (Array.isArray(value)) {
@@ -10841,9 +18948,26 @@ function getProperty(object, name) {
   }));
   return result;
 }
+function deepObjectSize(object) {
+  if (!isObject(object)) {
+    return 0;
+  }
+  var recursObjLen = function(obj) {
+    var result = 0;
+    if (isObject(obj)) {
+      objectEach(obj, (function(key) {
+        result += recursObjLen(key);
+      }));
+    } else {
+      result++;
+    }
+    return result;
+  };
+  return recursObjLen(object);
+}
 
 //# 
-},{"array":42}],53:[function(_dereq_,module,exports){
+},{"array":112}],123:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   columnFactory: {get: function() {
@@ -10865,7 +18989,7 @@ function columnFactory(GridSettings, conflictList) {
 }
 
 //# 
-},{"object":52}],54:[function(_dereq_,module,exports){
+},{"object":122}],124:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   toUpperCaseFirst: {get: function() {
@@ -10980,7 +19104,7 @@ function padStart(string, maxLength) {
 ;
 
 //# 
-},{"mixed":50,"number":51}],55:[function(_dereq_,module,exports){
+},{"mixed":120,"number":121}],125:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   KEY_CODES: {get: function() {
@@ -11069,7 +19193,7 @@ function isKey(keyCode, baseCode) {
 }
 
 //# 
-},{"array":42}],56:[function(_dereq_,module,exports){
+},{"array":112}],126:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   arrayMapper: {get: function() {
@@ -11172,7 +19296,7 @@ defineGetter(arrayMapper, 'MIXIN_NAME', MIXIN_NAME, {
 Handsontable.utils.arrayMapper = arrayMapper;
 
 //# 
-},{"browser":23,"helpers/array":42,"helpers/number":51,"helpers/object":52}],57:[function(_dereq_,module,exports){
+},{"browser":93,"helpers/array":112,"helpers/number":121,"helpers/object":122}],127:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   localHooks: {get: function() {
@@ -11218,7 +19342,7 @@ defineGetter(localHooks, 'MIXIN_NAME', MIXIN_NAME, {
 Handsontable.utils.localHooks = localHooks;
 
 //# 
-},{"browser":23,"helpers/array":42,"helpers/object":52}],58:[function(_dereq_,module,exports){
+},{"browser":93,"helpers/array":112,"helpers/object":122}],128:[function(_dereq_,module,exports){
 "use strict";
 var $__3;
 Object.defineProperties(exports, {
@@ -11305,7 +19429,7 @@ defineGetter(stateSaver, 'MIXIN_NAME', MIXIN_NAME, {
 Handsontable.utils.stateSaver = stateSaver;
 
 //# 
-},{"browser":23,"helpers/array":42,"helpers/object":52}],59:[function(_dereq_,module,exports){
+},{"browser":93,"helpers/array":112,"helpers/object":122}],129:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   MultiMap: {get: function() {
@@ -11357,7 +19481,7 @@ function MultiMap() {
 }
 
 //# 
-},{}],60:[function(_dereq_,module,exports){
+},{}],130:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Hooks: {get: function() {
@@ -11367,7 +19491,7 @@ Object.defineProperties(exports, {
 });
 var $__helpers_47_array__,
     $__helpers_47_object__;
-var REGISTERED_HOOKS = ['afterCellMetaReset', 'afterChange', 'afterChangesObserved', 'afterContextMenuDefaultOptions', 'afterContextMenuHide', 'afterContextMenuShow', 'afterCopyLimit', 'afterCreateCol', 'afterCreateRow', 'afterDeselect', 'afterDestroy', 'afterDocumentKeyDown', 'afterGetCellMeta', 'afterGetColHeader', 'afterGetRowHeader', 'afterInit', 'afterLoadData', 'afterMomentumScroll', 'afterOnCellCornerMouseDown', 'afterOnCellMouseDown', 'afterOnCellMouseOver', 'afterRemoveCol', 'afterRemoveRow', 'afterRender', 'beforeRenderer', 'afterRenderer', 'afterScrollHorizontally', 'afterScrollVertically', 'afterSelection', 'afterSelectionByProp', 'afterSelectionEnd', 'afterSelectionEndByProp', 'afterSetCellMeta', 'afterUpdateSettings', 'afterValidate', 'beforeAutofill', 'beforeCellAlignment', 'beforeChange', 'beforeChangeRender', 'beforeDrawBorders', 'beforeGetCellMeta', 'beforeInit', 'beforeInitWalkontable', 'beforeKeyDown', 'beforeOnCellMouseDown', 'beforeOnCellMouseOver', 'beforeRemoveCol', 'beforeRemoveRow', 'beforeRender', 'beforeSetRangeStart', 'beforeSetRangeEnd', 'beforeTouchScroll', 'beforeValidate', 'construct', 'init', 'modifyCol', 'unmodifyCol', 'modifyColHeader', 'modifyColWidth', 'modifyRow', 'modifyRowHeader', 'modifyRowHeight', 'persistentStateLoad', 'persistentStateReset', 'persistentStateSave', 'beforeColumnSort', 'afterColumnSort', 'afterAutofillApplyValues', 'modifyCopyableRange', 'beforeColumnMove', 'afterColumnMove', 'beforeRowMove', 'afterRowMove', 'beforeColumnResize', 'afterColumnResize', 'beforeRowResize', 'afterRowResize', 'afterGetColumnHeaderRenderers', 'afterGetRowHeaderRenderers', 'beforeStretchingColumnWidth', 'beforeFilter', 'afterFilter', 'modifyColumnHeaderHeight'];
+var REGISTERED_HOOKS = ['afterCellMetaReset', 'afterChange', 'afterChangesObserved', 'afterContextMenuDefaultOptions', 'beforeContextMenuSetItems', 'afterDropdownMenuDefaultOptions', 'beforeDropdownMenuSetItems', 'afterContextMenuHide', 'afterContextMenuShow', 'afterCopyLimit', 'afterCreateCol', 'afterCreateRow', 'afterDeselect', 'afterDestroy', 'afterDocumentKeyDown', 'afterGetCellMeta', 'afterGetColHeader', 'afterGetRowHeader', 'afterInit', 'afterLoadData', 'afterMomentumScroll', 'afterOnCellCornerMouseDown', 'afterOnCellMouseDown', 'afterOnCellMouseOver', 'afterRemoveCol', 'afterRemoveRow', 'afterRender', 'beforeRenderer', 'afterRenderer', 'afterScrollHorizontally', 'afterScrollVertically', 'afterSelection', 'afterSelectionByProp', 'afterSelectionEnd', 'afterSelectionEndByProp', 'afterSetCellMeta', 'afterUpdateSettings', 'afterValidate', 'beforeAutofill', 'beforeCellAlignment', 'beforeChange', 'beforeChangeRender', 'beforeDrawBorders', 'beforeGetCellMeta', 'beforeInit', 'beforeInitWalkontable', 'beforeKeyDown', 'beforeOnCellMouseDown', 'beforeOnCellMouseOver', 'beforeRemoveCol', 'beforeRemoveRow', 'beforeRender', 'beforeSetRangeStart', 'beforeSetRangeEnd', 'beforeTouchScroll', 'beforeValidate', 'construct', 'init', 'modifyCol', 'unmodifyCol', 'unmodifyRow', 'modifyColHeader', 'modifyColWidth', 'modifyRow', 'modifyRowHeader', 'modifyRowHeight', 'persistentStateLoad', 'persistentStateReset', 'persistentStateSave', 'beforeColumnSort', 'afterColumnSort', 'afterAutofillApplyValues', 'modifyCopyableRange', 'beforeColumnMove', 'afterColumnMove', 'beforeRowMove', 'afterRowMove', 'beforeColumnResize', 'afterColumnResize', 'beforeRowResize', 'afterRowResize', 'afterGetColumnHeaderRenderers', 'afterGetRowHeaderRenderers', 'beforeStretchingColumnWidth', 'beforeFilter', 'afterFilter', 'modifyColumnHeaderHeight', 'beforeUndo', 'afterUndo', 'beforeRedo', 'afterRedo', 'modifyRowHeaderWidth'];
 var arrayEach = ($__helpers_47_array__ = _dereq_("helpers/array"), $__helpers_47_array__ && $__helpers_47_array__.__esModule && $__helpers_47_array__ || {default: $__helpers_47_array__}).arrayEach;
 var objectEach = ($__helpers_47_object__ = _dereq_("helpers/object"), $__helpers_47_object__ && $__helpers_47_object__.__esModule && $__helpers_47_object__ || {default: $__helpers_47_object__}).objectEach;
 var Hooks = function Hooks() {
@@ -11506,7 +19630,7 @@ var Hooks = function Hooks() {
 ;
 
 //# 
-},{"helpers/array":42,"helpers/object":52}],61:[function(_dereq_,module,exports){
+},{"helpers/array":112,"helpers/object":122}],131:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   registerPlugin: {get: function() {
@@ -11580,7 +19704,7 @@ function getPluginName(hotInstance, plugin) {
 ;
 
 //# 
-},{"browser":23,"helpers/object":52,"helpers/string":54}],62:[function(_dereq_,module,exports){
+},{"browser":93,"helpers/object":122,"helpers/string":124}],132:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   default: {get: function() {
@@ -11715,7 +19839,7 @@ var $__default = BasePlugin;
 Handsontable.plugins.BasePlugin = BasePlugin;
 
 //# 
-},{"browser":23,"helpers/array":42,"helpers/object":52,"plugins":61}],63:[function(_dereq_,module,exports){
+},{"browser":93,"helpers/array":112,"helpers/object":122,"plugins":131}],133:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   AutoColumnSize: {get: function() {
@@ -12000,7 +20124,7 @@ var $AutoColumnSize = AutoColumnSize;
 registerPlugin('autoColumnSize', AutoColumnSize);
 
 //# 
-},{"3rdparty/walkontable/src/calculator/viewportColumns":3,"_base":62,"helpers/array":42,"helpers/dom/element":46,"helpers/feature":48,"helpers/number":51,"helpers/object":52,"helpers/string":54,"plugins":61,"utils/ghostTable":104,"utils/samplesGenerator":106}],64:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/calculator/viewportColumns":73,"_base":132,"helpers/array":112,"helpers/dom/element":116,"helpers/feature":118,"helpers/number":121,"helpers/object":122,"helpers/string":124,"plugins":131,"utils/ghostTable":190,"utils/samplesGenerator":192}],134:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   AutoRowSize: {get: function() {
@@ -12336,7 +20460,7 @@ var $AutoRowSize = AutoRowSize;
 registerPlugin('autoRowSize', AutoRowSize);
 
 //# 
-},{"_base":62,"helpers/array":42,"helpers/dom/element":46,"helpers/feature":48,"helpers/number":51,"helpers/object":52,"helpers/string":54,"plugins":61,"utils/ghostTable":104,"utils/samplesGenerator":106}],65:[function(_dereq_,module,exports){
+},{"_base":132,"helpers/array":112,"helpers/dom/element":116,"helpers/feature":118,"helpers/number":121,"helpers/object":122,"helpers/string":124,"plugins":131,"utils/ghostTable":190,"utils/samplesGenerator":192}],135:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Autofill: {get: function() {
@@ -12614,7 +20738,7 @@ function settingsFactory(settings) {
 Handsontable.Autofill = Autofill;
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":5,"browser":23,"eventManager":41,"helpers/dom/element":46,"plugins":61}],66:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":75,"browser":93,"eventManager":111,"helpers/dom/element":116,"plugins":131}],136:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ColumnSorting: {get: function() {
@@ -12843,6 +20967,9 @@ var $ColumnSorting = ColumnSorting;
         return sortOrder ? 1 : -1;
       } else if (!isNaN(a[1]) && isNaN(b[1])) {
         return sortOrder ? -1 : 1;
+      } else if (!(isNaN(a[1]) || isNaN(b[1]))) {
+        a[1] = parseFloat(a[1]);
+        b[1] = parseFloat(b[1]);
       }
       if (a[1] < b[1]) {
         return sortOrder ? -1 : 1;
@@ -12953,6 +21080,9 @@ var $ColumnSorting = ColumnSorting;
     }
   },
   getColHeader: function(col, TH) {
+    if (col < 0 || !TH.parentNode) {
+      return false;
+    }
     var headerLink = TH.querySelector('.colHeader');
     var colspan = TH.getAttribute('colspan');
     var TRs = TH.parentNode.parentNode.childNodes;
@@ -13023,7 +21153,7 @@ var $ColumnSorting = ColumnSorting;
 registerPlugin('columnSorting', ColumnSorting);
 
 //# 
-},{"_base":62,"browser":23,"eventManager":41,"helpers/array":42,"helpers/dom/element":46,"plugins":61}],67:[function(_dereq_,module,exports){
+},{"_base":132,"browser":93,"eventManager":111,"helpers/array":112,"helpers/dom/element":116,"plugins":131}],137:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   CommentEditor: {get: function() {
@@ -13111,7 +21241,7 @@ var $CommentEditor = CommentEditor;
 ;
 
 //# 
-},{"helpers/dom/element":46}],68:[function(_dereq_,module,exports){
+},{"helpers/dom/element":116}],138:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Comments: {get: function() {
@@ -13136,9 +21266,7 @@ var $__1 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = _dereq_("he
     offset = $__1.offset;
 var EventManager = ($___46__46__47__46__46__47_eventManager__ = _dereq_("eventManager"), $___46__46__47__46__46__47_eventManager__ && $___46__46__47__46__46__47_eventManager__.__esModule && $___46__46__47__46__46__47_eventManager__ || {default: $___46__46__47__46__46__47_eventManager__}).EventManager;
 var WalkontableCellCoords = ($___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__ = _dereq_("3rdparty/walkontable/src/cell/coords"), $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__ && $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__.__esModule && $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__ || {default: $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__}).WalkontableCellCoords;
-var $__4 = ($___46__46__47__46__46__47_plugins__ = _dereq_("plugins"), $___46__46__47__46__46__47_plugins__ && $___46__46__47__46__46__47_plugins__.__esModule && $___46__46__47__46__46__47_plugins__ || {default: $___46__46__47__46__46__47_plugins__}),
-    registerPlugin = $__4.registerPlugin,
-    getPlugin = $__4.getPlugin;
+var registerPlugin = ($___46__46__47__46__46__47_plugins__ = _dereq_("plugins"), $___46__46__47__46__46__47_plugins__ && $___46__46__47__46__46__47_plugins__.__esModule && $___46__46__47__46__46__47_plugins__ || {default: $___46__46__47__46__46__47_plugins__}).registerPlugin;
 var BasePlugin = ($___46__46__47__95_base__ = _dereq_("_base"), $___46__46__47__95_base__ && $___46__46__47__95_base__.__esModule && $___46__46__47__95_base__ || {default: $___46__46__47__95_base__}).default;
 var CommentEditor = ($__commentEditor__ = _dereq_("commentEditor"), $__commentEditor__ && $__commentEditor__.__esModule && $__commentEditor__ || {default: $__commentEditor__}).CommentEditor;
 var Comments = function Comments(hotInstance) {
@@ -13382,7 +21510,7 @@ var $Comments = Comments;
         return $__7.onContextMenuAddComment();
       }),
       disabled: function() {
-        return this.getSelected() ? false : true;
+        return this.getSelected() && !this.selection.selectedHeader.corner ? false : true;
       }
     }, {
       key: 'commentsRemove',
@@ -13393,7 +21521,7 @@ var $Comments = Comments;
         return $__7.onContextMenuRemoveComment(key, selection);
       }),
       disabled: (function() {
-        return !$__7.checkSelectionCommentsConsistency();
+        return $__7.hot.selection.selectedHeader.corner || !$__7.checkSelectionCommentsConsistency();
       })
     });
   },
@@ -13408,7 +21536,7 @@ var $Comments = Comments;
 registerPlugin('comments', Comments);
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":5,"_base":62,"browser":23,"commentEditor":67,"eventManager":41,"helpers/dom/element":46,"plugins":61}],69:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":75,"_base":132,"browser":93,"commentEditor":137,"eventManager":111,"helpers/dom/element":116,"plugins":131}],139:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   CommandExecutor: {get: function() {
@@ -13481,7 +21609,7 @@ function findSubCommand(subCommandName, subCommands) {
 ;
 
 //# 
-},{"helpers/array":42}],70:[function(_dereq_,module,exports){
+},{"helpers/array":112}],140:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ContextMenu: {get: function() {
@@ -13562,6 +21690,7 @@ var $ContextMenu = ContextMenu;
         className: 'htContextMenu',
         keepInViewport: true
       });
+      $__12.hot.runHooks('beforeContextMenuSetItems', menuItems);
       $__12.menu.setMenuItems(menuItems);
       $__12.menu.addLocalHook('afterOpen', (function() {
         return $__12.onMenuAfterOpen();
@@ -13632,15 +21761,13 @@ var $ContextMenu = ContextMenu;
     }
     var element = event.realTarget;
     this.close();
+    if (hasClass(element, 'handsontableInput')) {
+      return;
+    }
     event.preventDefault();
     stopPropagation(event);
     if (!(showRowHeaders || showColHeaders)) {
       if (!isValidElement(element) && !(hasClass(element, 'current') && hasClass(element, 'wtBorder'))) {
-        return;
-      }
-    } else if (showRowHeaders && showColHeaders) {
-      var containsCornerHeader = element.parentNode.querySelectorAll('.cornerHeader').length > 0;
-      if (containsCornerHeader) {
         return;
       }
     }
@@ -13672,7 +21799,7 @@ Handsontable.hooks.register('afterContextMenuExecute');
 registerPlugin('contextMenu', ContextMenu);
 
 //# 
-},{"_base":62,"browser":23,"commandExecutor":69,"eventManager":41,"helpers/array":42,"helpers/dom/element":46,"helpers/dom/event":47,"itemsFactory":72,"menu":73,"plugins":61,"predefinedItems":74}],71:[function(_dereq_,module,exports){
+},{"_base":132,"browser":93,"commandExecutor":139,"eventManager":111,"helpers/array":112,"helpers/dom/element":116,"helpers/dom/event":117,"itemsFactory":142,"menu":143,"plugins":131,"predefinedItems":144}],141:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Cursor: {get: function() {
@@ -13754,7 +21881,7 @@ Handsontable.plugins.utils = Handsontable.plugins.utils || {};
 Handsontable.plugins.utils.Cursor = Cursor;
 
 //# 
-},{"browser":23,"helpers/dom/element":46,"helpers/dom/event":47}],72:[function(_dereq_,module,exports){
+},{"browser":93,"helpers/dom/element":116,"helpers/dom/event":117}],142:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ItemsFactory: {get: function() {
@@ -13859,7 +21986,7 @@ function getItems() {
 ;
 
 //# 
-},{"helpers/array":42,"helpers/object":52,"predefinedItems":74}],73:[function(_dereq_,module,exports){
+},{"helpers/array":112,"helpers/object":122,"predefinedItems":144}],143:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Menu: {get: function() {
@@ -14014,6 +22141,9 @@ var $Menu = Menu;
       this.hotMenu = null;
       this.hot.getSettings().outsideClickDeselects = this.origOutsideClickDeselects;
       this.runLocalHooks('afterClose');
+      if (this.parentMenu) {
+        this.parentMenu.hotMenu.listen();
+      }
     }
   },
   openSubMenu: function(row) {
@@ -14075,11 +22205,15 @@ var $Menu = Menu;
     }
     var selRange = this.hot.getSelectedRange();
     var normalizedSelection = selRange ? normalizeSelection(selRange) : {};
+    var autoClose = true;
+    if (selectedItem.disabled === true || (typeof selectedItem.disabled === 'function' && selectedItem.disabled.call(this.hot) === true) || selectedItem.submenu) {
+      autoClose = false;
+    }
     this.runLocalHooks('executeCommand', selectedItem.key, normalizedSelection, event);
     if (this.isSubMenu()) {
       this.parentMenu.runLocalHooks('executeCommand', selectedItem.key, normalizedSelection, event);
     }
-    if (!(selectedItem.disabled === true || typeof selectedItem.disabled === 'function' && selectedItem.disabled.call(this.hot) === true || selectedItem.submenu)) {
+    if (autoClose) {
       this.close(true);
     }
   },
@@ -14219,7 +22353,7 @@ var $Menu = Menu;
         }));
       } else {
         this.eventManager.addEventListener(TD, 'mouseenter', (function() {
-          return hot.selectCell(row, col, void 0, void 0, void 0, false);
+          return hot.selectCell(row, col, void 0, void 0, false, false);
         }));
       }
     } else {
@@ -14231,7 +22365,7 @@ var $Menu = Menu;
         }));
       } else {
         this.eventManager.addEventListener(TD, 'mouseenter', (function() {
-          return hot.selectCell(row, col, void 0, void 0, void 0, false);
+          return hot.selectCell(row, col, void 0, void 0, false, false);
         }));
       }
     }
@@ -14338,6 +22472,7 @@ var $Menu = Menu;
     }), 0);
     holderStyle.width = currentHiderWidth + 22 + 'px';
     holderStyle.height = realHeight + 4 + 'px';
+    hiderStyle.height = holderStyle.height;
   },
   onDocumentMouseDown: function(event) {
     if (!this.isOpened()) {
@@ -14357,45 +22492,45 @@ mixin(Menu, localHooks);
 ;
 
 //# 
-},{"browser":23,"cursor":71,"eventManager":41,"helpers/array":42,"helpers/dom/element":46,"helpers/dom/event":47,"helpers/function":49,"helpers/object":52,"helpers/unicode":55,"mixins/localHooks":57,"predefinedItems":74,"utils":75}],74:[function(_dereq_,module,exports){
+},{"browser":93,"cursor":141,"eventManager":111,"helpers/array":112,"helpers/dom/element":116,"helpers/dom/event":117,"helpers/function":119,"helpers/object":122,"helpers/unicode":125,"mixins/localHooks":127,"predefinedItems":144,"utils":157}],144:[function(_dereq_,module,exports){
 "use strict";
-var $__4;
+var $__13;
 Object.defineProperties(exports, {
-  ROW_ABOVE: {get: function() {
-      return ROW_ABOVE;
-    }},
-  ROW_BELOW: {get: function() {
-      return ROW_BELOW;
-    }},
-  COLUMN_LEFT: {get: function() {
-      return COLUMN_LEFT;
-    }},
-  COLUMN_RIGHT: {get: function() {
-      return COLUMN_RIGHT;
+  ALIGNMENT: {get: function() {
+      return $__predefinedItems_47_alignment__.KEY;
     }},
   CLEAR_COLUMN: {get: function() {
-      return CLEAR_COLUMN;
+      return $__predefinedItems_47_clearColumn__.KEY;
     }},
-  REMOVE_ROW: {get: function() {
-      return REMOVE_ROW;
+  COLUMN_LEFT: {get: function() {
+      return $__predefinedItems_47_columnLeft__.KEY;
     }},
-  REMOVE_COLUMN: {get: function() {
-      return REMOVE_COLUMN;
-    }},
-  UNDO: {get: function() {
-      return UNDO;
-    }},
-  REDO: {get: function() {
-      return REDO;
+  COLUMN_RIGHT: {get: function() {
+      return $__predefinedItems_47_columnRight__.KEY;
     }},
   READ_ONLY: {get: function() {
-      return READ_ONLY;
+      return $__predefinedItems_47_readOnly__.KEY;
     }},
-  ALIGNMENT: {get: function() {
-      return ALIGNMENT;
+  REDO: {get: function() {
+      return $__predefinedItems_47_redo__.KEY;
+    }},
+  REMOVE_COLUMN: {get: function() {
+      return $__predefinedItems_47_removeColumn__.KEY;
+    }},
+  REMOVE_ROW: {get: function() {
+      return $__predefinedItems_47_removeRow__.KEY;
+    }},
+  ROW_ABOVE: {get: function() {
+      return $__predefinedItems_47_rowAbove__.KEY;
+    }},
+  ROW_BELOW: {get: function() {
+      return $__predefinedItems_47_rowBelow__.KEY;
     }},
   SEPARATOR: {get: function() {
-      return SEPARATOR;
+      return $__predefinedItems_47_separator__.KEY;
+    }},
+  UNDO: {get: function() {
+      return $__predefinedItems_47_undo__.KEY;
     }},
   ITEMS: {get: function() {
       return ITEMS;
@@ -14409,35 +22544,145 @@ Object.defineProperties(exports, {
   __esModule: {value: true}
 });
 var $___46__46__47__46__46__47_helpers_47_object__,
-    $___46__46__47__46__46__47_helpers_47_number__,
-    $__utils__;
-var $__0 = ($___46__46__47__46__46__47_helpers_47_object__ = _dereq_("helpers/object"), $___46__46__47__46__46__47_helpers_47_object__ && $___46__46__47__46__46__47_helpers_47_object__.__esModule && $___46__46__47__46__46__47_helpers_47_object__ || {default: $___46__46__47__46__46__47_helpers_47_object__}),
-    objectEach = $__0.objectEach,
-    clone = $__0.clone;
-var rangeEach = ($___46__46__47__46__46__47_helpers_47_number__ = _dereq_("helpers/number"), $___46__46__47__46__46__47_helpers_47_number__ && $___46__46__47__46__46__47_helpers_47_number__.__esModule && $___46__46__47__46__46__47_helpers_47_number__ || {default: $___46__46__47__46__46__47_helpers_47_number__}).rangeEach;
-var $__2 = ($__utils__ = _dereq_("utils"), $__utils__ && $__utils__.__esModule && $__utils__ || {default: $__utils__}),
-    align = $__2.align,
-    getAlignmentClasses = $__2.getAlignmentClasses,
-    getValidSelection = $__2.getValidSelection,
-    checkSelectionConsistency = $__2.checkSelectionConsistency,
-    markLabelAsSelected = $__2.markLabelAsSelected;
-var ROW_ABOVE = 'row_above';
-var ROW_BELOW = 'row_below';
-var COLUMN_LEFT = 'col_left';
-var COLUMN_RIGHT = 'col_right';
-var CLEAR_COLUMN = 'clear_column';
-var REMOVE_ROW = 'remove_row';
-var REMOVE_COLUMN = 'remove_col';
-var UNDO = 'undo';
-var REDO = 'redo';
-var READ_ONLY = 'make_read_only';
-var ALIGNMENT = 'alignment';
-var SEPARATOR = '---------';
+    $__predefinedItems_47_alignment__,
+    $__predefinedItems_47_clearColumn__,
+    $__predefinedItems_47_columnLeft__,
+    $__predefinedItems_47_columnRight__,
+    $__predefinedItems_47_readOnly__,
+    $__predefinedItems_47_redo__,
+    $__predefinedItems_47_removeColumn__,
+    $__predefinedItems_47_removeRow__,
+    $__predefinedItems_47_rowAbove__,
+    $__predefinedItems_47_rowBelow__,
+    $__predefinedItems_47_separator__,
+    $__predefinedItems_47_undo__,
+    $__predefinedItems_47_alignment__,
+    $__predefinedItems_47_clearColumn__,
+    $__predefinedItems_47_columnLeft__,
+    $__predefinedItems_47_columnRight__,
+    $__predefinedItems_47_readOnly__,
+    $__predefinedItems_47_redo__,
+    $__predefinedItems_47_removeColumn__,
+    $__predefinedItems_47_removeRow__,
+    $__predefinedItems_47_rowAbove__,
+    $__predefinedItems_47_rowBelow__,
+    $__predefinedItems_47_separator__,
+    $__predefinedItems_47_undo__;
+var objectEach = ($___46__46__47__46__46__47_helpers_47_object__ = _dereq_("helpers/object"), $___46__46__47__46__46__47_helpers_47_object__ && $___46__46__47__46__46__47_helpers_47_object__.__esModule && $___46__46__47__46__46__47_helpers_47_object__ || {default: $___46__46__47__46__46__47_helpers_47_object__}).objectEach;
+var $__1 = ($__predefinedItems_47_alignment__ = _dereq_("predefinedItems/alignment"), $__predefinedItems_47_alignment__ && $__predefinedItems_47_alignment__.__esModule && $__predefinedItems_47_alignment__ || {default: $__predefinedItems_47_alignment__}),
+    alignmentItem = $__1.alignmentItem,
+    ALIGNMENT = $__1.KEY;
+var $__2 = ($__predefinedItems_47_clearColumn__ = _dereq_("predefinedItems/clearColumn"), $__predefinedItems_47_clearColumn__ && $__predefinedItems_47_clearColumn__.__esModule && $__predefinedItems_47_clearColumn__ || {default: $__predefinedItems_47_clearColumn__}),
+    clearColumnItem = $__2.clearColumnItem,
+    CLEAR_COLUMN = $__2.KEY;
+var $__3 = ($__predefinedItems_47_columnLeft__ = _dereq_("predefinedItems/columnLeft"), $__predefinedItems_47_columnLeft__ && $__predefinedItems_47_columnLeft__.__esModule && $__predefinedItems_47_columnLeft__ || {default: $__predefinedItems_47_columnLeft__}),
+    columnLeftItem = $__3.columnLeftItem,
+    COLUMN_LEFT = $__3.KEY;
+var $__4 = ($__predefinedItems_47_columnRight__ = _dereq_("predefinedItems/columnRight"), $__predefinedItems_47_columnRight__ && $__predefinedItems_47_columnRight__.__esModule && $__predefinedItems_47_columnRight__ || {default: $__predefinedItems_47_columnRight__}),
+    columnRightItem = $__4.columnRightItem,
+    COLUMN_RIGHT = $__4.KEY;
+var $__5 = ($__predefinedItems_47_readOnly__ = _dereq_("predefinedItems/readOnly"), $__predefinedItems_47_readOnly__ && $__predefinedItems_47_readOnly__.__esModule && $__predefinedItems_47_readOnly__ || {default: $__predefinedItems_47_readOnly__}),
+    readOnlyItem = $__5.readOnlyItem,
+    READ_ONLY = $__5.KEY;
+var $__6 = ($__predefinedItems_47_redo__ = _dereq_("predefinedItems/redo"), $__predefinedItems_47_redo__ && $__predefinedItems_47_redo__.__esModule && $__predefinedItems_47_redo__ || {default: $__predefinedItems_47_redo__}),
+    redoItem = $__6.redoItem,
+    REDO = $__6.KEY;
+var $__7 = ($__predefinedItems_47_removeColumn__ = _dereq_("predefinedItems/removeColumn"), $__predefinedItems_47_removeColumn__ && $__predefinedItems_47_removeColumn__.__esModule && $__predefinedItems_47_removeColumn__ || {default: $__predefinedItems_47_removeColumn__}),
+    removeColumnItem = $__7.removeColumnItem,
+    REMOVE_COLUMN = $__7.KEY;
+var $__8 = ($__predefinedItems_47_removeRow__ = _dereq_("predefinedItems/removeRow"), $__predefinedItems_47_removeRow__ && $__predefinedItems_47_removeRow__.__esModule && $__predefinedItems_47_removeRow__ || {default: $__predefinedItems_47_removeRow__}),
+    removeRowItem = $__8.removeRowItem,
+    REMOVE_ROW = $__8.KEY;
+var $__9 = ($__predefinedItems_47_rowAbove__ = _dereq_("predefinedItems/rowAbove"), $__predefinedItems_47_rowAbove__ && $__predefinedItems_47_rowAbove__.__esModule && $__predefinedItems_47_rowAbove__ || {default: $__predefinedItems_47_rowAbove__}),
+    rowAboveItem = $__9.rowAboveItem,
+    ROW_ABOVE = $__9.KEY;
+var $__10 = ($__predefinedItems_47_rowBelow__ = _dereq_("predefinedItems/rowBelow"), $__predefinedItems_47_rowBelow__ && $__predefinedItems_47_rowBelow__.__esModule && $__predefinedItems_47_rowBelow__ || {default: $__predefinedItems_47_rowBelow__}),
+    rowBelowItem = $__10.rowBelowItem,
+    ROW_BELOW = $__10.KEY;
+var $__11 = ($__predefinedItems_47_separator__ = _dereq_("predefinedItems/separator"), $__predefinedItems_47_separator__ && $__predefinedItems_47_separator__.__esModule && $__predefinedItems_47_separator__ || {default: $__predefinedItems_47_separator__}),
+    separatorItem = $__11.separatorItem,
+    SEPARATOR = $__11.KEY;
+var $__12 = ($__predefinedItems_47_undo__ = _dereq_("predefinedItems/undo"), $__predefinedItems_47_undo__ && $__predefinedItems_47_undo__.__esModule && $__predefinedItems_47_undo__ || {default: $__predefinedItems_47_undo__}),
+    undoItem = $__12.undoItem,
+    UNDO = $__12.KEY;
+var $__predefinedItems_47_alignment__ = ($__predefinedItems_47_alignment__ = _dereq_("predefinedItems/alignment"), $__predefinedItems_47_alignment__ && $__predefinedItems_47_alignment__.__esModule && $__predefinedItems_47_alignment__ || {default: $__predefinedItems_47_alignment__});
+var $__predefinedItems_47_clearColumn__ = ($__predefinedItems_47_clearColumn__ = _dereq_("predefinedItems/clearColumn"), $__predefinedItems_47_clearColumn__ && $__predefinedItems_47_clearColumn__.__esModule && $__predefinedItems_47_clearColumn__ || {default: $__predefinedItems_47_clearColumn__});
+var $__predefinedItems_47_columnLeft__ = ($__predefinedItems_47_columnLeft__ = _dereq_("predefinedItems/columnLeft"), $__predefinedItems_47_columnLeft__ && $__predefinedItems_47_columnLeft__.__esModule && $__predefinedItems_47_columnLeft__ || {default: $__predefinedItems_47_columnLeft__});
+var $__predefinedItems_47_columnRight__ = ($__predefinedItems_47_columnRight__ = _dereq_("predefinedItems/columnRight"), $__predefinedItems_47_columnRight__ && $__predefinedItems_47_columnRight__.__esModule && $__predefinedItems_47_columnRight__ || {default: $__predefinedItems_47_columnRight__});
+var $__predefinedItems_47_readOnly__ = ($__predefinedItems_47_readOnly__ = _dereq_("predefinedItems/readOnly"), $__predefinedItems_47_readOnly__ && $__predefinedItems_47_readOnly__.__esModule && $__predefinedItems_47_readOnly__ || {default: $__predefinedItems_47_readOnly__});
+var $__predefinedItems_47_redo__ = ($__predefinedItems_47_redo__ = _dereq_("predefinedItems/redo"), $__predefinedItems_47_redo__ && $__predefinedItems_47_redo__.__esModule && $__predefinedItems_47_redo__ || {default: $__predefinedItems_47_redo__});
+var $__predefinedItems_47_removeColumn__ = ($__predefinedItems_47_removeColumn__ = _dereq_("predefinedItems/removeColumn"), $__predefinedItems_47_removeColumn__ && $__predefinedItems_47_removeColumn__.__esModule && $__predefinedItems_47_removeColumn__ || {default: $__predefinedItems_47_removeColumn__});
+var $__predefinedItems_47_removeRow__ = ($__predefinedItems_47_removeRow__ = _dereq_("predefinedItems/removeRow"), $__predefinedItems_47_removeRow__ && $__predefinedItems_47_removeRow__.__esModule && $__predefinedItems_47_removeRow__ || {default: $__predefinedItems_47_removeRow__});
+var $__predefinedItems_47_rowAbove__ = ($__predefinedItems_47_rowAbove__ = _dereq_("predefinedItems/rowAbove"), $__predefinedItems_47_rowAbove__ && $__predefinedItems_47_rowAbove__.__esModule && $__predefinedItems_47_rowAbove__ || {default: $__predefinedItems_47_rowAbove__});
+var $__predefinedItems_47_rowBelow__ = ($__predefinedItems_47_rowBelow__ = _dereq_("predefinedItems/rowBelow"), $__predefinedItems_47_rowBelow__ && $__predefinedItems_47_rowBelow__.__esModule && $__predefinedItems_47_rowBelow__ || {default: $__predefinedItems_47_rowBelow__});
+var $__predefinedItems_47_separator__ = ($__predefinedItems_47_separator__ = _dereq_("predefinedItems/separator"), $__predefinedItems_47_separator__ && $__predefinedItems_47_separator__.__esModule && $__predefinedItems_47_separator__ || {default: $__predefinedItems_47_separator__});
+var $__predefinedItems_47_undo__ = ($__predefinedItems_47_undo__ = _dereq_("predefinedItems/undo"), $__predefinedItems_47_undo__ && $__predefinedItems_47_undo__.__esModule && $__predefinedItems_47_undo__ || {default: $__predefinedItems_47_undo__});
 var ITEMS = [ROW_ABOVE, ROW_BELOW, COLUMN_LEFT, COLUMN_RIGHT, CLEAR_COLUMN, REMOVE_ROW, REMOVE_COLUMN, UNDO, REDO, READ_ONLY, ALIGNMENT, SEPARATOR];
+var _predefinedItems = ($__13 = {}, Object.defineProperty($__13, SEPARATOR, {
+  value: separatorItem,
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__13, ROW_ABOVE, {
+  value: rowAboveItem,
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__13, ROW_BELOW, {
+  value: rowBelowItem,
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__13, COLUMN_LEFT, {
+  value: columnLeftItem,
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__13, COLUMN_RIGHT, {
+  value: columnRightItem,
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__13, CLEAR_COLUMN, {
+  value: clearColumnItem,
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__13, REMOVE_ROW, {
+  value: removeRowItem,
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__13, REMOVE_COLUMN, {
+  value: removeColumnItem,
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__13, UNDO, {
+  value: undoItem,
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__13, REDO, {
+  value: redoItem,
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__13, READ_ONLY, {
+  value: readOnlyItem,
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), Object.defineProperty($__13, ALIGNMENT, {
+  value: alignmentItem,
+  configurable: true,
+  enumerable: true,
+  writable: true
+}), $__13);
 function predefinedItems() {
   var items = {};
-  objectEach(_predefinedItems, (function(value, key) {
-    return items[key] = clone(value);
+  objectEach(_predefinedItems, (function(itemFactory, key) {
+    return items[key] = itemFactory();
   }));
   return items;
 }
@@ -14446,114 +22691,274 @@ function addItem(key, item) {
     _predefinedItems[key] = item;
   }
 }
-var _predefinedItems = ($__4 = {}, Object.defineProperty($__4, SEPARATOR, {
-  value: {name: SEPARATOR},
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__4, ROW_ABOVE, {
-  value: {
-    key: ROW_ABOVE,
-    name: 'Insert row above',
-    callback: function(key, selection) {
-      this.alter('insert_row', selection.start.row);
-    },
+
+//# 
+},{"helpers/object":122,"predefinedItems/alignment":145,"predefinedItems/clearColumn":146,"predefinedItems/columnLeft":147,"predefinedItems/columnRight":148,"predefinedItems/readOnly":149,"predefinedItems/redo":150,"predefinedItems/removeColumn":151,"predefinedItems/removeRow":152,"predefinedItems/rowAbove":153,"predefinedItems/rowBelow":154,"predefinedItems/separator":155,"predefinedItems/undo":156}],145:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  KEY: {get: function() {
+      return KEY;
+    }},
+  alignmentItem: {get: function() {
+      return alignmentItem;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_utils__,
+    $__separator__;
+var $__0 = ($___46__46__47_utils__ = _dereq_("utils"), $___46__46__47_utils__ && $___46__46__47_utils__.__esModule && $___46__46__47_utils__ || {default: $___46__46__47_utils__}),
+    align = $__0.align,
+    getAlignmentClasses = $__0.getAlignmentClasses,
+    checkSelectionConsistency = $__0.checkSelectionConsistency,
+    markLabelAsSelected = $__0.markLabelAsSelected;
+var SEPARATOR = ($__separator__ = _dereq_("separator"), $__separator__ && $__separator__.__esModule && $__separator__ || {default: $__separator__}).KEY;
+var KEY = 'alignment';
+function alignmentItem() {
+  return {
+    key: KEY,
+    name: 'Alignment',
     disabled: function() {
-      var selected = getValidSelection(this);
-      if (!selected || this.countRows() >= this.getSettings().maxRows) {
-        return true;
-      }
-      var rowCount = this.countRows();
-      var entireColumnSelection = [0, selected[1], rowCount - 1, selected[1]];
-      return (entireColumnSelection.join(',') === selected.join(',')) && rowCount > 1;
+      return this.getSelectedRange() && !this.selection.selectedHeader.corner ? false : true;
     },
-    hidden: function() {
-      return !this.getSettings().allowInsertRow;
-    }
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__4, ROW_BELOW, {
-  value: {
-    key: ROW_BELOW,
-    name: 'Insert row below',
-    callback: function(key, selection) {
-      this.alter('insert_row', selection.end.row + 1);
-    },
-    disabled: function() {
-      var selected = getValidSelection(this);
-      if (!selected || this.countRows() >= this.getSettings().maxRows) {
-        return true;
-      }
-      var rowCount = this.countRows();
-      var entireColumnSelection = [0, selected[1], rowCount - 1, selected[1]];
-      return (entireColumnSelection.join(',') === selected.join(',')) && rowCount > 1;
-    },
-    hidden: function() {
-      return !this.getSettings().allowInsertRow;
-    }
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__4, COLUMN_LEFT, {
-  value: {
-    key: COLUMN_LEFT,
-    name: 'Insert column on the left',
-    callback: function(key, selection) {
-      this.alter('insert_col', selection.start.col);
-    },
-    disabled: function() {
-      var selected = getValidSelection(this);
-      if (!selected) {
-        return true;
-      }
-      if (!this.isColumnModificationAllowed()) {
-        return true;
-      }
-      var entireRowSelection = [selected[0], 0, selected[0], this.countCols() - 1];
-      var rowSelected = entireRowSelection.join(',') == selected.join(',');
-      var onlyOneColumn = this.countCols() == 1;
-      return selected[1] < 0 || this.countCols() >= this.getSettings().maxCols || (!onlyOneColumn && rowSelected);
-    },
-    hidden: function() {
-      return !this.getSettings().allowInsertColumn;
-    }
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__4, COLUMN_RIGHT, {
-  value: {
-    key: COLUMN_RIGHT,
-    name: 'Insert column on the right',
-    callback: function(key, selection) {
-      this.alter('insert_col', selection.end.col + 1);
-    },
-    disabled: function() {
-      var selected = getValidSelection(this);
-      if (!selected) {
-        return true;
-      }
-      if (!this.isColumnModificationAllowed()) {
-        return true;
-      }
-      var entireRowSelection = [selected[0], 0, selected[0], this.countCols() - 1];
-      var rowSelected = entireRowSelection.join(',') == selected.join(',');
-      var onlyOneColumn = this.countCols() == 1;
-      return selected[1] < 0 || this.countCols() >= this.getSettings().maxCols || (!onlyOneColumn && rowSelected);
-    },
-    hidden: function() {
-      return !this.getSettings().allowInsertColumn;
-    }
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__4, CLEAR_COLUMN, {
-  value: {
-    key: CLEAR_COLUMN,
+    submenu: {items: [{
+        key: (KEY + ":left"),
+        name: function() {
+          var $__2 = this;
+          var label = 'Left';
+          var hasClass = checkSelectionConsistency(this.getSelectedRange(), (function(row, col) {
+            var className = $__2.getCellMeta(row, col).className;
+            if (className && className.indexOf('htLeft') !== -1) {
+              return true;
+            }
+          }));
+          if (hasClass) {
+            label = markLabelAsSelected(label);
+          }
+          return label;
+        },
+        callback: function() {
+          var $__2 = this;
+          var range = this.getSelectedRange();
+          var stateBefore = getAlignmentClasses(range, (function(row, col) {
+            return $__2.getCellMeta(row, col).className;
+          }));
+          var type = 'horizontal';
+          var alignment = 'htLeft';
+          this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
+          align(range, type, alignment, (function(row, col) {
+            return $__2.getCellMeta(row, col);
+          }));
+          this.render();
+        },
+        disabled: false
+      }, {
+        key: (KEY + ":center"),
+        name: function() {
+          var $__2 = this;
+          var label = 'Center';
+          var hasClass = checkSelectionConsistency(this.getSelectedRange(), (function(row, col) {
+            var className = $__2.getCellMeta(row, col).className;
+            if (className && className.indexOf('htCenter') !== -1) {
+              return true;
+            }
+          }));
+          if (hasClass) {
+            label = markLabelAsSelected(label);
+          }
+          return label;
+        },
+        callback: function() {
+          var $__2 = this;
+          var range = this.getSelectedRange();
+          var stateBefore = getAlignmentClasses(range, (function(row, col) {
+            return $__2.getCellMeta(row, col).className;
+          }));
+          var type = 'horizontal';
+          var alignment = 'htCenter';
+          this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
+          align(range, type, alignment, (function(row, col) {
+            return $__2.getCellMeta(row, col);
+          }));
+          this.render();
+        },
+        disabled: false
+      }, {
+        key: (KEY + ":right"),
+        name: function() {
+          var $__2 = this;
+          var label = 'Right';
+          var hasClass = checkSelectionConsistency(this.getSelectedRange(), (function(row, col) {
+            var className = $__2.getCellMeta(row, col).className;
+            if (className && className.indexOf('htRight') !== -1) {
+              return true;
+            }
+          }));
+          if (hasClass) {
+            label = markLabelAsSelected(label);
+          }
+          return label;
+        },
+        callback: function() {
+          var $__2 = this;
+          var range = this.getSelectedRange();
+          var stateBefore = getAlignmentClasses(range, (function(row, col) {
+            return $__2.getCellMeta(row, col).className;
+          }));
+          var type = 'horizontal';
+          var alignment = 'htRight';
+          this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
+          align(range, type, alignment, (function(row, col) {
+            return $__2.getCellMeta(row, col);
+          }));
+          this.render();
+        },
+        disabled: false
+      }, {
+        key: (KEY + ":justify"),
+        name: function() {
+          var $__2 = this;
+          var label = 'Justify';
+          var hasClass = checkSelectionConsistency(this.getSelectedRange(), (function(row, col) {
+            var className = $__2.getCellMeta(row, col).className;
+            if (className && className.indexOf('htJustify') !== -1) {
+              return true;
+            }
+          }));
+          if (hasClass) {
+            label = markLabelAsSelected(label);
+          }
+          return label;
+        },
+        callback: function() {
+          var $__2 = this;
+          var range = this.getSelectedRange();
+          var stateBefore = getAlignmentClasses(range, (function(row, col) {
+            return $__2.getCellMeta(row, col).className;
+          }));
+          var type = 'horizontal';
+          var alignment = 'htJustify';
+          this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
+          align(range, type, alignment, (function(row, col) {
+            return $__2.getCellMeta(row, col);
+          }));
+          this.render();
+        },
+        disabled: false
+      }, {name: SEPARATOR}, {
+        key: (KEY + ":top"),
+        name: function() {
+          var $__2 = this;
+          var label = 'Top';
+          var hasClass = checkSelectionConsistency(this.getSelectedRange(), (function(row, col) {
+            var className = $__2.getCellMeta(row, col).className;
+            if (className && className.indexOf('htTop') !== -1) {
+              return true;
+            }
+          }));
+          if (hasClass) {
+            label = markLabelAsSelected(label);
+          }
+          return label;
+        },
+        callback: function() {
+          var $__2 = this;
+          var range = this.getSelectedRange();
+          var stateBefore = getAlignmentClasses(range, (function(row, col) {
+            return $__2.getCellMeta(row, col).className;
+          }));
+          var type = 'vertical';
+          var alignment = 'htTop';
+          this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
+          align(range, type, alignment, (function(row, col) {
+            return $__2.getCellMeta(row, col);
+          }));
+          this.render();
+        },
+        disabled: false
+      }, {
+        key: (KEY + ":middle"),
+        name: function() {
+          var $__2 = this;
+          var label = 'Middle';
+          var hasClass = checkSelectionConsistency(this.getSelectedRange(), (function(row, col) {
+            var className = $__2.getCellMeta(row, col).className;
+            if (className && className.indexOf('htMiddle') !== -1) {
+              return true;
+            }
+          }));
+          if (hasClass) {
+            label = markLabelAsSelected(label);
+          }
+          return label;
+        },
+        callback: function() {
+          var $__2 = this;
+          var range = this.getSelectedRange();
+          var stateBefore = getAlignmentClasses(range, (function(row, col) {
+            return $__2.getCellMeta(row, col).className;
+          }));
+          var type = 'vertical';
+          var alignment = 'htMiddle';
+          this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
+          align(range, type, alignment, (function(row, col) {
+            return $__2.getCellMeta(row, col);
+          }));
+          this.render();
+        },
+        disabled: false
+      }, {
+        key: (KEY + ":bottom"),
+        name: function() {
+          var $__2 = this;
+          var label = 'Bottom';
+          var hasClass = checkSelectionConsistency(this.getSelectedRange(), (function(row, col) {
+            var className = $__2.getCellMeta(row, col).className;
+            if (className && className.indexOf('htBottom') !== -1) {
+              return true;
+            }
+          }));
+          if (hasClass) {
+            label = markLabelAsSelected(label);
+          }
+          return label;
+        },
+        callback: function() {
+          var $__2 = this;
+          var range = this.getSelectedRange();
+          var stateBefore = getAlignmentClasses(range, (function(row, col) {
+            return $__2.getCellMeta(row, col).className;
+          }));
+          var type = 'vertical';
+          var alignment = 'htBottom';
+          this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
+          align(range, type, alignment, (function(row, col) {
+            return $__2.getCellMeta(row, col);
+          }));
+          this.render();
+        },
+        disabled: false
+      }]}
+  };
+}
+
+//# 
+},{"separator":155,"utils":157}],146:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  KEY: {get: function() {
+      return KEY;
+    }},
+  clearColumnItem: {get: function() {
+      return clearColumnItem;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_utils__;
+var getValidSelection = ($___46__46__47_utils__ = _dereq_("utils"), $___46__46__47_utils__ && $___46__46__47_utils__.__esModule && $___46__46__47_utils__ || {default: $___46__46__47_utils__}).getValidSelection;
+var KEY = 'clear_column';
+function clearColumnItem() {
+  return {
+    key: KEY,
     name: 'Clear column',
     callback: function(key, selection) {
       var column = selection.start.col;
@@ -14570,44 +22975,34 @@ var _predefinedItems = ($__4 = {}, Object.defineProperty($__4, SEPARATOR, {
       var rowSelected = entireRowSelection.join(',') == selected.join(',');
       return selected[1] < 0 || this.countCols() >= this.getSettings().maxCols || rowSelected;
     }
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__4, REMOVE_ROW, {
-  value: {
-    key: REMOVE_ROW,
-    name: 'Remove row',
+  };
+}
+
+//# 
+},{"utils":157}],147:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  KEY: {get: function() {
+      return KEY;
+    }},
+  columnLeftItem: {get: function() {
+      return columnLeftItem;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_utils__;
+var getValidSelection = ($___46__46__47_utils__ = _dereq_("utils"), $___46__46__47_utils__ && $___46__46__47_utils__.__esModule && $___46__46__47_utils__ || {default: $___46__46__47_utils__}).getValidSelection;
+var KEY = 'col_left';
+function columnLeftItem() {
+  return {
+    key: KEY,
+    name: 'Insert column on the left',
     callback: function(key, selection) {
-      var amount = selection.end.row - selection.start.row + 1;
-      this.alter('remove_row', selection.start.row, amount);
+      this.alter('insert_col', selection.start.col);
     },
     disabled: function() {
       var selected = getValidSelection(this);
-      if (!selected || this.selection.selectedHeader.cols) {
-        return true;
-      }
-      var entireColumnSelection = [0, selected[1], this.countRows() - 1, selected[1]];
-      return entireColumnSelection.join(',') === selected.join(',');
-    },
-    hidden: function() {
-      return !this.getSettings().allowRemoveRow;
-    }
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__4, REMOVE_COLUMN, {
-  value: {
-    key: REMOVE_COLUMN,
-    name: 'Remove column',
-    callback: function(key, selection) {
-      var amount = selection.end.col - selection.start.col + 1;
-      this.alter('remove_col', selection.start.col, amount);
-    },
-    disabled: function() {
-      var selected = getValidSelection(this);
-      if (!selected || this.selection.selectedHeader.rows) {
+      if (!selected) {
         return true;
       }
       if (!this.isColumnModificationAllowed()) {
@@ -14615,51 +23010,81 @@ var _predefinedItems = ($__4 = {}, Object.defineProperty($__4, SEPARATOR, {
       }
       var entireRowSelection = [selected[0], 0, selected[0], this.countCols() - 1];
       var rowSelected = entireRowSelection.join(',') == selected.join(',');
-      return (selected[1] < 0 || rowSelected);
+      var onlyOneColumn = this.countCols() === 1;
+      return selected[1] < 0 || this.countCols() >= this.getSettings().maxCols || (!onlyOneColumn && rowSelected);
     },
     hidden: function() {
-      return !this.getSettings().allowRemoveColumn;
+      return !this.getSettings().allowInsertColumn;
     }
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__4, UNDO, {
-  value: {
-    key: UNDO,
-    name: 'Undo',
-    callback: function() {
-      this.undo();
+  };
+}
+
+//# 
+},{"utils":157}],148:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  KEY: {get: function() {
+      return KEY;
+    }},
+  columnRightItem: {get: function() {
+      return columnRightItem;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_utils__;
+var getValidSelection = ($___46__46__47_utils__ = _dereq_("utils"), $___46__46__47_utils__ && $___46__46__47_utils__.__esModule && $___46__46__47_utils__ || {default: $___46__46__47_utils__}).getValidSelection;
+var KEY = 'col_right';
+function columnRightItem() {
+  return {
+    key: KEY,
+    name: 'Insert column on the right',
+    callback: function(key, selection) {
+      this.alter('insert_col', selection.end.col + 1);
     },
     disabled: function() {
-      return this.undoRedo && !this.undoRedo.isUndoAvailable();
-    }
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__4, REDO, {
-  value: {
-    key: REDO,
-    name: 'Redo',
-    callback: function() {
-      this.redo();
+      var selected = getValidSelection(this);
+      if (!selected) {
+        return true;
+      }
+      if (!this.isColumnModificationAllowed()) {
+        return true;
+      }
+      var entireRowSelection = [selected[0], 0, selected[0], this.countCols() - 1];
+      var rowSelected = entireRowSelection.join(',') == selected.join(',');
+      var onlyOneColumn = this.countCols() === 1;
+      return selected[1] < 0 || this.countCols() >= this.getSettings().maxCols || (!onlyOneColumn && rowSelected);
     },
-    disabled: function() {
-      return this.undoRedo && !this.undoRedo.isRedoAvailable();
+    hidden: function() {
+      return !this.getSettings().allowInsertColumn;
     }
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__4, READ_ONLY, {
-  value: {
-    key: READ_ONLY,
+  };
+}
+
+//# 
+},{"utils":157}],149:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  KEY: {get: function() {
+      return KEY;
+    }},
+  readOnlyItem: {get: function() {
+      return readOnlyItem;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_utils__;
+var $__0 = ($___46__46__47_utils__ = _dereq_("utils"), $___46__46__47_utils__ && $___46__46__47_utils__.__esModule && $___46__46__47_utils__ || {default: $___46__46__47_utils__}),
+    checkSelectionConsistency = $__0.checkSelectionConsistency,
+    markLabelAsSelected = $__0.markLabelAsSelected;
+var KEY = 'make_read_only';
+function readOnlyItem() {
+  return {
+    key: KEY,
     name: function() {
-      var $__3 = this;
+      var $__1 = this;
       var label = 'Read only';
       var atLeastOneReadOnly = checkSelectionConsistency(this.getSelectedRange(), (function(row, col) {
-        return $__3.getCellMeta(row, col).readOnly;
+        return $__1.getCellMeta(row, col).readOnly;
       }));
       if (atLeastOneReadOnly) {
         label = markLabelAsSelected(label);
@@ -14667,256 +23092,225 @@ var _predefinedItems = ($__4 = {}, Object.defineProperty($__4, SEPARATOR, {
       return label;
     },
     callback: function() {
-      var $__3 = this;
+      var $__1 = this;
       var range = this.getSelectedRange();
       var atLeastOneReadOnly = checkSelectionConsistency(range, (function(row, col) {
-        return $__3.getCellMeta(row, col).readOnly;
+        return $__1.getCellMeta(row, col).readOnly;
       }));
       range.forAll((function(row, col) {
-        $__3.getCellMeta(row, col).readOnly = atLeastOneReadOnly ? false : true;
+        $__1.getCellMeta(row, col).readOnly = atLeastOneReadOnly ? false : true;
       }));
       this.render();
     },
     disabled: function() {
-      return this.getSelectedRange() ? false : true;
+      return this.getSelectedRange() && !this.selection.selectedHeader.corner ? false : true;
     }
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__4, ALIGNMENT, {
-  value: {
-    key: ALIGNMENT,
-    name: 'Alignment',
-    disabled: function() {
-      return this.getSelectedRange() ? false : true;
-    },
-    submenu: {items: [{
-        key: (ALIGNMENT + ":left"),
-        name: function() {
-          var $__3 = this;
-          var label = 'Left';
-          var hasClass = checkSelectionConsistency(this.getSelectedRange(), (function(row, col) {
-            var className = $__3.getCellMeta(row, col).className;
-            if (className && className.indexOf('htLeft') !== -1) {
-              return true;
-            }
-          }));
-          if (hasClass) {
-            label = markLabelAsSelected(label);
-          }
-          return label;
-        },
-        callback: function() {
-          var $__3 = this;
-          var range = this.getSelectedRange();
-          var stateBefore = getAlignmentClasses(range, (function(row, col) {
-            return $__3.getCellMeta(row, col).className;
-          }));
-          var type = 'horizontal';
-          var alignment = 'htLeft';
-          this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
-          align(range, type, alignment, (function(row, col) {
-            return $__3.getCellMeta(row, col);
-          }));
-          this.render();
-        },
-        disabled: false
-      }, {
-        key: (ALIGNMENT + ":center"),
-        name: function() {
-          var $__3 = this;
-          var label = 'Center';
-          var hasClass = checkSelectionConsistency(this.getSelectedRange(), (function(row, col) {
-            var className = $__3.getCellMeta(row, col).className;
-            if (className && className.indexOf('htCenter') !== -1) {
-              return true;
-            }
-          }));
-          if (hasClass) {
-            label = markLabelAsSelected(label);
-          }
-          return label;
-        },
-        callback: function() {
-          var $__3 = this;
-          var range = this.getSelectedRange();
-          var stateBefore = getAlignmentClasses(range, (function(row, col) {
-            return $__3.getCellMeta(row, col).className;
-          }));
-          var type = 'horizontal';
-          var alignment = 'htCenter';
-          this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
-          align(range, type, alignment, (function(row, col) {
-            return $__3.getCellMeta(row, col);
-          }));
-          this.render();
-        },
-        disabled: false
-      }, {
-        key: (ALIGNMENT + ":right"),
-        name: function() {
-          var $__3 = this;
-          var label = 'Right';
-          var hasClass = checkSelectionConsistency(this.getSelectedRange(), (function(row, col) {
-            var className = $__3.getCellMeta(row, col).className;
-            if (className && className.indexOf('htRight') !== -1) {
-              return true;
-            }
-          }));
-          if (hasClass) {
-            label = markLabelAsSelected(label);
-          }
-          return label;
-        },
-        callback: function() {
-          var $__3 = this;
-          var range = this.getSelectedRange();
-          var stateBefore = getAlignmentClasses(range, (function(row, col) {
-            return $__3.getCellMeta(row, col).className;
-          }));
-          var type = 'horizontal';
-          var alignment = 'htRight';
-          this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
-          align(range, type, alignment, (function(row, col) {
-            return $__3.getCellMeta(row, col);
-          }));
-          this.render();
-        },
-        disabled: false
-      }, {
-        key: (ALIGNMENT + ":justify"),
-        name: function() {
-          var $__3 = this;
-          var label = 'Justify';
-          var hasClass = checkSelectionConsistency(this.getSelectedRange(), (function(row, col) {
-            var className = $__3.getCellMeta(row, col).className;
-            if (className && className.indexOf('htJustify') !== -1) {
-              return true;
-            }
-          }));
-          if (hasClass) {
-            label = markLabelAsSelected(label);
-          }
-          return label;
-        },
-        callback: function() {
-          var $__3 = this;
-          var range = this.getSelectedRange();
-          var stateBefore = getAlignmentClasses(range, (function(row, col) {
-            return $__3.getCellMeta(row, col).className;
-          }));
-          var type = 'horizontal';
-          var alignment = 'htJustify';
-          this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
-          align(range, type, alignment, (function(row, col) {
-            return $__3.getCellMeta(row, col);
-          }));
-          this.render();
-        },
-        disabled: false
-      }, {name: SEPARATOR}, {
-        key: (ALIGNMENT + ":top"),
-        name: function() {
-          var $__3 = this;
-          var label = 'Top';
-          var hasClass = checkSelectionConsistency(this.getSelectedRange(), (function(row, col) {
-            var className = $__3.getCellMeta(row, col).className;
-            if (className && className.indexOf('htTop') !== -1) {
-              return true;
-            }
-          }));
-          if (hasClass) {
-            label = markLabelAsSelected(label);
-          }
-          return label;
-        },
-        callback: function() {
-          var $__3 = this;
-          var range = this.getSelectedRange();
-          var stateBefore = getAlignmentClasses(range, (function(row, col) {
-            return $__3.getCellMeta(row, col).className;
-          }));
-          var type = 'vertical';
-          var alignment = 'htTop';
-          this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
-          align(range, type, alignment, (function(row, col) {
-            return $__3.getCellMeta(row, col);
-          }));
-          this.render();
-        },
-        disabled: false
-      }, {
-        key: (ALIGNMENT + ":middle"),
-        name: function() {
-          var $__3 = this;
-          var label = 'Middle';
-          var hasClass = checkSelectionConsistency(this.getSelectedRange(), (function(row, col) {
-            var className = $__3.getCellMeta(row, col).className;
-            if (className && className.indexOf('htMiddle') !== -1) {
-              return true;
-            }
-          }));
-          if (hasClass) {
-            label = markLabelAsSelected(label);
-          }
-          return label;
-        },
-        callback: function() {
-          var $__3 = this;
-          var range = this.getSelectedRange();
-          var stateBefore = getAlignmentClasses(range, (function(row, col) {
-            return $__3.getCellMeta(row, col).className;
-          }));
-          var type = 'vertical';
-          var alignment = 'htMiddle';
-          this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
-          align(range, type, alignment, (function(row, col) {
-            return $__3.getCellMeta(row, col);
-          }));
-          this.render();
-        },
-        disabled: false
-      }, {
-        key: (ALIGNMENT + ":bottom"),
-        name: function() {
-          var $__3 = this;
-          var label = 'Bottom';
-          var hasClass = checkSelectionConsistency(this.getSelectedRange(), (function(row, col) {
-            var className = $__3.getCellMeta(row, col).className;
-            if (className && className.indexOf('htBottom') !== -1) {
-              return true;
-            }
-          }));
-          if (hasClass) {
-            label = markLabelAsSelected(label);
-          }
-          return label;
-        },
-        callback: function() {
-          var $__3 = this;
-          var range = this.getSelectedRange();
-          var stateBefore = getAlignmentClasses(range, (function(row, col) {
-            return $__3.getCellMeta(row, col).className;
-          }));
-          var type = 'vertical';
-          var alignment = 'htBottom';
-          this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
-          align(range, type, alignment, (function(row, col) {
-            return $__3.getCellMeta(row, col);
-          }));
-          this.render();
-        },
-        disabled: false
-      }]}
-  },
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), $__4);
+  };
+}
 
 //# 
-},{"helpers/number":51,"helpers/object":52,"utils":75}],75:[function(_dereq_,module,exports){
+},{"utils":157}],150:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  KEY: {get: function() {
+      return KEY;
+    }},
+  redoItem: {get: function() {
+      return redoItem;
+    }},
+  __esModule: {value: true}
+});
+var KEY = 'redo';
+function redoItem() {
+  return {
+    key: KEY,
+    name: 'Redo',
+    callback: function() {
+      this.redo();
+    },
+    disabled: function() {
+      return this.undoRedo && !this.undoRedo.isRedoAvailable();
+    }
+  };
+}
+
+//# 
+},{}],151:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  KEY: {get: function() {
+      return KEY;
+    }},
+  removeColumnItem: {get: function() {
+      return removeColumnItem;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_utils__;
+var getValidSelection = ($___46__46__47_utils__ = _dereq_("utils"), $___46__46__47_utils__ && $___46__46__47_utils__.__esModule && $___46__46__47_utils__ || {default: $___46__46__47_utils__}).getValidSelection;
+var KEY = 'remove_col';
+function removeColumnItem() {
+  return {
+    key: KEY,
+    name: 'Remove column',
+    callback: function(key, selection) {
+      var amount = selection.end.col - selection.start.col + 1;
+      this.alter('remove_col', selection.start.col, amount);
+    },
+    disabled: function() {
+      var selected = getValidSelection(this);
+      var totalColumns = this.countCols();
+      return !selected || this.selection.selectedHeader.rows || this.selection.selectedHeader.corner || !this.isColumnModificationAllowed() || !totalColumns;
+    },
+    hidden: function() {
+      return !this.getSettings().allowRemoveColumn;
+    }
+  };
+}
+
+//# 
+},{"utils":157}],152:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  KEY: {get: function() {
+      return KEY;
+    }},
+  removeRowItem: {get: function() {
+      return removeRowItem;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_utils__;
+var getValidSelection = ($___46__46__47_utils__ = _dereq_("utils"), $___46__46__47_utils__ && $___46__46__47_utils__.__esModule && $___46__46__47_utils__ || {default: $___46__46__47_utils__}).getValidSelection;
+var KEY = 'remove_row';
+function removeRowItem() {
+  return {
+    key: KEY,
+    name: 'Remove row',
+    callback: function(key, selection) {
+      var amount = selection.end.row - selection.start.row + 1;
+      this.alter('remove_row', selection.start.row, amount);
+    },
+    disabled: function() {
+      var selected = getValidSelection(this);
+      var totalRows = this.countRows();
+      return !selected || this.selection.selectedHeader.cols || this.selection.selectedHeader.corner || !totalRows;
+    },
+    hidden: function() {
+      return !this.getSettings().allowRemoveRow;
+    }
+  };
+}
+
+//# 
+},{"utils":157}],153:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  KEY: {get: function() {
+      return KEY;
+    }},
+  rowAboveItem: {get: function() {
+      return rowAboveItem;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_utils__;
+var getValidSelection = ($___46__46__47_utils__ = _dereq_("utils"), $___46__46__47_utils__ && $___46__46__47_utils__.__esModule && $___46__46__47_utils__ || {default: $___46__46__47_utils__}).getValidSelection;
+var KEY = 'row_above';
+function rowAboveItem() {
+  return {
+    key: KEY,
+    name: 'Insert row above',
+    callback: function(key, selection) {
+      this.alter('insert_row', selection.start.row);
+    },
+    disabled: function() {
+      var selected = getValidSelection(this);
+      return !selected || this.selection.selectedHeader.cols || this.countRows() >= this.getSettings().maxRows;
+    },
+    hidden: function() {
+      return !this.getSettings().allowInsertRow;
+    }
+  };
+}
+
+//# 
+},{"utils":157}],154:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  KEY: {get: function() {
+      return KEY;
+    }},
+  rowBelowItem: {get: function() {
+      return rowBelowItem;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47_utils__;
+var getValidSelection = ($___46__46__47_utils__ = _dereq_("utils"), $___46__46__47_utils__ && $___46__46__47_utils__.__esModule && $___46__46__47_utils__ || {default: $___46__46__47_utils__}).getValidSelection;
+var KEY = 'row_below';
+function rowBelowItem() {
+  return {
+    key: KEY,
+    name: 'Insert row below',
+    callback: function(key, selection) {
+      this.alter('insert_row', selection.end.row + 1);
+    },
+    disabled: function() {
+      var selected = getValidSelection(this);
+      return !selected || this.selection.selectedHeader.cols || this.countRows() >= this.getSettings().maxRows;
+    },
+    hidden: function() {
+      return !this.getSettings().allowInsertRow;
+    }
+  };
+}
+
+//# 
+},{"utils":157}],155:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  KEY: {get: function() {
+      return KEY;
+    }},
+  separatorItem: {get: function() {
+      return separatorItem;
+    }},
+  __esModule: {value: true}
+});
+var KEY = '---------';
+function separatorItem() {
+  return {name: KEY};
+}
+
+//# 
+},{}],156:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  KEY: {get: function() {
+      return KEY;
+    }},
+  undoItem: {get: function() {
+      return undoItem;
+    }},
+  __esModule: {value: true}
+});
+var KEY = 'undo';
+function undoItem() {
+  return {
+    key: KEY,
+    name: 'Undo',
+    callback: function() {
+      this.undo();
+    },
+    disabled: function() {
+      return this.undoRedo && !this.undoRedo.isUndoAvailable();
+    }
+  };
+}
+
+//# 
+},{}],157:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   normalizeSelection: {get: function() {
@@ -14965,10 +23359,10 @@ Object.defineProperties(exports, {
 });
 var $___46__46__47__46__46__47_helpers_47_array__,
     $___46__46__47__46__46__47_helpers_47_dom_47_element__,
-    $__predefinedItems__;
+    $__predefinedItems_47_separator__;
 var arrayEach = ($___46__46__47__46__46__47_helpers_47_array__ = _dereq_("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}).arrayEach;
 var hasClass = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}).hasClass;
-var SEPARATOR = ($__predefinedItems__ = _dereq_("predefinedItems"), $__predefinedItems__ && $__predefinedItems__.__esModule && $__predefinedItems__ || {default: $__predefinedItems__}).SEPARATOR;
+var SEPARATOR = ($__predefinedItems_47_separator__ = _dereq_("predefinedItems/separator"), $__predefinedItems_47_separator__ && $__predefinedItems_47_separator__.__esModule && $__predefinedItems_47_separator__ || {default: $__predefinedItems_47_separator__}).KEY;
 function normalizeSelection(selRange) {
   return {
     start: selRange.getTopLeftCorner(),
@@ -15107,7 +23501,7 @@ function filterSeparators(items) {
 }
 
 //# 
-},{"helpers/array":42,"helpers/dom/element":46,"predefinedItems":74}],76:[function(_dereq_,module,exports){
+},{"helpers/array":112,"helpers/dom/element":116,"predefinedItems/separator":155}],158:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ContextMenuCopyPaste: {get: function() {
@@ -15189,12 +23583,18 @@ var $ContextMenuCopyPaste = ContextMenuCopyPaste;
   onAfterContextMenuDefaultOptions: function(defaultOptions) {
     defaultOptions.items.unshift({
       key: 'copy',
-      name: 'Copy'
+      name: 'Copy',
+      disabled: function() {
+        return this.selection.selectedHeader.corner;
+      }
     }, {
       key: 'paste',
       name: 'Paste',
       callback: function() {
         this.copyPaste.triggerPaste();
+      },
+      disabled: function() {
+        return this.selection.selectedHeader.corner;
       }
     }, Handsontable.plugins.ContextMenu.SEPARATOR);
   },
@@ -15241,7 +23641,7 @@ var $ContextMenuCopyPaste = ContextMenuCopyPaste;
 registerPlugin('contextMenuCopyPaste', ContextMenuCopyPaste);
 
 //# 
-},{"_base":62,"browser":23,"eventManager":41,"helpers/array":42,"helpers/dom/element":46,"plugins":61,"zeroclipboard":undefined}],77:[function(_dereq_,module,exports){
+},{"_base":132,"browser":93,"eventManager":111,"helpers/array":112,"helpers/dom/element":116,"plugins":131,"zeroclipboard":undefined}],159:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   CopyPastePlugin: {get: function() {
@@ -15446,7 +23846,7 @@ Handsontable.hooks.register('modifyCopyableRange');
 ;
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":5,"3rdparty/walkontable/src/cell/range":6,"SheetClip":"SheetClip","browser":23,"copyPaste":"copyPaste","helpers/array":42,"helpers/dom/element":46,"helpers/dom/event":47,"helpers/function":49,"helpers/number":51,"helpers/unicode":55,"plugins":61}],78:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":75,"3rdparty/walkontable/src/cell/range":76,"SheetClip":"SheetClip","browser":93,"copyPaste":"copyPaste","helpers/array":112,"helpers/dom/element":116,"helpers/dom/event":117,"helpers/function":119,"helpers/number":121,"helpers/unicode":125,"plugins":131}],160:[function(_dereq_,module,exports){
 "use strict";
 var $___46__46__47__46__46__47_browser__,
     $___46__46__47__46__46__47_plugins__,
@@ -15694,6 +24094,9 @@ var addBordersOptionsToContextMenu = function(defaultOptions) {
   defaultOptions.items.push({
     key: 'borders',
     name: 'Borders',
+    disabled: function() {
+      return this.selection.selectedHeader.corner;
+    },
     submenu: {items: [{
         key: 'borders:top',
         name: function() {
@@ -15707,8 +24110,7 @@ var addBordersOptionsToContextMenu = function(defaultOptions) {
         callback: function() {
           var hasBorder = checkSelectionBorders(this, 'top');
           prepareBorder.call(this, this.getSelectedRange(), 'top', hasBorder);
-        },
-        disabled: false
+        }
       }, {
         key: 'borders:right',
         name: function() {
@@ -15722,8 +24124,7 @@ var addBordersOptionsToContextMenu = function(defaultOptions) {
         callback: function() {
           var hasBorder = checkSelectionBorders(this, 'right');
           prepareBorder.call(this, this.getSelectedRange(), 'right', hasBorder);
-        },
-        disabled: false
+        }
       }, {
         key: 'borders:bottom',
         name: function() {
@@ -15737,8 +24138,7 @@ var addBordersOptionsToContextMenu = function(defaultOptions) {
         callback: function() {
           var hasBorder = checkSelectionBorders(this, 'bottom');
           prepareBorder.call(this, this.getSelectedRange(), 'bottom', hasBorder);
-        },
-        disabled: false
+        }
       }, {
         key: 'borders:left',
         name: function() {
@@ -15752,8 +24152,7 @@ var addBordersOptionsToContextMenu = function(defaultOptions) {
         callback: function() {
           var hasBorder = checkSelectionBorders(this, 'left');
           prepareBorder.call(this, this.getSelectedRange(), 'left', hasBorder);
-        },
-        disabled: false
+        }
       }, {
         key: 'borders:no_borders',
         name: 'Remove border(s)',
@@ -15785,7 +24184,7 @@ Handsontable.hooks.add('afterInit', function() {
 Handsontable.CustomBorders = CustomBorders;
 
 //# 
-},{"3rdparty/walkontable/src/cell/range":6,"3rdparty/walkontable/src/selection":18,"browser":23,"plugins":61}],79:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/cell/range":76,"3rdparty/walkontable/src/selection":88,"browser":93,"plugins":131}],161:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DragToScroll: {get: function() {
@@ -15875,7 +24274,7 @@ Handsontable.hooks.add('afterOnCellCornerMouseDown', function() {
 Handsontable.plugins.DragToScroll = DragToScroll;
 
 //# 
-},{"browser":23,"eventManager":41,"plugins":61}],80:[function(_dereq_,module,exports){
+},{"browser":93,"eventManager":111,"plugins":131}],162:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ManualColumnFreeze: {get: function() {
@@ -16019,7 +24418,7 @@ var $ManualColumnFreeze = ManualColumnFreeze;
 registerPlugin('manualColumnFreeze', ManualColumnFreeze);
 
 //# 
-},{"_base":62,"browser":23,"plugins":61}],81:[function(_dereq_,module,exports){
+},{"_base":132,"browser":93,"plugins":131}],163:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ManualColumnMove: {get: function() {
@@ -16047,9 +24446,7 @@ var $__3 = ($___46__46__47__46__46__47_helpers_47_array__ = _dereq_("helpers/arr
     arrayMap = $__3.arrayMap;
 var rangeEach = ($___46__46__47__46__46__47_helpers_47_number__ = _dereq_("helpers/number"), $___46__46__47__46__46__47_helpers_47_number__ && $___46__46__47__46__46__47_helpers_47_number__.__esModule && $___46__46__47__46__46__47_helpers_47_number__ || {default: $___46__46__47__46__46__47_helpers_47_number__}).rangeEach;
 var eventManagerObject = ($___46__46__47__46__46__47_eventManager__ = _dereq_("eventManager"), $___46__46__47__46__46__47_eventManager__ && $___46__46__47__46__46__47_eventManager__.__esModule && $___46__46__47__46__46__47_eventManager__ || {default: $___46__46__47__46__46__47_eventManager__}).eventManager;
-var $__6 = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}),
-    pageX = $__6.pageX,
-    pageY = $__6.pageY;
+var pageX = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}).pageX;
 var registerPlugin = ($___46__46__47__46__46__47_plugins__ = _dereq_("plugins"), $___46__46__47__46__46__47_plugins__ && $___46__46__47__46__46__47_plugins__.__esModule && $___46__46__47__46__46__47_plugins__ || {default: $___46__46__47__46__46__47_plugins__}).registerPlugin;
 var privatePool = new WeakMap();
 var ManualColumnMove = function ManualColumnMove(hotInstance) {
@@ -16244,10 +24641,8 @@ var $ManualColumnMove = ManualColumnMove;
     this.columnPositions.splice(destinationIndex, 0, this.columnPositions.splice(columnIndex, 1)[0]);
   },
   getVisibleColumnIndex: function(column) {
-    if (column > this.columnPositions.length - 1) {
-      this.createPositionData(column);
-    }
-    return this.columnPositions.indexOf(column);
+    var position = this.columnPositions.indexOf(column);
+    return position === -1 ? void 0 : position;
   },
   getLogicalColumnIndex: function(column) {
     return this.columnPositions[column];
@@ -16301,15 +24696,9 @@ var $ManualColumnMove = ManualColumnMove;
     }
   },
   onModifyCol: function(col) {
-    if (typeof this.getVisibleColumnIndex(col) == -1) {
-      this.createPositionData(col + 1);
-    }
     return this.getLogicalColumnIndex(col);
   },
   onUnmodifyCol: function(col) {
-    if (typeof this.getVisibleColumnIndex(col) == -1) {
-      this.createPositionData(col + 1);
-    }
     return this.getVisibleColumnIndex(col);
   },
   onAfterRemoveCol: function(index, amount) {
@@ -16344,7 +24733,7 @@ var $ManualColumnMove = ManualColumnMove;
       addindx.push(index + i);
     }));
     if (index >= colpos.length) {
-      colpos.concat(addindx);
+      colpos = colpos.concat(addindx);
     } else {
       colpos = arrayMap(colpos, function(value, ind) {
         return (value >= index) ? (value + amount) : value;
@@ -16364,7 +24753,7 @@ Handsontable.hooks.register('afterColumnMove');
 Handsontable.hooks.register('unmodifyCol');
 
 //# 
-},{"_base.js":62,"browser":23,"eventManager":41,"helpers/array":42,"helpers/dom/element":46,"helpers/dom/event":47,"helpers/number":51,"plugins":61}],82:[function(_dereq_,module,exports){
+},{"_base.js":132,"browser":93,"eventManager":111,"helpers/array":112,"helpers/dom/element":116,"helpers/dom/event":117,"helpers/number":121,"plugins":131}],164:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ManualColumnResize: {get: function() {
@@ -16711,7 +25100,7 @@ var $ManualColumnResize = ManualColumnResize;
 registerPlugin('manualColumnResize', ManualColumnResize);
 
 //# 
-},{"_base.js":62,"browser":23,"eventManager":41,"helpers/array":42,"helpers/dom/element":46,"helpers/dom/event":47,"helpers/number":51,"plugins":61}],83:[function(_dereq_,module,exports){
+},{"_base.js":132,"browser":93,"eventManager":111,"helpers/array":112,"helpers/dom/element":116,"helpers/dom/event":117,"helpers/number":121,"plugins":131}],165:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ManualRowMove: {get: function() {
@@ -16721,47 +25110,50 @@ Object.defineProperties(exports, {
 });
 var $___46__46__47__95_base_46_js__,
     $___46__46__47__46__46__47_browser__,
-    $___46__46__47__46__46__47_helpers_47_dom_47_element__,
     $___46__46__47__46__46__47_helpers_47_array__,
+    $___46__46__47__46__46__47_helpers_47_dom_47_element__,
     $___46__46__47__46__46__47_helpers_47_number__,
     $___46__46__47__46__46__47_eventManager__,
-    $___46__46__47__46__46__47_helpers_47_dom_47_event__,
-    $___46__46__47__46__46__47_plugins__;
+    $___46__46__47__46__46__47_plugins__,
+    $__rowsMapper__,
+    $__ui_47_backlight__,
+    $__ui_47_guideline__;
 var BasePlugin = ($___46__46__47__95_base_46_js__ = _dereq_("_base.js"), $___46__46__47__95_base_46_js__ && $___46__46__47__95_base_46_js__.__esModule && $___46__46__47__95_base_46_js__ || {default: $___46__46__47__95_base_46_js__}).default;
 var Handsontable = ($___46__46__47__46__46__47_browser__ = _dereq_("browser"), $___46__46__47__46__46__47_browser__ && $___46__46__47__46__46__47_browser__.__esModule && $___46__46__47__46__46__47_browser__ || {default: $___46__46__47__46__46__47_browser__}).default;
-var $__2 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}),
-    addClass = $__2.addClass,
-    hasClass = $__2.hasClass,
-    removeClass = $__2.removeClass,
-    outerWidth = $__2.outerWidth;
-var $__3 = ($___46__46__47__46__46__47_helpers_47_array__ = _dereq_("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}),
-    arrayEach = $__3.arrayEach,
-    arrayMap = $__3.arrayMap;
+var arrayEach = ($___46__46__47__46__46__47_helpers_47_array__ = _dereq_("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}).arrayEach;
+var $__3 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}),
+    addClass = $__3.addClass,
+    removeClass = $__3.removeClass,
+    offset = $__3.offset;
 var rangeEach = ($___46__46__47__46__46__47_helpers_47_number__ = _dereq_("helpers/number"), $___46__46__47__46__46__47_helpers_47_number__ && $___46__46__47__46__46__47_helpers_47_number__.__esModule && $___46__46__47__46__46__47_helpers_47_number__ || {default: $___46__46__47__46__46__47_helpers_47_number__}).rangeEach;
 var eventManagerObject = ($___46__46__47__46__46__47_eventManager__ = _dereq_("eventManager"), $___46__46__47__46__46__47_eventManager__ && $___46__46__47__46__46__47_eventManager__.__esModule && $___46__46__47__46__46__47_eventManager__ || {default: $___46__46__47__46__46__47_eventManager__}).eventManager;
-var $__6 = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $___46__46__47__46__46__47_helpers_47_dom_47_event__ && $___46__46__47__46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_event__}),
-    pageX = $__6.pageX,
-    pageY = $__6.pageY;
 var registerPlugin = ($___46__46__47__46__46__47_plugins__ = _dereq_("plugins"), $___46__46__47__46__46__47_plugins__ && $___46__46__47__46__46__47_plugins__.__esModule && $___46__46__47__46__46__47_plugins__ || {default: $___46__46__47__46__46__47_plugins__}).registerPlugin;
+var RowsMapper = ($__rowsMapper__ = _dereq_("rowsMapper"), $__rowsMapper__ && $__rowsMapper__.__esModule && $__rowsMapper__ || {default: $__rowsMapper__}).RowsMapper;
+var BacklightUI = ($__ui_47_backlight__ = _dereq_("ui/backlight"), $__ui_47_backlight__ && $__ui_47_backlight__.__esModule && $__ui_47_backlight__ || {default: $__ui_47_backlight__}).BacklightUI;
+var GuidelineUI = ($__ui_47_guideline__ = _dereq_("ui/guideline"), $__ui_47_guideline__ && $__ui_47_guideline__.__esModule && $__ui_47_guideline__ || {default: $__ui_47_guideline__}).GuidelineUI;
 var privatePool = new WeakMap();
+var CSS_PLUGIN = 'ht__manualRowMove';
+var CSS_SHOW_UI = 'show-ui';
+var CSS_ON_MOVING = 'on-moving--rows';
+var CSS_AFTER_SELECTION = 'after-selection--rows';
 var ManualRowMove = function ManualRowMove(hotInstance) {
   $traceurRuntime.superConstructor($ManualRowMove).call(this, hotInstance);
   privatePool.set(this, {
-    guideClassName: 'manualRowMoverGuide',
-    handleClassName: 'manualRowMover',
-    startOffset: null,
-    pressed: null,
-    startRow: null,
-    endRow: null,
-    currentRow: null,
-    startX: null,
-    startY: null
+    rowsToMove: [],
+    pressed: void 0,
+    disallowMoving: void 0,
+    target: {
+      eventPageY: void 0,
+      coords: void 0,
+      TD: void 0,
+      row: void 0
+    }
   });
-  this.guideElement = null;
-  this.handleElement = null;
-  this.currentTH = null;
-  this.rowPositions = [];
+  this.removedRows = [];
+  this.rowsMapper = new RowsMapper(this);
   this.eventManager = eventManagerObject(this);
+  this.backlight = new BacklightUI(hotInstance);
+  this.guideline = new GuidelineUI(hotInstance);
 };
 var $ManualRowMove = ManualRowMove;
 ($traceurRuntime.createClass)(ManualRowMove, {
@@ -16769,34 +25161,43 @@ var $ManualRowMove = ManualRowMove;
     return !!this.hot.getSettings().manualRowMove;
   },
   enablePlugin: function() {
-    var $__8 = this;
-    var priv = privatePool.get(this);
-    var initialSettings = this.hot.getSettings().manualRowMove;
-    var loadedManualRowPositions = this.loadManualRowPositions();
-    this.handleElement = document.createElement('DIV');
-    this.handleElement.className = priv.handleClassName;
-    this.guideElement = document.createElement('DIV');
-    this.guideElement.className = priv.guideClassName;
-    this.addHook('modifyRow', (function(row) {
-      return $__8.onModifyRow(row);
+    var $__10 = this;
+    if (this.enabled) {
+      return;
+    }
+    this.rowsMapper.createMap(this.hot.countSourceRows());
+    this.addHook('beforeOnCellMouseDown', (function(event, coords, TD, blockCalculations) {
+      return $__10.onBeforeOnCellMouseDown(event, coords, TD, blockCalculations);
+    }));
+    this.addHook('beforeOnCellMouseOver', (function(event, coords, TD, blockCalculations) {
+      return $__10.onBeforeOnCellMouseOver(event, coords, TD, blockCalculations);
+    }));
+    this.addHook('afterScrollHorizontally', (function() {
+      return $__10.onAfterScrollHorizontally();
+    }));
+    this.addHook('modifyRow', (function(row, source) {
+      return $__10.onModifyRow(row, source);
+    }));
+    this.addHook('beforeRemoveRow', (function(index, amount) {
+      return $__10.onBeforeRemoveRow(index, amount);
     }));
     this.addHook('afterRemoveRow', (function(index, amount) {
-      return $__8.onAfterRemoveRow(index, amount);
+      return $__10.onAfterRemoveRow(index, amount);
     }));
     this.addHook('afterCreateRow', (function(index, amount) {
-      return $__8.onAfterCreateRow(index, amount);
+      return $__10.onAfterCreateRow(index, amount);
     }));
-    this.addHook('init', (function() {
-      return $__8.onInit();
+    this.addHook('beforeColumnSort', (function(column, order) {
+      return $__10.onBeforeColumnSort(column, order);
     }));
+    this.addHook('unmodifyRow', (function(row) {
+      return $__10.onUnmodifyRow(row);
+    }));
+    this.initialSettings();
+    this.backlight.build();
+    this.guideline.build();
     this.registerEvents();
-    if (typeof loadedManualRowPositions != 'undefined') {
-      this.rowPositions = loadedManualRowPositions;
-    } else if (Array.isArray(initialSettings)) {
-      this.rowPositions = initialSettings;
-    } else if (!initialSettings || this.rowPositions === void 0) {
-      this.rowPositions = [];
-    }
+    addClass(this.hot.rootElement, CSS_PLUGIN);
     $traceurRuntime.superGet(this, $ManualRowMove.prototype, "enablePlugin").call(this);
   },
   updatePlugin: function() {
@@ -16805,243 +25206,462 @@ var $ManualRowMove = ManualRowMove;
     $traceurRuntime.superGet(this, $ManualRowMove.prototype, "updatePlugin").call(this);
   },
   disablePlugin: function() {
-    var pluginSetting = this.hot.getSettings().manualRowMove;
-    if (Array.isArray(pluginSetting)) {
-      this.unregisterEvents();
-      this.rowPositions = [];
-    }
+    this.rowsMapper.clearMap();
+    removeClass(this.hot.rootElement, CSS_PLUGIN);
+    this.unregisterEvents();
+    this.backlight.destroy();
+    this.guideline.destroy();
     $traceurRuntime.superGet(this, $ManualRowMove.prototype, "disablePlugin").call(this);
   },
+  moveRow: function(row, target) {
+    this.moveRows([row], target);
+  },
+  moveRows: function(rows, target) {
+    var $__10 = this;
+    this.hot.runHooks('beforeRowMove', rows, target);
+    arrayEach(rows, (function(row, index, array) {
+      array[index] = $__10.rowsMapper.getValueByIndex(row);
+    }));
+    arrayEach(rows, (function(row, index) {
+      var actualPosition = $__10.rowsMapper.getIndexByValue(row);
+      if (actualPosition !== target) {
+        $__10.rowsMapper.moveRow(actualPosition, target + index);
+      }
+    }));
+    this.rowsMapper.clearNull();
+    this.hot.runHooks('afterRowMove', rows, target);
+  },
+  changeSelection: function(startRow, endRow) {
+    var selection = this.hot.selection;
+    var lastColIndex = this.hot.countCols() - 1;
+    selection.setRangeStart(new WalkontableCellCoords(startRow, 0));
+    selection.setRangeEnd(new WalkontableCellCoords(endRow, lastColIndex), false);
+  },
+  getRowsHeight: function(from, to) {
+    var height = 0;
+    for (var i = from; i < to; i++) {
+      var rowHeight = this.hot.view.wt.wtTable.getRowHeight(i) || 23;
+      height += rowHeight;
+    }
+    return height;
+  },
+  initialSettings: function() {
+    var pluginSettings = this.hot.getSettings().manualRowMove;
+    if (Array.isArray(pluginSettings)) {
+      this.moveRows(pluginSettings, 0);
+    } else if (pluginSettings !== void 0) {
+      var persistentState = this.persistentStateLoad();
+      if (persistentState.length) {
+        this.moveRows(persistentState, 0);
+      }
+    }
+  },
+  isFixedRowTop: function(row) {
+    return row < this.hot.getSettings().fixedRowsTop;
+  },
+  isFixedRowBottom: function(row) {
+    return row > this.hot.getSettings().fixedRowsBottom;
+  },
+  persistentStateSave: function() {
+    Handsontable.hooks.run(this.hot, 'persistentStateSave', 'manualRowMove', this.rowsMapper._arrayMap);
+  },
+  persistentStateLoad: function() {
+    var storedState = {};
+    Handsontable.hooks.run(this.hot, 'persistentStateLoad', 'manualRowMove', storedState);
+    return storedState.value ? storedState.value : [];
+  },
+  prepareRowsToMoving: function() {
+    var selection = this.hot.getSelectedRange();
+    var selectedRows = [];
+    if (!selection) {
+      return selectedRows;
+    }
+    var $__12 = selection,
+        from = $__12.from,
+        to = $__12.to;
+    var start = Math.min(from.row, to.row);
+    var end = Math.max(from.row, to.row);
+    rangeEach(start, end, (function(i) {
+      selectedRows.push(i);
+    }));
+    return selectedRows;
+  },
+  refreshPositions: function() {
+    var wtTable = this.hot.view.wt.wtTable;
+    var priv = privatePool.get(this);
+    var coords = priv.target.coords;
+    var TD = priv.target.TD;
+    var rootElementOffset = offset(this.hot.rootElement);
+    var tdOffsetTop = this.hot.view.THEAD.offsetHeight + this.getRowsHeight(0, coords.row);
+    var mouseOffsetTop = priv.target.eventPageY - rootElementOffset.top + wtTable.holder.scrollTop;
+    var hiderHeight = wtTable.hider.offsetHeight;
+    var tbodyOffsetTop = wtTable.TBODY.offsetTop;
+    var backlightElemMarginTop = this.backlight.getOffset().top;
+    var backlightElemHeight = this.backlight.getSize().height;
+    if (this.isFixedRowTop(coords.row)) {
+      tdOffsetTop += wtTable.holder.scrollTop;
+    }
+    if (coords.row < 0) {
+      priv.target.row = 0;
+    } else if (TD.offsetHeight / 2 + tdOffsetTop <= mouseOffsetTop) {
+      priv.target.row = coords.row + 1;
+      tdOffsetTop += coords.row === 0 ? TD.offsetHeight - 1 : TD.offsetHeight;
+    } else {
+      priv.target.row = coords.row;
+    }
+    var backlightTop = mouseOffsetTop;
+    var guidelineTop = tdOffsetTop;
+    if (mouseOffsetTop + backlightElemHeight + backlightElemMarginTop >= hiderHeight) {
+      backlightTop = hiderHeight - backlightElemHeight - backlightElemMarginTop;
+    } else if (mouseOffsetTop + backlightElemMarginTop < tbodyOffsetTop) {
+      backlightTop = tbodyOffsetTop + Math.abs(backlightElemMarginTop);
+    }
+    if (tdOffsetTop >= hiderHeight - 1) {
+      guidelineTop = hiderHeight - 1;
+    }
+    this.backlight.setPosition(backlightTop);
+    this.guideline.setPosition(guidelineTop);
+  },
   registerEvents: function() {
-    var $__8 = this;
-    this.eventManager.addEventListener(this.hot.rootElement, 'mouseover', (function(event) {
-      return $__8.onMouseOver(event);
+    var $__10 = this;
+    this.eventManager.addEventListener(document.documentElement, 'mousemove', (function(event) {
+      return $__10.onMouseMove(event);
     }));
-    this.eventManager.addEventListener(this.hot.rootElement, 'mousedown', (function(event) {
-      return $__8.onMouseDown(event);
-    }));
-    this.eventManager.addEventListener(window, 'mousemove', (function(event) {
-      return $__8.onMouseMove(event);
-    }));
-    this.eventManager.addEventListener(window, 'mouseup', (function(event) {
-      return $__8.onMouseUp(event);
+    this.eventManager.addEventListener(document.documentElement, 'mouseup', (function() {
+      return $__10.onMouseUp();
     }));
   },
   unregisterEvents: function() {
     this.eventManager.clear();
   },
-  saveManualRowPositions: function() {
-    Handsontable.hooks.run(this.hot, 'persistentStateSave', 'manualRowPositions', this.rowPositions);
+  onBeforeColumnSort: function(column, order) {
+    var priv = privatePool.get(this);
+    priv.disallowMoving = order !== void 0;
   },
-  loadManualRowPositions: function() {
-    var storedState = {};
-    Handsontable.hooks.run(this.hot, 'persistentStateLoad', 'manualRowPositions', storedState);
-    return storedState.value;
-  },
-  completeSettingsArray: function() {
-    var $__8 = this;
-    var rowCount = this.hot.countRows();
-    if (this.rowPositions.length === rowCount) {
+  onBeforeOnCellMouseDown: function(event, coords, TD, blockCalculations) {
+    var wtTable = this.hot.view.wt.wtTable;
+    var isHeaderSelection = this.hot.selection.selectedHeader.rows;
+    var selection = this.hot.getSelectedRange();
+    var priv = privatePool.get(this);
+    if (!selection || !isHeaderSelection || priv.pressed || event.button !== 0) {
+      priv.pressed = false;
+      priv.rowsToMove.length = 0;
+      removeClass(this.hot.rootElement, [CSS_ON_MOVING, CSS_SHOW_UI]);
       return;
     }
-    rangeEach(0, rowCount - 1, (function(i) {
-      if ($__8.rowPositions.indexOf(i) === -1) {
-        $__8.rowPositions.push(i);
-      }
-    }));
-  },
-  setupHandlePosition: function(TH) {
-    this.currentTH = TH;
-    var priv = privatePool.get(this);
-    var row = this.hot.view.wt.wtTable.getCoords(TH).row;
-    var headerWidth = outerWidth(this.currentTH);
-    if (row >= 0) {
-      var box = this.currentTH.getBoundingClientRect();
-      priv.currentRow = row;
-      priv.startOffset = box.top;
-      this.handleElement.style.top = priv.startOffset + 'px';
-      this.handleElement.style.left = box.left + 'px';
-      this.handleElement.style.width = headerWidth + 'px';
-      this.hot.rootElement.appendChild(this.handleElement);
+    var guidelineIsNotReady = this.guideline.isBuilt() && !this.guideline.isAppended();
+    var backlightIsNotReady = this.backlight.isBuilt() && !this.backlight.isAppended();
+    if (guidelineIsNotReady && backlightIsNotReady) {
+      this.guideline.appendTo(wtTable.hider);
+      this.backlight.appendTo(wtTable.hider);
     }
-  },
-  refreshHandlePosition: function(TH, delta) {
-    var box = TH.getBoundingClientRect();
-    var handleHeight = 6;
-    if (delta > 0) {
-      this.handleElement.style.top = (box.top + box.height - handleHeight) + 'px';
+    var $__12 = selection,
+        from = $__12.from,
+        to = $__12.to;
+    var start = Math.min(from.row, to.row);
+    var end = Math.max(from.row, to.row);
+    if (coords.col < 0 && (coords.row >= start && coords.row <= end)) {
+      blockCalculations.row = true;
+      priv.pressed = true;
+      priv.target.eventPageY = event.pageY;
+      priv.target.coords = coords;
+      priv.target.TD = TD;
+      priv.rowsToMove = this.prepareRowsToMoving();
+      var leftPos = wtTable.holder.scrollLeft + wtTable.getColumnWidth(-1);
+      this.backlight.setPosition(null, leftPos);
+      this.backlight.setSize(wtTable.hider.offsetWidth - leftPos, this.getRowsHeight(start, end + 1));
+      this.backlight.setOffset((this.getRowsHeight(start, coords.row) + event.layerY) * -1, null);
+      addClass(this.hot.rootElement, CSS_ON_MOVING);
+      this.refreshPositions();
     } else {
-      this.handleElement.style.top = box.top + 'px';
-    }
-  },
-  setupGuidePosition: function() {
-    var box = this.currentTH.getBoundingClientRect();
-    var priv = privatePool.get(this);
-    var handleWidth = parseInt(outerWidth(this.handleElement), 10);
-    var handleRightPosition = parseInt(this.handleElement.style.left, 10) + handleWidth;
-    var maximumVisibleElementWidth = parseInt(this.hot.view.maximumVisibleElementWidth(0), 10);
-    addClass(this.handleElement, 'active');
-    addClass(this.guideElement, 'active');
-    this.guideElement.style.height = box.height + 'px';
-    this.guideElement.style.width = (maximumVisibleElementWidth - handleWidth) + 'px';
-    this.guideElement.style.top = priv.startOffset + 'px';
-    this.guideElement.style.left = handleRightPosition + 'px';
-    this.hot.rootElement.appendChild(this.guideElement);
-  },
-  refreshGuidePosition: function(diff) {
-    var priv = privatePool.get(this);
-    this.guideElement.style.top = priv.startOffset + diff + 'px';
-  },
-  hideHandleAndGuide: function() {
-    removeClass(this.handleElement, 'active');
-    removeClass(this.guideElement, 'active');
-  },
-  checkRowHeader: function(element) {
-    if (element != this.hot.rootElement) {
-      var parent = element.parentNode;
-      if (parent.tagName === 'TBODY') {
-        return true;
-      }
-      return this.checkRowHeader(parent);
-    }
-    return false;
-  },
-  createPositionData: function(len) {
-    var positionArr = this.rowPositions;
-    if (positionArr.length < len) {
-      rangeEach(positionArr.length, len - 1, (function(i) {
-        positionArr[i] = i;
-      }));
-    }
-  },
-  getTHFromTargetElement: function(element) {
-    if (element.tagName != 'TABLE') {
-      if (element.tagName == 'TH') {
-        return element;
-      } else {
-        return this.getTHFromTargetElement(element.parentNode);
-      }
-    }
-    return null;
-  },
-  changeRowPositions: function(rowIndex, destinationIndex) {
-    var maxLength = Math.max(rowIndex, destinationIndex);
-    if (maxLength > this.rowPositions.length - 1) {
-      this.createPositionData(maxLength + 1);
-    }
-    this.rowPositions.splice(destinationIndex, 0, this.rowPositions.splice(rowIndex, 1)[0]);
-  },
-  getVisibleRowIndex: function(row) {
-    if (row > this.rowPositions.length - 1) {
-      this.createPositionData(row);
-    }
-    return this.rowPositions.indexOf(row);
-  },
-  getLogicalRowIndex: function(row) {
-    return this.rowPositions[row];
-  },
-  onMouseOver: function(event) {
-    var priv = privatePool.get(this);
-    if (this.checkRowHeader(event.target)) {
-      var th = this.getTHFromTargetElement(event.target);
-      if (th) {
-        if (priv.pressed) {
-          priv.endRow = this.hot.view.wt.wtTable.getCoords(th).row;
-          this.refreshHandlePosition(th, priv.endRow - priv.startRow);
-        } else {
-          this.setupHandlePosition(th);
-        }
-      }
-    }
-  },
-  onMouseDown: function(event) {
-    var priv = privatePool.get(this);
-    if (hasClass(event.target, priv.handleClassName)) {
-      priv.startY = pageY(event);
-      this.setupGuidePosition();
-      priv.pressed = this.hot;
-      priv.startRow = priv.currentRow;
-      priv.endRow = priv.currentRow;
+      removeClass(this.hot.rootElement, CSS_AFTER_SELECTION);
+      priv.pressed = false;
+      priv.rowsToMove.length = 0;
     }
   },
   onMouseMove: function(event) {
     var priv = privatePool.get(this);
-    if (priv.pressed) {
-      this.refreshGuidePosition(pageY(event) - priv.startY);
-    }
-  },
-  onMouseUp: function(event) {
-    var priv = privatePool.get(this);
-    if (priv.pressed) {
-      this.hideHandleAndGuide();
-      priv.pressed = false;
-      this.createPositionData(this.hot.countRows());
-      this.changeRowPositions(priv.startRow, priv.endRow);
-      Handsontable.hooks.run(this.hot, 'beforeRowMove', priv.startRow, priv.endRow);
-      this.hot.forceFullRender = true;
-      this.hot.view.render();
-      this.saveManualRowPositions();
-      Handsontable.hooks.run(this.hot, 'afterRowMove', priv.startRow, priv.endRow);
-      this.setupHandlePosition(this.currentTH);
-    }
-  },
-  onModifyRow: function(row) {
-    if (typeof this.getVisibleRowIndex(row) === 'undefined') {
-      this.createPositionData(row + 1);
-    }
-    return this.getLogicalRowIndex(row);
-  },
-  onAfterRemoveRow: function(index, amount) {
-    if (!this.isEnabled()) {
+    if (!priv.pressed) {
       return;
     }
-    var rmindx;
-    var rowpos = this.rowPositions;
-    rmindx = rowpos.splice(index, amount);
-    rowpos = arrayMap(rowpos, function(value, index) {
-      var newpos = value;
-      arrayEach(rmindx, (function(elem, index) {
-        if (value > elem) {
-          newpos--;
-        }
-      }));
-      return newpos;
-    });
-    this.rowPositions = rowpos;
+    if (event.realTarget === this.backlight.element) {
+      var height = this.backlight.getSize().height;
+      this.backlight.setSize(null, 0);
+      setTimeout(function() {
+        this.backlight.setPosition(null, height);
+      });
+    }
+    priv.target.eventPageY = event.pageY;
+    this.refreshPositions();
+  },
+  onBeforeOnCellMouseOver: function(event, coords, TD, blockCalculations) {
+    var selectedRange = this.hot.getSelectedRange();
+    var priv = privatePool.get(this);
+    if (!selectedRange || !priv.pressed) {
+      return;
+    }
+    if (priv.rowsToMove.indexOf(coords.row) > -1) {
+      removeClass(this.hot.rootElement, CSS_SHOW_UI);
+    } else {
+      addClass(this.hot.rootElement, CSS_SHOW_UI);
+    }
+    blockCalculations.row = true;
+    blockCalculations.column = true;
+    blockCalculations.cell = true;
+    priv.target.coords = coords;
+    priv.target.TD = TD;
+  },
+  onMouseUp: function() {
+    var priv = privatePool.get(this);
+    var blockMoving = {rows: false};
+    priv.pressed = false;
+    priv.backlightHeight = 0;
+    removeClass(this.hot.rootElement, [CSS_ON_MOVING, CSS_SHOW_UI, CSS_AFTER_SELECTION]);
+    if (this.hot.selection.selectedHeader.rows) {
+      addClass(this.hot.rootElement, CSS_AFTER_SELECTION);
+    }
+    if (priv.rowsToMove.length < 1) {
+      return;
+    }
+    var target = priv.target.row;
+    this.moveRows(priv.rowsToMove, target);
+    this.persistentStateSave();
+    this.hot.render();
+    if (!blockMoving.rows) {
+      var selectionStart = this.rowsMapper.getIndexByValue(priv.rowsToMove[0]);
+      var selectionEnd = this.rowsMapper.getIndexByValue(priv.rowsToMove[priv.rowsToMove.length - 1]);
+      this.changeSelection(selectionStart, selectionEnd);
+    }
+    priv.rowsToMove.length = 0;
+  },
+  onAfterScrollHorizontally: function() {
+    var wtTable = this.hot.view.wt.wtTable;
+    var headerWidth = wtTable.getColumnWidth(-1);
+    var scrollLeft = wtTable.holder.scrollLeft;
+    var posLeft = headerWidth + scrollLeft;
+    this.backlight.setPosition(null, posLeft);
+    this.backlight.setSize(wtTable.hider.offsetWidth - posLeft);
   },
   onAfterCreateRow: function(index, amount) {
-    if (!this.isEnabled()) {
-      return;
-    }
-    var rowpos = this.rowPositions;
-    if (!rowpos.length) {
-      return;
-    }
-    var addindx = [];
-    for (var i = 0; i < amount; i++) {
-      addindx.push(index + i);
-    }
-    if (index >= rowpos.length) {
-      rowpos.concat(addindx);
-    } else {
-      rowpos = arrayMap(rowpos, function(value, ind) {
-        return (value >= index) ? (value + amount) : value;
-      });
-      rowpos.splice.apply(rowpos, [index, 0].concat(addindx));
-    }
-    this.rowPositions = rowpos;
+    this.rowsMapper.shiftItems(index, amount);
   },
-  onInit: function() {
-    this.completeSettingsArray();
+  onBeforeRemoveRow: function(index, amount) {
+    var $__10 = this;
+    this.removedRows.length = 0;
+    if (index !== false) {
+      rangeEach(index, index + amount - 1, (function(removedIndex) {
+        $__10.removedRows.push($__10.hot.runHooks('modifyRow', removedIndex, $__10.pluginName));
+      }));
+    }
+  },
+  onAfterRemoveRow: function(index, amount) {
+    this.rowsMapper.unshiftItems(this.removedRows);
+  },
+  onModifyRow: function(row, source) {
+    if (source !== this.pluginName) {
+      row = this.rowsMapper.getValueByIndex(row);
+    }
+    return row;
+  },
+  onUnmodifyRow: function(row) {
+    return this.rowsMapper.getIndexByValue(row);
+  },
+  destroy: function() {
+    this.backlight.destroy();
+    this.guideline.destroy();
+    $traceurRuntime.superGet(this, $ManualRowMove.prototype, "destroy").call(this);
   }
 }, {}, BasePlugin);
 ;
 registerPlugin('ManualRowMove', ManualRowMove);
 Handsontable.hooks.register('beforeRowMove');
 Handsontable.hooks.register('afterRowMove');
+Handsontable.hooks.register('unmodifyRow');
 
 //# 
-},{"_base.js":62,"browser":23,"eventManager":41,"helpers/array":42,"helpers/dom/element":46,"helpers/dom/event":47,"helpers/number":51,"plugins":61}],84:[function(_dereq_,module,exports){
+},{"_base.js":132,"browser":93,"eventManager":111,"helpers/array":112,"helpers/dom/element":116,"helpers/number":121,"plugins":131,"rowsMapper":166,"ui/backlight":168,"ui/guideline":169}],166:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  RowsMapper: {get: function() {
+      return RowsMapper;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47__46__46__47_browser__,
+    $___46__46__47__46__46__47_mixins_47_arrayMapper__,
+    $___46__46__47__46__46__47_helpers_47_array__,
+    $___46__46__47__46__46__47_helpers_47_object__,
+    $___46__46__47__46__46__47_helpers_47_number__;
+var Handsontable = ($___46__46__47__46__46__47_browser__ = _dereq_("browser"), $___46__46__47__46__46__47_browser__ && $___46__46__47__46__46__47_browser__.__esModule && $___46__46__47__46__46__47_browser__ || {default: $___46__46__47__46__46__47_browser__}).default;
+var arrayMapper = ($___46__46__47__46__46__47_mixins_47_arrayMapper__ = _dereq_("mixins/arrayMapper"), $___46__46__47__46__46__47_mixins_47_arrayMapper__ && $___46__46__47__46__46__47_mixins_47_arrayMapper__.__esModule && $___46__46__47__46__46__47_mixins_47_arrayMapper__ || {default: $___46__46__47__46__46__47_mixins_47_arrayMapper__}).arrayMapper;
+var arrayFilter = ($___46__46__47__46__46__47_helpers_47_array__ = _dereq_("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}).arrayFilter;
+var mixin = ($___46__46__47__46__46__47_helpers_47_object__ = _dereq_("helpers/object"), $___46__46__47__46__46__47_helpers_47_object__ && $___46__46__47__46__46__47_helpers_47_object__.__esModule && $___46__46__47__46__46__47_helpers_47_object__ || {default: $___46__46__47__46__46__47_helpers_47_object__}).mixin;
+var rangeEach = ($___46__46__47__46__46__47_helpers_47_number__ = _dereq_("helpers/number"), $___46__46__47__46__46__47_helpers_47_number__ && $___46__46__47__46__46__47_helpers_47_number__.__esModule && $___46__46__47__46__46__47_helpers_47_number__ || {default: $___46__46__47__46__46__47_helpers_47_number__}).rangeEach;
+var RowsMapper = function RowsMapper(manualRowMove) {
+  this.manualRowMove = manualRowMove;
+};
+($traceurRuntime.createClass)(RowsMapper, {
+  createMap: function(length) {
+    var $__5 = this;
+    var originLength = length === void 0 ? this._arrayMap.length : length;
+    this._arrayMap.length = 0;
+    rangeEach(originLength - 1, (function(itemIndex) {
+      $__5._arrayMap[itemIndex] = itemIndex;
+    }));
+  },
+  destroy: function() {
+    this._arrayMap = null;
+  },
+  moveRow: function(from, to) {
+    var indexToMove = this._arrayMap[from];
+    this._arrayMap[from] = null;
+    this._arrayMap.splice(to, 0, indexToMove);
+  },
+  clearNull: function() {
+    this._arrayMap = arrayFilter(this._arrayMap, (function(i) {
+      return i !== null;
+    }));
+  }
+}, {});
+mixin(RowsMapper, arrayMapper);
+;
+Handsontable.utils.ManualRowMoveRowsMapper = RowsMapper;
+
+//# 
+},{"browser":93,"helpers/array":112,"helpers/number":121,"helpers/object":122,"mixins/arrayMapper":126}],167:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  BaseUI: {get: function() {
+      return BaseUI;
+    }},
+  __esModule: {value: true}
+});
+var STATE_INITIALIZED = 0;
+var STATE_BUILT = 1;
+var STATE_APPENDED = 2;
+var UNIT = 'px';
+var BaseUI = function BaseUI(hotInstance) {
+  this.hot = hotInstance;
+  this._element = null;
+  this.state = STATE_INITIALIZED;
+};
+($traceurRuntime.createClass)(BaseUI, {
+  appendTo: function(wrapper) {
+    wrapper.appendChild(this._element);
+    this.state = STATE_APPENDED;
+  },
+  build: function() {
+    this._element = document.createElement('div');
+    this.state = STATE_BUILT;
+  },
+  destroy: function() {
+    if (this.isAppended()) {
+      this._element.parentElement.removeChild(this._element);
+    }
+    this._element = null;
+    this.state = STATE_INITIALIZED;
+  },
+  isAppended: function() {
+    return this.state === STATE_APPENDED;
+  },
+  isBuilt: function() {
+    return this.state >= STATE_BUILT;
+  },
+  setPosition: function(top, left) {
+    if (top) {
+      this._element.style.top = top + UNIT;
+    }
+    if (left) {
+      this._element.style.left = left + UNIT;
+    }
+  },
+  getPosition: function() {
+    return {
+      top: this._element.style.top ? parseInt(this._element.style.top, 10) : 0,
+      left: this._element.style.left ? parseInt(this._element.style.left, 10) : 0
+    };
+  },
+  setSize: function(width, height) {
+    if (width) {
+      this._element.style.width = width + UNIT;
+    }
+    if (height) {
+      this._element.style.height = height + UNIT;
+    }
+  },
+  getSize: function() {
+    return {
+      width: this._element.style.width ? parseInt(this._element.style.width, 10) : 0,
+      height: this._element.style.height ? parseInt(this._element.style.height, 10) : 0
+    };
+  },
+  setOffset: function(top, left) {
+    if (top) {
+      this._element.style.marginTop = top + UNIT;
+    }
+    if (left) {
+      this._element.style.marginLeft = left + UNIT;
+    }
+  },
+  getOffset: function() {
+    return {
+      top: this._element.style.marginTop ? parseInt(this._element.style.marginTop, 10) : 0,
+      left: this._element.style.marginLeft ? parseInt(this._element.style.marginLeft, 10) : 0
+    };
+  }
+}, {});
+;
+
+//# 
+},{}],168:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  BacklightUI: {get: function() {
+      return BacklightUI;
+    }},
+  __esModule: {value: true}
+});
+var $___95_base__,
+    $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__;
+var BaseUI = ($___95_base__ = _dereq_("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseUI;
+var addClass = ($___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__}).addClass;
+var CSS_CLASSNAME = 'ht__manualRowMove--backlight';
+var BacklightUI = function BacklightUI(hotInstance) {
+  $traceurRuntime.superConstructor($BacklightUI).call(this, hotInstance);
+};
+var $BacklightUI = BacklightUI;
+($traceurRuntime.createClass)(BacklightUI, {build: function() {
+    $traceurRuntime.superGet(this, $BacklightUI.prototype, "build").call(this);
+    addClass(this._element, CSS_CLASSNAME);
+  }}, {}, BaseUI);
+;
+
+//# 
+},{"_base":167,"helpers/dom/element":116}],169:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  GuidelineUI: {get: function() {
+      return GuidelineUI;
+    }},
+  __esModule: {value: true}
+});
+var $___95_base__,
+    $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__;
+var BaseUI = ($___95_base__ = _dereq_("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseUI;
+var addClass = ($___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47__46__46__47_helpers_47_dom_47_element__}).addClass;
+var CSS_CLASSNAME = 'ht__manualRowMove--guideline';
+var GuidelineUI = function GuidelineUI(hotInstance) {
+  $traceurRuntime.superConstructor($GuidelineUI).call(this, hotInstance);
+};
+var $GuidelineUI = GuidelineUI;
+($traceurRuntime.createClass)(GuidelineUI, {build: function() {
+    $traceurRuntime.superGet(this, $GuidelineUI.prototype, "build").call(this);
+    addClass(this._element, CSS_CLASSNAME);
+  }}, {}, BaseUI);
+;
+
+//# 
+},{"_base":167,"helpers/dom/element":116}],170:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ManualRowResize: {get: function() {
@@ -17358,7 +25978,7 @@ var $ManualRowResize = ManualRowResize;
 registerPlugin('manualRowResize', ManualRowResize);
 
 //# 
-},{"_base.js":62,"browser":23,"eventManager":41,"helpers/array":42,"helpers/dom/element":46,"helpers/dom/event":47,"helpers/number":51,"plugins":61}],85:[function(_dereq_,module,exports){
+},{"_base.js":132,"browser":93,"eventManager":111,"helpers/array":112,"helpers/dom/element":116,"helpers/dom/event":117,"helpers/number":121,"plugins":131}],171:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   MergeCells: {get: function() {
@@ -17692,7 +26312,7 @@ var addMergeActionsToContextMenu = function(defaultOptions) {
       this.render();
     },
     disabled: function() {
-      return false;
+      return this.selection.selectedHeader.corner;
     }
   });
 };
@@ -17898,7 +26518,7 @@ Handsontable.hooks.add('afterRemoveRow', onAfterRemoveRow);
 Handsontable.MergeCells = MergeCells;
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":5,"3rdparty/walkontable/src/cell/range":6,"3rdparty/walkontable/src/table":20,"browser":23,"helpers/dom/event":47,"plugins":61}],86:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":75,"3rdparty/walkontable/src/cell/range":76,"3rdparty/walkontable/src/table":90,"browser":93,"helpers/dom/event":117,"plugins":131}],172:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   MultipleSelectionHandles: {get: function() {
@@ -18189,7 +26809,7 @@ var $MultipleSelectionHandles = MultipleSelectionHandles;
 registerPlugin('multipleSelectionHandles', MultipleSelectionHandles);
 
 //# 
-},{"_base":62,"browser":23,"eventManager":41,"helpers/browser":43,"helpers/dom/element":46,"plugins":61}],87:[function(_dereq_,module,exports){
+},{"_base":132,"browser":93,"eventManager":111,"helpers/browser":113,"helpers/dom/element":116,"plugins":131}],173:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DataObserver: {get: function() {
@@ -18244,7 +26864,7 @@ mixin(DataObserver, localHooks);
 ;
 
 //# 
-},{"../../helpers/object":52,"../../mixins/localHooks":57,"jsonpatch":"jsonpatch","utils":89}],88:[function(_dereq_,module,exports){
+},{"../../helpers/object":122,"../../mixins/localHooks":127,"jsonpatch":"jsonpatch","utils":175}],174:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ObserveChanges: {get: function() {
@@ -18390,7 +27010,7 @@ var $ObserveChanges = ObserveChanges;
 registerPlugin('observeChanges', ObserveChanges);
 
 //# 
-},{"_base":62,"browser":23,"dataObserver":87,"helpers/array":42,"jsonpatch":"jsonpatch","plugins":61}],89:[function(_dereq_,module,exports){
+},{"_base":132,"browser":93,"dataObserver":173,"helpers/array":112,"jsonpatch":"jsonpatch","plugins":131}],175:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   cleanPatches: {get: function() {
@@ -18449,7 +27069,7 @@ function parsePath(path) {
 }
 
 //# 
-},{"../../helpers/array":42}],90:[function(_dereq_,module,exports){
+},{"../../helpers/array":112}],176:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   HandsontablePersistentState: {get: function() {
@@ -18563,7 +27183,7 @@ Handsontable.hooks.add('beforeInit', htPersistentState.init);
 Handsontable.hooks.add('afterUpdateSettings', htPersistentState.init);
 
 //# 
-},{"browser":23,"plugins":61}],91:[function(_dereq_,module,exports){
+},{"browser":93,"plugins":131}],177:[function(_dereq_,module,exports){
 "use strict";
 var $___46__46__47__46__46__47_browser__,
     $___46__46__47__46__46__47_helpers_47_dom_47_element__,
@@ -18673,7 +27293,7 @@ Handsontable.hooks.add('afterInit', init);
 Handsontable.hooks.add('afterUpdateSettings', init);
 
 //# 
-},{"browser":23,"helpers/dom/element":46,"renderers":94}],92:[function(_dereq_,module,exports){
+},{"browser":93,"helpers/dom/element":116,"renderers":180}],178:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   TouchScroll: {get: function() {
@@ -18788,7 +27408,7 @@ var $TouchScroll = TouchScroll;
 registerPlugin('touchScroll', TouchScroll);
 
 //# 
-},{"_base":62,"browser":23,"helpers/dom/element":46,"plugins":61}],93:[function(_dereq_,module,exports){
+},{"_base":132,"browser":93,"helpers/dom/element":116,"plugins":131}],179:[function(_dereq_,module,exports){
 "use strict";
 var $___46__46__47__46__46__47_browser__,
     $___46__46__47__46__46__47_helpers_47_array__,
@@ -18863,6 +27483,9 @@ Handsontable.UndoRedo = function(instance) {
   instance.addHook('beforeFilter', function(formulaStacks) {
     plugin.done(new Handsontable.UndoRedo.FiltersAction(formulaStacks));
   });
+  instance.addHook('beforeRowMove', function(movedRows, target) {
+    plugin.done(new Handsontable.UndoRedo.RowMoveAction(movedRows, target));
+  });
 };
 Handsontable.UndoRedo.prototype.done = function(action) {
   if (!this.ignoreNewActions) {
@@ -18873,23 +27496,37 @@ Handsontable.UndoRedo.prototype.done = function(action) {
 Handsontable.UndoRedo.prototype.undo = function() {
   if (this.isUndoAvailable()) {
     var action = this.doneActions.pop();
+    var actionClone = deepClone(action);
+    var instance = this.instance;
+    var continueAction = instance.runHooks('beforeUndo', actionClone);
+    if (continueAction === false) {
+      return;
+    }
     this.ignoreNewActions = true;
     var that = this;
     action.undo(this.instance, function() {
       that.ignoreNewActions = false;
       that.undoneActions.push(action);
     });
+    instance.runHooks('afterUndo', actionClone);
   }
 };
 Handsontable.UndoRedo.prototype.redo = function() {
   if (this.isRedoAvailable()) {
     var action = this.undoneActions.pop();
+    var actionClone = deepClone(action);
+    var instance = this.instance;
+    var continueAction = instance.runHooks('beforeRedo', actionClone);
+    if (continueAction === false) {
+      return;
+    }
     this.ignoreNewActions = true;
     var that = this;
     action.redo(this.instance, function() {
       that.ignoreNewActions = false;
       that.doneActions.push(action);
     });
+    instance.runHooks('afterRedo', actionClone);
   }
 };
 Handsontable.UndoRedo.prototype.isUndoAvailable = function() {
@@ -18907,6 +27544,7 @@ Handsontable.UndoRedo.Action.prototype.undo = function() {};
 Handsontable.UndoRedo.Action.prototype.redo = function() {};
 Handsontable.UndoRedo.ChangeAction = function(changes) {
   this.changes = changes;
+  this.actionType = 'change';
 };
 inherit(Handsontable.UndoRedo.ChangeAction, Handsontable.UndoRedo.Action);
 Handsontable.UndoRedo.ChangeAction.prototype.undo = function(instance, undoneCallback) {
@@ -18919,14 +27557,14 @@ Handsontable.UndoRedo.ChangeAction.prototype.undo = function(instance, undoneCal
   }
   instance.addHookOnce('afterChange', undoneCallback);
   instance.setDataAtRowProp(data, null, null, 'undo');
-  for (var i = 0,
-      len = data.length; i < len; i++) {
-    if (instance.getSettings().minSpareRows && data[i][0] + 1 + instance.getSettings().minSpareRows === instance.countRows() && emptyRowsAtTheEnd == instance.getSettings().minSpareRows) {
-      instance.alter('remove_row', parseInt(data[i][0] + 1, 10), instance.getSettings().minSpareRows);
+  for (var i$__6 = 0,
+      len$__7 = data.length; i$__6 < len$__7; i$__6++) {
+    if (instance.getSettings().minSpareRows && data[i$__6][0] + 1 + instance.getSettings().minSpareRows === instance.countRows() && emptyRowsAtTheEnd == instance.getSettings().minSpareRows) {
+      instance.alter('remove_row', parseInt(data[i$__6][0] + 1, 10), instance.getSettings().minSpareRows);
       instance.undoRedo.doneActions.pop();
     }
-    if (instance.getSettings().minSpareCols && data[i][1] + 1 + instance.getSettings().minSpareCols === instance.countCols() && emptyColsAtTheEnd == instance.getSettings().minSpareCols) {
-      instance.alter('remove_col', parseInt(data[i][1] + 1, 10), instance.getSettings().minSpareCols);
+    if (instance.getSettings().minSpareCols && data[i$__6][1] + 1 + instance.getSettings().minSpareCols === instance.countCols() && emptyColsAtTheEnd == instance.getSettings().minSpareCols) {
+      instance.alter('remove_col', parseInt(data[i$__6][1] + 1, 10), instance.getSettings().minSpareCols);
       instance.undoRedo.doneActions.pop();
     }
   }
@@ -18943,6 +27581,7 @@ Handsontable.UndoRedo.ChangeAction.prototype.redo = function(instance, onFinishC
 Handsontable.UndoRedo.CreateRowAction = function(index, amount) {
   this.index = index;
   this.amount = amount;
+  this.actionType = 'insert_row';
 };
 inherit(Handsontable.UndoRedo.CreateRowAction, Handsontable.UndoRedo.Action);
 Handsontable.UndoRedo.CreateRowAction.prototype.undo = function(instance, undoneCallback) {
@@ -18961,12 +27600,14 @@ Handsontable.UndoRedo.CreateRowAction.prototype.redo = function(instance, redone
 Handsontable.UndoRedo.RemoveRowAction = function(index, data) {
   this.index = index;
   this.data = data;
+  this.actionType = 'remove_row';
 };
 inherit(Handsontable.UndoRedo.RemoveRowAction, Handsontable.UndoRedo.Action);
 Handsontable.UndoRedo.RemoveRowAction.prototype.undo = function(instance, undoneCallback) {
   var spliceArgs = [this.index, 0];
   Array.prototype.push.apply(spliceArgs, this.data);
   Array.prototype.splice.apply(instance.getSourceData(), spliceArgs);
+  instance.runHooks('afterCreateRow', this.index, this.data.length, true);
   instance.addHookOnce('afterRender', undoneCallback);
   instance.render();
 };
@@ -18977,6 +27618,7 @@ Handsontable.UndoRedo.RemoveRowAction.prototype.redo = function(instance, redone
 Handsontable.UndoRedo.CreateColumnAction = function(index, amount) {
   this.index = index;
   this.amount = amount;
+  this.actionType = 'insert_col';
 };
 inherit(Handsontable.UndoRedo.CreateColumnAction, Handsontable.UndoRedo.Action);
 Handsontable.UndoRedo.CreateColumnAction.prototype.undo = function(instance, undoneCallback) {
@@ -18992,6 +27634,7 @@ Handsontable.UndoRedo.CellAlignmentAction = function(stateBefore, range, type, a
   this.range = range;
   this.type = type;
   this.alignment = alignment;
+  this.actionType = 'cell_alignment';
 };
 Handsontable.UndoRedo.CellAlignmentAction.prototype.undo = function(instance, undoneCallback) {
   if (!instance.getPlugin('contextMenu').isEnabled()) {
@@ -19020,6 +27663,7 @@ Handsontable.UndoRedo.RemoveColumnAction = function(indexes, data, headers, colu
   this.amount = this.data[0].length;
   this.headers = headers;
   this.columnPositions = columnPositions.slice(0);
+  this.actionType = 'remove_col';
 };
 inherit(Handsontable.UndoRedo.RemoveColumnAction, Handsontable.UndoRedo.Action);
 Handsontable.UndoRedo.RemoveColumnAction.prototype.undo = function(instance, undoneCallback) {
@@ -19058,6 +27702,7 @@ Handsontable.UndoRedo.RemoveColumnAction.prototype.redo = function(instance, red
 };
 Handsontable.UndoRedo.FiltersAction = function(formulaStacks) {
   this.formulaStacks = formulaStacks;
+  this.actionType = 'filter';
 };
 inherit(Handsontable.UndoRedo.FiltersAction, Handsontable.UndoRedo.Action);
 Handsontable.UndoRedo.FiltersAction.prototype.undo = function(instance, undoneCallback) {
@@ -19071,6 +27716,35 @@ Handsontable.UndoRedo.FiltersAction.prototype.redo = function(instance, redoneCa
   instance.addHookOnce('afterRender', redoneCallback);
   filters.formulaCollection.importAllFormulas(this.formulaStacks);
   filters.filter();
+};
+Handsontable.UndoRedo.RowMoveAction = function(movedRows, target) {
+  this.rows = movedRows.slice();
+  this.target = target;
+};
+inherit(Handsontable.UndoRedo.RowMoveAction, Handsontable.UndoRedo.Action);
+Handsontable.UndoRedo.RowMoveAction.prototype.undo = function(instance, undoneCallback) {
+  var manualRowMove = instance.getPlugin('manualRowMove');
+  instance.addHookOnce('afterRender', undoneCallback);
+  var mod = this.rows[0] < this.target ? -1 * this.rows.length : 0;
+  var newTarget = this.rows[0] > this.target ? this.rows[0] + this.rows.length : this.rows[0];
+  var newRows = [];
+  var rowsLen = this.rows.length + mod;
+  for (var i = mod; i < rowsLen; i++) {
+    newRows.push(this.target + i);
+  }
+  manualRowMove.moveRows(newRows.slice(), newTarget);
+  instance.render();
+  instance.selection.setRangeStartOnly(new WalkontableCellCoords(this.rows[0], 0));
+  instance.selection.setRangeEnd(new WalkontableCellCoords(this.rows[this.rows.length - 1], instance.countCols() - 1));
+};
+Handsontable.UndoRedo.RowMoveAction.prototype.redo = function(instance, redoneCallback) {
+  var manualRowMove = instance.getPlugin('manualRowMove');
+  instance.addHookOnce('afterRender', redoneCallback);
+  manualRowMove.moveRows(this.rows.slice(), this.target);
+  instance.render();
+  var startSelection = this.rows[0] < this.target ? this.target - this.rows.length : this.target;
+  instance.selection.setRangeStartOnly(new WalkontableCellCoords(startSelection, 0));
+  instance.selection.setRangeEnd(new WalkontableCellCoords(startSelection + this.rows.length - 1, instance.countCols() - 1));
 };
 function init() {
   var instance = this;
@@ -19136,9 +27810,13 @@ function removeExposedUndoRedoMethods(instance) {
 }
 Handsontable.hooks.add('afterInit', init);
 Handsontable.hooks.add('afterUpdateSettings', init);
+Handsontable.hooks.register('beforeUndo');
+Handsontable.hooks.register('afterUndo');
+Handsontable.hooks.register('beforeRedo');
+Handsontable.hooks.register('afterRedo');
 
 //# 
-},{"browser":23,"helpers/array":42,"helpers/dom/event":47,"helpers/number":51,"helpers/object":52}],94:[function(_dereq_,module,exports){
+},{"browser":93,"helpers/array":112,"helpers/dom/event":117,"helpers/number":121,"helpers/object":122}],180:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   registerRenderer: {get: function() {
@@ -19188,7 +27866,7 @@ function hasRenderer(rendererName) {
 ;
 
 //# 
-},{"browser":23,"helpers/string":54}],95:[function(_dereq_,module,exports){
+},{"browser":93,"helpers/string":124}],181:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   cellDecorator: {get: function() {
@@ -19229,7 +27907,7 @@ function cellDecorator(instance, TD, row, col, prop, value, cellProperties) {
 registerRenderer('base', cellDecorator);
 
 //# 
-},{"helpers/dom/element":46,"renderers":94}],96:[function(_dereq_,module,exports){
+},{"helpers/dom/element":116,"renderers":180}],182:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   autocompleteRenderer: {get: function() {
@@ -19286,7 +27964,7 @@ function autocompleteRenderer(instance, TD, row, col, prop, value, cellPropertie
 registerRenderer('autocomplete', autocompleteRenderer);
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":5,"eventManager":41,"helpers/dom/element":46,"renderers":94}],97:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":75,"eventManager":111,"helpers/dom/element":116,"renderers":180}],183:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   checkboxRenderer: {get: function() {
@@ -19299,6 +27977,7 @@ var $___46__46__47_helpers_47_dom_47_element__,
     $___46__46__47_eventManager__,
     $___46__46__47_renderers__,
     $___46__46__47_helpers_47_unicode__,
+    $___46__46__47_helpers_47_function__,
     $___46__46__47_helpers_47_dom_47_event__;
 var $__0 = ($___46__46__47_helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $___46__46__47_helpers_47_dom_47_element__ && $___46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47_helpers_47_dom_47_element__}),
     empty = $__0.empty,
@@ -19309,17 +27988,17 @@ var EventManager = ($___46__46__47_eventManager__ = _dereq_("eventManager"), $__
 var $__3 = ($___46__46__47_renderers__ = _dereq_("renderers"), $___46__46__47_renderers__ && $___46__46__47_renderers__.__esModule && $___46__46__47_renderers__ || {default: $___46__46__47_renderers__}),
     getRenderer = $__3.getRenderer,
     registerRenderer = $__3.registerRenderer;
-var KEY_CODES = ($___46__46__47_helpers_47_unicode__ = _dereq_("helpers/unicode"), $___46__46__47_helpers_47_unicode__ && $___46__46__47_helpers_47_unicode__.__esModule && $___46__46__47_helpers_47_unicode__ || {default: $___46__46__47_helpers_47_unicode__}).KEY_CODES;
-var $__5 = ($___46__46__47_helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $___46__46__47_helpers_47_dom_47_event__ && $___46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47_helpers_47_dom_47_event__}),
-    stopPropagation = $__5.stopPropagation,
-    stopImmediatePropagation = $__5.stopImmediatePropagation,
-    isImmediatePropagationStopped = $__5.isImmediatePropagationStopped;
+var isKey = ($___46__46__47_helpers_47_unicode__ = _dereq_("helpers/unicode"), $___46__46__47_helpers_47_unicode__ && $___46__46__47_helpers_47_unicode__.__esModule && $___46__46__47_helpers_47_unicode__ || {default: $___46__46__47_helpers_47_unicode__}).isKey;
+var partial = ($___46__46__47_helpers_47_function__ = _dereq_("helpers/function"), $___46__46__47_helpers_47_function__ && $___46__46__47_helpers_47_function__.__esModule && $___46__46__47_helpers_47_function__ || {default: $___46__46__47_helpers_47_function__}).partial;
+var $__6 = ($___46__46__47_helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $___46__46__47_helpers_47_dom_47_event__ && $___46__46__47_helpers_47_dom_47_event__.__esModule && $___46__46__47_helpers_47_dom_47_event__ || {default: $___46__46__47_helpers_47_dom_47_event__}),
+    stopImmediatePropagation = $__6.stopImmediatePropagation,
+    isImmediatePropagationStopped = $__6.isImmediatePropagationStopped;
 var isListeningKeyDownEvent = new WeakMap();
 var isCheckboxListenerAdded = new WeakMap();
 var BAD_VALUE_CLASS = 'htBadValue';
 function checkboxRenderer(instance, TD, row, col, prop, value, cellProperties) {
   getRenderer('base').apply(this, arguments);
-  var eventManager = new EventManager(instance);
+  var eventManager = registerEvents(instance);
   var input = createInput();
   var labelOptions = cellProperties.label;
   var badValue = false;
@@ -19362,47 +28041,55 @@ function checkboxRenderer(instance, TD, row, col, prop, value, cellProperties) {
   if (badValue) {
     TD.appendChild(document.createTextNode('#bad-value#'));
   }
-  if (!isCheckboxListenerAdded.has(instance)) {
-    if (cellProperties.readOnly) {
-      eventManager.addEventListener(instance.rootElement, 'click', preventDefault);
-    } else {
-      eventManager.addEventListener(instance.rootElement, 'mouseup', (function(event) {
-        return onMouseUp(event, instance);
-      }));
-      eventManager.addEventListener(instance.rootElement, 'change', (function(event) {
-        return onChange(event, instance);
-      }));
-    }
-    isCheckboxListenerAdded.set(instance, true);
-  }
   if (!isListeningKeyDownEvent.has(instance)) {
     isListeningKeyDownEvent.set(instance, true);
     instance.addHook('beforeKeyDown', onBeforeKeyDown);
   }
   function onBeforeKeyDown(event) {
-    var allowedKeys = [KEY_CODES.SPACE, KEY_CODES.ENTER, KEY_CODES.DELETE, KEY_CODES.BACKSPACE];
-    if (allowedKeys.indexOf(event.keyCode) !== -1 && !isImmediatePropagationStopped(event)) {
+    var toggleKeys = 'SPACE|ENTER';
+    var switchOffKeys = 'DELETE|BACKSPACE';
+    var isKeyCode = partial(isKey, event.keyCode);
+    if (isKeyCode((toggleKeys + "|" + switchOffKeys)) && !isImmediatePropagationStopped(event)) {
       eachSelectedCheckboxCell(function() {
         stopImmediatePropagation(event);
         event.preventDefault();
       });
     }
-    if (event.keyCode === KEY_CODES.SPACE || event.keyCode === KEY_CODES.ENTER) {
+    if (isKeyCode(toggleKeys)) {
       toggleSelected();
     }
-    if (event.keyCode === KEY_CODES.DELETE || event.keyCode === KEY_CODES.BACKSPACE) {
+    if (isKeyCode(switchOffKeys)) {
       toggleSelected(false);
     }
   }
   function toggleSelected() {
     var checked = arguments[0] !== (void 0) ? arguments[0] : null;
-    eachSelectedCheckboxCell(function(checkboxes) {
-      for (var i = 0,
-          len = checkboxes.length; i < len; i++) {
-        if (hasClass(checkboxes[i], BAD_VALUE_CLASS) && checked === null) {
-          return;
+    eachSelectedCheckboxCell(function() {
+      if (arguments.length > 1) {
+        var row$__7 = arguments[0];
+        var col$__8 = arguments[1];
+        var cellProperties$__9 = arguments[2];
+        if (cellProperties$__9.checkedTemplate) {
+          var dataAtCell = instance.getDataAtCell(row$__7, col$__8);
+          if (checked === null) {
+            if (dataAtCell === cellProperties$__9.checkedTemplate) {
+              instance.setDataAtCell(row$__7, col$__8, cellProperties$__9.uncheckedTemplate);
+            } else if (dataAtCell === cellProperties$__9.uncheckedTemplate) {
+              instance.setDataAtCell(row$__7, col$__8, cellProperties$__9.checkedTemplate);
+            }
+          } else {
+            instance.setDataAtCell(row$__7, col$__8, cellProperties$__9.uncheckedTemplate);
+          }
         }
-        toggleCheckbox(checkboxes[i], checked);
+      } else {
+        var checkboxes = arguments[0];
+        for (var i = 0,
+            len = checkboxes.length; i < len; i++) {
+          if (hasClass(checkboxes[i], BAD_VALUE_CLASS) && checked === null) {
+            return;
+          }
+          toggleCheckbox(checkboxes[i], checked);
+        }
       }
     });
   }
@@ -19424,15 +28111,39 @@ function checkboxRenderer(instance, TD, row, col, prop, value, cellProperties) {
     var bottomRight = selRange.getBottomRightCorner();
     for (var row = topLeft.row; row <= bottomRight.row; row++) {
       for (var col = topLeft.col; col <= bottomRight.col; col++) {
+        var cellProperties$__10 = instance.getCellMeta(row, col);
+        if (cellProperties$__10.type !== 'checkbox') {
+          return;
+        }
         var cell = instance.getCell(row, col);
-        var cellProperties$__6 = instance.getCellMeta(row, col);
-        var checkboxes = cell.querySelectorAll('input[type=checkbox]');
-        if (checkboxes.length > 0 && !cellProperties$__6.readOnly) {
-          callback(checkboxes);
+        if (cell == null) {
+          callback(row, col, cellProperties$__10);
+        } else {
+          var checkboxes = cell.querySelectorAll('input[type=checkbox]');
+          if (checkboxes.length > 0 && !cellProperties$__10.readOnly) {
+            callback(checkboxes);
+          }
         }
       }
     }
   }
+}
+function registerEvents(instance) {
+  var eventManager = isCheckboxListenerAdded.get(instance);
+  if (!eventManager) {
+    eventManager = new EventManager(instance);
+    eventManager.addEventListener(instance.rootElement, 'click', (function(event) {
+      return onClick(event, instance);
+    }));
+    eventManager.addEventListener(instance.rootElement, 'mouseup', (function(event) {
+      return onMouseUp(event, instance);
+    }));
+    eventManager.addEventListener(instance.rootElement, 'change', (function(event) {
+      return onChange(event, instance);
+    }));
+    isCheckboxListenerAdded.set(instance, eventManager);
+  }
+  return eventManager;
 }
 function createInput() {
   var input = document.createElement('input');
@@ -19448,14 +28159,21 @@ function createLabel(text) {
   label.appendChild(document.createTextNode(text));
   return label.cloneNode(true);
 }
-function preventDefault(event) {
-  if (isCheckboxInput(event.target)) {
-    event.preventDefault();
-  }
-}
 function onMouseUp(event, instance) {
-  if (isCheckboxInput(event.target)) {
-    setTimeout(instance.listen, 10);
+  if (!isCheckboxInput(event.target)) {
+    return;
+  }
+  setTimeout(instance.listen, 10);
+}
+function onClick(event, instance) {
+  if (!isCheckboxInput(event.target)) {
+    return false;
+  }
+  var row = parseInt(event.target.getAttribute('data-row'), 10);
+  var col = parseInt(event.target.getAttribute('data-col'), 10);
+  var cellProperties = instance.getCellMeta(row, col);
+  if (cellProperties.readOnly) {
+    event.preventDefault();
   }
 }
 function onChange(event, instance) {
@@ -19465,7 +28183,9 @@ function onChange(event, instance) {
   var row = parseInt(event.target.getAttribute('data-row'), 10);
   var col = parseInt(event.target.getAttribute('data-col'), 10);
   var cellProperties = instance.getCellMeta(row, col);
-  instance.setDataAtCell(row, col, event.target.checked ? (cellProperties.checkedTemplate || true) : (cellProperties.uncheckedTemplate || false));
+  if (!cellProperties.readOnly) {
+    instance.setDataAtCell(row, col, event.target.checked ? (cellProperties.checkedTemplate || true) : (cellProperties.uncheckedTemplate || false));
+  }
 }
 function isCheckboxInput(element) {
   return element.tagName === 'INPUT' && element.getAttribute('type') === 'checkbox';
@@ -19474,7 +28194,7 @@ function isCheckboxInput(element) {
 registerRenderer('checkbox', checkboxRenderer);
 
 //# 
-},{"eventManager":41,"helpers/dom/element":46,"helpers/dom/event":47,"helpers/string":54,"helpers/unicode":55,"renderers":94}],98:[function(_dereq_,module,exports){
+},{"eventManager":111,"helpers/dom/element":116,"helpers/dom/event":117,"helpers/function":119,"helpers/string":124,"helpers/unicode":125,"renderers":180}],184:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   htmlRenderer: {get: function() {
@@ -19499,7 +28219,7 @@ function htmlRenderer(instance, TD, row, col, prop, value, cellProperties) {
 registerRenderer('html', htmlRenderer);
 
 //# 
-},{"helpers/dom/element":46,"renderers":94}],99:[function(_dereq_,module,exports){
+},{"helpers/dom/element":116,"renderers":180}],185:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   numericRenderer: {get: function() {
@@ -19507,10 +28227,10 @@ Object.defineProperties(exports, {
     }},
   __esModule: {value: true}
 });
-var $__numeral__,
+var $__numbro__,
     $___46__46__47_renderers__,
     $___46__46__47_helpers_47_number__;
-var numeral = ($__numeral__ = _dereq_("numeral"), $__numeral__ && $__numeral__.__esModule && $__numeral__ || {default: $__numeral__}).default;
+var numbro = ($__numbro__ = _dereq_("numbro"), $__numbro__ && $__numbro__.__esModule && $__numbro__ || {default: $__numbro__}).default;
 var $__1 = ($___46__46__47_renderers__ = _dereq_("renderers"), $___46__46__47_renderers__ && $___46__46__47_renderers__.__esModule && $___46__46__47_renderers__ || {default: $___46__46__47_renderers__}),
     getRenderer = $__1.getRenderer,
     registerRenderer = $__1.registerRenderer;
@@ -19518,9 +28238,9 @@ var isNumeric = ($___46__46__47_helpers_47_number__ = _dereq_("helpers/number"),
 function numericRenderer(instance, TD, row, col, prop, value, cellProperties) {
   if (isNumeric(value)) {
     if (typeof cellProperties.language !== 'undefined') {
-      numeral.language(cellProperties.language);
+      numbro.culture(cellProperties.language);
     }
-    value = numeral(value).format(cellProperties.format || '0');
+    value = numbro(value).format(cellProperties.format || '0');
     var className = cellProperties.className || '';
     var classArr = className.length ? className.split(' ') : [];
     if (classArr.indexOf('htLeft') < 0 && classArr.indexOf('htCenter') < 0 && classArr.indexOf('htRight') < 0 && classArr.indexOf('htJustify') < 0) {
@@ -19537,7 +28257,7 @@ function numericRenderer(instance, TD, row, col, prop, value, cellProperties) {
 registerRenderer('numeric', numericRenderer);
 
 //# 
-},{"helpers/number":51,"numeral":"numeral","renderers":94}],100:[function(_dereq_,module,exports){
+},{"helpers/number":121,"numbro":undefined,"renderers":180}],186:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   passwordRenderer: {get: function() {
@@ -19564,7 +28284,7 @@ function passwordRenderer(instance, TD, row, col, prop, value, cellProperties) {
 registerRenderer('password', passwordRenderer);
 
 //# 
-},{"helpers/dom/element":46,"renderers":94}],101:[function(_dereq_,module,exports){
+},{"helpers/dom/element":116,"renderers":180}],187:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   textRenderer: {get: function() {
@@ -19607,7 +28327,7 @@ function textRenderer(instance, TD, row, col, prop, value, cellProperties) {
 registerRenderer('text', textRenderer);
 
 //# 
-},{"helpers/dom/element":46,"helpers/mixed":50,"renderers":94}],102:[function(_dereq_,module,exports){
+},{"helpers/dom/element":116,"helpers/mixed":120,"renderers":180}],188:[function(_dereq_,module,exports){
 // jscs:disable
 /* jshint ignore:start */
 (function(global) {
@@ -19962,7 +28682,7 @@ registerRenderer('text', textRenderer);
 })();
 /* jshint ignore:end */
 
-},{}],103:[function(_dereq_,module,exports){
+},{}],189:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   TableView: {get: function() {
@@ -19987,11 +28707,14 @@ var $__1 = ($__helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $__
     hasClass = $__1.hasClass,
     isChildOf = $__1.isChildOf,
     isInput = $__1.isInput,
-    isOutsideInput = $__1.isOutsideInput;
+    isOutsideInput = $__1.isOutsideInput,
+    removeClass = $__1.removeClass;
 var eventManagerObject = ($__eventManager__ = _dereq_("eventManager"), $__eventManager__ && $__eventManager__.__esModule && $__eventManager__ || {default: $__eventManager__}).eventManager;
 var $__3 = ($__helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $__helpers_47_dom_47_event__ && $__helpers_47_dom_47_event__.__esModule && $__helpers_47_dom_47_event__ || {default: $__helpers_47_dom_47_event__}),
     stopPropagation = $__3.stopPropagation,
-    isImmediatePropagationStopped = $__3.isImmediatePropagationStopped;
+    isImmediatePropagationStopped = $__3.isImmediatePropagationStopped,
+    isRightClick = $__3.isRightClick,
+    isLeftClick = $__3.isLeftClick;
 var WalkontableCellCoords = ($__3rdparty_47_walkontable_47_src_47_cell_47_coords__ = _dereq_("3rdparty/walkontable/src/cell/coords"), $__3rdparty_47_walkontable_47_src_47_cell_47_coords__ && $__3rdparty_47_walkontable_47_src_47_cell_47_coords__.__esModule && $__3rdparty_47_walkontable_47_src_47_cell_47_coords__ || {default: $__3rdparty_47_walkontable_47_src_47_cell_47_coords__}).WalkontableCellCoords;
 var WalkontableSelection = ($__3rdparty_47_walkontable_47_src_47_selection__ = _dereq_("3rdparty/walkontable/src/selection"), $__3rdparty_47_walkontable_47_src_47_selection__ && $__3rdparty_47_walkontable_47_src_47_selection__.__esModule && $__3rdparty_47_walkontable_47_src_47_selection__ || {default: $__3rdparty_47_walkontable_47_src_47_selection__}).WalkontableSelection;
 var Walkontable = ($__3rdparty_47_walkontable_47_src_47_core__ = _dereq_("3rdparty/walkontable/src/core"), $__3rdparty_47_walkontable_47_src_47_core__ && $__3rdparty_47_walkontable_47_src_47_core__.__esModule && $__3rdparty_47_walkontable_47_src_47_core__ || {default: $__3rdparty_47_walkontable_47_src_47_core__}).Walkontable;
@@ -20131,6 +28854,7 @@ function TableView(instance) {
     }
   }), new WalkontableSelection({
     className: 'highlight',
+    highlightHeaderClassName: that.settings.currentHeaderClassName,
     highlightRowClassName: that.settings.currentRowClassName,
     highlightColumnClassName: that.settings.currentColClassName
   }), new WalkontableSelection({
@@ -20211,10 +28935,15 @@ function TableView(instance) {
       return that.settings.fragmentSelection;
     },
     onCellMouseDown: function(event, coords, TD, wt) {
+      var blockCalculations = {
+        row: false,
+        column: false,
+        cells: false
+      };
       instance.listen();
       that.activeWt = wt;
       isMouseDown = true;
-      Handsontable.hooks.run(instance, 'beforeOnCellMouseDown', event, coords, TD);
+      Handsontable.hooks.run(instance, 'beforeOnCellMouseDown', event, coords, TD, blockCalculations);
       if (isImmediatePropagationStopped(event)) {
         return;
       }
@@ -20222,24 +28951,24 @@ function TableView(instance) {
       var selection = instance.selection;
       var selectedHeader = selection.selectedHeader;
       if (event.shiftKey && actualSelection) {
-        if (coords.row >= 0 && coords.col >= 0) {
+        if (coords.row >= 0 && coords.col >= 0 && !blockCalculations.cells) {
+          selection.setSelectedHeaders(false, false);
           selection.setRangeEnd(coords);
+        } else if ((selectedHeader.cols || selectedHeader.rows) && coords.row >= 0 && coords.col >= 0 && !blockCalculations.cells) {
           selection.setSelectedHeaders(false, false);
-        } else if ((selectedHeader.cols || selectedHeader.rows) && coords.row >= 0 && coords.col >= 0) {
           selection.setRangeEnd(new WalkontableCellCoords(coords.row, coords.col));
-          selection.setSelectedHeaders(false, false);
-        } else if (selectedHeader.cols && coords.row < 0) {
+        } else if (selectedHeader.cols && coords.row < 0 && !blockCalculations.column) {
           selection.setRangeEnd(new WalkontableCellCoords(actualSelection.to.row, coords.col));
-        } else if (selectedHeader.rows && coords.col < 0) {
+        } else if (selectedHeader.rows && coords.col < 0 && !blockCalculations.row) {
           selection.setRangeEnd(new WalkontableCellCoords(coords.row, actualSelection.to.col));
-        } else if ((!selectedHeader.cols && !selectedHeader.rows && coords.col < 0) || (selectedHeader.cols && coords.col < 0)) {
+        } else if (((!selectedHeader.cols && !selectedHeader.rows && coords.col < 0) || (selectedHeader.cols && coords.col < 0)) && !blockCalculations.row) {
+          selection.setSelectedHeaders(true, false);
           selection.setRangeStartOnly(new WalkontableCellCoords(actualSelection.from.row, 0));
           selection.setRangeEnd(new WalkontableCellCoords(coords.row, instance.countCols() - 1));
-          selection.setSelectedHeaders(true, false);
-        } else if ((!selectedHeader.cols && !selectedHeader.rows && coords.row < 0) || (selectedHeader.rows && coords.row < 0)) {
+        } else if (((!selectedHeader.cols && !selectedHeader.rows && coords.row < 0) || (selectedHeader.rows && coords.row < 0)) && !blockCalculations.column) {
+          selection.setSelectedHeaders(false, true);
           selection.setRangeStartOnly(new WalkontableCellCoords(0, actualSelection.from.col));
           selection.setRangeEnd(new WalkontableCellCoords(instance.countRows() - 1, coords.col));
-          selection.setSelectedHeaders(false, true);
         }
       } else {
         var doNewSelection = true;
@@ -20260,22 +28989,41 @@ function TableView(instance) {
             doNewSelection = coordsNotInSelection;
           }
         }
-        if (event.button === 0 || (event.button === 2 && doNewSelection)) {
-          if (coords.row < 0 && coords.col >= 0) {
-            selection.setSelectedHeaders(false, true);
+        var rightClick = isRightClick(event);
+        var leftClick = isLeftClick(event);
+        if (coords.row < 0 && coords.col >= 0 && !blockCalculations.column) {
+          selection.setSelectedHeaders(false, true);
+          if (leftClick || (rightClick && doNewSelection)) {
             selection.setRangeStartOnly(new WalkontableCellCoords(0, coords.col));
-            selection.setRangeEnd(new WalkontableCellCoords(instance.countRows() - 1, coords.col), false);
-          } else if (coords.col < 0 && coords.row >= 0) {
-            selection.setSelectedHeaders(true, false);
+            selection.setRangeEnd(new WalkontableCellCoords(Math.max(instance.countRows() - 1, 0), coords.col), false);
+          }
+        } else if (coords.col < 0 && coords.row >= 0 && !blockCalculations.row) {
+          selection.setSelectedHeaders(true, false);
+          if (leftClick || (rightClick && doNewSelection)) {
             selection.setRangeStartOnly(new WalkontableCellCoords(coords.row, 0));
-            selection.setRangeEnd(new WalkontableCellCoords(coords.row, instance.countCols() - 1), false);
-          } else {
-            coords.row = coords.row < 0 ? 0 : coords.row;
-            coords.col = coords.col < 0 ? 0 : coords.col;
+            selection.setRangeEnd(new WalkontableCellCoords(coords.row, Math.max(instance.countCols() - 1, 0)), false);
+          }
+        } else if (coords.col >= 0 && coords.row >= 0 && !blockCalculations.cells) {
+          if (leftClick || (rightClick && doNewSelection)) {
             selection.setSelectedHeaders(false, false);
             selection.setRangeStart(coords);
           }
+        } else if (coords.col < 0 && coords.row < 0) {
+          coords.row = 0;
+          coords.col = 0;
+          selection.setSelectedHeaders(false, false, true);
+          selection.setRangeStart(coords);
         }
+      }
+      if (selection.selectedHeader.rows) {
+        removeClass(instance.rootElement, 'ht__selection--columns');
+        addClass(instance.rootElement, 'ht__selection--rows');
+      } else if (selection.selectedHeader.cols) {
+        removeClass(instance.rootElement, 'ht__selection--rows');
+        addClass(instance.rootElement, 'ht__selection--columns');
+      } else {
+        removeClass(instance.rootElement, 'ht__selection--rows');
+        removeClass(instance.rootElement, 'ht__selection--columns');
       }
       Handsontable.hooks.run(instance, 'afterOnCellMouseDown', event, coords, TD);
       that.activeWt = that.wt;
@@ -20283,45 +29031,48 @@ function TableView(instance) {
     onCellMouseOver: function(event, coords, TD, wt) {
       var blockCalculations = {
         row: false,
-        column: false
+        column: false,
+        cell: false
       };
       that.activeWt = wt;
       Handsontable.hooks.run(instance, 'beforeOnCellMouseOver', event, coords, TD, blockCalculations);
-      if (event.button === 0) {
+      if (isImmediatePropagationStopped(event)) {
+        return;
+      }
+      if (event.button === 0 && isMouseDown) {
         if (coords.row >= 0 && coords.col >= 0) {
-          if (isMouseDown) {
+          if (instance.selection.selectedHeader.cols && !blockCalculations.column) {
+            instance.selection.setRangeEnd(new WalkontableCellCoords(instance.countRows() - 1, coords.col), false);
+          } else if (instance.selection.selectedHeader.rows && !blockCalculations.row) {
+            instance.selection.setRangeEnd(new WalkontableCellCoords(coords.row, instance.countCols() - 1), false);
+          } else if (!blockCalculations.cell) {
             instance.selection.setRangeEnd(coords);
           }
         } else {
-          if (isMouseDown) {
-            if (coords.row < 0 && !blockCalculations.column) {
-              if (instance.selection.selectedHeader.cols) {
-                instance.selection.setRangeEnd(new WalkontableCellCoords(instance.countRows() - 1, coords.col), false);
-                instance.selection.setSelectedHeaders(false, true);
-              } else {
-                instance.selection.setRangeEnd(new WalkontableCellCoords(coords.row, coords.col), false);
-              }
-            }
-            if (coords.col < 0 && !blockCalculations.row) {
-              if (instance.selection.selectedHeader.rows) {
-                instance.selection.setRangeEnd(new WalkontableCellCoords(coords.row, instance.countCols() - 1), false);
-                instance.selection.setSelectedHeaders(true, false);
-              } else {
-                instance.selection.setRangeEnd(new WalkontableCellCoords(coords.row, coords.col), false);
-              }
-            }
+          if (instance.selection.selectedHeader.cols && !blockCalculations.column) {
+            instance.selection.setRangeEnd(new WalkontableCellCoords(instance.countRows() - 1, coords.col), false);
+          } else if (instance.selection.selectedHeader.rows && !blockCalculations.row) {
+            instance.selection.setRangeEnd(new WalkontableCellCoords(coords.row, instance.countCols() - 1), false);
+          } else if (!blockCalculations.cell) {
+            instance.selection.setRangeEnd(coords);
           }
         }
       }
       Handsontable.hooks.run(instance, 'afterOnCellMouseOver', event, coords, TD);
       that.activeWt = that.wt;
     },
+    onCellMouseUp: function(event, coords, TD, wt) {
+      that.activeWt = wt;
+      Handsontable.hooks.run(instance, 'beforeOnCellMouseUp', event, coords, TD);
+      Handsontable.hooks.run(instance, 'afterOnCellMouseUp', event, coords, TD);
+      that.activeWt = that.wt;
+    },
     onCellCornerMouseDown: function(event) {
       event.preventDefault();
       Handsontable.hooks.run(instance, 'afterOnCellCornerMouseDown', event);
     },
-    beforeDraw: function(force) {
-      that.beforeRender(force);
+    beforeDraw: function(force, skipRender) {
+      that.beforeRender(force, skipRender);
     },
     onDraw: function(force) {
       that.onDraw(force);
@@ -20343,6 +29094,9 @@ function TableView(instance) {
     },
     onBeforeStretchingColumnWidth: function(stretchedWidth, column) {
       return instance.runHooks('beforeStretchingColumnWidth', stretchedWidth, column);
+    },
+    onModifyRowHeaderWidth: function(rowHeaderWidth) {
+      return instance.runHooks('modifyRowHeaderWidth', rowHeaderWidth);
     },
     viewportRowCalculatorOverride: function(calc) {
       var rows = instance.countRows();
@@ -20438,9 +29192,9 @@ TableView.prototype.isCellEdited = function() {
   var activeEditor = this.instance.getActiveEditor();
   return activeEditor && activeEditor.isOpened();
 };
-TableView.prototype.beforeRender = function(force) {
+TableView.prototype.beforeRender = function(force, skipRender) {
   if (force) {
-    Handsontable.hooks.run(this.instance, 'beforeRender', this.instance.forceFullRender);
+    Handsontable.hooks.run(this.instance, 'beforeRender', this.instance.forceFullRender, skipRender);
   }
 };
 TableView.prototype.onDraw = function(force) {
@@ -20541,7 +29295,7 @@ TableView.prototype.destroy = function() {
 ;
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":5,"3rdparty/walkontable/src/core":7,"3rdparty/walkontable/src/selection":18,"browser":23,"eventManager":41,"helpers/dom/element":46,"helpers/dom/event":47}],104:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":75,"3rdparty/walkontable/src/core":77,"3rdparty/walkontable/src/selection":88,"browser":93,"eventManager":111,"helpers/dom/element":116,"helpers/dom/event":117}],190:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   GhostTable: {get: function() {
@@ -20822,7 +29576,7 @@ var GhostTable = function GhostTable(hotInstance) {
 Handsontable.utils.GhostTable = GhostTable;
 
 //# 
-},{"browser":23,"helpers/array":42,"helpers/dom/element":46,"helpers/mixed":50,"helpers/number":51,"helpers/object":52}],105:[function(_dereq_,module,exports){
+},{"browser":93,"helpers/array":112,"helpers/dom/element":116,"helpers/mixed":120,"helpers/number":121,"helpers/object":122}],191:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Interval: {get: function() {
@@ -20899,7 +29653,7 @@ function parseDelay(delay) {
 Handsontable.utils.Interval = Interval;
 
 //# 
-},{"browser":23,"helpers/array":42,"helpers/feature":48,"helpers/mixed":50,"helpers/number":51,"helpers/object":52}],106:[function(_dereq_,module,exports){
+},{"browser":93,"helpers/array":112,"helpers/feature":118,"helpers/mixed":120,"helpers/number":121,"helpers/object":122}],192:[function(_dereq_,module,exports){
 "use strict";
 var $__8;
 Object.defineProperties(exports, {
@@ -21036,7 +29790,7 @@ var $SamplesGenerator = SamplesGenerator;
 Handsontable.utils.SamplesGenerator = SamplesGenerator;
 
 //# 
-},{"browser":23,"helpers/array":42,"helpers/dom/element":46,"helpers/mixed":50,"helpers/number":51,"helpers/object":52}],107:[function(_dereq_,module,exports){
+},{"browser":93,"helpers/array":112,"helpers/dom/element":116,"helpers/mixed":120,"helpers/number":121,"helpers/object":122}],193:[function(_dereq_,module,exports){
 "use strict";
 var $___46__46__47_browser__,
     $___46__46__47_helpers_47_mixed__;
@@ -21080,7 +29834,7 @@ function process(value, callback) {
 }
 
 //# 
-},{"browser":23,"helpers/mixed":50}],108:[function(_dereq_,module,exports){
+},{"browser":93,"helpers/mixed":120}],194:[function(_dereq_,module,exports){
 "use strict";
 var $___46__46__47_browser__,
     $__moment__,
@@ -21134,7 +29888,7 @@ var correctFormat = function correctFormat(value, dateFormat) {
 };
 
 //# 
-},{"../helpers/date":45,"browser":23,"editors":29,"moment":undefined}],109:[function(_dereq_,module,exports){
+},{"../helpers/date":115,"browser":93,"editors":99,"moment":undefined}],195:[function(_dereq_,module,exports){
 "use strict";
 var $___46__46__47_browser__;
 var Handsontable = ($___46__46__47_browser__ = _dereq_("browser"), $___46__46__47_browser__ && $___46__46__47_browser__.__esModule && $___46__46__47_browser__ || {default: $___46__46__47_browser__}).default;
@@ -21152,7 +29906,7 @@ Handsontable.NumericValidator = function(value, callback) {
 };
 
 //# 
-},{"browser":23}],110:[function(_dereq_,module,exports){
+},{"browser":93}],196:[function(_dereq_,module,exports){
 "use strict";
 var $___46__46__47_browser__,
     $__moment__;
@@ -21196,6639 +29950,7 @@ Handsontable.TimeValidator = function(value, callback) {
 };
 
 //# 
-},{"browser":23,"moment":undefined}],111:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  WalkontableBottomOverlay: {get: function() {
-      return WalkontableBottomOverlay;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_dom_47_element__,
-    $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__;
-var $__0 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
-    addClass = $__0.addClass,
-    getScrollbarWidth = $__0.getScrollbarWidth,
-    getScrollTop = $__0.getScrollTop,
-    getWindowScrollLeft = $__0.getWindowScrollLeft,
-    hasClass = $__0.hasClass,
-    outerHeight = $__0.outerHeight,
-    innerHeight = $__0.innerHeight,
-    removeClass = $__0.removeClass,
-    setOverlayPosition = $__0.setOverlayPosition,
-    resetCssTransform = $__0.resetCssTransform;
-var WalkontableOverlay = ($__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__ = _dereq_("../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js"), $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__ && $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__.__esModule && $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__ || {default: $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__}).WalkontableOverlay;
-var WalkontableBottomOverlay = function WalkontableBottomOverlay(wotInstance) {
-  $traceurRuntime.superConstructor($WalkontableBottomOverlay).call(this, wotInstance);
-  this.clone = this.makeClone(WalkontableOverlay.CLONE_BOTTOM);
-};
-var $WalkontableBottomOverlay = WalkontableBottomOverlay;
-($traceurRuntime.createClass)(WalkontableBottomOverlay, {
-  repositionOverlay: function() {
-    var scrollbarWidth = getScrollbarWidth();
-    var cloneRoot = this.clone.wtTable.holder.parentNode;
-    if (this.wot.wtTable.holder.clientHeight === this.wot.wtTable.holder.offsetHeight) {
-      scrollbarWidth = 0;
-    }
-    cloneRoot.style.top = '';
-    cloneRoot.style.bottom = scrollbarWidth + 'px';
-  },
-  shouldBeRendered: function() {
-    return this.wot.getSetting('fixedRowsBottom') ? true : false;
-  },
-  resetFixedPosition: function() {
-    if (!this.needFullRender || !this.wot.wtTable.holder.parentNode) {
-      return;
-    }
-    var overlayRoot = this.clone.wtTable.holder.parentNode;
-    var headerPosition = 0;
-    overlayRoot.style.top = '';
-    if (this.wot.wtOverlays.leftOverlay.trimmingContainer === window) {
-      var box = this.wot.wtTable.hider.getBoundingClientRect();
-      var bottom = Math.ceil(box.bottom);
-      var finalLeft;
-      var finalBottom;
-      var bodyHeight = document.body.offsetHeight;
-      finalLeft = this.wot.wtTable.hider.style.left;
-      finalLeft = finalLeft === '' ? 0 : finalLeft;
-      if (bottom > bodyHeight) {
-        finalBottom = (bottom - bodyHeight);
-      } else {
-        finalBottom = 0;
-      }
-      headerPosition = finalBottom;
-      finalBottom = finalBottom + 'px';
-      overlayRoot.style.top = '';
-      overlayRoot.style.left = finalLeft;
-      overlayRoot.style.bottom = finalBottom;
-    } else {
-      headerPosition = this.getScrollPosition();
-      resetCssTransform(overlayRoot);
-      this.repositionOverlay();
-    }
-    this.adjustHeaderBordersPosition(headerPosition);
-  },
-  setScrollPosition: function(pos) {
-    if (this.mainTableScrollableElement === window) {
-      window.scrollTo(getWindowScrollLeft(), pos);
-    } else {
-      this.mainTableScrollableElement.scrollTop = pos;
-    }
-  },
-  onScroll: function() {
-    this.wot.getSetting('onScrollVertically');
-  },
-  sumCellSizes: function(from, to) {
-    var sum = 0;
-    var defaultRowHeight = this.wot.wtSettings.settings.defaultRowHeight;
-    while (from < to) {
-      var height = this.wot.wtTable.getRowHeight(from);
-      sum += height === void 0 ? defaultRowHeight : height;
-      from++;
-    }
-    return sum;
-  },
-  adjustElementsSize: function() {
-    var force = arguments[0] !== (void 0) ? arguments[0] : false;
-    this.updateTrimmingContainer();
-    if (this.needFullRender || force) {
-      this.adjustRootElementSize();
-      this.adjustRootChildrenSize();
-      if (!force) {
-        this.areElementSizesAdjusted = true;
-      }
-    }
-  },
-  adjustRootElementSize: function() {
-    var masterHolder = this.wot.wtTable.holder;
-    var scrollbarWidth = masterHolder.clientWidth === masterHolder.offsetWidth ? 0 : getScrollbarWidth();
-    var overlayRoot = this.clone.wtTable.holder.parentNode;
-    var overlayRootStyle = overlayRoot.style;
-    var tableHeight;
-    if (this.trimmingContainer === window) {
-      overlayRootStyle.width = '';
-    } else {
-      overlayRootStyle.width = this.wot.wtViewport.getWorkspaceWidth() - scrollbarWidth + 'px';
-    }
-    this.clone.wtTable.holder.style.width = overlayRootStyle.width;
-    tableHeight = outerHeight(this.clone.wtTable.TABLE);
-    overlayRootStyle.height = (tableHeight === 0 ? tableHeight : tableHeight) + 'px';
-  },
-  adjustRootChildrenSize: function() {
-    var scrollbarWidth = getScrollbarWidth();
-    this.clone.wtTable.hider.style.width = this.hider.style.width;
-    this.clone.wtTable.holder.style.width = this.clone.wtTable.holder.parentNode.style.width;
-    if (scrollbarWidth === 0) {
-      scrollbarWidth = 30;
-    }
-    this.clone.wtTable.holder.style.height = parseInt(this.clone.wtTable.holder.parentNode.style.height, 10) + scrollbarWidth + 'px';
-  },
-  applyToDOM: function() {
-    var total = this.wot.getSetting('totalRows');
-    if (!this.areElementSizesAdjusted) {
-      this.adjustElementsSize();
-    }
-    if (typeof this.wot.wtViewport.rowsRenderCalculator.startPosition === 'number') {
-      this.spreader.style.top = this.wot.wtViewport.rowsRenderCalculator.startPosition + 'px';
-    } else if (total === 0) {
-      this.spreader.style.top = '0';
-    } else {
-      throw new Error('Incorrect value of the rowsRenderCalculator');
-    }
-    this.spreader.style.bottom = '';
-    if (this.needFullRender) {
-      this.syncOverlayOffset();
-    }
-  },
-  syncOverlayOffset: function() {
-    if (typeof this.wot.wtViewport.columnsRenderCalculator.startPosition === 'number') {
-      this.clone.wtTable.spreader.style.left = this.wot.wtViewport.columnsRenderCalculator.startPosition + 'px';
-    } else {
-      this.clone.wtTable.spreader.style.left = '';
-    }
-  },
-  scrollTo: function(sourceRow, bottomEdge) {
-    var newY = this.getTableParentOffset();
-    var sourceInstance = this.wot.cloneSource ? this.wot.cloneSource : this.wot;
-    var mainHolder = sourceInstance.wtTable.holder;
-    var scrollbarCompensation = 0;
-    if (bottomEdge && mainHolder.offsetHeight !== mainHolder.clientHeight) {
-      scrollbarCompensation = getScrollbarWidth();
-    }
-    if (bottomEdge) {
-      newY += this.sumCellSizes(0, sourceRow + 1);
-      newY -= this.wot.wtViewport.getViewportHeight();
-      newY += 1;
-    } else {
-      newY += this.sumCellSizes(this.wot.getSetting('fixedRowsBottom'), sourceRow);
-    }
-    newY += scrollbarCompensation;
-    this.setScrollPosition(newY);
-  },
-  getTableParentOffset: function() {
-    if (this.mainTableScrollableElement === window) {
-      return this.wot.wtTable.holderOffset.top;
-    }
-    return 0;
-  },
-  getScrollPosition: function() {
-    return getScrollTop(this.mainTableScrollableElement);
-  },
-  adjustHeaderBordersPosition: function(position) {
-    if (this.wot.getSetting('fixedRowsBottom') === 0 && this.wot.getSetting('columnHeaders').length > 0) {
-      var masterParent = this.wot.wtTable.holder.parentNode;
-      var previousState = hasClass(masterParent, 'innerBorderTop');
-      if (position) {
-        addClass(masterParent, 'innerBorderTop');
-      } else {
-        removeClass(masterParent, 'innerBorderTop');
-      }
-      if (!previousState && position || previousState && !position) {
-        this.wot.wtOverlays.adjustElementsSize();
-      }
-    }
-    if (this.wot.getSetting('rowHeaders').length === 0) {
-      var secondHeaderCell = this.clone.wtTable.THEAD.querySelector('th:nth-of-type(2)');
-      if (secondHeaderCell) {
-        secondHeaderCell.style['border-left-width'] = 0;
-      }
-    }
-  }
-}, {}, WalkontableOverlay);
-;
-window.WalkontableBottomOverlay = WalkontableBottomOverlay;
-WalkontableOverlay.registerOverlay(WalkontableOverlay.CLONE_BOTTOM, WalkontableBottomOverlay);
-
-//# 
-},{"../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js":11,"../../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46}],112:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  WalkontableBottomLeftCornerOverlay: {get: function() {
-      return WalkontableBottomLeftCornerOverlay;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_dom_47_element__,
-    $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__;
-var $__0 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
-    getScrollbarWidth = $__0.getScrollbarWidth,
-    outerHeight = $__0.outerHeight,
-    outerWidth = $__0.outerWidth,
-    setOverlayPosition = $__0.setOverlayPosition,
-    resetCssTransform = $__0.resetCssTransform;
-var WalkontableOverlay = ($__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__ = _dereq_("../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js"), $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__ && $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__.__esModule && $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__ || {default: $__handsontable_47_3rdparty_47_walkontable_47_src_47_overlay_47__95_base_46_js__}).WalkontableOverlay;
-var WalkontableBottomLeftCornerOverlay = function WalkontableBottomLeftCornerOverlay(wotInstance) {
-  $traceurRuntime.superConstructor($WalkontableBottomLeftCornerOverlay).call(this, wotInstance);
-  this.clone = this.makeClone(WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER);
-};
-var $WalkontableBottomLeftCornerOverlay = WalkontableBottomLeftCornerOverlay;
-($traceurRuntime.createClass)(WalkontableBottomLeftCornerOverlay, {
-  shouldBeRendered: function() {
-    return this.wot.getSetting('fixedRowsBottom') && (this.wot.getSetting('fixedColumnsLeft') || this.wot.getSetting('rowHeaders').length) ? true : false;
-  },
-  repositionOverlay: function() {
-    var scrollbarWidth = getScrollbarWidth();
-    var cloneRoot = this.clone.wtTable.holder.parentNode;
-    if (this.wot.wtTable.holder.clientHeight === this.wot.wtTable.holder.offsetHeight) {
-      scrollbarWidth = 0;
-    }
-    cloneRoot.style.top = '';
-    cloneRoot.style.bottom = scrollbarWidth + 'px';
-  },
-  resetFixedPosition: function() {
-    this.updateTrimmingContainer();
-    if (!this.wot.wtTable.holder.parentNode) {
-      return;
-    }
-    var overlayRoot = this.clone.wtTable.holder.parentNode;
-    var tableHeight = outerHeight(this.clone.wtTable.TABLE);
-    var tableWidth = outerWidth(this.clone.wtTable.TABLE);
-    overlayRoot.style.top = '';
-    if (this.trimmingContainer === window) {
-      var box = this.wot.wtTable.hider.getBoundingClientRect();
-      var bottom = Math.ceil(box.bottom);
-      var left = Math.ceil(box.left);
-      var finalLeft;
-      var finalBottom;
-      var bodyHeight = document.body.offsetHeight;
-      if (left < 0) {
-        finalLeft = -left;
-      } else {
-        finalLeft = 0;
-      }
-      if (bottom > bodyHeight) {
-        finalBottom = (bottom - bodyHeight);
-      } else {
-        finalBottom = 0;
-      }
-      finalBottom = finalBottom + 'px';
-      finalLeft = finalLeft + 'px';
-      overlayRoot.style.top = '';
-      overlayRoot.style.left = finalLeft;
-      overlayRoot.style.bottom = finalBottom;
-    } else {
-      resetCssTransform(overlayRoot);
-      this.repositionOverlay();
-    }
-    overlayRoot.style.height = (tableHeight === 0 ? tableHeight : tableHeight) + 'px';
-    overlayRoot.style.width = (tableWidth === 0 ? tableWidth : tableWidth) + 'px';
-  }
-}, {}, WalkontableOverlay);
-;
-window.WalkontableBottomLeftCornerOverlay = WalkontableBottomLeftCornerOverlay;
-WalkontableOverlay.registerOverlay(WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER, WalkontableBottomLeftCornerOverlay);
-
-//# 
-},{"../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js":11,"../../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46}],113:[function(_dereq_,module,exports){
-"use strict";
-var $__handsontable_47_browser__,
-    $__3rdparty_47_walkontable_47_src_47_overlay_47_bottom__,
-    $__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner__;
-var Handsontable = ($__handsontable_47_browser__ = _dereq_("../node_modules/hot-builder/node_modules/handsontable/src/browser"), $__handsontable_47_browser__ && $__handsontable_47_browser__.__esModule && $__handsontable_47_browser__ || {default: $__handsontable_47_browser__}).default;
-var WalkontableBottomOverlay = ($__3rdparty_47_walkontable_47_src_47_overlay_47_bottom__ = _dereq_("3rdparty/walkontable/src/overlay/bottom"), $__3rdparty_47_walkontable_47_src_47_overlay_47_bottom__ && $__3rdparty_47_walkontable_47_src_47_overlay_47_bottom__.__esModule && $__3rdparty_47_walkontable_47_src_47_overlay_47_bottom__ || {default: $__3rdparty_47_walkontable_47_src_47_overlay_47_bottom__}).WalkontableBottomOverlay;
-var WalkontableBottomLeftCornerOverlay = ($__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner__ = _dereq_("3rdparty/walkontable/src/overlay/bottomLeftCorner"), $__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner__ && $__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner__.__esModule && $__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner__ || {default: $__3rdparty_47_walkontable_47_src_47_overlay_47_bottomLeftCorner__}).WalkontableBottomLeftCornerOverlay;
-module.exports = Handsontable;
-
-//# 
-},{"../node_modules/hot-builder/node_modules/handsontable/src/browser":23,"3rdparty/walkontable/src/overlay/bottom":111,"3rdparty/walkontable/src/overlay/bottomLeftCorner":112}],114:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  BindRowsWithHeaders: {get: function() {
-      return BindRowsWithHeaders;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_plugins_47__95_base__,
-    $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_helpers_47_number__,
-    $__handsontable_47_plugins__,
-    $__bindStrategy__;
-var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
-var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
-var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
-var registerPlugin = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}).registerPlugin;
-var BindStrategy = ($__bindStrategy__ = _dereq_("bindStrategy"), $__bindStrategy__ && $__bindStrategy__.__esModule && $__bindStrategy__ || {default: $__bindStrategy__}).BindStrategy;
-var BindRowsWithHeaders = function BindRowsWithHeaders(hotInstance) {
-  $traceurRuntime.superConstructor($BindRowsWithHeaders).call(this, hotInstance);
-  this.bindStrategy = new BindStrategy();
-  this.removedRows = [];
-};
-var $BindRowsWithHeaders = BindRowsWithHeaders;
-($traceurRuntime.createClass)(BindRowsWithHeaders, {
-  isEnabled: function() {
-    return !!this.hot.getSettings().bindRowsWithHeaders;
-  },
-  enablePlugin: function() {
-    var $__5 = this;
-    if (this.enabled) {
-      return;
-    }
-    var bindStrategy = this.hot.getSettings().bindRowsWithHeaders;
-    if (typeof bindStrategy !== 'string') {
-      bindStrategy = BindStrategy.DEFAULT_STRATEGY;
-    }
-    this.bindStrategy.setStrategy(bindStrategy);
-    this.bindStrategy.createMap(this.hot.countSourceRows());
-    this.addHook('modifyRowHeader', (function(row) {
-      return $__5.onModifyRowHeader(row);
-    }));
-    this.addHook('afterCreateRow', (function(index, amount) {
-      return $__5.onAfterCreateRow(index, amount);
-    }));
-    this.addHook('beforeRemoveRow', (function(index, amount) {
-      return $__5.onBeforeRemoveRow(index, amount);
-    }));
-    this.addHook('afterRemoveRow', (function(index, amount) {
-      return $__5.onAfterRemoveRow(index, amount);
-    }));
-    this.addHook('afterLoadData', (function(firstRun) {
-      return $__5.onAfterLoadData(firstRun);
-    }));
-    $traceurRuntime.superGet(this, $BindRowsWithHeaders.prototype, "enablePlugin").call(this);
-  },
-  updatePlugin: function() {
-    $traceurRuntime.superGet(this, $BindRowsWithHeaders.prototype, "updatePlugin").call(this);
-  },
-  disablePlugin: function() {
-    this.removedRows.length = 0;
-    this.bindStrategy.clearMap();
-    $traceurRuntime.superGet(this, $BindRowsWithHeaders.prototype, "disablePlugin").call(this);
-  },
-  onModifyRowHeader: function(row) {
-    return this.bindStrategy.translate(this.hot.runHooks('modifyRow', row));
-  },
-  onAfterCreateRow: function(index, amount) {
-    this.bindStrategy.createRow(index, amount);
-  },
-  onBeforeRemoveRow: function(index, amount) {
-    var $__5 = this;
-    this.removedRows.length = 0;
-    if (index !== false) {
-      rangeEach(index, index + amount - 1, (function(removedIndex) {
-        $__5.removedRows.push($__5.hot.runHooks('modifyRow', removedIndex));
-      }));
-    }
-  },
-  onAfterRemoveRow: function(index, amount) {
-    this.bindStrategy.removeRow(this.removedRows);
-  },
-  onAfterLoadData: function(firstRun) {
-    if (!firstRun) {
-      this.bindStrategy.createMap(this.hot.countSourceRows());
-    }
-  },
-  destroy: function() {
-    this.bindStrategy.destroy();
-    $traceurRuntime.superGet(this, $BindRowsWithHeaders.prototype, "destroy").call(this);
-  }
-}, {}, BasePlugin);
-;
-registerPlugin('bindRowsWithHeaders', BindRowsWithHeaders);
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":62,"bindStrategy":115}],115:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  BindStrategy: {get: function() {
-      return BindStrategy;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47__46__46__47_browser__,
-    $__handsontable_47_mixins_47_arrayMapper__,
-    $__handsontable_47_helpers_47_object__,
-    $__handsontable_47_helpers_47_number__;
-var Handsontable = ($___46__46__47__46__46__47_browser__ = _dereq_("../../browser"), $___46__46__47__46__46__47_browser__ && $___46__46__47__46__46__47_browser__.__esModule && $___46__46__47__46__46__47_browser__ || {default: $___46__46__47__46__46__47_browser__}).default;
-var arrayMapper = ($__handsontable_47_mixins_47_arrayMapper__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper"), $__handsontable_47_mixins_47_arrayMapper__ && $__handsontable_47_mixins_47_arrayMapper__.__esModule && $__handsontable_47_mixins_47_arrayMapper__ || {default: $__handsontable_47_mixins_47_arrayMapper__}).arrayMapper;
-var mixin = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).mixin;
-var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
-var strategies = {};
-var BindStrategy = function BindStrategy() {
-  this.strategy = null;
-};
-($traceurRuntime.createClass)(BindStrategy, {
-  setStrategy: function(name) {
-    var Strategy = strategies[name];
-    if (!Strategy) {
-      throw new Error(("Bind strategy \"" + name + "\" does not exist."));
-    }
-    this.strategy = new Strategy();
-  },
-  createMap: function(length) {
-    var strategy = this.strategy;
-    var originLength = length === void 0 ? strategy._arrayMap.length : length;
-    strategy._arrayMap.length = 0;
-    rangeEach(originLength - 1, (function(itemIndex) {
-      strategy._arrayMap.push(itemIndex);
-    }));
-  },
-  createRow: function() {
-    for (var params = [],
-        $__5 = 0; $__5 < arguments.length; $__5++)
-      params[$__5] = arguments[$__5];
-    this.strategy.createRow.apply(this.strategy, params);
-  },
-  removeRow: function() {
-    for (var params = [],
-        $__6 = 0; $__6 < arguments.length; $__6++)
-      params[$__6] = arguments[$__6];
-    this.strategy.removeRow.apply(this.strategy, params);
-  },
-  translate: function() {
-    for (var params = [],
-        $__7 = 0; $__7 < arguments.length; $__7++)
-      params[$__7] = arguments[$__7];
-    return this.strategy.getValueByIndex.apply(this.strategy, params);
-  },
-  clearMap: function() {
-    this.strategy.clearMap();
-  },
-  destroy: function() {
-    if (this.strategy) {
-      this.strategy.destroy();
-    }
-    this.strategy = null;
-  }
-}, {
-  get DEFAULT_STRATEGY() {
-    return 'loose';
-  },
-  registerStrategy: function(name, klass) {
-    strategies[name] = klass;
-  }
-});
-;
-Handsontable.utils.BindStrategy = BindStrategy;
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":56,"../../browser":113}],116:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  LooseBindStrategy: {get: function() {
-      return LooseBindStrategy;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_mixins_47_arrayMapper__,
-    $__handsontable_47_helpers_47_object__,
-    $___46__46__47_bindStrategy__;
-var arrayMapper = ($__handsontable_47_mixins_47_arrayMapper__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper"), $__handsontable_47_mixins_47_arrayMapper__ && $__handsontable_47_mixins_47_arrayMapper__.__esModule && $__handsontable_47_mixins_47_arrayMapper__ || {default: $__handsontable_47_mixins_47_arrayMapper__}).arrayMapper;
-var mixin = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).mixin;
-var BindStrategy = ($___46__46__47_bindStrategy__ = _dereq_("bindStrategy"), $___46__46__47_bindStrategy__ && $___46__46__47_bindStrategy__.__esModule && $___46__46__47_bindStrategy__ || {default: $___46__46__47_bindStrategy__}).BindStrategy;
-var LooseBindStrategy = function LooseBindStrategy() {};
-($traceurRuntime.createClass)(LooseBindStrategy, {
-  createRow: function(index, amount) {
-    this.shiftItems(index, amount);
-  },
-  removeRow: function(index, amount) {
-    this.unshiftItems(index, amount);
-  },
-  destroy: function() {
-    this._arrayMap = null;
-  }
-}, {get STRATEGY_NAME() {
-    return 'loose';
-  }});
-mixin(LooseBindStrategy, arrayMapper);
-BindStrategy.registerStrategy(LooseBindStrategy.STRATEGY_NAME, LooseBindStrategy);
-;
-
-//# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":56,"bindStrategy":115}],117:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  StrictBindStrategy: {get: function() {
-      return StrictBindStrategy;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_mixins_47_arrayMapper__,
-    $__handsontable_47_helpers_47_object__,
-    $___46__46__47_bindStrategy__;
-var arrayMapper = ($__handsontable_47_mixins_47_arrayMapper__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper"), $__handsontable_47_mixins_47_arrayMapper__ && $__handsontable_47_mixins_47_arrayMapper__.__esModule && $__handsontable_47_mixins_47_arrayMapper__ || {default: $__handsontable_47_mixins_47_arrayMapper__}).arrayMapper;
-var mixin = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).mixin;
-var BindStrategy = ($___46__46__47_bindStrategy__ = _dereq_("bindStrategy"), $___46__46__47_bindStrategy__ && $___46__46__47_bindStrategy__.__esModule && $___46__46__47_bindStrategy__ || {default: $___46__46__47_bindStrategy__}).BindStrategy;
-var StrictBindStrategy = function StrictBindStrategy() {};
-($traceurRuntime.createClass)(StrictBindStrategy, {
-  createRow: function(index, amount) {
-    this.insertItems(index, amount);
-  },
-  removeRow: function(index, amount) {
-    this.removeItems(index, amount);
-  },
-  destroy: function() {
-    this._arrayMap = null;
-  }
-}, {get STRATEGY_NAME() {
-    return 'strict';
-  }});
-mixin(StrictBindStrategy, arrayMapper);
-BindStrategy.registerStrategy(StrictBindStrategy.STRATEGY_NAME, StrictBindStrategy);
-;
-
-//# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":56,"bindStrategy":115}],118:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  CollapsibleColumns: {get: function() {
-      return CollapsibleColumns;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_object__,
-    $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_helpers_47_number__,
-    $__handsontable_47_helpers_47_dom_47_element__,
-    $__handsontable_47_eventManager__,
-    $__handsontable_47_plugins__,
-    $__handsontable_47_helpers_47_dom_47_event__,
-    $__handsontable_47_eventManager__,
-    $__handsontable_47_plugins_47__95_base__;
-var objectEach = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).objectEach;
-var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
-var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
-var $__3 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
-    addClass = $__3.addClass,
-    hasClass = $__3.hasClass,
-    fastInnerText = $__3.fastInnerText;
-var EventManager = ($__handsontable_47_eventManager__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager"), $__handsontable_47_eventManager__ && $__handsontable_47_eventManager__.__esModule && $__handsontable_47_eventManager__ || {default: $__handsontable_47_eventManager__}).EventManager;
-var $__5 = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}),
-    registerPlugin = $__5.registerPlugin,
-    getPlugin = $__5.getPlugin;
-var stopImmediatePropagation = ($__handsontable_47_helpers_47_dom_47_event__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event"), $__handsontable_47_helpers_47_dom_47_event__ && $__handsontable_47_helpers_47_dom_47_event__.__esModule && $__handsontable_47_helpers_47_dom_47_event__ || {default: $__handsontable_47_helpers_47_dom_47_event__}).stopImmediatePropagation;
-var eventManager = ($__handsontable_47_eventManager__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager"), $__handsontable_47_eventManager__ && $__handsontable_47_eventManager__.__esModule && $__handsontable_47_eventManager__ || {default: $__handsontable_47_eventManager__}).eventManager;
-var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
-var CollapsibleColumns = function CollapsibleColumns(hotInstance) {
-  $traceurRuntime.superConstructor($CollapsibleColumns).call(this, hotInstance);
-  this.settings = null;
-  this.buttonEnabledList = {};
-  this.hiddenColumnsPlugin = null;
-  this.nestedHeadersPlugin = null;
-  this.collapsedSections = {};
-  this.columnHeaderLevelCount = null;
-  this.eventManager = null;
-};
-var $CollapsibleColumns = CollapsibleColumns;
-($traceurRuntime.createClass)(CollapsibleColumns, {
-  isEnabled: function() {
-    return !!this.hot.getSettings().collapsibleColumns;
-  },
-  enablePlugin: function() {
-    var $__9 = this;
-    if (this.enabled) {
-      return;
-    }
-    this.settings = this.hot.getSettings().collapsibleColumns;
-    if (typeof this.settings !== 'boolean') {
-      this.parseSettings();
-    }
-    this.hiddenColumnsPlugin = this.hot.getPlugin('hiddenColumns');
-    this.nestedHeadersPlugin = this.hot.getPlugin('nestedHeaders');
-    this.checkDependencies();
-    this.addHook('afterRender', (function() {
-      return $__9.onAfterRender();
-    }));
-    this.addHook('afterInit', (function() {
-      return $__9.onAfterInit();
-    }));
-    this.addHook('afterGetColHeader', (function(col, TH) {
-      return $__9.onAfterGetColHeader(col, TH);
-    }));
-    this.addHook('beforeOnCellMouseDown', (function(event, coords, TD) {
-      return $__9.onBeforeOnCellMouseDown(event, coords, TD);
-    }));
-    this.eventManager = eventManager(this.hot);
-    $traceurRuntime.superGet(this, $CollapsibleColumns.prototype, "enablePlugin").call(this);
-  },
-  disablePlugin: function() {
-    this.settings = null;
-    this.buttonEnabledList = {};
-    this.hiddenColumnsPlugin = null;
-    this.collapsedSections = {};
-    this.clearButtons();
-    $traceurRuntime.superGet(this, $CollapsibleColumns.prototype, "disablePlugin").call(this);
-  },
-  clearButtons: function() {
-    if (!this.hot.view) {
-      return;
-    }
-    var headerLevels = this.hot.view.wt.getSetting('columnHeaders').length;
-    var mainHeaders = this.hot.view.wt.wtTable.THEAD;
-    var topHeaders = this.hot.view.wt.wtOverlays.topOverlay.clone.wtTable.THEAD;
-    var topLeftCornerHeaders = this.hot.view.wt.wtOverlays.topLeftCornerOverlay ? this.hot.view.wt.wtOverlays.topLeftCornerOverlay.clone.wtTable.THEAD : null;
-    var removeButton = function(button) {
-      if (button) {
-        button.parentNode.removeChild(button);
-      }
-    };
-    rangeEach(0, headerLevels - 1, (function(i) {
-      var masterLevel = mainHeaders.childNodes[i];
-      var topLevel = topHeaders.childNodes[i];
-      var topLeftCornerLevel = topLeftCornerHeaders ? topLeftCornerHeaders.childNodes[i] : null;
-      rangeEach(0, masterLevel.childNodes.length - 1, (function(j) {
-        var button = masterLevel.childNodes[j].querySelector('.collapsibleIndicator');
-        removeButton(button);
-        if (topLevel && topLevel.childNodes[j]) {
-          button = topLevel.childNodes[j].querySelector('.collapsibleIndicator');
-          removeButton(button);
-        }
-        if (topLeftCornerHeaders && topLeftCornerLevel && topLeftCornerLevel.childNodes[j]) {
-          button = topLeftCornerLevel.childNodes[j].querySelector('.collapsibleIndicator');
-          removeButton(button);
-        }
-      }));
-    }), true);
-  },
-  parseSettings: function() {
-    var $__9 = this;
-    objectEach(this.settings, (function(val) {
-      if (!$__9.buttonEnabledList[val.row]) {
-        $__9.buttonEnabledList[val.row] = {};
-      }
-      $__9.buttonEnabledList[val.row][val.col] = val.collapsible;
-    }));
-  },
-  meetsDependencies: function() {
-    var settings = this.hot.getSettings();
-    return settings.nestedHeaders && settings.hiddenColumns;
-  },
-  checkDependencies: function() {
-    var settings = this.hot.getSettings();
-    if (this.meetsDependencies()) {
-      return;
-    }
-    if (!settings.nestedHeaders) {
-      console.warn('You need to configure the Nested Headers plugin in order to use collapsible headers.');
-    }
-    if (!settings.hiddenColumns) {
-      console.warn('You need to configure the Hidden Columns plugin in order to use collapsible headers.');
-    }
-  },
-  generateIndicator: function(col, TH) {
-    var TR = TH.parentNode;
-    var THEAD = TR.parentNode;
-    var row = (-1) * THEAD.childNodes.length + Array.prototype.indexOf.call(THEAD.childNodes, TR);
-    if (Object.keys(this.buttonEnabledList).length > 0 && (!this.buttonEnabledList[row] || !this.buttonEnabledList[row][col])) {
-      return null;
-    }
-    var divEl = document.createElement('DIV');
-    addClass(divEl, 'collapsibleIndicator');
-    if (this.collapsedSections[row] && this.collapsedSections[row][col] === true) {
-      addClass(divEl, 'collapsed');
-      fastInnerText(divEl, '+');
-    } else {
-      addClass(divEl, 'expanded');
-      fastInnerText(divEl, '-');
-    }
-    return divEl;
-  },
-  markSectionAs: function(state, row, column, recursive) {
-    if (!this.collapsedSections[row]) {
-      this.collapsedSections[row] = {};
-    }
-    switch (state) {
-      case 'collapsed':
-        this.collapsedSections[row][column] = true;
-        break;
-      case 'expanded':
-        this.collapsedSections[row][column] = void 0;
-        break;
-    }
-    if (recursive) {
-      var nestedHeadersColspans = this.nestedHeadersPlugin.colspanArray;
-      var level = this.nestedHeadersPlugin.rowCoordsToLevel(row);
-      var childHeaders = this.nestedHeadersPlugin.getChildHeaders(row, column);
-      var childColspanLevel = nestedHeadersColspans[level + 1];
-      for (var i = 1; i < childHeaders.length; i++) {
-        if (childColspanLevel && childColspanLevel[childHeaders[i]].colspan > 1) {
-          this.markSectionAs(state, row + 1, childHeaders[i], true);
-        }
-      }
-    }
-  },
-  expandSection: function(coords) {
-    this.markSectionAs('expanded', coords.row, coords.col, true);
-    this.toggleCollapsibleSection(coords, 'expand');
-  },
-  collapseSection: function(coords) {
-    this.markSectionAs('collapsed', coords.row, coords.col, true);
-    this.toggleCollapsibleSection(coords, 'collapse');
-  },
-  toggleAllCollapsibleSections: function(action) {
-    var $__9 = this;
-    var nestedHeadersColspanArray = this.nestedHeadersPlugin.colspanArray;
-    if (this.settings === true) {
-      arrayEach(nestedHeadersColspanArray, (function(headerLevel, i) {
-        arrayEach(headerLevel, (function(header, j) {
-          if (header.colspan > 1) {
-            var row = $__9.nestedHeadersPlugin.levelToRowCoords(i);
-            var col = j;
-            $__9.markSectionAs(action === 'collapse' ? 'collapsed' : 'expanded', row, col, true);
-            $__9.toggleCollapsibleSection({
-              row: row,
-              col: col
-            }, action);
-          }
-        }));
-      }));
-    } else {
-      objectEach(this.buttonEnabledList, (function(headerRow, i) {
-        objectEach(headerRow, (function(header, j) {
-          $__9.markSectionAs(action === 'collapse' ? 'collapsed' : 'expanded', i, j, true);
-          $__9.toggleCollapsibleSection({
-            row: i,
-            col: j
-          }, action);
-        }));
-      }));
-    }
-  },
-  collapseAll: function() {
-    this.toggleAllCollapsibleSections('collapse');
-  },
-  expandAll: function() {
-    this.toggleAllCollapsibleSections('expand');
-  },
-  toggleCollapsibleSection: function(coords, action) {
-    var $__9 = this;
-    if (coords.row) {
-      coords.row = parseInt(coords.row, 10);
-    }
-    if (coords.col) {
-      coords.col = parseInt(coords.col, 10);
-    }
-    var hiddenColumns = this.hiddenColumnsPlugin.hiddenColumns;
-    var colspanArray = this.nestedHeadersPlugin.colspanArray;
-    var level = this.nestedHeadersPlugin.rowCoordsToLevel(coords.row);
-    var currentHeaderColspan = colspanArray[level][coords.col].colspan;
-    var childHeaders = this.nestedHeadersPlugin.getChildHeaders(coords.row, coords.col);
-    var nextLevel = level + 1;
-    var childColspanLevel = colspanArray[nextLevel];
-    var firstChildColspan = childColspanLevel ? childColspanLevel[childHeaders[0]].colspan || 1 : 1;
-    while (firstChildColspan === currentHeaderColspan && nextLevel < this.columnHeaderLevelCount) {
-      nextLevel += 1;
-      childColspanLevel = colspanArray[nextLevel];
-      firstChildColspan = childColspanLevel ? childColspanLevel[childHeaders[0]].colspan || 1 : 1;
-    }
-    rangeEach(firstChildColspan, currentHeaderColspan - 1, (function(i) {
-      var colToHide = coords.col + i;
-      switch (action) {
-        case 'collapse':
-          if (!$__9.hiddenColumnsPlugin.isHidden(colToHide)) {
-            hiddenColumns.push(colToHide);
-          }
-          break;
-        case 'expand':
-          if ($__9.hiddenColumnsPlugin.isHidden(colToHide)) {
-            hiddenColumns.splice(hiddenColumns.indexOf(colToHide), 1);
-          }
-          break;
-      }
-    }));
-    this.hot.render();
-  },
-  onAfterGetColHeader: function(column, TH) {
-    if (TH.hasAttribute('colspan') && TH.getAttribute('colspan') > 1 && column >= this.hot.getSettings().fixedColumnsLeft) {
-      var button = this.generateIndicator(column, TH);
-      if (button !== null) {
-        TH.querySelector('div:first-child').appendChild(button);
-      }
-    }
-  },
-  onBeforeOnCellMouseDown: function(event, coords) {
-    if (hasClass(event.target, 'collapsibleIndicator')) {
-      if (hasClass(event.target, 'expanded')) {
-        if (!this.collapsedSections[coords.row]) {
-          this.collapsedSections[coords.row] = [];
-        }
-        this.markSectionAs('collapsed', coords.row, coords.col, true);
-        this.eventManager.fireEvent(event.target, 'mouseup');
-        this.toggleCollapsibleSection(coords, 'collapse');
-      } else if (hasClass(event.target, 'collapsed')) {
-        this.markSectionAs('expanded', coords.row, coords.col, true);
-        this.eventManager.fireEvent(event.target, 'mouseup');
-        this.toggleCollapsibleSection(coords, 'expand');
-      }
-      stopImmediatePropagation(event);
-      return false;
-    }
-  },
-  onAfterInit: function() {
-    this.columnHeaderLevelCount = this.hot.view.wt.getSetting('columnHeaders').length;
-  },
-  onAfterRender: function() {
-    if (!this.nestedHeadersPlugin.enabled || !this.hiddenColumnsPlugin.enabled) {
-      this.disablePlugin();
-    }
-  },
-  destroy: function() {
-    this.settings = null;
-    this.buttonEnabledList = null;
-    this.hiddenColumnsPlugin = null;
-    this.nestedHeadersPlugin = null;
-    this.collapsedSections = null;
-    this.columnHeaderLevelCount = null;
-    $traceurRuntime.superGet(this, $CollapsibleColumns.prototype, "destroy").call(this);
-  }
-}, {}, BasePlugin);
-;
-registerPlugin('collapsibleColumns', CollapsibleColumns);
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":41,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":47,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":62}],119:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  ColumnSummary: {get: function() {
-      return ColumnSummary;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_plugins_47__95_base_46_js__,
-    $__handsontable_47_helpers_47_object__,
-    $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_plugins_46_js__;
-var BasePlugin = ($__handsontable_47_plugins_47__95_base_46_js__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js"), $__handsontable_47_plugins_47__95_base_46_js__ && $__handsontable_47_plugins_47__95_base_46_js__.__esModule && $__handsontable_47_plugins_47__95_base_46_js__ || {default: $__handsontable_47_plugins_47__95_base_46_js__}).default;
-var $__1 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
-    deepClone = $__1.deepClone,
-    objectEach = $__1.objectEach;
-var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
-var $__3 = ($__handsontable_47_plugins_46_js__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js"), $__handsontable_47_plugins_46_js__ && $__handsontable_47_plugins_46_js__.__esModule && $__handsontable_47_plugins_46_js__ || {default: $__handsontable_47_plugins_46_js__}),
-    registerPlugin = $__3.registerPlugin,
-    getPlugin = $__3.getPlugin;
-var ColumnSummary = function ColumnSummary(hotInstance) {
-  $traceurRuntime.superConstructor($ColumnSummary).call(this, hotInstance);
-  this.endpoints = [];
-  this.settings = null;
-  this.currentEndpoint = null;
-};
-var $ColumnSummary = ColumnSummary;
-($traceurRuntime.createClass)(ColumnSummary, {
-  isEnabled: function() {
-    return !!this.hot.getSettings().columnSummary;
-  },
-  enablePlugin: function() {
-    var $__4 = this;
-    if (this.enabled) {
-      return;
-    }
-    this.settings = this.hot.getSettings().columnSummary;
-    this.hot.addHook('afterInit', (function() {
-      return $__4.onAfterInit();
-    }));
-    this.hot.addHook('afterChange', (function(changes, source) {
-      return $__4.onAfterChange(changes, source);
-    }));
-    this.hot.addHook('afterCreateRow', (function(index, num, auto) {
-      return $__4.resetSetupAfterStructureAlteration('insert_row', index, num, auto);
-    }));
-    this.hot.addHook('afterCreateCol', (function(index, num, auto) {
-      return $__4.resetSetupAfterStructureAlteration('insert_col', index, num, auto);
-    }));
-    this.hot.addHook('afterRemoveRow', (function(index, num, auto) {
-      return $__4.resetSetupAfterStructureAlteration('remove_row', index, num, auto);
-    }));
-    this.hot.addHook('afterRemoveCol', (function(index, num, auto) {
-      return $__4.resetSetupAfterStructureAlteration('remove_col', index, num, auto);
-    }));
-    $traceurRuntime.superGet(this, $ColumnSummary.prototype, "enablePlugin").call(this);
-  },
-  disablePlugin: function() {
-    this.endpoints = null;
-    this.settings = null;
-    this.currentEndpoint = null;
-  },
-  resetSetupAfterStructureAlteration: function(action, index, number, createdAutomatically) {
-    if (createdAutomatically) {
-      return;
-    }
-    var type = action.indexOf('row') > -1 ? 'row' : 'col';
-    var oldEndpoints = deepClone(this.endpoints);
-    objectEach(oldEndpoints, (function(val, key, obj) {
-      if (type === 'row' && val.destinationRow >= index) {
-        if (action === 'insert_row') {
-          val.alterRowOffset = number;
-        } else if (action === 'remove_row') {
-          val.alterRowOffset = (-1) * number;
-        }
-      }
-      if (type === 'col' && val.destinationColumn >= index) {
-        if (action === 'insert_col') {
-          val.alterColumnOffset = number;
-        } else if (action === 'remove_col') {
-          val.alterColumnOffset = (-1) * number;
-        }
-      }
-    }));
-    this.endpoints = [];
-    this.resetAllEndpoints(oldEndpoints);
-    this.parseSettings();
-    objectEach(this.endpoints, (function(val, key, obj) {
-      if (type === 'row' && val.destinationRow >= index) {
-        if (action === 'insert_row') {
-          val.alterRowOffset = number;
-        } else if (action === 'remove_row') {
-          val.alterRowOffset = (-1) * number;
-        }
-      }
-      if (type === 'col' && val.destinationColumn >= index) {
-        if (action === 'insert_col') {
-          val.alterColumnOffset = number;
-        } else if (action === 'remove_col') {
-          val.alterColumnOffset = (-1) * number;
-        }
-      }
-    }));
-    this.refreshAllEndpoints(true);
-  },
-  onAfterInit: function() {
-    this.parseSettings(this.settings);
-    this.refreshAllEndpoints(true);
-  },
-  onAfterChange: function(changes, source) {
-    if (changes && source !== 'columnSummary' && source !== 'loadData') {
-      this.refreshChangedEndpoints(changes);
-    }
-  },
-  parseSettings: function() {
-    var $__4 = this;
-    objectEach(this.settings, (function(val, key, obj) {
-      var newEndpoint = {};
-      $__4.assignSetting(val, newEndpoint, 'ranges', [[0, $__4.hot.countRows() - 1]]);
-      $__4.assignSetting(val, newEndpoint, 'reversedRowCoords', false);
-      $__4.assignSetting(val, newEndpoint, 'destinationRow', new Error('You must provide a destination row for the Column Summary plugin in order to work properly!'));
-      $__4.assignSetting(val, newEndpoint, 'destinationColumn', new Error('You must provide a destination column for the Column Summary plugin in order to work properly!'));
-      $__4.assignSetting(val, newEndpoint, 'sourceColumn', val.destinationColumn);
-      $__4.assignSetting(val, newEndpoint, 'type', 'sum');
-      $__4.assignSetting(val, newEndpoint, 'forceNumeric', false);
-      $__4.assignSetting(val, newEndpoint, 'suppressDataTypeErrors', true);
-      $__4.assignSetting(val, newEndpoint, 'suppressDataTypeErrors', true);
-      $__4.assignSetting(val, newEndpoint, 'customFunction', null);
-      $__4.assignSetting(val, newEndpoint, 'readOnly', true);
-      $__4.assignSetting(val, newEndpoint, 'roundFloat', false);
-      $__4.endpoints.push(newEndpoint);
-    }));
-  },
-  assignSetting: function(settings, endpoint, name, defaultValue) {
-    if (name === 'ranges' && settings[name] === void 0) {
-      endpoint[name] = defaultValue;
-      return;
-    } else if (name === 'ranges' && settings[name].length === 0) {
-      return;
-    }
-    if (settings[name] === void 0) {
-      if (defaultValue instanceof Error) {
-        throw defaultValue;
-      }
-      endpoint[name] = defaultValue;
-    } else {
-      if (name === 'destinationRow' && endpoint.reversedRowCoords) {
-        endpoint[name] = this.hot.countRows() - settings[name] - 1;
-      } else {
-        endpoint[name] = settings[name];
-      }
-    }
-  },
-  calculate: function(endpoint) {
-    switch (endpoint.type.toLowerCase()) {
-      case 'sum':
-        endpoint.result = this.calculateSum(endpoint);
-        break;
-      case 'min':
-        endpoint.result = this.calculateMinMax(endpoint, endpoint.type);
-        break;
-      case 'max':
-        endpoint.result = this.calculateMinMax(endpoint, endpoint.type);
-        break;
-      case 'count':
-        endpoint.result = this.countEntries(endpoint);
-        break;
-      case 'average':
-        endpoint.result = this.calculateAverage(endpoint);
-        break;
-      case 'custom':
-        endpoint.result = endpoint.customFunction.call(this, endpoint);
-        break;
-    }
-  },
-  resetAllEndpoints: function(endpoints) {
-    var $__4 = this;
-    if (!endpoints) {
-      endpoints = this.endpoints;
-    }
-    arrayEach(endpoints, (function(value) {
-      $__4.resetEndpointValue(value);
-    }));
-  },
-  refreshAllEndpoints: function(init) {
-    var $__4 = this;
-    arrayEach(this.endpoints, (function(value) {
-      $__4.currentEndpoint = value;
-      $__4.calculate(value);
-      $__4.setEndpointValue(value, 'init');
-    }));
-    this.currentEndpoint = null;
-  },
-  refreshChangedEndpoints: function(changes) {
-    var $__4 = this;
-    var needToRefresh = [];
-    arrayEach(changes, (function(value, key, changes) {
-      if ((value[2] || '') + '' === value[3] + '') {
-        return;
-      }
-      arrayEach($__4.endpoints, (function(value, j) {
-        if ($__4.hot.propToCol(changes[key][1]) === value.sourceColumn && needToRefresh.indexOf(j) === -1) {
-          needToRefresh.push(j);
-        }
-      }));
-    }));
-    arrayEach(needToRefresh, (function(value) {
-      $__4.refreshEndpoint($__4.endpoints[value]);
-    }));
-  },
-  refreshEndpoint: function(endpoint) {
-    this.currentEndpoint = endpoint;
-    this.calculate(endpoint);
-    this.setEndpointValue(endpoint);
-    this.currentEndpoint = null;
-  },
-  resetEndpointValue: function(endpoint) {
-    var alterRowOffset = endpoint.alterRowOffset || 0;
-    var alterColOffset = endpoint.alterColumnOffset || 0;
-    if (endpoint.destinationRow + alterRowOffset > this.hot.countRows() || endpoint.destinationColumn + alterColOffset > this.hot.countCols()) {
-      this.throwOutOfBoundsWarning();
-      return;
-    }
-    this.hot.setCellMeta(endpoint.destinationRow, endpoint.destinationColumn, 'readOnly', false);
-    this.hot.setCellMeta(endpoint.destinationRow, endpoint.destinationColumn, 'className', '');
-    this.hot.setDataAtCell(endpoint.destinationRow + alterRowOffset, endpoint.destinationColumn + alterColOffset, '', 'columnSummary');
-  },
-  setEndpointValue: function(endpoint, source) {
-    var alterRowOffset = endpoint.alterRowOffset || 0;
-    var alterColumnOffset = endpoint.alterColumnOffset || 0;
-    var rowOffset = Math.max(-alterRowOffset, 0);
-    var colOffset = Math.max(-alterColumnOffset, 0);
-    if (endpoint.destinationRow + rowOffset > this.hot.countRows() || endpoint.destinationColumn + colOffset > this.hot.countCols()) {
-      this.throwOutOfBoundsWarning();
-      return;
-    }
-    if (source === 'init') {
-      this.hot.setCellMeta(endpoint.destinationRow + rowOffset, endpoint.destinationColumn + colOffset, 'readOnly', endpoint.readOnly);
-      this.hot.setCellMeta(endpoint.destinationRow + rowOffset, endpoint.destinationColumn + colOffset, 'className', 'columnSummaryResult');
-    }
-    if (endpoint.roundFloat && !isNaN(endpoint.result)) {
-      endpoint.result = endpoint.result.toFixed(endpoint.roundFloat);
-    }
-    this.hot.setDataAtCell(endpoint.destinationRow, endpoint.destinationColumn, endpoint.result, 'columnSummary');
-    endpoint.alterRowOffset = void 0;
-    endpoint.alterColOffset = void 0;
-  },
-  throwOutOfBoundsWarning: function() {
-    console.warn('One of the  Column Summary plugins\' destination points you provided is beyond the table boundaries!');
-  },
-  calculateSum: function(endpoint) {
-    var sum = 0;
-    for (var r in endpoint.ranges) {
-      if (endpoint.ranges.hasOwnProperty(r)) {
-        sum += this.getPartialSum(endpoint.ranges[r], endpoint.sourceColumn);
-      }
-    }
-    return sum;
-  },
-  getPartialSum: function(rowRange, col) {
-    var sum = 0;
-    var i = rowRange[1] || rowRange[0];
-    do {
-      sum += this.getCellValue(i, col) || 0;
-      i--;
-    } while (i >= rowRange[0]);
-    return sum;
-  },
-  calculateMinMax: function(endpoint, type) {
-    var result = null;
-    for (var r in endpoint.ranges) {
-      if (endpoint.ranges.hasOwnProperty(r)) {
-        var partialResult = this.getPartialMinMax(endpoint.ranges[r], endpoint.sourceColumn, type);
-        if (result === null && partialResult !== null) {
-          result = partialResult;
-        }
-        if (partialResult !== null) {
-          switch (type) {
-            case 'min':
-              result = Math.min(result, partialResult);
-              break;
-            case 'max':
-              result = Math.max(result, partialResult);
-              break;
-          }
-        }
-      }
-    }
-    return result === null ? 'Not enough data' : result;
-  },
-  getPartialMinMax: function(rowRange, col, type) {
-    var result = null;
-    var i = rowRange[1] || rowRange[0];
-    var cellValue;
-    do {
-      cellValue = this.getCellValue(i, col) || null;
-      if (result === null) {
-        result = cellValue;
-      } else if (cellValue !== null) {
-        switch (type) {
-          case 'min':
-            result = Math.min(result, cellValue);
-            break;
-          case 'max':
-            result = Math.max(result, cellValue);
-            break;
-        }
-      }
-      i--;
-    } while (i >= rowRange[0]);
-    return result;
-  },
-  countEmpty: function(rowRange, col) {
-    var cellValue;
-    var counter = 0;
-    var i = rowRange[1] || rowRange[0];
-    do {
-      cellValue = this.getCellValue(i, col);
-      if (!cellValue) {
-        counter++;
-      }
-      i--;
-    } while (i >= rowRange[0]);
-    return counter;
-  },
-  countEntries: function(endpoint) {
-    var result = 0;
-    var ranges = endpoint.ranges;
-    for (var r in ranges) {
-      if (ranges.hasOwnProperty(r)) {
-        var partial = ranges[r][1] === void 0 ? 1 : ranges[r][1] - ranges[r][0] + 1;
-        var emptyCount = this.countEmpty(ranges[r], endpoint.sourceColumn);
-        result += partial;
-        result -= emptyCount;
-      }
-    }
-    return result;
-  },
-  calculateAverage: function(endpoint) {
-    var sum = this.calculateSum(endpoint);
-    var entriesCount = this.countEntries(endpoint);
-    return sum / entriesCount;
-  },
-  getCellValue: function(row, col) {
-    var cellValue = this.hot.getDataAtCell(row, col);
-    var cellClassName = this.hot.getCellMeta(row, col).className || '';
-    if (cellClassName.indexOf('columnSummaryResult') > -1) {
-      return null;
-    }
-    if (this.currentEndpoint.forceNumeric) {
-      if (typeof cellValue === 'string') {
-        cellValue = cellValue.replace(/,/, '.');
-      }
-      cellValue = parseFloat(cellValue, 10);
-    }
-    if (isNaN(cellValue)) {
-      if (!this.currentEndpoint.suppressDataTypeErrors) {
-        throw new Error('ColumnSummary plugin: cell at (${row}, ${col}) is not in a numeric format. Cannot do the calculation.');
-      }
-    }
-    return cellValue;
-  }
-}, {}, BasePlugin);
-;
-registerPlugin('columnSummary', ColumnSummary);
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":62}],120:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  DropdownMenu: {get: function() {
-      return DropdownMenu;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47__46__46__47_browser__,
-    $__handsontable_47_plugins_47__95_base__,
-    $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_helpers_47_object__,
-    $__handsontable_47_plugins_47_contextMenu_47_commandExecutor__,
-    $__handsontable_47_eventManager__,
-    $__handsontable_47_helpers_47_dom_47_element__,
-    $__handsontable_47_plugins_47_contextMenu_47_itemsFactory__,
-    $__handsontable_47_plugins_47_contextMenu_47_menu__,
-    $__handsontable_47_plugins__,
-    $__handsontable_47_helpers_47_dom_47_event__,
-    $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__;
-var Handsontable = ($___46__46__47__46__46__47_browser__ = _dereq_("../../browser"), $___46__46__47__46__46__47_browser__ && $___46__46__47__46__46__47_browser__.__esModule && $___46__46__47__46__46__47_browser__ || {default: $___46__46__47__46__46__47_browser__}).default;
-var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
-var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
-var objectEach = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).objectEach;
-var CommandExecutor = ($__handsontable_47_plugins_47_contextMenu_47_commandExecutor__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/commandExecutor"), $__handsontable_47_plugins_47_contextMenu_47_commandExecutor__ && $__handsontable_47_plugins_47_contextMenu_47_commandExecutor__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_commandExecutor__ || {default: $__handsontable_47_plugins_47_contextMenu_47_commandExecutor__}).CommandExecutor;
-var EventManager = ($__handsontable_47_eventManager__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager"), $__handsontable_47_eventManager__ && $__handsontable_47_eventManager__.__esModule && $__handsontable_47_eventManager__ || {default: $__handsontable_47_eventManager__}).EventManager;
-var $__6 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
-    getWindowScrollTop = $__6.getWindowScrollTop,
-    getWindowScrollLeft = $__6.getWindowScrollLeft,
-    hasClass = $__6.hasClass,
-    closest = $__6.closest;
-var ItemsFactory = ($__handsontable_47_plugins_47_contextMenu_47_itemsFactory__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/itemsFactory"), $__handsontable_47_plugins_47_contextMenu_47_itemsFactory__ && $__handsontable_47_plugins_47_contextMenu_47_itemsFactory__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_itemsFactory__ || {default: $__handsontable_47_plugins_47_contextMenu_47_itemsFactory__}).ItemsFactory;
-var Menu = ($__handsontable_47_plugins_47_contextMenu_47_menu__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu"), $__handsontable_47_plugins_47_contextMenu_47_menu__ && $__handsontable_47_plugins_47_contextMenu_47_menu__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_menu__ || {default: $__handsontable_47_plugins_47_contextMenu_47_menu__}).Menu;
-var registerPlugin = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}).registerPlugin;
-var stopPropagation = ($__handsontable_47_helpers_47_dom_47_event__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event"), $__handsontable_47_helpers_47_dom_47_event__ && $__handsontable_47_helpers_47_dom_47_event__.__esModule && $__handsontable_47_helpers_47_dom_47_event__ || {default: $__handsontable_47_helpers_47_dom_47_event__}).stopPropagation;
-var $__11 = ($__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems"), $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ || {default: $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__}),
-    COLUMN_LEFT = $__11.COLUMN_LEFT,
-    COLUMN_RIGHT = $__11.COLUMN_RIGHT,
-    REMOVE_COLUMN = $__11.REMOVE_COLUMN,
-    CLEAR_COLUMN = $__11.CLEAR_COLUMN,
-    READ_ONLY = $__11.READ_ONLY,
-    ALIGNMENT = $__11.ALIGNMENT,
-    SEPARATOR = $__11.SEPARATOR;
-var BUTTON_CLASS_NAME = 'changeType';
-var DropdownMenu = function DropdownMenu(hotInstance) {
-  var $__12 = this;
-  $traceurRuntime.superConstructor($DropdownMenu).call(this, hotInstance);
-  this.eventManager = new EventManager(this);
-  this.commandExecutor = new CommandExecutor(this.hot);
-  this.itemsFactory = null;
-  this.menu = null;
-  this.hot.addHook('afterGetColHeader', (function(col, TH) {
-    return $__12.onAfterGetColHeader(col, TH);
-  }));
-};
-var $DropdownMenu = DropdownMenu;
-($traceurRuntime.createClass)(DropdownMenu, {
-  isEnabled: function() {
-    return this.hot.getSettings().dropdownMenu;
-  },
-  enablePlugin: function() {
-    var $__12 = this;
-    if (this.enabled) {
-      return;
-    }
-    this.itemsFactory = new ItemsFactory(this.hot, $DropdownMenu.DEFAULT_ITEMS);
-    var settings = this.hot.getSettings().dropdownMenu;
-    var predefinedItems = {items: this.itemsFactory.getItems(settings)};
-    this.registerEvents();
-    if (typeof settings.callback === 'function') {
-      this.commandExecutor.setCommonCallback(settings.callback);
-    }
-    $traceurRuntime.superGet(this, $DropdownMenu.prototype, "enablePlugin").call(this);
-    this.callOnPluginsReady((function() {
-      $__12.hot.runHooks('afterDropdownMenuDefaultOptions', predefinedItems);
-      $__12.itemsFactory.setPredefinedItems(predefinedItems.items);
-      var menuItems = $__12.itemsFactory.getItems(settings);
-      $__12.menu = new Menu($__12.hot, {
-        className: 'htDropdownMenu',
-        keepInViewport: true
-      });
-      $__12.menu.setMenuItems(menuItems);
-      $__12.menu.addLocalHook('afterOpen', (function() {
-        return $__12.onMenuAfterOpen();
-      }));
-      $__12.menu.addLocalHook('afterClose', (function() {
-        return $__12.onMenuAfterClose();
-      }));
-      $__12.menu.addLocalHook('executeCommand', (function() {
-        for (var params = [],
-            $__14 = 0; $__14 < arguments.length; $__14++)
-          params[$__14] = arguments[$__14];
-        return $__12.executeCommand.apply($__12, params);
-      }));
-      arrayEach(menuItems, (function(command) {
-        return $__12.commandExecutor.registerCommand(command.key, command);
-      }));
-    }));
-  },
-  updatePlugin: function() {
-    this.disablePlugin();
-    this.enablePlugin();
-    $traceurRuntime.superGet(this, $DropdownMenu.prototype, "updatePlugin").call(this);
-  },
-  disablePlugin: function() {
-    this.close();
-    if (this.menu) {
-      this.menu.destroy();
-    }
-    $traceurRuntime.superGet(this, $DropdownMenu.prototype, "disablePlugin").call(this);
-  },
-  registerEvents: function() {
-    var $__12 = this;
-    this.eventManager.addEventListener(this.hot.rootElement, 'click', (function(event) {
-      return $__12.onTableClick(event);
-    }));
-  },
-  open: function(event) {
-    if (!this.menu) {
-      return;
-    }
-    this.menu.open();
-    if (event.width) {
-      this.menu.setOffset('left', event.width);
-    }
-    this.menu.setPosition(event);
-    this.menu.hotMenu.isHotTableEnv = this.hot.isHotTableEnv;
-    Handsontable.eventManager.isHotTableEnv = this.hot.isHotTableEnv;
-  },
-  close: function() {
-    if (!this.menu) {
-      return;
-    }
-    this.menu.close();
-  },
-  executeCommand: function() {
-    for (var params = [],
-        $__14 = 0; $__14 < arguments.length; $__14++)
-      params[$__14] = arguments[$__14];
-    this.commandExecutor.execute.apply(this.commandExecutor, params);
-  },
-  onTableClick: function(event) {
-    stopPropagation(event);
-    if (hasClass(event.target, BUTTON_CLASS_NAME) && !this.menu.isOpened()) {
-      var rect = event.target.getBoundingClientRect();
-      this.open({
-        left: rect.left,
-        top: rect.top + event.target.offsetHeight + 3,
-        width: rect.width,
-        height: rect.height
-      });
-    }
-  },
-  onAfterGetColHeader: function(col, TH) {
-    var headerRow = TH.parentNode;
-    if (!headerRow) {
-      return;
-    }
-    var headerRowList = headerRow.parentNode.childNodes;
-    var level = Array.prototype.indexOf.call(headerRowList, headerRow);
-    if (col < 0 || level !== headerRowList.length - 1) {
-      return;
-    }
-    var existingButton = TH.querySelector('.' + BUTTON_CLASS_NAME);
-    if (this.enabled && existingButton) {
-      return;
-    }
-    if (!this.enabled) {
-      if (existingButton) {
-        existingButton.parentNode.removeChild(existingButton);
-      }
-      return;
-    }
-    var button = document.createElement('button');
-    button.className = BUTTON_CLASS_NAME;
-    button.onclick = function() {
-      return false;
-    };
-    TH.firstChild.insertBefore(button, TH.firstChild.firstChild);
-  },
-  onMenuAfterOpen: function() {
-    this.hot.runHooks('afterDropdownMenuShow', this);
-  },
-  onMenuAfterClose: function() {
-    this.hot.listen();
-    this.hot.runHooks('afterDropdownMenuHide', this);
-  },
-  destroy: function() {
-    this.close();
-    if (this.menu) {
-      this.menu.destroy();
-    }
-    $traceurRuntime.superGet(this, $DropdownMenu.prototype, "destroy").call(this);
-  }
-}, {get DEFAULT_ITEMS() {
-    return [COLUMN_LEFT, COLUMN_RIGHT, SEPARATOR, REMOVE_COLUMN, SEPARATOR, CLEAR_COLUMN, SEPARATOR, READ_ONLY, SEPARATOR, ALIGNMENT];
-  }}, BasePlugin);
-DropdownMenu.SEPARATOR = {name: SEPARATOR};
-Handsontable.hooks.register('afterDropdownMenuDefaultOptions');
-Handsontable.hooks.register('afterDropdownMenuShow');
-Handsontable.hooks.register('afterDropdownMenuHide');
-Handsontable.hooks.register('afterDropdownMenuExecute');
-;
-registerPlugin('dropdownMenu', DropdownMenu);
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":41,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":47,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/commandExecutor":69,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/itemsFactory":72,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":73,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":74,"../../browser":113}],121:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  DataProvider: {get: function() {
-      return DataProvider;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_helpers_47_object__,
-    $__handsontable_47_helpers_47_number__;
-var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
-var $__1 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
-    extend = $__1.extend,
-    clone = $__1.clone;
-var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
-var DataProvider = function DataProvider(hotInstance) {
-  this.hot = hotInstance;
-  this.options = {};
-};
-($traceurRuntime.createClass)(DataProvider, {
-  setOptions: function(options) {
-    this.options = options;
-  },
-  getData: function() {
-    var $__3 = this;
-    var $__5 = this._getDataRange(),
-        startRow = $__5.startRow,
-        startCol = $__5.startCol,
-        endRow = $__5.endRow,
-        endCol = $__5.endCol;
-    var options = this.options;
-    var data = [];
-    rangeEach(startRow, endRow, (function(rowIndex) {
-      var row = [];
-      if (!options.exportHiddenRows && $__3._isHiddenRow(rowIndex)) {
-        return;
-      }
-      rangeEach(startCol, endCol, (function(colIndex) {
-        if (!options.exportHiddenColumns && $__3._isHiddenColumn(colIndex)) {
-          return;
-        }
-        row.push($__3.hot.getDataAtCell(rowIndex, colIndex));
-      }));
-      data.push(row);
-    }));
-    return data;
-  },
-  getRowHeaders: function() {
-    var $__3 = this;
-    var headers = [];
-    if (this.options.rowHeaders) {
-      var $__5 = this._getDataRange(),
-          startRow = $__5.startRow,
-          endRow = $__5.endRow;
-      var rowHeaders = this.hot.getRowHeader();
-      rangeEach(startRow, endRow, (function(row) {
-        if (!$__3.options.exportHiddenRows && $__3._isHiddenRow(row)) {
-          return;
-        }
-        headers.push(rowHeaders[row]);
-      }));
-    }
-    return headers;
-  },
-  getColumnHeaders: function() {
-    var $__3 = this;
-    var headers = [];
-    if (this.options.columnHeaders) {
-      var $__5 = this._getDataRange(),
-          startCol = $__5.startCol,
-          endCol = $__5.endCol;
-      var colHeaders = this.hot.getColHeader();
-      rangeEach(startCol, endCol, (function(column) {
-        if (!$__3.options.exportHiddenColumns && $__3._isHiddenColumn(column)) {
-          return;
-        }
-        headers.push(colHeaders[column]);
-      }));
-    }
-    return headers;
-  },
-  _getDataRange: function() {
-    var $__6,
-        $__7,
-        $__8,
-        $__9;
-    var cols = this.hot.countCols() - 1;
-    var rows = this.hot.countRows() - 1;
-    var $__5 = this.options.range,
-        startRow = ($__6 = $__5[0]) === void 0 ? 0 : $__6,
-        startCol = ($__7 = $__5[1]) === void 0 ? 0 : $__7,
-        endRow = ($__8 = $__5[2]) === void 0 ? rows : $__8,
-        endCol = ($__9 = $__5[3]) === void 0 ? cols : $__9;
-    startRow = Math.max(startRow, 0);
-    startCol = Math.max(startCol, 0);
-    endRow = Math.min(endRow, rows);
-    endCol = Math.min(endCol, cols);
-    return {
-      startRow: startRow,
-      startCol: startCol,
-      endRow: endRow,
-      endCol: endCol
-    };
-  },
-  _isHiddenRow: function(row) {
-    return this.hot.hasHook('hiddenRow') && this.hot.runHooks('hiddenRow', row);
-  },
-  _isHiddenColumn: function(column) {
-    return this.hot.hasHook('hiddenColumn') && this.hot.runHooks('hiddenColumn', column);
-  }
-}, {});
-;
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52}],122:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  ExportFile: {get: function() {
-      return ExportFile;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_plugins_47__95_base__,
-    $__handsontable_47_helpers_47_object__,
-    $__handsontable_47_plugins__,
-    $__dataProvider__,
-    $__typeFactory__;
-var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
-var $__1 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
-    objectEach = $__1.objectEach,
-    extend = $__1.extend,
-    clone = $__1.clone;
-var registerPlugin = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}).registerPlugin;
-var DataProvider = ($__dataProvider__ = _dereq_("dataProvider"), $__dataProvider__ && $__dataProvider__.__esModule && $__dataProvider__ || {default: $__dataProvider__}).DataProvider;
-var $__4 = ($__typeFactory__ = _dereq_("typeFactory"), $__typeFactory__ && $__typeFactory__.__esModule && $__typeFactory__ || {default: $__typeFactory__}),
-    typeFactory = $__4.typeFactory,
-    EXPORT_TYPES = $__4.EXPORT_TYPES;
-var ExportFile = function ExportFile(hotInstance) {
-  $traceurRuntime.superConstructor($ExportFile).call(this, hotInstance);
-};
-var $ExportFile = ExportFile;
-($traceurRuntime.createClass)(ExportFile, {
-  isEnabled: function() {
-    return true;
-  },
-  exportAsString: function(format) {
-    var options = arguments[1] !== (void 0) ? arguments[1] : {};
-    return this._createTypeFormatter(format, options).export();
-  },
-  exportAsBlob: function(format) {
-    var options = arguments[1] !== (void 0) ? arguments[1] : {};
-    return this._createBlob(this._createTypeFormatter(format, options));
-  },
-  downloadFile: function(format) {
-    var options = arguments[1] !== (void 0) ? arguments[1] : {};
-    var formatter = this._createTypeFormatter(format, options);
-    var blob = this._createBlob(formatter);
-    var URL = (window.URL || window.webkitURL);
-    var a = document.createElement('a');
-    var name = (formatter.options.filename + "." + formatter.options.fileExtension);
-    if (a.download !== void 0) {
-      var url = URL.createObjectURL(blob);
-      a.style.display = 'none';
-      a.setAttribute('href', url);
-      a.setAttribute('download', name);
-      document.body.appendChild(a);
-      a.dispatchEvent(new MouseEvent('click'));
-      document.body.removeChild(a);
-      setTimeout(function() {
-        URL.revokeObjectURL(url);
-      }, 100);
-    } else if (navigator.msSaveOrOpenBlob) {
-      navigator.msSaveOrOpenBlob(blob, name);
-    }
-  },
-  _createTypeFormatter: function(format) {
-    var options = arguments[1] !== (void 0) ? arguments[1] : {};
-    if (!EXPORT_TYPES[format]) {
-      throw new Error(("Export format type \"" + format + "\" is not supported."));
-    }
-    return typeFactory(format, new DataProvider(this.hot), options);
-  },
-  _createBlob: function(typeFormatter) {
-    var formatter = null;
-    if (typeof Blob !== 'undefined') {
-      formatter = new Blob([typeFormatter.export()], {type: (typeFormatter.options.mimeType + ";charset=" + typeFormatter.options.encoding)});
-    }
-    return formatter;
-  }
-}, {}, BasePlugin);
-;
-registerPlugin('exportFile', ExportFile);
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":62,"dataProvider":121,"typeFactory":123}],123:[function(_dereq_,module,exports){
-"use strict";
-var $__1;
-Object.defineProperties(exports, {
-  TYPE_CSV: {get: function() {
-      return TYPE_CSV;
-    }},
-  TYPE_EXCEL: {get: function() {
-      return TYPE_EXCEL;
-    }},
-  TYPE_PDF: {get: function() {
-      return TYPE_PDF;
-    }},
-  EXPORT_TYPES: {get: function() {
-      return EXPORT_TYPES;
-    }},
-  typeFactory: {get: function() {
-      return typeFactory;
-    }},
-  __esModule: {value: true}
-});
-var $__types_47_csv_46_js__;
-var Csv = ($__types_47_csv_46_js__ = _dereq_("types/csv.js"), $__types_47_csv_46_js__ && $__types_47_csv_46_js__.__esModule && $__types_47_csv_46_js__ || {default: $__types_47_csv_46_js__}).Csv;
-var TYPE_CSV = 'csv';
-var TYPE_EXCEL = 'excel';
-var TYPE_PDF = 'pdf';
-var EXPORT_TYPES = ($__1 = {}, Object.defineProperty($__1, TYPE_CSV, {
-  value: Csv,
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), $__1);
-function typeFactory(type, dataProvider, options) {
-  if (typeof EXPORT_TYPES[type] === 'function') {
-    return new EXPORT_TYPES[type](dataProvider, options);
-  }
-  return null;
-}
-
-//# 
-},{"types/csv.js":125}],124:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  BaseType: {get: function() {
-      return BaseType;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_helpers_47_object__,
-    $__handsontable_47_helpers_47_number__,
-    $__handsontable_47_helpers_47_string__;
-var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
-var $__1 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
-    extend = $__1.extend,
-    clone = $__1.clone;
-var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
-var $__3 = ($__handsontable_47_helpers_47_string__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string"), $__handsontable_47_helpers_47_string__ && $__handsontable_47_helpers_47_string__.__esModule && $__handsontable_47_helpers_47_string__ || {default: $__handsontable_47_helpers_47_string__}),
-    substitute = $__3.substitute,
-    padStart = $__3.padStart;
-var BaseType = function BaseType(dataProvider, options) {
-  this.dataProvider = dataProvider;
-  this.options = this._mergeOptions(options);
-  this.dataProvider.setOptions(this.options);
-};
-var $BaseType = BaseType;
-($traceurRuntime.createClass)(BaseType, {_mergeOptions: function(options) {
-    var _options = clone(this.constructor.DEFAULT_OPTIONS);
-    var date = new Date();
-    _options = extend(clone($BaseType.DEFAULT_OPTIONS), _options);
-    _options = extend(_options, options);
-    _options.filename = substitute(_options.filename, {
-      YYYY: date.getFullYear(),
-      MM: padStart(date.getMonth() + 1, 2, '0'),
-      DD: padStart(date.getDate(), 2, '0')
-    });
-    return _options;
-  }}, {get DEFAULT_OPTIONS() {
-    return {
-      mimeType: 'text/plain',
-      fileExtension: 'txt',
-      filename: 'Handsontable [YYYY]-[MM]-[DD]',
-      encoding: 'utf-8',
-      columnHeaders: false,
-      rowHeaders: false,
-      exportHiddenColumns: false,
-      exportHiddenRows: false,
-      range: []
-    };
-  }});
-;
-
-//# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":54}],125:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  Csv: {get: function() {
-      return Csv;
-    }},
-  __esModule: {value: true}
-});
-var $___95_base_46_js__,
-    $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_helpers_47_mixed__;
-var BaseType = ($___95_base_46_js__ = _dereq_("_base.js"), $___95_base_46_js__ && $___95_base_46_js__.__esModule && $___95_base_46_js__ || {default: $___95_base_46_js__}).BaseType;
-var $__1 = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
-    arrayEach = $__1.arrayEach,
-    arrayMap = $__1.arrayMap;
-var stringify = ($__handsontable_47_helpers_47_mixed__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed"), $__handsontable_47_helpers_47_mixed__ && $__handsontable_47_helpers_47_mixed__.__esModule && $__handsontable_47_helpers_47_mixed__ || {default: $__handsontable_47_helpers_47_mixed__}).stringify;
-var CHAR_CARRIAGE_RETURN = String.fromCharCode(13);
-var CHAR_DOUBLE_QUOTES = String.fromCharCode(34);
-var CHAR_LINE_FEED = String.fromCharCode(10);
-var Csv = function Csv(dataProvider, options) {
-  $traceurRuntime.superConstructor($Csv).call(this, dataProvider, options);
-};
-var $Csv = Csv;
-($traceurRuntime.createClass)(Csv, {
-  export: function() {
-    var $__3 = this;
-    var options = this.options;
-    var data = this.dataProvider.getData();
-    var columnHeaders = this.dataProvider.getColumnHeaders();
-    var hasColumnHeaders = columnHeaders.length > 0;
-    var rowHeaders = this.dataProvider.getRowHeaders();
-    var hasRowHeaders = rowHeaders.length > 0;
-    var result = '\ufeff';
-    if (hasColumnHeaders) {
-      columnHeaders = arrayMap(columnHeaders, (function(value) {
-        return $__3._escapeCell(value, true);
-      }));
-      if (hasRowHeaders) {
-        result += options.columnDelimiter;
-      }
-      result += columnHeaders.join(options.columnDelimiter);
-      result += options.rowDelimiter;
-    }
-    arrayEach(data, (function(value, index) {
-      if (index > 0) {
-        result += options.rowDelimiter;
-      }
-      if (hasRowHeaders) {
-        result += $__3._escapeCell(rowHeaders[index]) + options.columnDelimiter;
-      }
-      result += value.map((function(value) {
-        return $__3._escapeCell(value);
-      })).join(options.columnDelimiter);
-    }));
-    return result;
-  },
-  _escapeCell: function(value) {
-    var force = arguments[1] !== (void 0) ? arguments[1] : false;
-    value = stringify(value);
-    if (value !== '' && (force || value.indexOf(CHAR_CARRIAGE_RETURN) >= 0 || value.indexOf(CHAR_DOUBLE_QUOTES) >= 0 || value.indexOf(CHAR_LINE_FEED) >= 0 || value.indexOf(this.options.columnDelimiter) >= 0)) {
-      value = value.replace(new RegExp('"', 'g'), '""');
-      value = ("\"" + value + "\"");
-    }
-    return value;
-  }
-}, {get DEFAULT_OPTIONS() {
-    return {
-      mimeType: 'text/csv',
-      fileExtension: 'csv',
-      columnDelimiter: ',',
-      rowDelimiter: '\r\n'
-    };
-  }}, BaseType);
-;
-
-//# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":50,"_base.js":124}],126:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  BaseComponent: {get: function() {
-      return BaseComponent;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_helpers_47_object__,
-    $__handsontable_47_mixins_47_localHooks__,
-    $__handsontable_47_mixins_47_stateSaver__;
-var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
-var mixin = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).mixin;
-var localHooks = ($__handsontable_47_mixins_47_localHooks__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks"), $__handsontable_47_mixins_47_localHooks__ && $__handsontable_47_mixins_47_localHooks__.__esModule && $__handsontable_47_mixins_47_localHooks__ || {default: $__handsontable_47_mixins_47_localHooks__}).localHooks;
-var stateSaver = ($__handsontable_47_mixins_47_stateSaver__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/stateSaver"), $__handsontable_47_mixins_47_stateSaver__ && $__handsontable_47_mixins_47_stateSaver__.__esModule && $__handsontable_47_mixins_47_stateSaver__ || {default: $__handsontable_47_mixins_47_stateSaver__}).stateSaver;
-var BaseComponent = function BaseComponent(hotInstance) {
-  this.hot = hotInstance;
-  this.elements = [];
-  this.hidden = false;
-};
-($traceurRuntime.createClass)(BaseComponent, {
-  reset: function() {
-    arrayEach(this.elements, (function(ui) {
-      return ui.reset();
-    }));
-  },
-  hide: function() {
-    this.hidden = true;
-  },
-  show: function() {
-    this.hidden = false;
-  },
-  isHidden: function() {
-    return this.hidden;
-  },
-  destroy: function() {
-    this.clearLocalHooks();
-    arrayEach(this.elements, (function(ui) {
-      return ui.destroy();
-    }));
-    this.elements = null;
-    this.hot = null;
-  }
-}, {});
-mixin(BaseComponent, localHooks);
-mixin(BaseComponent, stateSaver);
-;
-
-//# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":57,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/stateSaver":58}],127:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  ActionBarComponent: {get: function() {
-      return ActionBarComponent;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_dom_47_element__,
-    $__handsontable_47_helpers_47_array__,
-    $___95_base__,
-    $___46__46__47_ui_47_input__,
-    $___46__46__47_ui_47_select__;
-var addClass = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).addClass;
-var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
-var BaseComponent = ($___95_base__ = _dereq_("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseComponent;
-var InputUI = ($___46__46__47_ui_47_input__ = _dereq_("ui/input"), $___46__46__47_ui_47_input__ && $___46__46__47_ui_47_input__.__esModule && $___46__46__47_ui_47_input__ || {default: $___46__46__47_ui_47_input__}).InputUI;
-var SelectUI = ($___46__46__47_ui_47_select__ = _dereq_("ui/select"), $___46__46__47_ui_47_select__ && $___46__46__47_ui_47_select__.__esModule && $___46__46__47_ui_47_select__ || {default: $___46__46__47_ui_47_select__}).SelectUI;
-var ActionBarComponent = function ActionBarComponent(hotInstance) {
-  $traceurRuntime.superConstructor($ActionBarComponent).call(this, hotInstance);
-  this.elements.push(new InputUI(this.hot, {
-    type: 'button',
-    value: 'OK',
-    className: 'htUIButton htUIButtonOK',
-    identifier: $ActionBarComponent.BUTTON_OK
-  }));
-  this.elements.push(new InputUI(this.hot, {
-    type: 'button',
-    value: 'Cancel',
-    className: 'htUIButton htUIButtonCancel',
-    identifier: $ActionBarComponent.BUTTON_CANCEL
-  }));
-  this.registerHooks();
-};
-var $ActionBarComponent = ActionBarComponent;
-($traceurRuntime.createClass)(ActionBarComponent, {
-  registerHooks: function() {
-    var $__5 = this;
-    arrayEach(this.elements, (function(element) {
-      element.addLocalHook('click', (function(event, button) {
-        return $__5.onButtonClick(event, button);
-      }));
-    }));
-  },
-  getMenuItemDescriptor: function() {
-    var $__5 = this;
-    return {
-      key: 'filter_action_bar',
-      name: 'Action bar',
-      isCommand: false,
-      disableSelection: true,
-      hidden: (function() {
-        return $__5.isHidden();
-      }),
-      renderer: (function(hot, wrapper, row, col, prop, value) {
-        addClass(wrapper.parentNode, 'htFiltersMenuActionBar');
-        arrayEach($__5.elements, (function(ui) {
-          return wrapper.appendChild(ui.element);
-        }));
-        return wrapper;
-      })
-    };
-  },
-  accept: function() {
-    this.runLocalHooks('accept');
-  },
-  cancel: function() {
-    this.runLocalHooks('cancel');
-  },
-  onButtonClick: function(event, button) {
-    if (button.options.identifier === $ActionBarComponent.BUTTON_OK) {
-      this.accept();
-    } else {
-      this.cancel();
-    }
-  }
-}, {
-  get BUTTON_OK() {
-    return 'ok';
-  },
-  get BUTTON_CANCEL() {
-    return 'cancel';
-  }
-}, BaseComponent);
-;
-
-//# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"_base":126,"ui/input":158,"ui/select":160}],128:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  ConditionComponent: {get: function() {
-      return ConditionComponent;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_dom_47_element__,
-    $__handsontable_47_helpers_47_dom_47_event__,
-    $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_helpers_47_object__,
-    $__handsontable_47_helpers_47_unicode__,
-    $___95_base__,
-    $___46__46__47_constants__,
-    $___46__46__47_ui_47_input__,
-    $___46__46__47_ui_47_select__,
-    $___46__46__47_formulaRegisterer__;
-var addClass = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).addClass;
-var stopImmediatePropagation = ($__handsontable_47_helpers_47_dom_47_event__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event"), $__handsontable_47_helpers_47_dom_47_event__ && $__handsontable_47_helpers_47_dom_47_event__.__esModule && $__handsontable_47_helpers_47_dom_47_event__ || {default: $__handsontable_47_helpers_47_dom_47_event__}).stopImmediatePropagation;
-var $__2 = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
-    arrayEach = $__2.arrayEach,
-    arrayFilter = $__2.arrayFilter;
-var extend = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).extend;
-var isKey = ($__handsontable_47_helpers_47_unicode__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode"), $__handsontable_47_helpers_47_unicode__ && $__handsontable_47_helpers_47_unicode__.__esModule && $__handsontable_47_helpers_47_unicode__ || {default: $__handsontable_47_helpers_47_unicode__}).isKey;
-var BaseComponent = ($___95_base__ = _dereq_("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseComponent;
-var $__6 = ($___46__46__47_constants__ = _dereq_("constants"), $___46__46__47_constants__ && $___46__46__47_constants__.__esModule && $___46__46__47_constants__ || {default: $___46__46__47_constants__}),
-    getOptionsList = $__6.getOptionsList,
-    FORMULA_NONE = $__6.FORMULA_NONE,
-    FORMULA_BY_VALUE = $__6.FORMULA_BY_VALUE;
-var InputUI = ($___46__46__47_ui_47_input__ = _dereq_("ui/input"), $___46__46__47_ui_47_input__ && $___46__46__47_ui_47_input__.__esModule && $___46__46__47_ui_47_input__ || {default: $___46__46__47_ui_47_input__}).InputUI;
-var SelectUI = ($___46__46__47_ui_47_select__ = _dereq_("ui/select"), $___46__46__47_ui_47_select__ && $___46__46__47_ui_47_select__.__esModule && $___46__46__47_ui_47_select__ || {default: $___46__46__47_ui_47_select__}).SelectUI;
-var getFormulaDescriptor = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).getFormulaDescriptor;
-var ConditionComponent = function ConditionComponent(hotInstance) {
-  $traceurRuntime.superConstructor($ConditionComponent).call(this, hotInstance);
-  this.elements.push(new SelectUI(this.hot));
-  this.elements.push(new InputUI(this.hot, {placeholder: 'Value'}));
-  this.elements.push(new InputUI(this.hot, {placeholder: 'Second value'}));
-  this.registerHooks();
-};
-var $ConditionComponent = ConditionComponent;
-($traceurRuntime.createClass)(ConditionComponent, {
-  registerHooks: function() {
-    var $__10 = this;
-    this.getSelectElement().addLocalHook('select', (function(command) {
-      return $__10.onConditionSelect(command);
-    }));
-    arrayEach(this.getInputElements(), (function(input) {
-      input.addLocalHook('keydown', (function(event) {
-        return $__10.onInputKeyDown(event);
-      }));
-    }));
-  },
-  setState: function(value) {
-    var $__10 = this;
-    this.reset();
-    if (value) {
-      this.getSelectElement().setValue(value.command);
-      arrayEach(value.args, (function(arg, index) {
-        var element = $__10.getInputElement(index);
-        element.setValue(arg);
-        element[value.command.inputsCount > index ? 'show' : 'hide']();
-        if (!index) {
-          setTimeout((function() {
-            return element.focus();
-          }), 10);
-        }
-      }));
-    }
-  },
-  getState: function() {
-    var command = this.getSelectElement().getValue() || getFormulaDescriptor(FORMULA_NONE);
-    var args = [];
-    arrayEach(this.getInputElements(), (function(element, index) {
-      if (command.inputsCount > index) {
-        args.push(element.getValue());
-      }
-    }));
-    return {
-      command: command,
-      args: args
-    };
-  },
-  updateState: function($__12) {
-    var $__13 = $__12,
-        column = $__13.column,
-        currentFormulas = $__13.formulas;
-    var formula = arrayFilter(currentFormulas, (function(formula) {
-      return formula.name !== FORMULA_BY_VALUE;
-    }))[0];
-    if (formula && formula.name === FORMULA_BY_VALUE) {
-      return;
-    }
-    this.setCachedState(column, {
-      command: formula ? getFormulaDescriptor(formula.name) : getFormulaDescriptor(FORMULA_NONE),
-      args: formula ? formula.args : []
-    });
-  },
-  getSelectElement: function() {
-    return this.elements.filter((function(element) {
-      return element instanceof SelectUI;
-    }))[0];
-  },
-  getInputElement: function() {
-    var index = arguments[0] !== (void 0) ? arguments[0] : 0;
-    return this.getInputElements()[index];
-  },
-  getInputElements: function() {
-    return this.elements.filter((function(element) {
-      return element instanceof InputUI;
-    }));
-  },
-  getMenuItemDescriptor: function() {
-    var $__10 = this;
-    return {
-      key: 'filter_by_condition',
-      name: '',
-      isCommand: false,
-      disableSelection: true,
-      hidden: (function() {
-        return $__10.isHidden();
-      }),
-      renderer: (function(hot, wrapper, row, col, prop, value) {
-        addClass(wrapper.parentNode, 'htFiltersMenuCondition');
-        var label = document.createElement('div');
-        addClass(label, 'htFiltersMenuLabel');
-        label.textContent = 'Filter by condition:';
-        wrapper.appendChild(label);
-        arrayEach($__10.elements, (function(ui) {
-          return wrapper.appendChild(ui.element);
-        }));
-        return wrapper;
-      })
-    };
-  },
-  reset: function() {
-    var lastSelectedColumn = this.hot.getPlugin('filters').getSelectedColumn();
-    var columnType = this.hot.getDataType.apply(this.hot, this.hot.getSelected() || [0, lastSelectedColumn]);
-    var items = getOptionsList(columnType);
-    arrayEach(this.getInputElements(), (function(element) {
-      return element.hide();
-    }));
-    this.getSelectElement().setItems(items);
-    $traceurRuntime.superGet(this, $ConditionComponent.prototype, "reset").call(this);
-    this.getSelectElement().setValue(items[0]);
-  },
-  onConditionSelect: function(command) {
-    arrayEach(this.getInputElements(), (function(element, index) {
-      element[command.inputsCount > index ? 'show' : 'hide']();
-      if (!index) {
-        setTimeout((function() {
-          return element.focus();
-        }), 10);
-      }
-    }));
-  },
-  onInputKeyDown: function(event) {
-    if (isKey(event.keyCode, 'ENTER')) {
-      this.runLocalHooks('accept');
-      stopImmediatePropagation(event);
-    } else if (isKey(event.keyCode, 'ESCAPE')) {
-      this.runLocalHooks('cancel');
-      stopImmediatePropagation(event);
-    }
-  }
-}, {}, BaseComponent);
-;
-
-//# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode":55,"_base":126,"constants":130,"formulaRegisterer":155,"ui/input":158,"ui/select":160}],129:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  ValueComponent: {get: function() {
-      return ValueComponent;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_dom_47_element__,
-    $__handsontable_47_helpers_47_dom_47_event__,
-    $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_helpers_47_string__,
-    $___46__46__47_utils__,
-    $___95_base__,
-    $__handsontable_47_helpers_47_unicode__,
-    $___46__46__47_ui_47_multipleSelect__,
-    $___46__46__47_constants__,
-    $___46__46__47_formulaRegisterer__;
-var addClass = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).addClass;
-var stopImmediatePropagation = ($__handsontable_47_helpers_47_dom_47_event__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event"), $__handsontable_47_helpers_47_dom_47_event__ && $__handsontable_47_helpers_47_dom_47_event__.__esModule && $__handsontable_47_helpers_47_dom_47_event__ || {default: $__handsontable_47_helpers_47_dom_47_event__}).stopImmediatePropagation;
-var $__2 = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
-    arrayEach = $__2.arrayEach,
-    arrayUnique = $__2.arrayUnique,
-    arrayFilter = $__2.arrayFilter,
-    arrayMap = $__2.arrayMap;
-var stringify = ($__handsontable_47_helpers_47_string__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string"), $__handsontable_47_helpers_47_string__ && $__handsontable_47_helpers_47_string__.__esModule && $__handsontable_47_helpers_47_string__ || {default: $__handsontable_47_helpers_47_string__}).stringify;
-var $__4 = ($___46__46__47_utils__ = _dereq_("utils"), $___46__46__47_utils__ && $___46__46__47_utils__.__esModule && $___46__46__47_utils__ || {default: $___46__46__47_utils__}),
-    unifyColumnValues = $__4.unifyColumnValues,
-    intersectValues = $__4.intersectValues;
-var BaseComponent = ($___95_base__ = _dereq_("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseComponent;
-var isKey = ($__handsontable_47_helpers_47_unicode__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode"), $__handsontable_47_helpers_47_unicode__ && $__handsontable_47_helpers_47_unicode__.__esModule && $__handsontable_47_helpers_47_unicode__ || {default: $__handsontable_47_helpers_47_unicode__}).isKey;
-var MultipleSelectUI = ($___46__46__47_ui_47_multipleSelect__ = _dereq_("ui/multipleSelect"), $___46__46__47_ui_47_multipleSelect__ && $___46__46__47_ui_47_multipleSelect__.__esModule && $___46__46__47_ui_47_multipleSelect__ || {default: $___46__46__47_ui_47_multipleSelect__}).MultipleSelectUI;
-var $__8 = ($___46__46__47_constants__ = _dereq_("constants"), $___46__46__47_constants__ && $___46__46__47_constants__.__esModule && $___46__46__47_constants__ || {default: $___46__46__47_constants__}),
-    FORMULA_BY_VALUE = $__8.FORMULA_BY_VALUE,
-    FORMULA_NONE = $__8.FORMULA_NONE;
-var getFormulaDescriptor = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).getFormulaDescriptor;
-var ValueComponent = function ValueComponent(hotInstance) {
-  $traceurRuntime.superConstructor($ValueComponent).call(this, hotInstance);
-  this.elements.push(new MultipleSelectUI(this.hot));
-  this.registerHooks();
-};
-var $ValueComponent = ValueComponent;
-($traceurRuntime.createClass)(ValueComponent, {
-  registerHooks: function() {
-    var $__10 = this;
-    this.getMultipleSelectElement().addLocalHook('keydown', (function(event) {
-      return $__10.onInputKeyDown(event);
-    }));
-  },
-  setState: function(value) {
-    this.reset();
-    if (value && value.command.key === FORMULA_BY_VALUE) {
-      var select = this.getMultipleSelectElement();
-      select.setItems(value.itemsSnapshot);
-      select.setValue(value.args[0]);
-    }
-  },
-  getState: function() {
-    var select = this.getMultipleSelectElement();
-    var availableItems = select.getItems();
-    return {
-      command: {key: select.isSelectedAllValues() || !availableItems.length ? FORMULA_NONE : FORMULA_BY_VALUE},
-      args: [select.getValue()],
-      itemsSnapshot: availableItems
-    };
-  },
-  updateState: function(editedFormulaStack, dependentFormulaStacks, filteredRowsFactory) {
-    var $__10 = this;
-    var $__12 = editedFormulaStack,
-        column = $__12.column,
-        formulas = $__12.formulas;
-    var updateColumnState = (function(column, formulas, formulasStack) {
-      var formula = arrayFilter(formulas, (function(formula) {
-        return formula.name === FORMULA_BY_VALUE;
-      }))[0];
-      var state = {};
-      if (formula) {
-        var rowValues = arrayMap(filteredRowsFactory(column, formulasStack), (function(row) {
-          return row.value;
-        }));
-        rowValues = unifyColumnValues(rowValues);
-        var selectedValues = [];
-        var itemsSnapshot = intersectValues(rowValues, formula.args[0], (function(item) {
-          if (item.checked) {
-            selectedValues.push(item.value);
-          }
-        }));
-        state.args = [selectedValues];
-        state.command = getFormulaDescriptor(FORMULA_BY_VALUE);
-        state.itemsSnapshot = itemsSnapshot;
-      } else {
-        state.args = [];
-        state.command = getFormulaDescriptor(FORMULA_NONE);
-      }
-      $__10.setCachedState(column, state);
-    });
-    updateColumnState(column, formulas);
-    if (dependentFormulaStacks.length) {
-      var $__13 = dependentFormulaStacks[0],
-          column$__14 = $__13.column,
-          formulas$__15 = $__13.formulas;
-      updateColumnState(column$__14, formulas$__15, editedFormulaStack);
-    }
-  },
-  getMultipleSelectElement: function() {
-    return this.elements.filter((function(element) {
-      return element instanceof MultipleSelectUI;
-    }))[0];
-  },
-  getMenuItemDescriptor: function() {
-    var $__10 = this;
-    return {
-      key: 'filter_by_value',
-      name: 'Filter by value',
-      isCommand: false,
-      disableSelection: true,
-      hidden: (function() {
-        return $__10.isHidden();
-      }),
-      renderer: (function(hot, wrapper, row, col, prop, value) {
-        addClass(wrapper.parentNode, 'htFiltersMenuValue');
-        var label = document.createElement('div');
-        addClass(label, 'htFiltersMenuLabel');
-        label.textContent = 'Filter by value:';
-        wrapper.appendChild(label);
-        arrayEach($__10.elements, (function(ui) {
-          return wrapper.appendChild(ui.element);
-        }));
-        return wrapper;
-      })
-    };
-  },
-  reset: function() {
-    var values = this._getColumnVisibleValues();
-    values = unifyColumnValues(values);
-    this.getMultipleSelectElement().setItems(intersectValues(values, values));
-    $traceurRuntime.superGet(this, $ValueComponent.prototype, "reset").call(this);
-    this.getMultipleSelectElement().setValue(values);
-  },
-  onInputKeyDown: function(event) {
-    if (isKey(event.keyCode, 'ESCAPE')) {
-      this.runLocalHooks('cancel');
-      stopImmediatePropagation(event);
-    }
-  },
-  _getColumnVisibleValues: function() {
-    var lastSelectedColumn = this.hot.getPlugin('filters').getSelectedColumn();
-    return this.hot.getDataAtCol(lastSelectedColumn);
-  }
-}, {}, BaseComponent);
-;
-
-//# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":54,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode":55,"_base":126,"constants":130,"formulaRegisterer":155,"ui/multipleSelect":159,"utils":161}],130:[function(_dereq_,module,exports){
-"use strict";
-var $__25;
-Object.defineProperties(exports, {
-  FORMULA_NONE: {get: function() {
-      return FORMULA_NONE;
-    }},
-  FORMULA_EMPTY: {get: function() {
-      return FORMULA_EMPTY;
-    }},
-  FORMULA_NOT_EMPTY: {get: function() {
-      return FORMULA_NOT_EMPTY;
-    }},
-  FORMULA_EQUAL: {get: function() {
-      return FORMULA_EQUAL;
-    }},
-  FORMULA_NOT_EQUAL: {get: function() {
-      return FORMULA_NOT_EQUAL;
-    }},
-  FORMULA_GREATER_THAN: {get: function() {
-      return FORMULA_GREATER_THAN;
-    }},
-  FORMULA_GREATER_THAN_OR_EQUAL: {get: function() {
-      return FORMULA_GREATER_THAN_OR_EQUAL;
-    }},
-  FORMULA_LESS_THAN: {get: function() {
-      return FORMULA_LESS_THAN;
-    }},
-  FORMULA_LESS_THAN_OR_EQUAL: {get: function() {
-      return FORMULA_LESS_THAN_OR_EQUAL;
-    }},
-  FORMULA_BETWEEN: {get: function() {
-      return FORMULA_BETWEEN;
-    }},
-  FORMULA_NOT_BETWEEN: {get: function() {
-      return FORMULA_NOT_BETWEEN;
-    }},
-  FORMULA_BEGINS_WITH: {get: function() {
-      return FORMULA_BEGINS_WITH;
-    }},
-  FORMULA_ENDS_WITH: {get: function() {
-      return FORMULA_ENDS_WITH;
-    }},
-  FORMULA_CONTAINS: {get: function() {
-      return FORMULA_CONTAINS;
-    }},
-  FORMULA_NOT_CONTAINS: {get: function() {
-      return FORMULA_NOT_CONTAINS;
-    }},
-  FORMULA_DATE_BEFORE: {get: function() {
-      return FORMULA_DATE_BEFORE;
-    }},
-  FORMULA_DATE_AFTER: {get: function() {
-      return FORMULA_DATE_AFTER;
-    }},
-  FORMULA_TOMORROW: {get: function() {
-      return FORMULA_TOMORROW;
-    }},
-  FORMULA_TODAY: {get: function() {
-      return FORMULA_TODAY;
-    }},
-  FORMULA_YESTERDAY: {get: function() {
-      return FORMULA_YESTERDAY;
-    }},
-  FORMULA_BY_VALUE: {get: function() {
-      return FORMULA_BY_VALUE;
-    }},
-  TYPE_NUMERIC: {get: function() {
-      return TYPE_NUMERIC;
-    }},
-  TYPE_TEXT: {get: function() {
-      return TYPE_TEXT;
-    }},
-  TYPE_DATE: {get: function() {
-      return TYPE_DATE;
-    }},
-  TYPES: {get: function() {
-      return TYPES;
-    }},
-  getOptionsList: {get: function() {
-      return getOptionsList;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_object__,
-    $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__,
-    $__formulaRegisterer__,
-    $__formula_47_none__,
-    $__formula_47_empty__,
-    $__formula_47_notEmpty__,
-    $__formula_47_equal__,
-    $__formula_47_notEqual__,
-    $__formula_47_greaterThan__,
-    $__formula_47_greaterThanOrEqual__,
-    $__formula_47_lessThan__,
-    $__formula_47_lessThanOrEqual__,
-    $__formula_47_between__,
-    $__formula_47_notBetween__,
-    $__formula_47_beginsWith__,
-    $__formula_47_endsWith__,
-    $__formula_47_contains__,
-    $__formula_47_notContains__,
-    $__formula_47_date_47_before__,
-    $__formula_47_date_47_after__,
-    $__formula_47_date_47_tomorrow__,
-    $__formula_47_date_47_today__,
-    $__formula_47_date_47_yesterday__,
-    $__formula_47_byValue__;
-var clone = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).clone;
-var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
-var SEPARATOR = ($__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems"), $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ || {default: $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__}).SEPARATOR;
-var getFormulaDescriptor = ($__formulaRegisterer__ = _dereq_("formulaRegisterer"), $__formulaRegisterer__ && $__formulaRegisterer__.__esModule && $__formulaRegisterer__ || {default: $__formulaRegisterer__}).getFormulaDescriptor;
-var FORMULA_NONE = ($__formula_47_none__ = _dereq_("formula/none"), $__formula_47_none__ && $__formula_47_none__.__esModule && $__formula_47_none__ || {default: $__formula_47_none__}).FORMULA_NAME;
-var FORMULA_EMPTY = ($__formula_47_empty__ = _dereq_("formula/empty"), $__formula_47_empty__ && $__formula_47_empty__.__esModule && $__formula_47_empty__ || {default: $__formula_47_empty__}).FORMULA_NAME;
-var FORMULA_NOT_EMPTY = ($__formula_47_notEmpty__ = _dereq_("formula/notEmpty"), $__formula_47_notEmpty__ && $__formula_47_notEmpty__.__esModule && $__formula_47_notEmpty__ || {default: $__formula_47_notEmpty__}).FORMULA_NAME;
-var FORMULA_EQUAL = ($__formula_47_equal__ = _dereq_("formula/equal"), $__formula_47_equal__ && $__formula_47_equal__.__esModule && $__formula_47_equal__ || {default: $__formula_47_equal__}).FORMULA_NAME;
-var FORMULA_NOT_EQUAL = ($__formula_47_notEqual__ = _dereq_("formula/notEqual"), $__formula_47_notEqual__ && $__formula_47_notEqual__.__esModule && $__formula_47_notEqual__ || {default: $__formula_47_notEqual__}).FORMULA_NAME;
-var FORMULA_GREATER_THAN = ($__formula_47_greaterThan__ = _dereq_("formula/greaterThan"), $__formula_47_greaterThan__ && $__formula_47_greaterThan__.__esModule && $__formula_47_greaterThan__ || {default: $__formula_47_greaterThan__}).FORMULA_NAME;
-var FORMULA_GREATER_THAN_OR_EQUAL = ($__formula_47_greaterThanOrEqual__ = _dereq_("formula/greaterThanOrEqual"), $__formula_47_greaterThanOrEqual__ && $__formula_47_greaterThanOrEqual__.__esModule && $__formula_47_greaterThanOrEqual__ || {default: $__formula_47_greaterThanOrEqual__}).FORMULA_NAME;
-var FORMULA_LESS_THAN = ($__formula_47_lessThan__ = _dereq_("formula/lessThan"), $__formula_47_lessThan__ && $__formula_47_lessThan__.__esModule && $__formula_47_lessThan__ || {default: $__formula_47_lessThan__}).FORMULA_NAME;
-var FORMULA_LESS_THAN_OR_EQUAL = ($__formula_47_lessThanOrEqual__ = _dereq_("formula/lessThanOrEqual"), $__formula_47_lessThanOrEqual__ && $__formula_47_lessThanOrEqual__.__esModule && $__formula_47_lessThanOrEqual__ || {default: $__formula_47_lessThanOrEqual__}).FORMULA_NAME;
-var FORMULA_BETWEEN = ($__formula_47_between__ = _dereq_("formula/between"), $__formula_47_between__ && $__formula_47_between__.__esModule && $__formula_47_between__ || {default: $__formula_47_between__}).FORMULA_NAME;
-var FORMULA_NOT_BETWEEN = ($__formula_47_notBetween__ = _dereq_("formula/notBetween"), $__formula_47_notBetween__ && $__formula_47_notBetween__.__esModule && $__formula_47_notBetween__ || {default: $__formula_47_notBetween__}).FORMULA_NAME;
-var FORMULA_BEGINS_WITH = ($__formula_47_beginsWith__ = _dereq_("formula/beginsWith"), $__formula_47_beginsWith__ && $__formula_47_beginsWith__.__esModule && $__formula_47_beginsWith__ || {default: $__formula_47_beginsWith__}).FORMULA_NAME;
-var FORMULA_ENDS_WITH = ($__formula_47_endsWith__ = _dereq_("formula/endsWith"), $__formula_47_endsWith__ && $__formula_47_endsWith__.__esModule && $__formula_47_endsWith__ || {default: $__formula_47_endsWith__}).FORMULA_NAME;
-var FORMULA_CONTAINS = ($__formula_47_contains__ = _dereq_("formula/contains"), $__formula_47_contains__ && $__formula_47_contains__.__esModule && $__formula_47_contains__ || {default: $__formula_47_contains__}).FORMULA_NAME;
-var FORMULA_NOT_CONTAINS = ($__formula_47_notContains__ = _dereq_("formula/notContains"), $__formula_47_notContains__ && $__formula_47_notContains__.__esModule && $__formula_47_notContains__ || {default: $__formula_47_notContains__}).FORMULA_NAME;
-var FORMULA_DATE_BEFORE = ($__formula_47_date_47_before__ = _dereq_("formula/date/before"), $__formula_47_date_47_before__ && $__formula_47_date_47_before__.__esModule && $__formula_47_date_47_before__ || {default: $__formula_47_date_47_before__}).FORMULA_NAME;
-var FORMULA_DATE_AFTER = ($__formula_47_date_47_after__ = _dereq_("formula/date/after"), $__formula_47_date_47_after__ && $__formula_47_date_47_after__.__esModule && $__formula_47_date_47_after__ || {default: $__formula_47_date_47_after__}).FORMULA_NAME;
-var FORMULA_TOMORROW = ($__formula_47_date_47_tomorrow__ = _dereq_("formula/date/tomorrow"), $__formula_47_date_47_tomorrow__ && $__formula_47_date_47_tomorrow__.__esModule && $__formula_47_date_47_tomorrow__ || {default: $__formula_47_date_47_tomorrow__}).FORMULA_NAME;
-var FORMULA_TODAY = ($__formula_47_date_47_today__ = _dereq_("formula/date/today"), $__formula_47_date_47_today__ && $__formula_47_date_47_today__.__esModule && $__formula_47_date_47_today__ || {default: $__formula_47_date_47_today__}).FORMULA_NAME;
-var FORMULA_YESTERDAY = ($__formula_47_date_47_yesterday__ = _dereq_("formula/date/yesterday"), $__formula_47_date_47_yesterday__ && $__formula_47_date_47_yesterday__.__esModule && $__formula_47_date_47_yesterday__ || {default: $__formula_47_date_47_yesterday__}).FORMULA_NAME;
-var FORMULA_BY_VALUE = ($__formula_47_byValue__ = _dereq_("formula/byValue"), $__formula_47_byValue__ && $__formula_47_byValue__.__esModule && $__formula_47_byValue__ || {default: $__formula_47_byValue__}).FORMULA_NAME;
-;
-var TYPE_NUMERIC = 'numeric';
-var TYPE_TEXT = 'text';
-var TYPE_DATE = 'date';
-var TYPES = ($__25 = {}, Object.defineProperty($__25, TYPE_NUMERIC, {
-  value: [FORMULA_NONE, SEPARATOR, FORMULA_EMPTY, FORMULA_NOT_EMPTY, SEPARATOR, FORMULA_EQUAL, FORMULA_NOT_EQUAL, SEPARATOR, FORMULA_GREATER_THAN, FORMULA_GREATER_THAN_OR_EQUAL, FORMULA_LESS_THAN, FORMULA_LESS_THAN_OR_EQUAL, FORMULA_BETWEEN, FORMULA_NOT_BETWEEN],
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, TYPE_TEXT, {
-  value: [FORMULA_NONE, SEPARATOR, FORMULA_EMPTY, FORMULA_NOT_EMPTY, SEPARATOR, FORMULA_EQUAL, FORMULA_NOT_EQUAL, SEPARATOR, FORMULA_BEGINS_WITH, FORMULA_ENDS_WITH, SEPARATOR, FORMULA_CONTAINS, FORMULA_NOT_CONTAINS],
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), Object.defineProperty($__25, TYPE_DATE, {
-  value: [FORMULA_NONE, SEPARATOR, FORMULA_EMPTY, FORMULA_NOT_EMPTY, SEPARATOR, FORMULA_EQUAL, FORMULA_NOT_EQUAL, SEPARATOR, FORMULA_DATE_BEFORE, FORMULA_DATE_AFTER, FORMULA_BETWEEN, SEPARATOR, FORMULA_TOMORROW, FORMULA_TODAY, FORMULA_YESTERDAY],
-  configurable: true,
-  enumerable: true,
-  writable: true
-}), $__25);
-function getOptionsList(type) {
-  var items = [];
-  if (!TYPES[type]) {
-    type = TYPE_TEXT;
-  }
-  arrayEach(TYPES[type], (function(type) {
-    var option;
-    if (type === SEPARATOR) {
-      option = {name: SEPARATOR};
-    } else {
-      option = clone(getFormulaDescriptor(type));
-    }
-    items.push(option);
-  }));
-  return items;
-}
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":74,"formula/beginsWith":133,"formula/between":134,"formula/byValue":135,"formula/contains":136,"formula/date/after":137,"formula/date/before":138,"formula/date/today":139,"formula/date/tomorrow":140,"formula/date/yesterday":141,"formula/empty":142,"formula/endsWith":143,"formula/equal":144,"formula/greaterThan":145,"formula/greaterThanOrEqual":146,"formula/lessThan":147,"formula/lessThanOrEqual":148,"formula/none":149,"formula/notBetween":150,"formula/notContains":151,"formula/notEmpty":152,"formula/notEqual":153,"formulaRegisterer":155}],131:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  DataFilter: {get: function() {
-      return DataFilter;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47__46__46__47_browser__,
-    $__handsontable_47_helpers_47_array__;
-var Handsontable = ($___46__46__47__46__46__47_browser__ = _dereq_("../../browser"), $___46__46__47__46__46__47_browser__ && $___46__46__47__46__46__47_browser__.__esModule && $___46__46__47__46__46__47_browser__ || {default: $___46__46__47__46__46__47_browser__}).default;
-var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
-var DataFilter = function DataFilter(formulaCollection) {
-  var columnDataFactory = arguments[1] !== (void 0) ? arguments[1] : (function(column) {
-    return [];
-  });
-  this.formulaCollection = formulaCollection;
-  this.columnDataFactory = columnDataFactory;
-};
-($traceurRuntime.createClass)(DataFilter, {
-  filter: function() {
-    var $__2 = this;
-    var filteredData = [];
-    if (!this.formulaCollection.isEmpty()) {
-      arrayEach(this.formulaCollection.orderStack, (function(column, index) {
-        var columnData = $__2.columnDataFactory(column);
-        if (index) {
-          columnData = $__2._getIntersectData(columnData, filteredData);
-        }
-        filteredData = $__2.filterByColumn(column, columnData);
-      }));
-    }
-    return filteredData;
-  },
-  filterByColumn: function(column) {
-    var dataSource = arguments[1] !== (void 0) ? arguments[1] : [];
-    var $__2 = this;
-    var filteredData = [];
-    arrayEach(dataSource, (function(dataRow) {
-      if (dataRow !== void 0 && $__2.formulaCollection.isMatch(dataRow, column)) {
-        filteredData.push(dataRow);
-      }
-    }));
-    return filteredData;
-  },
-  _getIntersectData: function(data, needles) {
-    var result = [];
-    arrayEach(needles, (function(needleRow) {
-      var row = needleRow.meta.visualRow;
-      if (data[row] !== void 0) {
-        result[row] = data[row];
-      }
-    }));
-    return result;
-  }
-}, {});
-;
-Handsontable.utils.FiltersDataFilter = DataFilter;
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../browser":113}],132:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  Filters: {get: function() {
-      return Filters;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_plugins_47__95_base__,
-    $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_helpers_47_number__,
-    $__handsontable_47_eventManager__,
-    $__handsontable_47_helpers_47_dom_47_element__,
-    $__handsontable_47_plugins__,
-    $__component_47_condition__,
-    $__component_47_value__,
-    $__component_47_actionBar__,
-    $__formulaCollection__,
-    $__dataFilter__,
-    $__formulaUpdateObserver__,
-    $__formulaRegisterer__,
-    $__constants__,
-    $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__;
-var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
-var $__1 = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
-    arrayEach = $__1.arrayEach,
-    arrayMap = $__1.arrayMap;
-var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
-var EventManager = ($__handsontable_47_eventManager__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager"), $__handsontable_47_eventManager__ && $__handsontable_47_eventManager__.__esModule && $__handsontable_47_eventManager__ || {default: $__handsontable_47_eventManager__}).EventManager;
-var $__4 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
-    addClass = $__4.addClass,
-    removeClass = $__4.removeClass,
-    closest = $__4.closest;
-var registerPlugin = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}).registerPlugin;
-var ConditionComponent = ($__component_47_condition__ = _dereq_("component/condition"), $__component_47_condition__ && $__component_47_condition__.__esModule && $__component_47_condition__ || {default: $__component_47_condition__}).ConditionComponent;
-var ValueComponent = ($__component_47_value__ = _dereq_("component/value"), $__component_47_value__ && $__component_47_value__.__esModule && $__component_47_value__ || {default: $__component_47_value__}).ValueComponent;
-var ActionBarComponent = ($__component_47_actionBar__ = _dereq_("component/actionBar"), $__component_47_actionBar__ && $__component_47_actionBar__.__esModule && $__component_47_actionBar__ || {default: $__component_47_actionBar__}).ActionBarComponent;
-var FormulaCollection = ($__formulaCollection__ = _dereq_("formulaCollection"), $__formulaCollection__ && $__formulaCollection__.__esModule && $__formulaCollection__ || {default: $__formulaCollection__}).FormulaCollection;
-var DataFilter = ($__dataFilter__ = _dereq_("dataFilter"), $__dataFilter__ && $__dataFilter__.__esModule && $__dataFilter__ || {default: $__dataFilter__}).DataFilter;
-var FormulaUpdateObserver = ($__formulaUpdateObserver__ = _dereq_("formulaUpdateObserver"), $__formulaUpdateObserver__ && $__formulaUpdateObserver__.__esModule && $__formulaUpdateObserver__ || {default: $__formulaUpdateObserver__}).FormulaUpdateObserver;
-var getFormulaDescriptor = ($__formulaRegisterer__ = _dereq_("formulaRegisterer"), $__formulaRegisterer__ && $__formulaRegisterer__.__esModule && $__formulaRegisterer__ || {default: $__formulaRegisterer__}).getFormulaDescriptor;
-var FORMULA_NONE = ($__constants__ = _dereq_("constants"), $__constants__ && $__constants__.__esModule && $__constants__ || {default: $__constants__}).FORMULA_NONE;
-var SEPARATOR = ($__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems"), $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ || {default: $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__}).SEPARATOR;
-var Filters = function Filters(hotInstance) {
-  var $__15 = this;
-  $traceurRuntime.superConstructor($Filters).call(this, hotInstance);
-  this.eventManager = new EventManager(this);
-  this.trimRowsPlugin = null;
-  this.dropdownMenuPlugin = null;
-  this.formulaCollection = null;
-  this.formulaUpdateObserver = null;
-  this.conditionComponent = null;
-  this.valueComponent = null;
-  this.actionBarComponent = null;
-  this.lastSelectedColumn = null;
-  this.hot.addHook('afterGetColHeader', (function(col, TH) {
-    return $__15.onAfterGetColHeader(col, TH);
-  }));
-};
-var $Filters = Filters;
-($traceurRuntime.createClass)(Filters, {
-  isEnabled: function() {
-    return this.hot.getSettings().filters ? true : false;
-  },
-  enablePlugin: function() {
-    var $__15 = this;
-    if (this.enabled) {
-      return;
-    }
-    this.trimRowsPlugin = this.hot.getPlugin('trimRows');
-    this.dropdownMenuPlugin = this.hot.getPlugin('dropdownMenu');
-    var addConfirmationHooks = (function(component) {
-      component.addLocalHook('accept', (function() {
-        return $__15.onActionBarSubmit('accept');
-      }));
-      component.addLocalHook('cancel', (function() {
-        return $__15.onActionBarSubmit('cancel');
-      }));
-      return component;
-    });
-    if (!this.conditionComponent) {
-      this.conditionComponent = addConfirmationHooks(new ConditionComponent(this.hot));
-    }
-    if (!this.valueComponent) {
-      this.valueComponent = addConfirmationHooks(new ValueComponent(this.hot));
-    }
-    if (!this.actionBarComponent) {
-      this.actionBarComponent = addConfirmationHooks(new ActionBarComponent(this.hot));
-    }
-    if (!this.formulaCollection) {
-      this.formulaCollection = new FormulaCollection();
-    }
-    if (!this.formulaUpdateObserver) {
-      this.formulaUpdateObserver = new FormulaUpdateObserver(this.formulaCollection, (function(column) {
-        return $__15.getDataMapAtColumn(column);
-      }));
-      this.formulaUpdateObserver.addLocalHook('update', (function() {
-        var $__20;
-        for (var params = [],
-            $__17 = 0; $__17 < arguments.length; $__17++)
-          params[$__17] = arguments[$__17];
-        return ($__20 = $__15.conditionComponent).updateState.apply($__20, $traceurRuntime.spread(params));
-      }));
-      this.formulaUpdateObserver.addLocalHook('update', (function() {
-        var $__20;
-        for (var params = [],
-            $__18 = 0; $__18 < arguments.length; $__18++)
-          params[$__18] = arguments[$__18];
-        return ($__20 = $__15.valueComponent).updateState.apply($__20, $traceurRuntime.spread(params));
-      }));
-    }
-    this.conditionComponent.show();
-    this.valueComponent.show();
-    this.actionBarComponent.show();
-    this.registerEvents();
-    this.addHook('afterDropdownMenuDefaultOptions', (function(defaultOptions) {
-      return $__15.onAfterDropdownMenuDefaultOptions(defaultOptions);
-    }));
-    this.addHook('afterDropdownMenuShow', (function() {
-      return $__15.onAfterDropdownMenuShow();
-    }));
-    this.addHook('afterDropdownMenuHide', (function() {
-      return $__15.onAfterDropdownMenuHide();
-    }));
-    this.hot.getSettings().trimRows = true;
-    this.trimRowsPlugin.enablePlugin();
-    if (this.hot.getSettings().dropdownMenu) {
-      this.dropdownMenuPlugin.disablePlugin();
-      this.dropdownMenuPlugin.enablePlugin();
-    }
-    $traceurRuntime.superGet(this, $Filters.prototype, "enablePlugin").call(this);
-  },
-  registerEvents: function() {
-    var $__15 = this;
-    this.eventManager.addEventListener(this.hot.rootElement, 'click', (function(event) {
-      return $__15.onTableClick(event);
-    }));
-  },
-  disablePlugin: function() {
-    if (this.enabled) {
-      this.conditionComponent.hide();
-      this.valueComponent.hide();
-      this.actionBarComponent.hide();
-      this.formulaCollection.clean();
-      this.trimRowsPlugin.untrimAll();
-    }
-    $traceurRuntime.superGet(this, $Filters.prototype, "disablePlugin").call(this);
-  },
-  addFormula: function(column, name, args) {
-    this.formulaCollection.addFormula(column, {
-      command: {key: name},
-      args: args
-    });
-  },
-  removeFormulas: function(column) {
-    this.formulaCollection.removeFormulas(column);
-  },
-  clearFormulas: function(column) {
-    if (column === void 0) {
-      this.formulaCollection.clean();
-    } else {
-      this.formulaCollection.clearFormulas(column);
-    }
-  },
-  filter: function() {
-    var dataFilter = this._createDataFilter();
-    var needToFilter = !this.formulaCollection.isEmpty();
-    var filteredRows = [];
-    var formulas = this.formulaCollection.exportAllFormulas();
-    var allowFiltering = this.hot.runHooks('beforeFilter', formulas);
-    if (allowFiltering !== false) {
-      if (needToFilter) {
-        var trimmedRows = [];
-        this.trimRowsPlugin.trimmedRows.length = 0;
-        filteredRows = arrayMap(dataFilter.filter(), (function(rowData) {
-          return rowData.meta.visualRow;
-        }));
-        rangeEach(this.hot.countSourceRows() - 1, (function(row) {
-          if (filteredRows.indexOf(row) === -1) {
-            trimmedRows.push(row);
-          }
-        }));
-        this.trimRowsPlugin.trimRows(trimmedRows);
-        if (!filteredRows.length) {
-          this.hot.deselectCell();
-        }
-      } else {
-        this.trimRowsPlugin.untrimAll();
-      }
-    }
-    this.hot.view.wt.wtOverlays.adjustElementsSize(true);
-    this.hot.render();
-    this.clearColumnSelection();
-    this.hot.runHooks('afterFilter', formulas);
-  },
-  getSelectedColumn: function() {
-    return this.lastSelectedColumn;
-  },
-  clearColumnSelection: function() {
-    var $__19 = this.hot.getSelected() || [],
-        row = $__19[0],
-        col = $__19[1];
-    if (row !== void 0 && col !== void 0) {
-      this.hot.selectCell(row, col);
-    }
-  },
-  getDataMapAtColumn: function(column) {
-    var $__15 = this;
-    var data = [];
-    arrayEach(this.hot.getSourceDataAtCol(column), (function(value, rowIndex) {
-      var $__19 = $__15.hot.getCellMeta(rowIndex, column),
-          row = $__19.row,
-          col = $__19.col,
-          visualCol = $__19.visualCol,
-          visualRow = $__19.visualRow,
-          type = $__19.type,
-          instance = $__19.instance,
-          dateFormat = $__19.dateFormat;
-      data.push({
-        meta: {
-          row: row,
-          col: col,
-          visualCol: visualCol,
-          visualRow: visualRow,
-          type: type,
-          instance: instance,
-          dateFormat: dateFormat
-        },
-        value: value
-      });
-    }));
-    return data;
-  },
-  onAfterDropdownMenuShow: function() {
-    var column = this.getSelectedColumn();
-    this.conditionComponent.restoreState(column);
-    this.valueComponent.restoreState(column);
-  },
-  onAfterDropdownMenuHide: function() {
-    this.conditionComponent.getSelectElement().closeOptions();
-  },
-  onAfterDropdownMenuDefaultOptions: function(defaultOptions) {
-    defaultOptions.items.push({name: SEPARATOR});
-    defaultOptions.items.push(this.conditionComponent.getMenuItemDescriptor());
-    defaultOptions.items.push(this.valueComponent.getMenuItemDescriptor());
-    defaultOptions.items.push(this.actionBarComponent.getMenuItemDescriptor());
-  },
-  onActionBarSubmit: function(submitType) {
-    if (submitType === 'accept') {
-      var column = this.getSelectedColumn();
-      var byConditionState = this.conditionComponent.getState();
-      var byValueState = this.valueComponent.getState();
-      this.formulaUpdateObserver.groupChanges();
-      this.formulaCollection.clearFormulas(column);
-      if (byConditionState.command.key === FORMULA_NONE && byValueState.command.key === FORMULA_NONE) {
-        this.formulaCollection.removeFormulas(column);
-      }
-      if (byConditionState.command.key !== FORMULA_NONE) {
-        this.formulaCollection.addFormula(column, byConditionState);
-      }
-      if (byValueState.command.key !== FORMULA_NONE) {
-        this.formulaCollection.addFormula(column, byValueState);
-      }
-      this.formulaUpdateObserver.flush();
-      this.conditionComponent.saveState(column);
-      this.valueComponent.saveState(column);
-    }
-    this.dropdownMenuPlugin.close();
-    this.filter();
-  },
-  onAfterGetColHeader: function(col, TH) {
-    if (this.enabled && this.formulaCollection.hasFormulas(col)) {
-      addClass(TH, 'htFiltersActive');
-    } else {
-      removeClass(TH, 'htFiltersActive');
-    }
-  },
-  onTableClick: function(event) {
-    var th = closest(event.target, 'TH');
-    if (th) {
-      this.lastSelectedColumn = this.hot.getCoords(th).col;
-    }
-  },
-  destroy: function() {
-    if (this.enabled) {
-      this.conditionComponent.destroy();
-      this.valueComponent.destroy();
-      this.actionBarComponent.destroy();
-      this.formulaCollection.destroy();
-      this.formulaUpdateObserver.destroy();
-    }
-    $traceurRuntime.superGet(this, $Filters.prototype, "destroy").call(this);
-  },
-  _createDataFilter: function() {
-    var formulaCollection = arguments[0] !== (void 0) ? arguments[0] : this.formulaCollection;
-    var $__15 = this;
-    return new DataFilter(formulaCollection, (function(column) {
-      return $__15.getDataMapAtColumn(column);
-    }));
-  }
-}, {}, BasePlugin);
-;
-registerPlugin('filters', Filters);
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":41,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":74,"component/actionBar":127,"component/condition":128,"component/value":129,"constants":130,"dataFilter":131,"formulaCollection":154,"formulaRegisterer":155,"formulaUpdateObserver":156}],133:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47_formulaRegisterer__,
-    $__handsontable_47_helpers_47_string__,
-    $__handsontable_47_helpers_47_mixed__;
-var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
-var startsWith = ($__handsontable_47_helpers_47_string__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string"), $__handsontable_47_helpers_47_string__ && $__handsontable_47_helpers_47_string__.__esModule && $__handsontable_47_helpers_47_string__ || {default: $__handsontable_47_helpers_47_string__}).startsWith;
-var stringify = ($__handsontable_47_helpers_47_mixed__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed"), $__handsontable_47_helpers_47_mixed__ && $__handsontable_47_helpers_47_mixed__.__esModule && $__handsontable_47_helpers_47_mixed__ || {default: $__handsontable_47_helpers_47_mixed__}).stringify;
-var FORMULA_NAME = 'begins_with';
-function formula(dataRow) {
-  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
-  return startsWith(stringify(dataRow.value).toLowerCase(), stringify(value));
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'Begins with',
-  inputsCount: 1
-});
-
-//# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":54,"formulaRegisterer":155}],134:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47_formulaRegisterer__,
-    $__date_47_after__,
-    $__date_47_before__;
-var $__0 = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}),
-    registerFormula = $__0.registerFormula,
-    getFormula = $__0.getFormula;
-var FORMULA_DATE_AFTER = ($__date_47_after__ = _dereq_("date/after"), $__date_47_after__ && $__date_47_after__.__esModule && $__date_47_after__ || {default: $__date_47_after__}).FORMULA_NAME;
-var FORMULA_DATE_BEFORE = ($__date_47_before__ = _dereq_("date/before"), $__date_47_before__ && $__date_47_before__.__esModule && $__date_47_before__ || {default: $__date_47_before__}).FORMULA_NAME;
-var FORMULA_NAME = 'between';
-function formula(dataRow) {
-  var $__3 = arguments[1] !== (void 0) ? arguments[1] : inputValues,
-      from = $__3[0],
-      to = $__3[1];
-  if (dataRow.meta.type === 'numeric') {
-    var _from = parseFloat(from, 10);
-    var _to = parseFloat(to, 10);
-    from = Math.min(_from, _to);
-    to = Math.max(_from, _to);
-  } else if (dataRow.meta.type === 'date') {
-    var dateBefore = getFormula(FORMULA_DATE_BEFORE, [to]);
-    var dateAfter = getFormula(FORMULA_DATE_AFTER, [from]);
-    return dateBefore(dataRow) && dateAfter(dataRow);
-  }
-  return dataRow.value >= from && dataRow.value <= to;
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'Is between',
-  inputsCount: 2
-});
-
-//# 
-},{"date/after":137,"date/before":138,"formulaRegisterer":155}],135:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47_formulaRegisterer__;
-var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
-var FORMULA_NAME = 'by_value';
-function formula(dataRow) {
-  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
-  var result = value.indexOf(dataRow.value) >= 0;
-  if (!result) {
-    result = value.indexOf(dataRow.value == null ? '' : dataRow.value) >= 0;
-  }
-  return result;
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'By value',
-  inputsCount: 0
-});
-
-//# 
-},{"formulaRegisterer":155}],136:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47_formulaRegisterer__,
-    $__handsontable_47_helpers_47_mixed__;
-var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
-var stringify = ($__handsontable_47_helpers_47_mixed__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed"), $__handsontable_47_helpers_47_mixed__ && $__handsontable_47_helpers_47_mixed__.__esModule && $__handsontable_47_helpers_47_mixed__ || {default: $__handsontable_47_helpers_47_mixed__}).stringify;
-var FORMULA_NAME = 'contains';
-function formula(dataRow) {
-  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
-  return stringify(dataRow.value).toLowerCase().indexOf(stringify(value)) >= 0;
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'Contains',
-  inputsCount: 1
-});
-
-//# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":50,"formulaRegisterer":155}],137:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47__46__46__47_formulaRegisterer__,
-    $__moment__;
-var registerFormula = ($___46__46__47__46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47__46__46__47_formulaRegisterer__ && $___46__46__47__46__46__47_formulaRegisterer__.__esModule && $___46__46__47__46__46__47_formulaRegisterer__ || {default: $___46__46__47__46__46__47_formulaRegisterer__}).registerFormula;
-var moment = ($__moment__ = _dereq_("moment"), $__moment__ && $__moment__.__esModule && $__moment__ || {default: $__moment__}).default;
-var FORMULA_NAME = 'date_after';
-function formula(dataRow) {
-  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
-  var date = moment(dataRow.value, dataRow.meta.dateFormat);
-  var inputDate = moment(value, dataRow.meta.dateFormat);
-  if (!date.isValid() || !inputDate.isValid()) {
-    return false;
-  }
-  return date.diff(inputDate) >= 0;
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'After',
-  inputsCount: 1
-});
-
-//# 
-},{"formulaRegisterer":155,"moment":undefined}],138:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47__46__46__47_formulaRegisterer__,
-    $__moment__;
-var registerFormula = ($___46__46__47__46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47__46__46__47_formulaRegisterer__ && $___46__46__47__46__46__47_formulaRegisterer__.__esModule && $___46__46__47__46__46__47_formulaRegisterer__ || {default: $___46__46__47__46__46__47_formulaRegisterer__}).registerFormula;
-var moment = ($__moment__ = _dereq_("moment"), $__moment__ && $__moment__.__esModule && $__moment__ || {default: $__moment__}).default;
-var FORMULA_NAME = 'date_before';
-function formula(dataRow) {
-  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
-  var date = moment(dataRow.value, dataRow.meta.dateFormat);
-  var inputDate = moment(value, dataRow.meta.dateFormat);
-  if (!date.isValid() || !inputDate.isValid()) {
-    return false;
-  }
-  return date.diff(inputDate) <= 0;
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'Before',
-  inputsCount: 1
-});
-
-//# 
-},{"formulaRegisterer":155,"moment":undefined}],139:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47__46__46__47_formulaRegisterer__,
-    $__moment__;
-var registerFormula = ($___46__46__47__46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47__46__46__47_formulaRegisterer__ && $___46__46__47__46__46__47_formulaRegisterer__.__esModule && $___46__46__47__46__46__47_formulaRegisterer__ || {default: $___46__46__47__46__46__47_formulaRegisterer__}).registerFormula;
-var moment = ($__moment__ = _dereq_("moment"), $__moment__ && $__moment__.__esModule && $__moment__ || {default: $__moment__}).default;
-var FORMULA_NAME = 'date_today';
-function formula(dataRow) {
-  var date = moment(dataRow.value, dataRow.meta.dateFormat);
-  if (!date.isValid()) {
-    return false;
-  }
-  return date.isSame(moment().startOf('day'), 'd');
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'Today',
-  inputsCount: 0
-});
-
-//# 
-},{"formulaRegisterer":155,"moment":undefined}],140:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47__46__46__47_formulaRegisterer__,
-    $__moment__;
-var registerFormula = ($___46__46__47__46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47__46__46__47_formulaRegisterer__ && $___46__46__47__46__46__47_formulaRegisterer__.__esModule && $___46__46__47__46__46__47_formulaRegisterer__ || {default: $___46__46__47__46__46__47_formulaRegisterer__}).registerFormula;
-var moment = ($__moment__ = _dereq_("moment"), $__moment__ && $__moment__.__esModule && $__moment__ || {default: $__moment__}).default;
-var FORMULA_NAME = 'date_tomorrow';
-function formula(dataRow) {
-  var date = moment(dataRow.value, dataRow.meta.dateFormat);
-  if (!date.isValid()) {
-    return false;
-  }
-  return date.isSame(moment().subtract(-1, 'days').startOf('day'), 'd');
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'Tomorrow',
-  inputsCount: 0
-});
-
-//# 
-},{"formulaRegisterer":155,"moment":undefined}],141:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47__46__46__47_formulaRegisterer__,
-    $__moment__;
-var registerFormula = ($___46__46__47__46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47__46__46__47_formulaRegisterer__ && $___46__46__47__46__46__47_formulaRegisterer__.__esModule && $___46__46__47__46__46__47_formulaRegisterer__ || {default: $___46__46__47__46__46__47_formulaRegisterer__}).registerFormula;
-var moment = ($__moment__ = _dereq_("moment"), $__moment__ && $__moment__.__esModule && $__moment__ || {default: $__moment__}).default;
-var FORMULA_NAME = 'date_yesterday';
-function formula(dataRow) {
-  var date = moment(dataRow.value, dataRow.meta.dateFormat);
-  if (!date.isValid()) {
-    return false;
-  }
-  return date.isSame(moment().subtract(1, 'days').startOf('day'), 'd');
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'Yesterday',
-  inputsCount: 0
-});
-
-//# 
-},{"formulaRegisterer":155,"moment":undefined}],142:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47_formulaRegisterer__;
-var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
-var FORMULA_NAME = 'empty';
-function formula(dataRow) {
-  return dataRow.value === '' || dataRow.value === null || dataRow.value === void 0;
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'Is empty',
-  inputsCount: 0
-});
-
-//# 
-},{"formulaRegisterer":155}],143:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47_formulaRegisterer__,
-    $__handsontable_47_helpers_47_string__,
-    $__handsontable_47_helpers_47_mixed__;
-var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
-var endsWith = ($__handsontable_47_helpers_47_string__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string"), $__handsontable_47_helpers_47_string__ && $__handsontable_47_helpers_47_string__.__esModule && $__handsontable_47_helpers_47_string__ || {default: $__handsontable_47_helpers_47_string__}).endsWith;
-var stringify = ($__handsontable_47_helpers_47_mixed__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed"), $__handsontable_47_helpers_47_mixed__ && $__handsontable_47_helpers_47_mixed__.__esModule && $__handsontable_47_helpers_47_mixed__ || {default: $__handsontable_47_helpers_47_mixed__}).stringify;
-var FORMULA_NAME = 'ends_with';
-function formula(dataRow) {
-  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
-  return endsWith(stringify(dataRow.value).toLowerCase(), stringify(value));
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'Ends with',
-  inputsCount: 1
-});
-
-//# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":54,"formulaRegisterer":155}],144:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_mixed__,
-    $___46__46__47_formulaRegisterer__;
-var stringify = ($__handsontable_47_helpers_47_mixed__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed"), $__handsontable_47_helpers_47_mixed__ && $__handsontable_47_helpers_47_mixed__.__esModule && $__handsontable_47_helpers_47_mixed__ || {default: $__handsontable_47_helpers_47_mixed__}).stringify;
-var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
-var FORMULA_NAME = 'eq';
-function formula(dataRow) {
-  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
-  return stringify(dataRow.value).toLowerCase() === stringify(value);
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'Is equal to',
-  inputsCount: 1
-});
-
-//# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":50,"formulaRegisterer":155}],145:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47_formulaRegisterer__;
-var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
-var FORMULA_NAME = 'gt';
-function formula(dataRow) {
-  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
-  if (dataRow.meta.type === 'numeric') {
-    value = parseFloat(value, 10);
-  }
-  return dataRow.value > value;
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'Greater than',
-  inputsCount: 1
-});
-
-//# 
-},{"formulaRegisterer":155}],146:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47_formulaRegisterer__;
-var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
-var FORMULA_NAME = 'gte';
-function formula(dataRow) {
-  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
-  if (dataRow.meta.type === 'numeric') {
-    value = parseFloat(value, 10);
-  }
-  return dataRow.value >= value;
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'Greater than or equal to',
-  inputsCount: 1
-});
-
-//# 
-},{"formulaRegisterer":155}],147:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47_formulaRegisterer__;
-var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
-var FORMULA_NAME = 'lt';
-function formula(dataRow) {
-  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
-  if (dataRow.meta.type === 'numeric') {
-    value = parseFloat(value, 10);
-  }
-  return dataRow.value < value;
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'Less than',
-  inputsCount: 1
-});
-
-//# 
-},{"formulaRegisterer":155}],148:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47_formulaRegisterer__;
-var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
-var FORMULA_NAME = 'lte';
-function formula(dataRow) {
-  var value = (arguments[1] !== (void 0) ? arguments[1] : inputValues)[0];
-  if (dataRow.meta.type === 'numeric') {
-    value = parseFloat(value, 10);
-  }
-  return dataRow.value <= value;
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'Less than or equal to',
-  inputsCount: 1
-});
-
-//# 
-},{"formulaRegisterer":155}],149:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47_formulaRegisterer__;
-var registerFormula = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).registerFormula;
-var FORMULA_NAME = 'none';
-function formula() {
-  return true;
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'None',
-  inputsCount: 0
-});
-
-//# 
-},{"formulaRegisterer":155}],150:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47_formulaRegisterer__,
-    $__between__;
-var $__0 = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}),
-    registerFormula = $__0.registerFormula,
-    getFormula = $__0.getFormula;
-var FORMULA_BETWEEN = ($__between__ = _dereq_("between"), $__between__ && $__between__.__esModule && $__between__ || {default: $__between__}).FORMULA_NAME;
-var FORMULA_NAME = 'not_between';
-function formula(dataRow, inputValues) {
-  return !getFormula(FORMULA_BETWEEN, inputValues)(dataRow);
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'Is not between',
-  inputsCount: 2
-});
-
-//# 
-},{"between":134,"formulaRegisterer":155}],151:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47_formulaRegisterer__,
-    $__contains__;
-var $__0 = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}),
-    registerFormula = $__0.registerFormula,
-    getFormula = $__0.getFormula;
-var FORMULA_CONTAINS = ($__contains__ = _dereq_("contains"), $__contains__ && $__contains__.__esModule && $__contains__ || {default: $__contains__}).FORMULA_NAME;
-var FORMULA_NAME = 'not_contains';
-function formula(dataRow, inputValues) {
-  return !getFormula(FORMULA_CONTAINS, inputValues)(dataRow);
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'Does not contain',
-  inputsCount: 1
-});
-
-//# 
-},{"contains":136,"formulaRegisterer":155}],152:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47_formulaRegisterer__,
-    $__empty__;
-var $__0 = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}),
-    registerFormula = $__0.registerFormula,
-    getFormula = $__0.getFormula;
-var FORMULA_EMPTY = ($__empty__ = _dereq_("empty"), $__empty__ && $__empty__.__esModule && $__empty__ || {default: $__empty__}).FORMULA_NAME;
-var FORMULA_NAME = 'not_empty';
-function formula(dataRow, inputValues) {
-  return !getFormula(FORMULA_EMPTY, inputValues)(dataRow);
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'Is not empty',
-  inputsCount: 0
-});
-
-//# 
-},{"empty":142,"formulaRegisterer":155}],153:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FORMULA_NAME: {get: function() {
-      return FORMULA_NAME;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47_formulaRegisterer__,
-    $__equal__;
-var $__0 = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}),
-    registerFormula = $__0.registerFormula,
-    getFormula = $__0.getFormula;
-var FORMULA_EQUAL = ($__equal__ = _dereq_("equal"), $__equal__ && $__equal__.__esModule && $__equal__ || {default: $__equal__}).FORMULA_NAME;
-var FORMULA_NAME = 'neq';
-function formula(dataRow, inputValues) {
-  return !getFormula(FORMULA_EQUAL, inputValues)(dataRow);
-}
-registerFormula(FORMULA_NAME, formula, {
-  name: 'Is not equal to',
-  inputsCount: 1
-});
-
-//# 
-},{"equal":144,"formulaRegisterer":155}],154:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FormulaCollection: {get: function() {
-      return FormulaCollection;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_helpers_47_object__,
-    $__formulaRegisterer__,
-    $__handsontable_47_mixins_47_localHooks__;
-var $__0 = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
-    arrayEach = $__0.arrayEach,
-    arrayMap = $__0.arrayMap,
-    arrayFilter = $__0.arrayFilter;
-var $__1 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
-    objectEach = $__1.objectEach,
-    mixin = $__1.mixin;
-var getFormula = ($__formulaRegisterer__ = _dereq_("formulaRegisterer"), $__formulaRegisterer__ && $__formulaRegisterer__.__esModule && $__formulaRegisterer__ || {default: $__formulaRegisterer__}).getFormula;
-var localHooks = ($__handsontable_47_mixins_47_localHooks__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks"), $__handsontable_47_mixins_47_localHooks__ && $__handsontable_47_mixins_47_localHooks__.__esModule && $__handsontable_47_mixins_47_localHooks__ || {default: $__handsontable_47_mixins_47_localHooks__}).localHooks;
-var FormulaCollection = function FormulaCollection() {
-  this.formulas = Object.create(null);
-  this.orderStack = [];
-};
-($traceurRuntime.createClass)(FormulaCollection, {
-  isEmpty: function() {
-    return !this.orderStack.length;
-  },
-  isMatch: function(value, column) {
-    var $__4 = this;
-    var result = true;
-    if (column === void 0) {
-      objectEach(this.formulas, (function(formulas) {
-        result = $__4.isMatchInFormulas(formulas, value);
-        return result;
-      }));
-    } else {
-      result = this.isMatchInFormulas(this.getFormulas(column), value);
-    }
-    return result;
-  },
-  isMatchInFormulas: function(formulas, value) {
-    var result = false;
-    if (formulas.length) {
-      arrayEach(formulas, (function(formula) {
-        return result = formula.func(value);
-      }));
-    } else {
-      result = true;
-    }
-    return result;
-  },
-  addFormula: function(column, formulaDefinition) {
-    var args = arrayMap(formulaDefinition.args, (function(v) {
-      return typeof v === 'string' ? v.toLowerCase() : v;
-    }));
-    var name = formulaDefinition.name || formulaDefinition.command.key;
-    this.runLocalHooks('beforeAdd', column);
-    if (this.orderStack.indexOf(column) === -1) {
-      this.orderStack.push(column);
-    }
-    if (this.hasFormulas(column, name)) {
-      arrayEach(this.getFormulas(column), (function(formula) {
-        if (formula.name === name) {
-          formula.func = getFormula(formula.name, args);
-          formula.args = args;
-          return false;
-        }
-      }));
-    } else {
-      this.getFormulas(column).push({
-        name: name,
-        args: args,
-        func: getFormula(name, args)
-      });
-    }
-    this.runLocalHooks('afterAdd', column);
-  },
-  getFormulas: function(column) {
-    if (!this.formulas[column]) {
-      this.formulas[column] = [];
-    }
-    return this.formulas[column];
-  },
-  exportAllFormulas: function() {
-    var $__4 = this;
-    var result = [];
-    arrayEach(this.orderStack, (function(column) {
-      var formulas = arrayMap($__4.getFormulas(column), (function() {
-        var $__6 = arguments[0] !== (void 0) ? arguments[0] : formula,
-            name = $__6.name,
-            args = $__6.args;
-        return {
-          name: name,
-          args: args
-        };
-      }));
-      result.push({
-        column: column,
-        formulas: formulas
-      });
-    }));
-    return result;
-  },
-  importAllFormulas: function(formulas) {
-    var $__4 = this;
-    this.clean();
-    arrayEach(formulas, (function(stack) {
-      $__4.orderStack.push(stack.column);
-      arrayEach(stack.formulas, (function(formula) {
-        return $__4.addFormula(stack.column, formula);
-      }));
-    }));
-  },
-  removeFormulas: function(column) {
-    this.runLocalHooks('beforeRemove', column);
-    if (this.orderStack.indexOf(column) >= 0) {
-      this.orderStack.splice(this.orderStack.indexOf(column), 1);
-    }
-    this.clearFormulas(column);
-    this.runLocalHooks('afterRemove', column);
-  },
-  clearFormulas: function(column) {
-    this.runLocalHooks('beforeClear', column);
-    this.getFormulas(column).length = 0;
-    this.runLocalHooks('afterClear', column);
-  },
-  hasFormulas: function(column, name) {
-    var result = false;
-    var formulas = this.getFormulas(column);
-    if (name) {
-      result = arrayFilter(formulas, (function(formula) {
-        return formula.name === name;
-      })).length > 0;
-    } else {
-      result = formulas.length > 0;
-    }
-    return result;
-  },
-  clean: function() {
-    this.runLocalHooks('beforeClean');
-    this.formulas = Object.create(null);
-    this.orderStack.length = 0;
-    this.runLocalHooks('afterClean');
-  },
-  destroy: function() {
-    this.clearLocalHooks();
-    this.formulas = null;
-    this.orderStack = null;
-  }
-}, {});
-mixin(FormulaCollection, localHooks);
-;
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":57,"formulaRegisterer":155}],155:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  getFormula: {get: function() {
-      return getFormula;
-    }},
-  getFormulaDescriptor: {get: function() {
-      return getFormulaDescriptor;
-    }},
-  registerFormula: {get: function() {
-      return registerFormula;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47__46__46__47_browser__;
-var Handsontable = ($___46__46__47__46__46__47_browser__ = _dereq_("../../browser"), $___46__46__47__46__46__47_browser__ && $___46__46__47__46__46__47_browser__.__esModule && $___46__46__47__46__46__47_browser__ || {default: $___46__46__47__46__46__47_browser__}).default;
-var formulas = {};
-function getFormula(name, args) {
-  return function(dataRow) {
-    if (!formulas[name]) {
-      throw Error(("Filter formula \"" + name + "\" does not exist."));
-    }
-    return formulas[name].formula.apply(dataRow.meta.instance, [].concat([dataRow], [args]));
-  };
-}
-function getFormulaDescriptor(name) {
-  if (!formulas[name]) {
-    throw Error(("Filter formula \"" + name + "\" does not exist."));
-  }
-  return formulas[name].descriptor;
-}
-function registerFormula(name, formula, descriptor) {
-  descriptor.key = name;
-  formulas[name] = {
-    formula: formula,
-    descriptor: descriptor
-  };
-}
-Handsontable.utils.FiltersFormulaRegisterer = {
-  getFormula: getFormula,
-  registerFormula: registerFormula,
-  getFormulaDescriptor: getFormulaDescriptor,
-  formulas: formulas
-};
-
-//# 
-},{"../../browser":113}],156:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  FormulaUpdateObserver: {get: function() {
-      return FormulaUpdateObserver;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_array__,
-    $__formulaCollection__,
-    $__dataFilter__,
-    $__handsontable_47_helpers_47_object__,
-    $__handsontable_47_helpers_47_function__,
-    $__handsontable_47_mixins_47_localHooks__;
-var $__0 = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
-    arrayEach = $__0.arrayEach,
-    arrayMap = $__0.arrayMap,
-    arrayFilter = $__0.arrayFilter;
-var FormulaCollection = ($__formulaCollection__ = _dereq_("formulaCollection"), $__formulaCollection__ && $__formulaCollection__.__esModule && $__formulaCollection__ || {default: $__formulaCollection__}).FormulaCollection;
-var DataFilter = ($__dataFilter__ = _dereq_("dataFilter"), $__dataFilter__ && $__dataFilter__.__esModule && $__dataFilter__ || {default: $__dataFilter__}).DataFilter;
-var $__3 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
-    mixin = $__3.mixin,
-    objectEach = $__3.objectEach;
-var $__4 = ($__handsontable_47_helpers_47_function__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/function"), $__handsontable_47_helpers_47_function__ && $__handsontable_47_helpers_47_function__.__esModule && $__handsontable_47_helpers_47_function__ || {default: $__handsontable_47_helpers_47_function__}),
-    curry = $__4.curry,
-    debounce = $__4.debounce;
-var localHooks = ($__handsontable_47_mixins_47_localHooks__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks"), $__handsontable_47_mixins_47_localHooks__ && $__handsontable_47_mixins_47_localHooks__.__esModule && $__handsontable_47_mixins_47_localHooks__ || {default: $__handsontable_47_mixins_47_localHooks__}).localHooks;
-var FormulaUpdateObserver = function FormulaUpdateObserver(formulaCollection) {
-  var columnDataFactory = arguments[1] !== (void 0) ? arguments[1] : (function(column) {
-    return [];
-  });
-  var $__6 = this;
-  this.formulaCollection = formulaCollection;
-  this.columnDataFactory = columnDataFactory;
-  this.changes = [];
-  this.grouping = false;
-  this.latestEditedColumnPosition = -1;
-  this.latestOrderStack = [];
-  this.formulaCollection.addLocalHook('beforeRemove', (function(column) {
-    return $__6._onFormulaBeforeModify(column);
-  }));
-  this.formulaCollection.addLocalHook('afterAdd', (function(column) {
-    return $__6._onFormulaAfterModify(column);
-  }));
-  this.formulaCollection.addLocalHook('afterClear', (function(column) {
-    return $__6._onFormulaAfterModify(column);
-  }));
-  this.formulaCollection.addLocalHook('beforeClean', (function() {
-    return $__6._onFormulaBeforeClean();
-  }));
-  this.formulaCollection.addLocalHook('afterClean', (function() {
-    return $__6._onFormulaAfterClean();
-  }));
-};
-($traceurRuntime.createClass)(FormulaUpdateObserver, {
-  groupChanges: function() {
-    this.grouping = true;
-  },
-  flush: function() {
-    var $__6 = this;
-    this.grouping = false;
-    arrayEach(this.changes, (function(column) {
-      return $__6._onFormulaAfterModify(column);
-    }));
-    this.changes.length = 0;
-  },
-  _onFormulaBeforeModify: function(column) {
-    this.latestEditedColumnPosition = this.formulaCollection.orderStack.indexOf(column);
-  },
-  _onFormulaAfterModify: function(column) {
-    var $__6 = this;
-    if (this.grouping) {
-      if (this.changes.indexOf(column) === -1) {
-        this.changes.push(column);
-      }
-      return;
-    }
-    var allFormulas = this.formulaCollection.exportAllFormulas();
-    var editedColumnPosition = this.formulaCollection.orderStack.indexOf(column);
-    if (editedColumnPosition === -1) {
-      editedColumnPosition = this.latestEditedColumnPosition;
-    }
-    var formulasBefore = allFormulas.slice(0, editedColumnPosition);
-    var formulasAfter = allFormulas.slice(editedColumnPosition);
-    if (formulasAfter.length && formulasAfter[0].column === column) {
-      formulasAfter.shift();
-    }
-    var visibleDataFactory = curry((function(formulasBefore, column) {
-      var formulasStack = arguments[2] !== (void 0) ? arguments[2] : [];
-      var splitFormulaCollection = new FormulaCollection();
-      formulasBefore = [].concat(formulasBefore, formulasStack);
-      splitFormulaCollection.importAllFormulas(formulasBefore);
-      var allRows = $__6.columnDataFactory(column);
-      var visibleRows;
-      if (splitFormulaCollection.isEmpty()) {
-        visibleRows = allRows;
-      } else {
-        visibleRows = (new DataFilter(splitFormulaCollection, (function(column) {
-          return $__6.columnDataFactory(column);
-        }))).filter();
-      }
-      visibleRows = arrayMap(visibleRows, (function(rowData) {
-        return rowData.meta.visualRow;
-      }));
-      return arrayFilter(allRows, (function(rowData) {
-        return visibleRows.indexOf(rowData.meta.visualRow) >= 0;
-      }));
-    }))(formulasBefore);
-    var editedFormulas = [].concat(this.formulaCollection.getFormulas(column));
-    this.runLocalHooks('update', {
-      column: column,
-      formulas: editedFormulas
-    }, formulasAfter, visibleDataFactory);
-  },
-  _onFormulaBeforeClean: function() {
-    this.latestOrderStack = [].concat(this.formulaCollection.orderStack);
-  },
-  _onFormulaAfterClean: function() {
-    var $__6 = this;
-    arrayEach(this.latestOrderStack, (function(column) {
-      return $__6._onFormulaAfterModify(column);
-    }));
-  },
-  destroy: function() {
-    var $__6 = this;
-    this.clearLocalHooks();
-    objectEach(this, (function(value, property) {
-      return $__6[property] = null;
-    }));
-  }
-}, {});
-mixin(FormulaUpdateObserver, localHooks);
-;
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/function":49,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":57,"dataFilter":131,"formulaCollection":154}],157:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  BaseUI: {get: function() {
-      return BaseUI;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_object__,
-    $__handsontable_47_mixins_47_localHooks__,
-    $__handsontable_47_eventManager__,
-    $__handsontable_47_helpers_47_dom_47_element__,
-    $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_helpers_47_object__;
-var $__0 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
-    clone = $__0.clone,
-    extend = $__0.extend,
-    mixin = $__0.mixin;
-var localHooks = ($__handsontable_47_mixins_47_localHooks__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks"), $__handsontable_47_mixins_47_localHooks__ && $__handsontable_47_mixins_47_localHooks__.__esModule && $__handsontable_47_mixins_47_localHooks__ || {default: $__handsontable_47_mixins_47_localHooks__}).localHooks;
-var EventManager = ($__handsontable_47_eventManager__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager"), $__handsontable_47_eventManager__ && $__handsontable_47_eventManager__.__esModule && $__handsontable_47_eventManager__ || {default: $__handsontable_47_eventManager__}).EventManager;
-var addClass = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).addClass;
-var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
-var objectEach = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).objectEach;
-var STATE_BUILT = 'built';
-var STATE_BUILDING = 'building';
-var EVENTS_TO_REGISTER = ['click', 'input', 'keydown', 'keypress', 'keyup', 'focus', 'blur'];
-var BaseUI = function BaseUI(hotInstance, options) {
-  this.hot = hotInstance;
-  this.eventManager = new EventManager(this);
-  this.options = extend($BaseUI.DEFAULTS, options);
-  this._element = document.createElement(this.options.wrapIt ? 'div' : this.options.tagName);
-  this.buildState = false;
-};
-var $BaseUI = BaseUI;
-($traceurRuntime.createClass)(BaseUI, {
-  setValue: function(value) {
-    this.options.value = value;
-    this.update();
-  },
-  getValue: function() {
-    return this.options.value;
-  },
-  get element() {
-    if (this.buildState === STATE_BUILDING) {
-      return this._element;
-    }
-    if (this.buildState === STATE_BUILT) {
-      this.update();
-      return this._element;
-    }
-    this.buildState = STATE_BUILDING;
-    this.build();
-    this.buildState = STATE_BUILT;
-    return this._element;
-  },
-  isBuilt: function() {
-    return this.buildState === STATE_BUILT;
-  },
-  build: function() {
-    var $__6 = this;
-    var registerEvent = (function(element, eventName) {
-      $__6.eventManager.addEventListener(element, eventName, (function(event) {
-        return $__6.runLocalHooks(eventName, event, $__6);
-      }));
-    });
-    if (!this.buildState) {
-      this.buildState = STATE_BUILDING;
-    }
-    if (this.options.className) {
-      addClass(this._element, this.options.className);
-    }
-    if (this.options.children.length) {
-      arrayEach(this.options.children, (function(element) {
-        return $__6._element.appendChild(element.element);
-      }));
-    } else if (this.options.wrapIt) {
-      var element = document.createElement(this.options.tagName);
-      objectEach(this.options, (function(value, key) {
-        if (element[key] !== void 0 && key !== 'className' && key !== 'tagName' && key !== 'children') {
-          element[key] = value;
-        }
-      }));
-      this._element.appendChild(element);
-      arrayEach(EVENTS_TO_REGISTER, (function(eventName) {
-        return registerEvent(element, eventName);
-      }));
-    } else {
-      arrayEach(EVENTS_TO_REGISTER, (function(eventName) {
-        return registerEvent($__6._element, eventName);
-      }));
-    }
-  },
-  update: function() {},
-  reset: function() {
-    this.options.value = '';
-    this.update();
-  },
-  show: function() {
-    this.element.style.display = '';
-  },
-  hide: function() {
-    this.element.style.display = 'none';
-  },
-  focus: function() {},
-  destroy: function() {
-    this.eventManager.destroy();
-    this.eventManager = null;
-    this.hot = null;
-    if (this._element.parentNode) {
-      this._element.parentNode.removeChild(this._element);
-    }
-    this._element = null;
-  }
-}, {get DEFAULTS() {
-    return clone({
-      className: '',
-      value: '',
-      tagName: 'div',
-      children: [],
-      wrapIt: true
-    });
-  }});
-mixin(BaseUI, localHooks);
-;
-
-//# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":41,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":57}],158:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  InputUI: {get: function() {
-      return InputUI;
-    }},
-  __esModule: {value: true}
-});
-var $___95_base__,
-    $__handsontable_47_helpers_47_dom_47_element__,
-    $__handsontable_47_helpers_47_object__,
-    $__handsontable_47_helpers_47_array__;
-var BaseUI = ($___95_base__ = _dereq_("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseUI;
-var addClass = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).addClass;
-var $__2 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
-    clone = $__2.clone,
-    extend = $__2.extend;
-var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
-var privatePool = new WeakMap();
-var InputUI = function InputUI(hotInstance, options) {
-  privatePool.set(this, {});
-  $traceurRuntime.superConstructor($InputUI).call(this, hotInstance, extend($InputUI.DEFAULTS, options));
-  this.registerHooks();
-};
-var $InputUI = InputUI;
-($traceurRuntime.createClass)(InputUI, {
-  registerHooks: function() {
-    var $__4 = this;
-    this.addLocalHook('click', (function(event) {
-      return $__4.onClick(event);
-    }));
-    this.addLocalHook('keyup', (function(event) {
-      return $__4.onKeyup(event);
-    }));
-  },
-  build: function() {
-    $traceurRuntime.superGet(this, $InputUI.prototype, "build").call(this);
-    var priv = privatePool.get(this);
-    var icon = document.createElement('div');
-    priv.input = this._element.firstChild;
-    addClass(this._element, 'htUIInput');
-    addClass(icon, 'htUIInputIcon');
-    this._element.appendChild(icon);
-    this.update();
-  },
-  update: function() {
-    if (!this.isBuilt()) {
-      return;
-    }
-    var input = privatePool.get(this).input;
-    input.type = this.options.type;
-    input.value = this.options.value;
-  },
-  focus: function() {
-    if (this.isBuilt()) {
-      privatePool.get(this).input.focus();
-    }
-  },
-  onClick: function(event) {},
-  onKeyup: function(event) {
-    this.options.value = event.target.value;
-  }
-}, {get DEFAULTS() {
-    return clone({
-      placeholder: '',
-      type: 'text',
-      tagName: 'input'
-    });
-  }}, BaseUI);
-;
-
-//# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"_base":157}],159:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  MultipleSelectUI: {get: function() {
-      return MultipleSelectUI;
-    }},
-  __esModule: {value: true}
-});
-var $___95_base__,
-    $__handsontable_47_helpers_47_dom_47_element__,
-    $__handsontable_47_plugins_47_contextMenu_47_menu__,
-    $__handsontable_47_helpers_47_object__,
-    $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_helpers_47_string__,
-    $__handsontable_47_helpers_47_unicode__,
-    $__handsontable_47_helpers_47_function__,
-    $__handsontable_47_helpers_47_dom_47_event__,
-    $__input__;
-var BaseUI = ($___95_base__ = _dereq_("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseUI;
-var addClass = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).addClass;
-var Menu = ($__handsontable_47_plugins_47_contextMenu_47_menu__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu"), $__handsontable_47_plugins_47_contextMenu_47_menu__ && $__handsontable_47_plugins_47_contextMenu_47_menu__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_menu__ || {default: $__handsontable_47_plugins_47_contextMenu_47_menu__}).Menu;
-var $__3 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
-    clone = $__3.clone,
-    extend = $__3.extend;
-var $__4 = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
-    arrayFilter = $__4.arrayFilter,
-    arrayMap = $__4.arrayMap,
-    arrayEach = $__4.arrayEach;
-var startsWith = ($__handsontable_47_helpers_47_string__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string"), $__handsontable_47_helpers_47_string__ && $__handsontable_47_helpers_47_string__.__esModule && $__handsontable_47_helpers_47_string__ || {default: $__handsontable_47_helpers_47_string__}).startsWith;
-var isKey = ($__handsontable_47_helpers_47_unicode__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode"), $__handsontable_47_helpers_47_unicode__ && $__handsontable_47_helpers_47_unicode__.__esModule && $__handsontable_47_helpers_47_unicode__ || {default: $__handsontable_47_helpers_47_unicode__}).isKey;
-var partial = ($__handsontable_47_helpers_47_function__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/function"), $__handsontable_47_helpers_47_function__ && $__handsontable_47_helpers_47_function__.__esModule && $__handsontable_47_helpers_47_function__ || {default: $__handsontable_47_helpers_47_function__}).partial;
-var stopImmediatePropagation = ($__handsontable_47_helpers_47_dom_47_event__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event"), $__handsontable_47_helpers_47_dom_47_event__ && $__handsontable_47_helpers_47_dom_47_event__.__esModule && $__handsontable_47_helpers_47_dom_47_event__ || {default: $__handsontable_47_helpers_47_dom_47_event__}).stopImmediatePropagation;
-var InputUI = ($__input__ = _dereq_("input"), $__input__ && $__input__.__esModule && $__input__ || {default: $__input__}).InputUI;
-var privatePool = new WeakMap();
-var MultipleSelectUI = function MultipleSelectUI(hotInstance, options) {
-  privatePool.set(this, {});
-  $traceurRuntime.superConstructor($MultipleSelectUI).call(this, hotInstance, extend($MultipleSelectUI.DEFAULTS, options));
-  this.searchInput = new InputUI(this.hot, {
-    placeholder: 'Search...',
-    className: 'htUIMultipleSelectSearch'
-  });
-  this.selectAllUI = new BaseUI(this.hot, {
-    tagName: 'a',
-    textContent: 'Select all',
-    href: '#',
-    className: 'htUISelectAll'
-  });
-  this.clearAllUI = new BaseUI(this.hot, {
-    tagName: 'a',
-    textContent: 'Clear',
-    href: '#',
-    className: 'htUIClearAll'
-  });
-  this.items = [];
-  this.itemsBox = null;
-  this.registerHooks();
-};
-var $MultipleSelectUI = MultipleSelectUI;
-($traceurRuntime.createClass)(MultipleSelectUI, {
-  registerHooks: function() {
-    var $__10 = this;
-    this.searchInput.addLocalHook('keydown', (function(event) {
-      return $__10.onInputKeyDown(event);
-    }));
-    this.searchInput.addLocalHook('input', (function(event) {
-      return $__10.onInput(event);
-    }));
-    this.selectAllUI.addLocalHook('click', (function(event) {
-      return $__10.onSelectAllClick(event);
-    }));
-    this.clearAllUI.addLocalHook('click', (function(event) {
-      return $__10.onClearAllClick(event);
-    }));
-  },
-  setItems: function(items) {
-    this.items = items;
-    if (this.itemsBox) {
-      this.itemsBox.loadData(this.items);
-    }
-  },
-  getItems: function() {
-    return $traceurRuntime.spread(this.items);
-  },
-  getValue: function() {
-    return itemsToValue(this.items);
-  },
-  isSelectedAllValues: function() {
-    return this.items.length === this.getValue().length;
-  },
-  build: function() {
-    var $__10 = this;
-    $traceurRuntime.superGet(this, $MultipleSelectUI.prototype, "build").call(this);
-    var itemsBoxWrapper = document.createElement('div');
-    var selectionControl = new BaseUI(this.hot, {
-      className: 'htUISelectionControls',
-      children: [this.selectAllUI, this.clearAllUI]
-    });
-    this._element.appendChild(this.searchInput.element);
-    this._element.appendChild(selectionControl.element);
-    this._element.appendChild(itemsBoxWrapper);
-    var hotInitializer = (function(wrapper) {
-      if (!$__10._element) {
-        return;
-      }
-      if ($__10.itemsBox) {
-        $__10.itemsBox.destroy();
-      }
-      addClass(wrapper, 'htUIMultipleSelectHot');
-      $__10.itemsBox = new Handsontable(wrapper, {
-        data: valueToItems($__10.items, $__10.options.value),
-        columns: [{
-          data: 'checked',
-          type: 'checkbox',
-          label: {
-            property: 'visualValue',
-            position: 'after'
-          }
-        }],
-        autoWrapCol: true,
-        colWidths: 150,
-        height: 110,
-        width: 168,
-        copyPaste: false,
-        disableVisualSelection: 'area',
-        fillHandle: false,
-        fragmentSelection: 'cell',
-        tabMoves: {
-          row: 1,
-          col: 0
-        },
-        beforeKeyDown: (function(event) {
-          return $__10.onItemsBoxBeforeKeyDown(event);
-        })
-      });
-    });
-    hotInitializer(itemsBoxWrapper);
-    setTimeout((function() {
-      return hotInitializer(itemsBoxWrapper);
-    }), 100);
-    this.update();
-  },
-  reset: function() {
-    this.searchInput.reset();
-  },
-  update: function() {
-    if (!this.isBuilt()) {
-      return;
-    }
-    this.itemsBox.loadData(valueToItems(this.items, this.options.value));
-    $traceurRuntime.superGet(this, $MultipleSelectUI.prototype, "update").call(this);
-  },
-  destroy: function() {
-    if (this.itemsBox) {
-      this.itemsBox.destroy();
-    }
-    this.itemsBox = null;
-    this.searchInput = null;
-    this.items = null;
-    $traceurRuntime.superGet(this, $MultipleSelectUI.prototype, "destroy").call(this);
-  },
-  onInput: function(event) {
-    var value = event.target.value.toLowerCase();
-    var filteredItems;
-    if (value === '') {
-      filteredItems = $traceurRuntime.spread(this.items);
-    } else {
-      filteredItems = arrayFilter(this.items, (function(item) {
-        return (item.value + '').toLowerCase().indexOf(value) >= 0;
-      }));
-    }
-    this.itemsBox.loadData(filteredItems);
-  },
-  onInputKeyDown: function(event) {
-    this.runLocalHooks('keydown', event, this);
-    var isKeyCode = partial(isKey, event.keyCode);
-    if (isKeyCode('ARROW_DOWN|TAB') && !this.itemsBox.isListening()) {
-      stopImmediatePropagation(event);
-      this.itemsBox.listen();
-      this.itemsBox.selectCell(0, 0);
-    }
-  },
-  onItemsBoxBeforeKeyDown: function(event) {
-    var isKeyCode = partial(isKey, event.keyCode);
-    if (isKeyCode('ESCAPE')) {
-      this.runLocalHooks('keydown', event, this);
-    }
-    if (!isKeyCode('ARROW_UP|ARROW_DOWN|ARROW_LEFT|ARROW_RIGHT|TAB|SPACE|ENTER')) {
-      stopImmediatePropagation(event);
-      this.itemsBox.unlisten();
-      this.itemsBox.deselectCell();
-      this.searchInput.focus();
-    }
-  },
-  onSelectAllClick: function(event) {
-    event.preventDefault();
-    arrayEach(this.itemsBox.getSourceData(), (function(row) {
-      row.checked = true;
-    }));
-    this.itemsBox.render();
-  },
-  onClearAllClick: function(event) {
-    event.preventDefault();
-    arrayEach(this.itemsBox.getSourceData(), (function(row) {
-      row.checked = false;
-    }));
-    this.itemsBox.render();
-  }
-}, {get DEFAULTS() {
-    return clone({
-      className: 'htUIMultipleSelect',
-      value: []
-    });
-  }}, BaseUI);
-;
-function valueToItems(availableItems, selectedValue) {
-  return arrayMap(availableItems, (function(item) {
-    item.checked = selectedValue.indexOf(item.value) !== -1;
-    return item;
-  }));
-}
-function itemsToValue(availableItems) {
-  var items = [];
-  arrayEach(availableItems, (function(item) {
-    if (item.checked) {
-      items.push(item.value);
-    }
-  }));
-  return items;
-}
-
-//# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/function":49,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":54,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode":55,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":73,"_base":157,"input":158}],160:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  SelectUI: {get: function() {
-      return SelectUI;
-    }},
-  __esModule: {value: true}
-});
-var $___95_base__,
-    $__handsontable_47_helpers_47_dom_47_element__,
-    $__handsontable_47_plugins_47_contextMenu_47_menu__,
-    $__handsontable_47_helpers_47_object__,
-    $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__;
-var BaseUI = ($___95_base__ = _dereq_("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseUI;
-var $__1 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
-    addClass = $__1.addClass,
-    getWindowScrollTop = $__1.getWindowScrollTop,
-    getWindowScrollLeft = $__1.getWindowScrollLeft;
-var Menu = ($__handsontable_47_plugins_47_contextMenu_47_menu__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu"), $__handsontable_47_plugins_47_contextMenu_47_menu__ && $__handsontable_47_plugins_47_contextMenu_47_menu__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_menu__ || {default: $__handsontable_47_plugins_47_contextMenu_47_menu__}).Menu;
-var $__3 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
-    clone = $__3.clone,
-    extend = $__3.extend;
-var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
-var SEPARATOR = ($__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems"), $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ || {default: $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__}).SEPARATOR;
-var privatePool = new WeakMap();
-var SelectUI = function SelectUI(hotInstance, options) {
-  privatePool.set(this, {});
-  $traceurRuntime.superConstructor($SelectUI).call(this, hotInstance, extend($SelectUI.DEFAULTS, options));
-  this.menu = null;
-  this.items = [];
-  this.registerHooks();
-};
-var $SelectUI = SelectUI;
-($traceurRuntime.createClass)(SelectUI, {
-  registerHooks: function() {
-    var $__6 = this;
-    this.addLocalHook('click', (function(event) {
-      return $__6.onClick(event);
-    }));
-  },
-  setItems: function(items) {
-    this.items = items;
-    if (this.menu) {
-      this.menu.setMenuItems(this.items);
-    }
-  },
-  build: function() {
-    var $__6 = this;
-    $traceurRuntime.superGet(this, $SelectUI.prototype, "build").call(this);
-    this.menu = new Menu(this.hot, {
-      className: 'htSelectUI htFiltersConditionsMenu',
-      keepInViewport: false,
-      standalone: true
-    });
-    this.menu.setMenuItems(this.items);
-    var caption = new BaseUI(this.hot, {className: 'htUISelectCaption'});
-    var dropdown = new BaseUI(this.hot, {className: 'htUISelectDropdown'});
-    privatePool.get(this).caption = caption.element;
-    arrayEach([caption, dropdown], (function(element) {
-      return $__6._element.appendChild(element.element);
-    }));
-    this.menu.addLocalHook('select', (function(command) {
-      return $__6.onMenuSelect(command);
-    }));
-    this.update();
-  },
-  update: function() {
-    if (!this.isBuilt()) {
-      return;
-    }
-    privatePool.get(this).caption.textContent = this.options.value ? this.options.value.name : 'None';
-    $traceurRuntime.superGet(this, $SelectUI.prototype, "update").call(this);
-  },
-  openOptions: function() {
-    var rect = this.element.getBoundingClientRect();
-    if (this.menu) {
-      this.menu.open();
-      this.menu.setPosition({
-        left: rect.left - 5,
-        top: rect.top,
-        width: rect.width,
-        height: rect.height
-      });
-    }
-  },
-  closeOptions: function() {
-    if (this.menu) {
-      this.menu.close();
-    }
-  },
-  onMenuSelect: function(command) {
-    if (command.name !== SEPARATOR) {
-      this.options.value = command;
-      this.closeOptions();
-      this.update();
-      this.runLocalHooks('select', this.options.value);
-    }
-  },
-  onClick: function(event) {
-    this.openOptions();
-  },
-  destroy: function() {
-    if (this.menu) {
-      this.menu.destroy();
-      this.menu = null;
-    }
-    $traceurRuntime.superGet(this, $SelectUI.prototype, "destroy").call(this);
-  }
-}, {get DEFAULTS() {
-    return clone({
-      className: 'htUISelect',
-      wrapIt: false
-    });
-  }}, BaseUI);
-;
-
-//# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":73,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":74,"_base":157}],161:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  sortComparison: {get: function() {
-      return sortComparison;
-    }},
-  toVisualValue: {get: function() {
-      return toVisualValue;
-    }},
-  unifyColumnValues: {get: function() {
-      return unifyColumnValues;
-    }},
-  intersectValues: {get: function() {
-      return intersectValues;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_feature__,
-    $__handsontable_47_helpers_47_array__;
-var getComparisonFunction = ($__handsontable_47_helpers_47_feature__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/feature"), $__handsontable_47_helpers_47_feature__ && $__handsontable_47_helpers_47_feature__.__esModule && $__handsontable_47_helpers_47_feature__ || {default: $__handsontable_47_helpers_47_feature__}).getComparisonFunction;
-var $__1 = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
-    arrayMap = $__1.arrayMap,
-    arrayUnique = $__1.arrayUnique,
-    arrayEach = $__1.arrayEach;
-var sortCompare = getComparisonFunction();
-function sortComparison(a, b) {
-  if (typeof a === 'number' && typeof b === 'number') {
-    return a - b;
-  }
-  return sortCompare(a, b);
-}
-function toVisualValue(value) {
-  if (value === '') {
-    value = '(Blank cells)';
-  }
-  return value;
-}
-function unifyColumnValues(values) {
-  values = arrayMap(values, (function(value) {
-    return value == null ? '' : value;
-  }));
-  values = arrayUnique(values);
-  values = values.sort(sortComparison);
-  return values;
-}
-function intersectValues(base, selected, callback) {
-  var result = [];
-  arrayEach(base, (function(value) {
-    var checked = false;
-    if (selected.indexOf(value) >= 0) {
-      checked = true;
-    }
-    var item = {
-      checked: checked,
-      value: value,
-      visualValue: toVisualValue(value)
-    };
-    if (callback) {
-      callback(item);
-    }
-    result.push(item);
-  }));
-  return result;
-}
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/feature":48}],162:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  DateCalculator: {get: function() {
-      return DateCalculator;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_helpers_47_object__;
-var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
-var objectEach = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).objectEach;
-var DateCalculator = function DateCalculator(year) {
-  this.year = year;
-  this.firstWeekDay = 'monday';
-  this.weekSectionCount = 0;
-  this.monthList = this.calculateMonthData();
-  this.daysInColumns = {};
-  this.calculateWeekStructure();
-};
-($traceurRuntime.createClass)(DateCalculator, {
-  setYear: function(year) {
-    this.year = year;
-    this.monthList = this.calculateMonthData();
-    this.calculateWeekStructure();
-  },
-  setFirstWeekDay: function(day) {
-    if (day.toLowerCase() !== 'monday' && day.toLowerCase() !== 'sunday') {
-      console.warn('First day of the week must be set to either Monday or Sunday');
-    }
-    this.firstWeekDay = day.toLowerCase();
-  },
-  countWeekSections: function() {
-    return this.weekSectionCount;
-  },
-  getFirstWeekDay: function() {
-    return this.firstWeekDay;
-  },
-  getYear: function() {
-    return this.year;
-  },
-  getMonthList: function() {
-    return this.monthList;
-  },
-  parseDate: function(date) {
-    if (!(date instanceof Date)) {
-      date = new Date(date);
-      if (date.toString() === 'Invalid Date') {
-        return null;
-      }
-    }
-    return date;
-  },
-  dateToColumn: function(date) {
-    date = this.parseDate(date);
-    if (!date || date.getFullYear() !== this.year) {
-      return false;
-    }
-    var month = date.getMonth();
-    var day = date.getDate() - 1;
-    var monthCache = this.daysInColumns[month];
-    var resultColumn = null;
-    objectEach(monthCache, (function(column, index) {
-      if (column.indexOf(day + 1) > -1) {
-        resultColumn = parseInt(index, 10);
-        return false;
-      }
-    }));
-    return resultColumn;
-  },
-  columnToDate: function(column) {
-    var month = null;
-    objectEach(this.daysInColumns, (function(monthCache, index) {
-      if (monthCache[column]) {
-        month = index;
-        return false;
-      }
-    }));
-    if (this.daysInColumns[month][column].length === 1) {
-      return new Date(this.year, month, this.daysInColumns[month][column][0]);
-    } else {
-      return this.daysInColumns[month][column];
-    }
-  },
-  isOnTheEdgeOfWeek: function(date) {
-    date = this.parseDate(date);
-    if (!date) {
-      return null;
-    }
-    var month = date.getMonth();
-    var day = date.getDate() - 1;
-    var monthCache = this.daysInColumns[month];
-    var isOnTheEdgeOfWeek = false;
-    objectEach(monthCache, (function(column) {
-      var indexOfDay = column.indexOf(day + 1);
-      if ((indexOfDay === 0)) {
-        isOnTheEdgeOfWeek = [1, 0];
-        return false;
-      } else if (indexOfDay === column.length - 1) {
-        isOnTheEdgeOfWeek = [0, 1];
-        return false;
-      }
-    }));
-    return isOnTheEdgeOfWeek;
-  },
-  addDaysToCache: function(monthNumber, columnNumber, start, end) {
-    if (!this.daysInColumns[monthNumber]) {
-      this.daysInColumns[monthNumber] = {};
-    }
-    if (!this.daysInColumns[monthNumber][columnNumber]) {
-      this.daysInColumns[monthNumber][columnNumber] = [];
-    }
-    for (var j = start; j <= end; j++) {
-      this.daysInColumns[monthNumber][columnNumber].push(j);
-    }
-  },
-  isValidRangeBarData: function(startDate, endDate) {
-    var startDateParsed = this.parseDate(startDate);
-    var endDateParsed = this.parseDate(endDate);
-    return startDateParsed && endDateParsed && startDateParsed.getTime() <= endDateParsed.getTime();
-  },
-  calculateMonthData: function() {
-    return [{
-      name: 'January',
-      days: 31
-    }, {
-      name: 'February',
-      days: new Date(this.year, 2, 0).getDate()
-    }, {
-      name: 'March',
-      days: 31
-    }, {
-      name: 'April',
-      days: 30
-    }, {
-      name: 'May',
-      days: 31
-    }, {
-      name: 'June',
-      days: 30
-    }, {
-      name: 'July',
-      days: 31
-    }, {
-      name: 'August',
-      days: 31
-    }, {
-      name: 'September',
-      days: 30
-    }, {
-      name: 'October',
-      days: 31
-    }, {
-      name: 'November',
-      days: 30
-    }, {
-      name: 'December',
-      days: 31
-    }];
-  },
-  countMonths: function() {
-    return this.monthList.length;
-  },
-  countMonthDays: function(month) {
-    return this.monthList[month - 1].days;
-  },
-  countMonthFullWeeks: function(month) {
-    return this.monthList[month - 1].fullWeeks;
-  },
-  calculateWeekStructure: function() {
-    var weekOffset = 0;
-    var weekSectionCount = 0;
-    var firstWeekDay = this.getFirstWeekDay();
-    var monthList = this.getMonthList();
-    var currentYear = this.getYear();
-    if (firstWeekDay === 'monday') {
-      weekOffset = 1;
-    }
-    arrayEach(monthList, (function(currentMonth, i) {
-      var firstMonthDay = new Date(currentYear, i, 1).getDay();
-      currentMonth.daysBeforeFullWeeks = (7 - firstMonthDay + weekOffset) % 7;
-      currentMonth.fullWeeks = Math.floor((currentMonth.days - currentMonth.daysBeforeFullWeeks) / 7);
-      currentMonth.daysAfterFullWeeks = currentMonth.days - currentMonth.daysBeforeFullWeeks - (7 * currentMonth.fullWeeks);
-      weekSectionCount += currentMonth.fullWeeks + (currentMonth.daysBeforeFullWeeks ? 1 : 0) + (currentMonth.daysAfterFullWeeks ? 1 : 0);
-    }));
-    this.weekSectionCount = weekSectionCount;
-  }
-}, {});
-;
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52}],163:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  GanttChart: {get: function() {
-      return GanttChart;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_dom_47_element__,
-    $__handsontable_47_helpers_47_object__,
-    $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_helpers_47_number__,
-    $__handsontable_47_helpers_47_data__,
-    $__handsontable_47_plugins_46_js__,
-    $__dateCalculator__,
-    $__ganttChartDataFeed__,
-    $__handsontable_47_plugins_47__95_base_46_js__;
-var $__0 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
-    addClass = $__0.addClass,
-    removeClass = $__0.removeClass;
-var $__1 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
-    objectEach = $__1.objectEach,
-    deepClone = $__1.deepClone,
-    extend = $__1.extend;
-var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
-var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
-var createEmptySpreadsheetData = ($__handsontable_47_helpers_47_data__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/data"), $__handsontable_47_helpers_47_data__ && $__handsontable_47_helpers_47_data__.__esModule && $__handsontable_47_helpers_47_data__ || {default: $__handsontable_47_helpers_47_data__}).createEmptySpreadsheetData;
-var registerPlugin = ($__handsontable_47_plugins_46_js__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js"), $__handsontable_47_plugins_46_js__ && $__handsontable_47_plugins_46_js__.__esModule && $__handsontable_47_plugins_46_js__ || {default: $__handsontable_47_plugins_46_js__}).registerPlugin;
-var DateCalculator = ($__dateCalculator__ = _dereq_("dateCalculator"), $__dateCalculator__ && $__dateCalculator__.__esModule && $__dateCalculator__ || {default: $__dateCalculator__}).DateCalculator;
-var GanttChartDataFeed = ($__ganttChartDataFeed__ = _dereq_("ganttChartDataFeed"), $__ganttChartDataFeed__ && $__ganttChartDataFeed__.__esModule && $__ganttChartDataFeed__ || {default: $__ganttChartDataFeed__}).GanttChartDataFeed;
-var BasePlugin = ($__handsontable_47_plugins_47__95_base_46_js__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js"), $__handsontable_47_plugins_47__95_base_46_js__ && $__handsontable_47_plugins_47__95_base_46_js__.__esModule && $__handsontable_47_plugins_47__95_base_46_js__ || {default: $__handsontable_47_plugins_47__95_base_46_js__}).default;
-var GanttChart = function GanttChart(hotInstance) {
-  $traceurRuntime.superConstructor($GanttChart).call(this, hotInstance);
-  this.settings = {};
-  this.dateCalculator = null;
-  this.currentYear = null;
-  this.monthList = [];
-  this.monthHeadersArray = [];
-  this.weekHeadersArray = [];
-  this.rangeBars = {};
-  this.rangeList = {};
-  this.nestedHeadersPlugin = null;
-  this.hotSource = null;
-  this.overallWeekSectionCount = null;
-  this.initialSettings = null;
-  this.dataFeed = null;
-  this.colorData = {};
-  this.rangeBarMeta = Object.create(null);
-};
-var $GanttChart = GanttChart;
-($traceurRuntime.createClass)(GanttChart, {
-  checkDependencies: function() {
-    if (!this.hot.getSettings().colHeaders) {
-      console.warn('You need to enable the colHeaders property in your Gantt Chart Handsontable in order for it to work properly.');
-    }
-  },
-  isEnabled: function() {
-    return !!this.hot.getSettings().ganttChart;
-  },
-  enablePlugin: function() {
-    var $__9 = this;
-    if (this.enabled) {
-      return;
-    }
-    this.checkDependencies();
-    this.parseSettings();
-    this.currentYear = this.settings.startYear || new Date().getFullYear();
-    this.dateCalculator = new DateCalculator(this.currentYear);
-    this.dateCalculator.setFirstWeekDay(this.settings.firstWeekDay);
-    this.monthList = this.dateCalculator.getMonthList();
-    this.monthHeadersArray = this.generateMonthHeaders();
-    this.weekHeadersArray = this.generateWeekHeaders();
-    this.overallWeekSectionCount = this.dateCalculator.countWeekSections();
-    this.assignGanttSettings();
-    if (this.nestedHeadersPlugin) {
-      this.applyDataSource();
-      if (this.colorData) {
-        this.setRangeBarColors(this.colorData);
-      }
-    }
-    this.addHook('afterInit', (function() {
-      return $__9.onAfterInit();
-    }));
-    addClass(this.hot.rootElement, 'ganttChart');
-    $traceurRuntime.superGet(this, $GanttChart.prototype, "enablePlugin").call(this);
-  },
-  disablePlugin: function() {
-    if (this.internalUpdateSettings) {
-      return;
-    }
-    if (this.dataFeed && this.dataFeed.hotSource) {
-      this.dataFeed.removeSourceHotHooks(this.dataFeed.hotSource);
-    }
-    this.settings = {};
-    this.dataFeed = {};
-    this.currentYear = null;
-    this.monthList = [];
-    this.rangeBars = {};
-    this.rangeList = {};
-    this.rangeBarMeta = {};
-    this.hotSource = null;
-    this.deassignGanttSettings();
-    this.hot.getPlugin('collapsibleColumns').disablePlugin();
-    this.hot.getPlugin('nestedHeaders').disablePlugin();
-    removeClass(this.hot.rootElement, 'ganttChart');
-    $traceurRuntime.superGet(this, $GanttChart.prototype, "disablePlugin").call(this);
-  },
-  updatePlugin: function() {
-    this.disablePlugin();
-    this.enablePlugin();
-    $traceurRuntime.superGet(this, $GanttChart.prototype, "updatePlugin").call(this);
-  },
-  parseSettings: function() {
-    this.settings = this.hot.getSettings().ganttChart;
-    if (typeof this.settings === 'boolean') {
-      this.settings = {};
-    }
-    if (!this.settings.firstWeekDay) {
-      this.settings.firstWeekDay = 'monday';
-    }
-  },
-  applyDataSource: function() {
-    if (this.settings.dataSource) {
-      var source = this.settings.dataSource;
-      if (source.instance) {
-        this.loadData(source.instance, source.startDateColumn, source.endDateColumn, source.additionalData, source.asyncUpdates);
-      } else {
-        this.loadData(source);
-      }
-    }
-  },
-  loadData: function(data, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
-    this.dataFeed = new GanttChartDataFeed(this.hot, data, startDateColumn, endDateColumn, additionalData, asyncUpdates);
-  },
-  clearRangeBars: function() {
-    this.rangeBars = {};
-  },
-  clearRangeList: function() {
-    this.rangeList = {};
-  },
-  getRangeBarCoordinates: function(row) {
-    return this.rangeList[row];
-  },
-  generateHeaderSet: function(type) {
-    var $__9 = this;
-    var headers = [];
-    objectEach(this.monthList, (function(month, index) {
-      var areDaysBeforeFullWeeks = month.daysBeforeFullWeeks > 0 ? 1 : 0;
-      var areDaysAfterFullWeeks = month.daysAfterFullWeeks > 0 ? 1 : 0;
-      var headerCount = month.fullWeeks + areDaysBeforeFullWeeks + areDaysAfterFullWeeks;
-      var monthNumber = parseInt(index, 10);
-      if (type === 'months') {
-        headers.push({
-          label: month.name,
-          colspan: headerCount
-        });
-      } else if (type === 'weeks') {
-        for (var i = 0; i < headerCount; i++) {
-          if (areDaysBeforeFullWeeks && i === 0) {
-            var start = i + 1;
-            var end = month.daysBeforeFullWeeks;
-            if (start === end) {
-              headers.push(start);
-            } else {
-              headers.push(start + ' - ' + end);
-            }
-            $__9.dateCalculator.addDaysToCache(monthNumber, headers.length - 1, start, end);
-          } else if (areDaysAfterFullWeeks && i === headerCount - 1) {
-            var start$__11 = month.days - month.daysAfterFullWeeks + 1;
-            var end$__12 = month.days;
-            if (start$__11 === end$__12) {
-              headers.push(start$__11);
-            } else {
-              headers.push(start$__11 + ' - ' + end$__12);
-            }
-            $__9.dateCalculator.addDaysToCache(monthNumber, headers.length - 1, start$__11, end$__12);
-          } else {
-            var start$__13 = month.daysBeforeFullWeeks + (i - areDaysBeforeFullWeeks) * 7 + 1;
-            var end$__14 = start$__13 + 6;
-            headers.push(start$__13 + ' - ' + end$__14);
-            $__9.dateCalculator.addDaysToCache(monthNumber, headers.length - 1, start$__13, end$__14);
-          }
-        }
-      } else if (type === 'days') {
-        for (var i$__15 = 0; i$__15 < month.days; i$__15++) {
-          headers.push(i$__15 + 1);
-        }
-      }
-    }));
-    return headers;
-  },
-  generateMonthHeaders: function() {
-    return this.generateHeaderSet('months');
-  },
-  generateWeekHeaders: function() {
-    return this.generateHeaderSet('weeks');
-  },
-  generateDayHeaders: function() {
-    return this.generateHeaderSet('days');
-  },
-  assignGanttSettings: function() {
-    var $__9 = this;
-    this.initialSettings = deepClone(this.hot.getSettings());
-    var additionalSettings = {
-      data: createEmptySpreadsheetData(1, this.overallWeekSectionCount),
-      readOnly: true,
-      renderer: (function(instance, TD, row, col, prop, value, cellProperties) {
-        return $__9.uniformBackgroundRenderer(instance, TD, row, col, prop, value, cellProperties);
-      }),
-      colWidths: 60,
-      hiddenColumns: true,
-      nestedHeaders: [this.monthHeadersArray, this.weekHeadersArray],
-      collapsibleColumns: true,
-      columnSorting: false
-    };
-    this.internalUpdateSettings = true;
-    this.hot.updateSettings(additionalSettings);
-    this.internalUpdateSettings = void 0;
-  },
-  deassignGanttSettings: function() {
-    this.internalUpdateSettings = true;
-    if (this.initialSettings) {
-      this.hot.updateSettings(this.initialSettings);
-    }
-    this.internalUpdateSettings = void 0;
-  },
-  cacheRangeBarMeta: function(row, col, key, value) {
-    if (!this.rangeBarMeta[row]) {
-      this.rangeBarMeta[row] = {};
-    }
-    if (!this.rangeBarMeta[row][col]) {
-      this.rangeBarMeta[row][col] = {};
-    }
-    this.rangeBarMeta[row][col][key] = value;
-  },
-  applyRangeBarMetaCache: function() {
-    var $__9 = this;
-    objectEach(this.rangeBarMeta, (function(rowArr, row) {
-      objectEach(rowArr, (function(cell, col) {
-        objectEach(cell, (function(value, key) {
-          $__9.hot.setCellMeta(row, col, key, value);
-        }));
-      }));
-    }));
-  },
-  addRangeBar: function(row, startDate, endDate, additionalData) {
-    var $__9 = this;
-    var startDateColumn = this.dateCalculator.dateToColumn(startDate);
-    var endDateColumn = this.dateCalculator.dateToColumn(endDate);
-    var rowCount = this.hot.countRows();
-    if (!this.dateCalculator.isValidRangeBarData(startDate, endDate) || startDateColumn === false || endDateColumn === false) {
-      if (row > rowCount - 1) {
-        this.hot.alter('insert_row', rowCount, row - rowCount + 1);
-      }
-      return false;
-    }
-    if (!this.rangeBars[row]) {
-      this.rangeBars[row] = {};
-    }
-    this.rangeBars[row][startDateColumn] = {
-      barLength: endDateColumn - startDateColumn + 1,
-      partialStart: !this.dateCalculator.isOnTheEdgeOfWeek(startDate)[0],
-      partialEnd: !this.dateCalculator.isOnTheEdgeOfWeek(endDate)[1],
-      additionalData: {}
-    };
-    objectEach(additionalData, (function(prop, i) {
-      $__9.rangeBars[row][startDateColumn].additionalData[i] = prop;
-    }));
-    if (this.colorData[row]) {
-      this.rangeBars[row][startDateColumn].colors = this.colorData[row];
-    }
-    this.rangeList[row] = [row, startDateColumn];
-    this.renderRangeBar(row, startDateColumn, endDateColumn, additionalData);
-    return [row, startDateColumn];
-  },
-  getRangeBarData: function(row, column) {
-    var rangeBarCoords = this.getRangeBarCoordinates(row);
-    if (!rangeBarCoords) {
-      return false;
-    }
-    var rangeBarData = this.rangeBars[rangeBarCoords[0]][rangeBarCoords[1]];
-    if (rangeBarData && row === rangeBarCoords[0] && (column === rangeBarCoords[1] || column > rangeBarCoords[1] && column < rangeBarCoords[1] + rangeBarData.barLength)) {
-      return rangeBarData;
-    } else {
-      return false;
-    }
-  },
-  updateRangeBarData: function(row, column, data) {
-    var rangeBar = this.getRangeBarData(row, column);
-    objectEach(data, (function(val, prop) {
-      if (rangeBar[prop] !== val) {
-        rangeBar[prop] = val;
-      }
-    }));
-  },
-  renderRangeBar: function(row, startDateColumn, endDateColumn, additionalData) {
-    var currentBar = this.rangeBars[row][startDateColumn];
-    var rowCount = this.hot.countRows();
-    if (row > rowCount - 1) {
-      this.hot.alter('insert_row', rowCount, row - rowCount + 1);
-    }
-    for (var i = startDateColumn; i <= endDateColumn; i++) {
-      var cellMeta = this.hot.getCellMeta(row, i);
-      var newClassName = (cellMeta.className || '') + ' rangeBar ' + 'color-green';
-      if ((i === startDateColumn && currentBar.partialStart) || (i === endDateColumn && currentBar.partialEnd)) {
-        newClassName += ' partial';
-      }
-      this.hot.setCellMeta(row, i, 'originalClassName', cellMeta.className);
-      this.hot.setCellMeta(row, i, 'className', newClassName);
-      this.hot.setCellMeta(row, i, 'additionalData', currentBar.additionalData);
-      this.cacheRangeBarMeta(row, i, 'originalClassName', cellMeta.className);
-      this.cacheRangeBarMeta(row, i, 'className', newClassName);
-      this.cacheRangeBarMeta(row, i, 'additionalData', currentBar.additionalData);
-    }
-    this.hot.render();
-  },
-  removeRangeBarByDate: function(row, startDate) {
-    var startDateColumn = this.dateCalculator.dateToColumn(startDate);
-    this.removeRangeBarByColumn(row, startDateColumn);
-  },
-  removeRangeBarByColumn: function(row, startDateColumn) {
-    var $__9 = this;
-    var rangeBar = this.rangeBars[row][startDateColumn];
-    if (!rangeBar) {
-      return;
-    }
-    this.unrenderRangeBar(row, startDateColumn, startDateColumn + rangeBar.barLength - 1);
-    this.rangeBars[row][startDateColumn] = null;
-    objectEach(this.rangeList, (function(prop, i) {
-      i = parseInt(i, 10);
-      if (JSON.stringify(prop) === JSON.stringify([row, startDateColumn])) {
-        $__9.rangeList[i] = null;
-      }
-    }));
-  },
-  removeAllRangeBars: function() {
-    var $__9 = this;
-    objectEach(this.rangeBars, (function(row, i) {
-      objectEach(row, (function(bar, j) {
-        $__9.removeRangeBarByColumn(i, j);
-      }));
-    }));
-  },
-  unrenderRangeBar: function(row, startDateColumn, endDateColumn) {
-    for (var i = startDateColumn; i <= endDateColumn; i++) {
-      var cellMeta = this.hot.getCellMeta(row, i);
-      this.hot.setCellMeta(row, i, 'className', cellMeta.originalClassName);
-      this.hot.setCellMeta(row, i, 'originalClassName', void 0);
-      this.cacheRangeBarMeta(row, i, 'className', cellMeta.originalClassName);
-      this.cacheRangeBarMeta(row, i, 'originalClassName', void 0);
-    }
-    this.hot.render();
-  },
-  uniformBackgroundRenderer: function(instance, TD, row, col, prop, value, cellProperties) {
-    var rangeBarInfo = this.getRangeBarData(row, col);
-    var rangeBarCoords = this.getRangeBarCoordinates(row);
-    if (cellProperties.className) {
-      TD.className = cellProperties.className;
-    }
-    var titleValue = '';
-    objectEach(cellProperties.additionalData, (function(prop, i) {
-      titleValue += i + ': ' + prop + '\n';
-    }));
-    titleValue = titleValue.replace(/\n$/, '');
-    TD.title = titleValue;
-    if (rangeBarInfo && rangeBarInfo.colors) {
-      if (col === rangeBarCoords[1] && rangeBarInfo.partialStart || col === (rangeBarCoords[1] + rangeBarInfo.barLength - 1) && rangeBarInfo.partialEnd) {
-        TD.style.background = rangeBarInfo.colors[1];
-      } else {
-        TD.style.background = rangeBarInfo.colors[0];
-      }
-    } else {
-      TD.style.background = '';
-    }
-  },
-  setRangeBarColors: function(rows) {
-    var $__9 = this;
-    this.colorData = rows;
-    objectEach(rows, (function(colors, i) {
-      var barCoords = $__9.getRangeBarCoordinates(i);
-      if (barCoords) {
-        $__9.updateRangeBarData(barCoords[0], barCoords[1], {colors: colors});
-      }
-    }));
-    this.hot.render();
-  },
-  setYear: function(year) {
-    var newSettings = extend(this.hot.getSettings().ganttChart, {startYear: year});
-    this.hot.updateSettings({ganttChart: newSettings});
-  },
-  onAfterInit: function() {
-    this.nestedHeadersPlugin = this.hot.getPlugin('nestedHeaders');
-    this.applyDataSource();
-  },
-  onUpdateSettings: function() {
-    if (this.internalUpdateSettings) {
-      this.applyRangeBarMetaCache();
-      return;
-    }
-    $traceurRuntime.superGet(this, $GanttChart.prototype, "onUpdateSettings").call(this);
-  },
-  destroy: function() {
-    if (this.hotSource) {
-      this.dataFeed.removeSourceHotHooks(this.hotSource);
-    }
-    $traceurRuntime.superGet(this, $GanttChart.prototype, "destroy").call(this);
-  }
-}, {}, BasePlugin);
-;
-registerPlugin('ganttChart', GanttChart);
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/data":44,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":62,"dateCalculator":162,"ganttChartDataFeed":164}],164:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  GanttChartDataFeed: {get: function() {
-      return GanttChartDataFeed;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_object__,
-    $__handsontable_47_helpers_47_array__,
-    $__dateCalculator__;
-var $__0 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
-    objectEach = $__0.objectEach,
-    deepClone = $__0.deepClone;
-var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
-var DateCalculator = ($__dateCalculator__ = _dereq_("dateCalculator"), $__dateCalculator__ && $__dateCalculator__.__esModule && $__dateCalculator__ || {default: $__dateCalculator__}).DateCalculator;
-var GanttChartDataFeed = function GanttChartDataFeed(chartInstance, data, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
-  this.data = data;
-  this.chartInstance = chartInstance;
-  this.chartPlugin = this.chartInstance.getPlugin('ganttChart');
-  this.hotSource = null;
-  this.sourceHooks = {};
-  this.ongoingAsync = false;
-  this.applyData(data, startDateColumn, endDateColumn, additionalData, asyncUpdates || false);
-};
-($traceurRuntime.createClass)(GanttChartDataFeed, {
-  applyData: function(data, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
-    if (Object.prototype.toString.call(data) === '[object Array]') {
-      this.loadData(data);
-    } else if (data.guid) {
-      this.bindWithHotInstance(data, startDateColumn, endDateColumn, additionalData, asyncUpdates);
-    }
-  },
-  bindWithHotInstance: function(instance, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
-    this.hotSource = {
-      instance: instance,
-      startColumn: startDateColumn,
-      endColumn: endDateColumn,
-      additionalData: additionalData,
-      asyncUpdates: asyncUpdates
-    };
-    this.addSourceHotHooks();
-    this.asyncCall(this.updateFromSource);
-  },
-  asyncCall: function(func) {
-    var $__3 = this;
-    if (!this.hotSource.asyncUpdates) {
-      func.call(this);
-      return;
-    }
-    this.asyncStart();
-    setTimeout((function() {
-      func.call($__3);
-      $__3.asyncEnd();
-    }), 0);
-  },
-  asyncStart: function() {
-    this.ongoingAsync = true;
-  },
-  asyncEnd: function() {
-    this.ongoingAsync = false;
-  },
-  addSourceHotHooks: function() {
-    var $__3 = this;
-    this.sourceHooks = {
-      afterLoadData: (function(firstRun) {
-        return $__3.onAfterSourceLoadData(firstRun);
-      }),
-      afterChange: (function(changes, source) {
-        return $__3.onAfterSourceChange(changes, source);
-      }),
-      afterColumnSort: (function(column, order) {
-        return $__3.onAfterColumnSort(column, order);
-      })
-    };
-    this.hotSource.instance.addHook('afterLoadData', this.sourceHooks.afterLoadData);
-    this.hotSource.instance.addHook('afterChange', this.sourceHooks.afterChange);
-    this.hotSource.instance.addHook('afterColumnSort', this.sourceHooks.afterColumnSort);
-  },
-  removeSourceHotHooks: function(hotSource) {
-    if (this.sourceHooks.afterLoadData) {
-      hotSource.instance.removeHook('afterLoadData', this.sourceHooks.afterLoadData);
-    }
-    if (this.sourceHooks.afterChange) {
-      hotSource.instance.removeHook('afterChange', this.sourceHooks.afterChange);
-    }
-    if (this.sourceHooks.afterColumnSort) {
-      hotSource.instance.removeHook('afterColumnSort', this.sourceHooks.afterColumnSort);
-    }
-  },
-  getDataFromSource: function(row) {
-    var additionalObjectData = {};
-    var hotSource = this.hotSource;
-    var sourceHotRows;
-    var rangeBarData = [];
-    if (row === void 0) {
-      sourceHotRows = hotSource.instance.getData(0, 0, hotSource.instance.countRows() - 1, hotSource.instance.countCols() - 1);
-    } else {
-      sourceHotRows = [];
-      sourceHotRows[row] = hotSource.instance.getDataAtRow(row);
-    }
-    var $__6 = function(i, dataLength) {
-      additionalObjectData = {};
-      var currentRow = sourceHotRows[i];
-      if (currentRow[hotSource.startColumn] === null || currentRow[hotSource.startColumn] === '') {
-        return 0;
-      }
-      objectEach(hotSource.additionalData, (function(prop, j) {
-        additionalObjectData[j] = currentRow[prop];
-      }));
-      rangeBarData.push([i, currentRow[hotSource.startColumn], currentRow[hotSource.endColumn], additionalObjectData, i]);
-    },
-        $__7;
-    $__5: for (var i = row || 0,
-        dataLength = sourceHotRows.length; i < (row ? row + 1 : dataLength); i++) {
-      $__7 = $__6(i, dataLength);
-      switch ($__7) {
-        case 0:
-          continue $__5;
-      }
-    }
-    return rangeBarData;
-  },
-  updateFromSource: function(row) {
-    var $__3 = this;
-    var dataFromSource = this.getDataFromSource(row);
-    if (!row && isNaN(row)) {
-      this.chartPlugin.clearRangeBars();
-      this.chartPlugin.clearRangeList();
-    }
-    arrayEach(dataFromSource, (function(bar) {
-      bar = $__3.trimRangeIfNeeded(bar);
-      $__3.chartPlugin.addRangeBar.apply($__3.chartPlugin, bar);
-    }));
-  },
-  loadData: function(data) {
-    var $__3 = this;
-    arrayEach(data, (function(bar, i) {
-      bar = $__3.trimRangeIfNeeded(bar);
-      $__3.chartPlugin.addRangeBar(i, bar.startDate, bar.endDate, bar.additionalData);
-    }));
-  },
-  trimRangeIfNeeded: function(bar) {
-    var startDate = new Date(bar[1]);
-    var endDate = new Date(bar[2]);
-    if (typeof startDate === 'string' || typeof endDate === 'string') {
-      return false;
-    }
-    var startYear = startDate.getFullYear();
-    var endYear = endDate.getFullYear();
-    if (startYear < this.chartPlugin.currentYear && endYear >= this.chartPlugin.currentYear) {
-      bar[1] = '01/01/' + this.chartPlugin.currentYear;
-    }
-    if (endYear > this.chartPlugin.currentYear && startYear <= this.chartPlugin.currentYear) {
-      bar[2] = '12/31/' + this.chartPlugin.currentYear;
-    }
-    return bar;
-  },
-  onAfterSourceChange: function(changes, source) {
-    var $__3 = this;
-    this.asyncCall((function() {
-      if (!changes) {
-        return;
-      }
-      var changesByRows = {};
-      for (var i = 0,
-          changesLength = changes.length; i < changesLength; i++) {
-        var currentChange = changes[i];
-        var row = parseInt(currentChange[0], 10);
-        var col = parseInt(currentChange[1], 10);
-        if (!changesByRows[row]) {
-          changesByRows[row] = {};
-        }
-        changesByRows[row][col] = [currentChange[2], currentChange[3]];
-      }
-      objectEach(changesByRows, (function(prop, i) {
-        i = parseInt(i, 10);
-        if ($__3.chartPlugin.getRangeBarCoordinates(i)) {
-          $__3.chartPlugin.removeRangeBarByColumn(i, $__3.chartPlugin.rangeList[i][1]);
-        }
-        $__3.updateFromSource(i);
-      }));
-    }));
-  },
-  onAfterSourceLoadData: function(firstRun) {
-    var $__3 = this;
-    this.asyncCall((function(firstRun) {
-      $__3.chartPlugin.removeAllRangeBars();
-      $__3.updateFromSource();
-    }));
-  },
-  onAfterColumnSort: function(column, order) {
-    var $__3 = this;
-    this.asyncCall((function() {
-      $__3.chartPlugin.removeAllRangeBars();
-      $__3.updateFromSource();
-    }));
-  }
-}, {});
-;
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"dateCalculator":162}],165:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  HeaderTooltips: {get: function() {
-      return HeaderTooltips;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_dom_47_element_46_js__,
-    $__handsontable_47_plugins_46_js__,
-    $__handsontable_47_helpers_47_number__,
-    $__handsontable_47_plugins_47__95_base_46_js__;
-var outerWidth = ($__handsontable_47_helpers_47_dom_47_element_46_js__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element.js"), $__handsontable_47_helpers_47_dom_47_element_46_js__ && $__handsontable_47_helpers_47_dom_47_element_46_js__.__esModule && $__handsontable_47_helpers_47_dom_47_element_46_js__ || {default: $__handsontable_47_helpers_47_dom_47_element_46_js__}).outerWidth;
-var registerPlugin = ($__handsontable_47_plugins_46_js__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js"), $__handsontable_47_plugins_46_js__ && $__handsontable_47_plugins_46_js__.__esModule && $__handsontable_47_plugins_46_js__ || {default: $__handsontable_47_plugins_46_js__}).registerPlugin;
-var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
-var BasePlugin = ($__handsontable_47_plugins_47__95_base_46_js__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js"), $__handsontable_47_plugins_47__95_base_46_js__ && $__handsontable_47_plugins_47__95_base_46_js__.__esModule && $__handsontable_47_plugins_47__95_base_46_js__ || {default: $__handsontable_47_plugins_47__95_base_46_js__}).default;
-var HeaderTooltips = function HeaderTooltips(hotInstance) {
-  $traceurRuntime.superConstructor($HeaderTooltips).call(this, hotInstance);
-  this.settings = null;
-};
-var $HeaderTooltips = HeaderTooltips;
-($traceurRuntime.createClass)(HeaderTooltips, {
-  isEnabled: function() {
-    return !!this.hot.getSettings().headerTooltips;
-  },
-  enablePlugin: function() {
-    var $__4 = this;
-    if (this.enabled) {
-      return;
-    }
-    this.settings = this.hot.getSettings().headerTooltips;
-    this.parseSettings();
-    this.addHook('afterGetColHeader', (function(col, TH) {
-      return $__4.onAfterGetHeader(col, TH);
-    }));
-    this.addHook('afterGetRowHeader', (function(col, TH) {
-      return $__4.onAfterGetHeader(col, TH);
-    }));
-    $traceurRuntime.superGet(this, $HeaderTooltips.prototype, "enablePlugin").call(this);
-  },
-  disablePlugin: function() {
-    this.settings = null;
-    this.clearTitleAttributes();
-    $traceurRuntime.superGet(this, $HeaderTooltips.prototype, "disablePlugin").call(this);
-  },
-  parseSettings: function() {
-    if (typeof this.settings === 'boolean') {
-      this.settings = {
-        rows: true,
-        columns: true,
-        onlyTrimmed: false
-      };
-    }
-  },
-  clearTitleAttributes: function() {
-    var headerLevels = this.hot.view.wt.getSetting('columnHeaders').length;
-    var mainHeaders = this.hot.view.wt.wtTable.THEAD;
-    var topHeaders = this.hot.view.wt.wtOverlays.topOverlay.clone.wtTable.THEAD;
-    var topLeftCornerHeaders = this.hot.view.wt.wtOverlays.topLeftCornerOverlay ? hot.view.wt.wtOverlays.topLeftCornerOverlay.clone.wtTable.THEAD : null;
-    rangeEach(0, headerLevels - 1, (function(i) {
-      var masterLevel = mainHeaders.childNodes[i];
-      var topLevel = topHeaders.childNodes[i];
-      var topLeftCornerLevel = topLeftCornerHeaders ? topLeftCornerHeaders.childNodes[i] : null;
-      rangeEach(0, masterLevel.childNodes.length - 1, (function(j) {
-        masterLevel.childNodes[j].removeAttribute('title');
-        if (topLevel && topLevel.childNodes[j]) {
-          topLevel.childNodes[j].removeAttribute('title');
-        }
-        if (topLeftCornerHeaders && topLeftCornerLevel && topLeftCornerLevel.childNodes[j]) {
-          topLeftCornerLevel.childNodes[j].removeAttribute('title');
-        }
-      }));
-    }), true);
-  },
-  onAfterGetHeader: function(index, TH) {
-    var innerSpan = TH.querySelector('span');
-    var isColHeader = TH.parentNode.parentNode.nodeName === 'THEAD';
-    if (isColHeader && this.settings.columns || !isColHeader && this.settings.rows) {
-      if (this.settings.onlyTrimmed) {
-        if (outerWidth(innerSpan) >= outerWidth(TH) && outerWidth(innerSpan) !== 0) {
-          TH.setAttribute('title', innerSpan.textContent);
-        }
-      } else {
-        TH.setAttribute('title', innerSpan.textContent);
-      }
-    }
-  },
-  destroy: function() {
-    this.settings = null;
-    $traceurRuntime.superGet(this, $HeaderTooltips.prototype, "destroy").call(this);
-  }
-}, {}, BasePlugin);
-;
-registerPlugin('headerTooltips', HeaderTooltips);
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element.js":46,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":62}],166:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  hideColumnItem: {get: function() {
-      return hideColumnItem;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_number__;
-var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
-function hideColumnItem(hiddenColumnsPlugin) {
-  return {
-    key: 'hidden_columns_hide',
-    name: 'Hide column',
-    callback: function() {
-      var $__1 = this.getSelectedRange(),
-          from = $__1.from,
-          to = $__1.to;
-      var start = Math.min(from.col, to.col);
-      var end = Math.max(from.col, to.col);
-      rangeEach(start, end, (function(i) {
-        return hiddenColumnsPlugin.hideColumn(hiddenColumnsPlugin.getLogicalColumnIndex(i));
-      }));
-      this.render();
-      this.view.wt.wtOverlays.adjustElementsSize(true);
-    },
-    disabled: false,
-    hidden: function() {
-      return !this.selection.selectedHeader.cols;
-    }
-  };
-}
-
-//# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51}],167:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  showColumnItem: {get: function() {
-      return showColumnItem;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_number__;
-var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
-function showColumnItem(hiddenColumnsPlugin) {
-  var beforeHiddenColumns = [];
-  var afterHiddenColumns = [];
-  return {
-    key: 'hidden_columns_show',
-    name: 'Show column',
-    callback: function() {
-      var $__1 = this.getSelectedRange(),
-          from = $__1.from,
-          to = $__1.to;
-      var start = from.col;
-      var end = to.col;
-      if (end < start) {
-        start = to.col;
-        end = from.col;
-      }
-      if (start === end) {
-        if (beforeHiddenColumns.length === start) {
-          hiddenColumnsPlugin.showColumns(beforeHiddenColumns);
-          beforeHiddenColumns.length = 0;
-        }
-        if (afterHiddenColumns.length === this.countCols() - (start + 1)) {
-          hiddenColumnsPlugin.showColumns(afterHiddenColumns);
-          afterHiddenColumns.length = 0;
-        }
-      } else {
-        rangeEach(start, end, (function(i) {
-          return hiddenColumnsPlugin.showColumn(hiddenColumnsPlugin.getLogicalColumnIndex(i));
-        }));
-      }
-      this.render();
-    },
-    disabled: false,
-    hidden: function() {
-      if (!hiddenColumnsPlugin.hiddenColumns.length) {
-        return true;
-      }
-      if (!this.selection.selectedHeader.cols) {
-        return true;
-      }
-      beforeHiddenColumns.length = 0;
-      afterHiddenColumns.length = 0;
-      var $__1 = this.getSelectedRange(),
-          from = $__1.from,
-          to = $__1.to;
-      var start = from.col;
-      var end = to.col;
-      var hiddenInSelection = false;
-      if (start === end) {
-        var totalColumnLength = this.countCols();
-        rangeEach(0, totalColumnLength, (function(i) {
-          var partedHiddenLength = beforeHiddenColumns.length + afterHiddenColumns.length;
-          if (partedHiddenLength === hiddenColumnsPlugin.hiddenColumns.length) {
-            return false;
-          }
-          if (i < start) {
-            if (hiddenColumnsPlugin.isHidden(hiddenColumnsPlugin.getLogicalColumnIndex(i))) {
-              beforeHiddenColumns.push(hiddenColumnsPlugin.getLogicalColumnIndex(i));
-            }
-          } else {
-            if (hiddenColumnsPlugin.isHidden(hiddenColumnsPlugin.getLogicalColumnIndex(i))) {
-              afterHiddenColumns.push(hiddenColumnsPlugin.getLogicalColumnIndex(i));
-            }
-          }
-        }));
-        totalColumnLength = totalColumnLength - 1;
-        if ((beforeHiddenColumns.length === start && start > 0) || (afterHiddenColumns.length === totalColumnLength - start && start < totalColumnLength)) {
-          hiddenInSelection = true;
-        }
-      } else {
-        if (end < start) {
-          start = to.col;
-          end = from.col;
-        }
-        rangeEach(start, end, (function(i) {
-          if (hiddenColumnsPlugin.isHidden(hiddenColumnsPlugin.getLogicalColumnIndex(i))) {
-            hiddenInSelection = true;
-            return false;
-          }
-        }));
-      }
-      return !hiddenInSelection;
-    }
-  };
-}
-
-//# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51}],168:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  HiddenColumns: {get: function() {
-      return HiddenColumns;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_plugins_47__95_base__,
-    $__handsontable_47_helpers_47_dom_47_element__,
-    $__handsontable_47_helpers_47_number__,
-    $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_plugins__,
-    $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__,
-    $__contextMenuItem_47_hideColumn__,
-    $__contextMenuItem_47_showColumn__;
-var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
-var $__1 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
-    addClass = $__1.addClass,
-    removeClass = $__1.removeClass;
-var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
-var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
-var $__4 = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}),
-    registerPlugin = $__4.registerPlugin,
-    getPlugin = $__4.getPlugin;
-var SEPARATOR = ($__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems"), $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ || {default: $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__}).SEPARATOR;
-var hideColumnItem = ($__contextMenuItem_47_hideColumn__ = _dereq_("contextMenuItem/hideColumn"), $__contextMenuItem_47_hideColumn__ && $__contextMenuItem_47_hideColumn__.__esModule && $__contextMenuItem_47_hideColumn__ || {default: $__contextMenuItem_47_hideColumn__}).hideColumnItem;
-var showColumnItem = ($__contextMenuItem_47_showColumn__ = _dereq_("contextMenuItem/showColumn"), $__contextMenuItem_47_showColumn__ && $__contextMenuItem_47_showColumn__.__esModule && $__contextMenuItem_47_showColumn__ || {default: $__contextMenuItem_47_showColumn__}).showColumnItem;
-var HiddenColumns = function HiddenColumns(hotInstance) {
-  $traceurRuntime.superConstructor($HiddenColumns).call(this, hotInstance);
-  this.settings = {};
-  this.hiddenColumns = [];
-  this.lastSelectedColumn = -1;
-};
-var $HiddenColumns = HiddenColumns;
-($traceurRuntime.createClass)(HiddenColumns, {
-  isEnabled: function() {
-    return !!this.hot.getSettings().hiddenColumns;
-  },
-  enablePlugin: function() {
-    var $__8 = this;
-    if (this.enabled) {
-      return;
-    }
-    var settings = this.hot.getSettings().hiddenColumns;
-    if (typeof settings === 'object') {
-      this.settings = settings;
-      if (settings.copyPasteEnabled === void 0) {
-        settings.copyPasteEnabled = true;
-      }
-      if (Array.isArray(settings.columns)) {
-        this.hideColumns(settings.columns);
-      }
-      if (!settings.copyPasteEnabled) {
-        this.addHook('modifyCopyableRange', (function(ranges) {
-          return $__8.onModifyCopyableRange(ranges);
-        }));
-      }
-    }
-    if (this.hot.hasColHeaders()) {
-      this.addHook('afterGetColHeader', (function(col, TH) {
-        return $__8.onAfterGetColHeader(col, TH);
-      }));
-    } else {
-      this.addHook('afterRenderer', (function(TD, row, col) {
-        return $__8.onAfterGetColHeader(col, TD);
-      }));
-    }
-    this.addHook('afterContextMenuDefaultOptions', (function(options) {
-      return $__8.onAfterContextMenuDefaultOptions(options);
-    }));
-    this.addHook('afterGetCellMeta', (function(row, col, cellProperties) {
-      return $__8.onAfterGetCellMeta(row, col, cellProperties);
-    }));
-    this.addHook('modifyColWidth', (function(width, col) {
-      return $__8.onModifyColWidth(width, col);
-    }));
-    this.addHook('beforeSetRangeStartOnly', (function(coords) {
-      return $__8.onBeforeSetRangeStart(coords);
-    }));
-    this.addHook('beforeSetRangeEnd', (function(coords) {
-      return $__8.onBeforeSetRangeEnd(coords);
-    }));
-    this.addHook('hiddenColumn', (function(column) {
-      return $__8.isHidden(column);
-    }));
-    this.addHook('beforeStretchingColumnWidth', (function(width, column) {
-      return $__8.onBeforeStretchingColumnWidth(width, column);
-    }));
-    this.addHook('afterCreateCol', (function(index, amount) {
-      return $__8.onAfterCreateCol(index, amount);
-    }));
-    this.addHook('afterRemoveCol', (function(index, amount) {
-      return $__8.onAfterRemoveCol(index, amount);
-    }));
-    $traceurRuntime.superGet(this, $HiddenColumns.prototype, "enablePlugin").call(this);
-  },
-  updatePlugin: function() {
-    this.disablePlugin();
-    this.enablePlugin();
-    $traceurRuntime.superGet(this, $HiddenColumns.prototype, "updatePlugin").call(this);
-  },
-  disablePlugin: function() {
-    this.settings = {};
-    this.hiddenColumns = [];
-    this.lastSelectedColumn = -1;
-    this.hot.render();
-    $traceurRuntime.superGet(this, $HiddenColumns.prototype, "disablePlugin").call(this);
-    this.resetCellsMeta();
-  },
-  hideColumns: function(columns) {
-    var $__8 = this;
-    arrayEach(columns, (function(col) {
-      col = parseInt(col, 10);
-      if (!$__8.isHidden(col)) {
-        $__8.hiddenColumns.push(col);
-      }
-    }));
-  },
-  hideColumn: function() {
-    for (var column = [],
-        $__10 = 0; $__10 < arguments.length; $__10++)
-      column[$__10] = arguments[$__10];
-    this.hideColumns(column);
-  },
-  showColumns: function(columns) {
-    var $__8 = this;
-    arrayEach(columns, (function(col) {
-      col = parseInt(col, 10);
-      if ($__8.isHidden(col)) {
-        $__8.hiddenColumns.splice($__8.hiddenColumns.indexOf(col), 1);
-      }
-    }));
-  },
-  showColumn: function() {
-    for (var column = [],
-        $__11 = 0; $__11 < arguments.length; $__11++)
-      column[$__11] = arguments[$__11];
-    this.showColumns(column);
-  },
-  isHidden: function(column) {
-    return this.hiddenColumns.indexOf(column) > -1;
-  },
-  resetCellsMeta: function() {
-    arrayEach(this.hot.getCellsMeta(), (function(meta) {
-      if (meta) {
-        meta.skipColumnOnPaste = false;
-        if (meta.baseRenderer !== null) {
-          meta.renderer = meta.baseRenderer;
-          meta.baseRenderer = null;
-        }
-      }
-    }));
-  },
-  getLogicalColumnIndex: function(column) {
-    return this.hot.runHooks('modifyCol', column);
-  },
-  onBeforeStretchingColumnWidth: function(width, column) {
-    if (this.hiddenColumns.indexOf(column) > -1) {
-      width = 0;
-    }
-    return width;
-  },
-  onModifyColWidth: function(width, col) {
-    if (this.isHidden(this.getLogicalColumnIndex(col))) {
-      return 0.1;
-    } else if (this.settings.indicators && (this.isHidden(this.getLogicalColumnIndex(col + 1)) || this.isHidden(this.getLogicalColumnIndex(col - 1)))) {
-      return width + (this.hot.hasColHeaders() ? 15 : 0);
-    }
-  },
-  onAfterGetCellMeta: function(row, col, cellProperties) {
-    if (this.settings.copyPasteEnabled === false && this.isHidden(col)) {
-      cellProperties.skipColumnOnPaste = true;
-    }
-    if (this.isHidden(col)) {
-      if (cellProperties.renderer !== hiddenRenderer) {
-        cellProperties.baseRenderer = cellProperties.renderer;
-      }
-      cellProperties.renderer = hiddenRenderer;
-    } else {
-      if (cellProperties.baseRenderer !== null) {
-        cellProperties.renderer = cellProperties.baseRenderer;
-        cellProperties.baseRenderer = null;
-      }
-    }
-    if (this.isHidden(this.getLogicalColumnIndex(cellProperties.visualCol - 1))) {
-      var firstSectionHidden = true;
-      var i = cellProperties.visualCol - 1;
-      cellProperties.className = cellProperties.className || '';
-      if (cellProperties.className.indexOf('afterHiddenColumn') === -1) {
-        cellProperties.className += ' afterHiddenColumn';
-      }
-      do {
-        if (!this.isHidden(this.getLogicalColumnIndex(i))) {
-          firstSectionHidden = false;
-          break;
-        }
-        i--;
-      } while (i >= 0);
-      if (firstSectionHidden && cellProperties.className.indexOf('firstVisibleColumn') === -1) {
-        cellProperties.className += ' firstVisibleColumn';
-      }
-    } else if (cellProperties.className) {
-      var classArr = cellProperties.className.split(' ');
-      if (classArr.length) {
-        var containAfterHiddenColumn = classArr.indexOf('afterHiddenColumn');
-        var containFirstVisible = classArr.indexOf('firstVisibleColumn');
-        if (containAfterHiddenColumn > -1) {
-          classArr.splice(containAfterHiddenColumn, 1);
-        }
-        if (containFirstVisible > -1) {
-          classArr.splice(containFirstVisible, 1);
-        }
-        cellProperties.className = classArr.join(' ');
-      }
-    }
-  },
-  onModifyCopyableRange: function(ranges) {
-    var $__8 = this;
-    var newRanges = [];
-    var pushRange = (function(startRow, endRow, startCol, endCol) {
-      newRanges.push({
-        startRow: startRow,
-        endRow: endRow,
-        startCol: startCol,
-        endCol: endCol
-      });
-    });
-    arrayEach(ranges, (function(range) {
-      var isHidden = true;
-      var rangeStart = 0;
-      rangeEach(range.startCol, range.endCol, (function(col) {
-        if ($__8.isHidden(col)) {
-          if (!isHidden) {
-            pushRange(range.startRow, range.endRow, rangeStart, col - 1);
-          }
-          isHidden = true;
-        } else {
-          if (isHidden) {
-            rangeStart = col;
-          }
-          if (col === range.endCol) {
-            pushRange(range.startRow, range.endRow, rangeStart, col);
-          }
-          isHidden = false;
-        }
-      }));
-    }));
-    return newRanges;
-  },
-  onAfterGetColHeader: function(col, TH) {
-    if (this.isHidden(this.getLogicalColumnIndex(col))) {
-      return;
-    }
-    var firstSectionHidden = true;
-    var i = col - 1;
-    do {
-      if (!this.isHidden(this.getLogicalColumnIndex(i))) {
-        firstSectionHidden = false;
-        break;
-      }
-      i--;
-    } while (i >= 0);
-    if (firstSectionHidden) {
-      addClass(TH, 'firstVisibleColumn');
-    }
-    if (!this.settings.indicators) {
-      return;
-    }
-    if (this.isHidden(this.getLogicalColumnIndex(col - 1))) {
-      addClass(TH, 'afterHiddenColumn');
-    }
-    if (this.isHidden(this.getLogicalColumnIndex(col + 1)) && col > -1) {
-      addClass(TH, 'beforeHiddenColumn');
-    }
-  },
-  onBeforeSetRangeStart: function(coords) {
-    var $__8 = this;
-    if (coords.col > 0) {
-      return;
-    }
-    coords.col = 0;
-    var getNextColumn = (function(col) {
-      var logicalCol = $__8.getLogicalColumnIndex(col);
-      if ($__8.isHidden(logicalCol)) {
-        col = getNextColumn(++col);
-      }
-      return col;
-    });
-    coords.col = getNextColumn(coords.col);
-  },
-  onBeforeSetRangeEnd: function(coords) {
-    var $__8 = this;
-    var columnCount = this.hot.countCols();
-    var getNextColumn = (function(col) {
-      var logicalCol = $__8.getLogicalColumnIndex(col);
-      if ($__8.isHidden(logicalCol)) {
-        if ($__8.lastSelectedColumn > col || coords.col === columnCount - 1) {
-          if (col > 0) {
-            col = getNextColumn(--col);
-          } else {
-            rangeEach(0, $__8.lastSelectedColumn, (function(i) {
-              if (!$__8.isHidden($__8.getLogicalColumnIndex(i))) {
-                col = i;
-                return false;
-              }
-            }));
-          }
-        } else {
-          col = getNextColumn(++col);
-        }
-      }
-      return col;
-    });
-    coords.col = getNextColumn(coords.col);
-    this.lastSelectedColumn = coords.col;
-  },
-  onAfterContextMenuDefaultOptions: function(options) {
-    options.items.push({name: SEPARATOR}, hideColumnItem(this), showColumnItem(this));
-  },
-  onAfterCreateCol: function(index, amount) {
-    var tempHidden = [];
-    arrayEach(this.hiddenColumns, (function(col) {
-      if (col >= index) {
-        col += amount;
-      }
-      tempHidden.push(col);
-    }));
-    this.hiddenColumns = tempHidden;
-  },
-  onAfterRemoveCol: function(index, amount) {
-    var tempHidden = [];
-    arrayEach(this.hiddenColumns, (function(col) {
-      if (col >= index) {
-        col -= amount;
-      }
-      tempHidden.push(col);
-    }));
-    this.hiddenColumns = tempHidden;
-  },
-  destroy: function() {
-    $traceurRuntime.superGet(this, $HiddenColumns.prototype, "destroy").call(this);
-  }
-}, {}, BasePlugin);
-function hiddenRenderer(hotInstance, td) {
-  td.textContent = '';
-}
-;
-registerPlugin('hiddenColumns', HiddenColumns);
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":74,"contextMenuItem/hideColumn":166,"contextMenuItem/showColumn":167}],169:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  hideRowItem: {get: function() {
-      return hideRowItem;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_number__;
-var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
-function hideRowItem(hiddenRowsPlugin) {
-  return {
-    key: 'hidden_rows_hide',
-    name: 'Hide row',
-    callback: function() {
-      var $__1 = this.getSelectedRange(),
-          from = $__1.from,
-          to = $__1.to;
-      var start = Math.min(from.row, to.row);
-      var end = Math.max(from.row, to.row);
-      rangeEach(start, end, (function(i) {
-        return hiddenRowsPlugin.hideRow(i);
-      }));
-      this.render();
-      this.view.wt.wtOverlays.adjustElementsSize(true);
-    },
-    disabled: false,
-    hidden: function() {
-      return !this.selection.selectedHeader.rows;
-    }
-  };
-}
-
-//# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51}],170:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  showRowItem: {get: function() {
-      return showRowItem;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_number__;
-var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
-function showRowItem(hiddenRowsPlugin) {
-  var beforeHiddenRows = [];
-  var afterHiddenRows = [];
-  return {
-    key: 'hidden_rows_show',
-    name: 'Show row',
-    callback: function() {
-      var $__1 = this.getSelectedRange(),
-          from = $__1.from,
-          to = $__1.to;
-      var start = Math.min(from.row, to.row);
-      var end = Math.max(from.row, to.row);
-      if (start === end) {
-        if (beforeHiddenRows.length === start) {
-          hiddenRowsPlugin.showRows(beforeHiddenRows);
-          beforeHiddenRows.length = 0;
-        }
-        if (afterHiddenRows.length === this.countSourceRows() - (start + 1)) {
-          hiddenRowsPlugin.showRows(afterHiddenRows);
-          afterHiddenRows.length = 0;
-        }
-      } else {
-        rangeEach(start, end, (function(i) {
-          return hiddenRowsPlugin.showRow(i);
-        }));
-      }
-      this.render();
-    },
-    disabled: false,
-    hidden: function() {
-      if (!hiddenRowsPlugin.hiddenRows.length) {
-        return true;
-      }
-      if (!this.selection.selectedHeader.rows) {
-        return true;
-      }
-      beforeHiddenRows.length = 0;
-      afterHiddenRows.length = 0;
-      var $__1 = this.getSelectedRange(),
-          from = $__1.from,
-          to = $__1.to;
-      var start = Math.min(from.row, to.row);
-      var end = Math.max(from.row, to.row);
-      var hiddenInSelection = false;
-      if (start === end) {
-        var totalRowsLength = this.countSourceRows();
-        rangeEach(0, totalRowsLength, (function(i) {
-          var partedHiddenLength = beforeHiddenRows.length + afterHiddenRows.length;
-          if (partedHiddenLength === hiddenRowsPlugin.hiddenRows.length) {
-            return false;
-          }
-          if (i < start) {
-            if (hiddenRowsPlugin.isHidden(i)) {
-              beforeHiddenRows.push(i);
-            }
-          } else {
-            if (hiddenRowsPlugin.isHidden(i)) {
-              afterHiddenRows.push(i);
-            }
-          }
-        }));
-        totalRowsLength = totalRowsLength - 1;
-        if ((beforeHiddenRows.length === start && start > 0) || (afterHiddenRows.length === totalRowsLength - start && start < totalRowsLength)) {
-          hiddenInSelection = true;
-        }
-      } else {
-        rangeEach(start, end, (function(i) {
-          if (hiddenRowsPlugin.isHidden(i)) {
-            hiddenInSelection = true;
-            return false;
-          }
-        }));
-      }
-      return !hiddenInSelection;
-    }
-  };
-}
-
-//# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51}],171:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  HiddenRows: {get: function() {
-      return HiddenRows;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_plugins_47__95_base__,
-    $__handsontable_47_helpers_47_dom_47_element__,
-    $__handsontable_47_helpers_47_number__,
-    $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_plugins__,
-    $__contextMenuItem_47_hideRow__,
-    $__contextMenuItem_47_showRow__;
-var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
-var $__1 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
-    addClass = $__1.addClass,
-    removeClass = $__1.removeClass;
-var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
-var $__3 = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
-    arrayEach = $__3.arrayEach,
-    arrayFilter = $__3.arrayFilter;
-var $__4 = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}),
-    registerPlugin = $__4.registerPlugin,
-    getPlugin = $__4.getPlugin;
-var hideRowItem = ($__contextMenuItem_47_hideRow__ = _dereq_("contextMenuItem/hideRow"), $__contextMenuItem_47_hideRow__ && $__contextMenuItem_47_hideRow__.__esModule && $__contextMenuItem_47_hideRow__ || {default: $__contextMenuItem_47_hideRow__}).hideRowItem;
-var showRowItem = ($__contextMenuItem_47_showRow__ = _dereq_("contextMenuItem/showRow"), $__contextMenuItem_47_showRow__ && $__contextMenuItem_47_showRow__.__esModule && $__contextMenuItem_47_showRow__ || {default: $__contextMenuItem_47_showRow__}).showRowItem;
-var HiddenRows = function HiddenRows(hotInstance) {
-  $traceurRuntime.superConstructor($HiddenRows).call(this, hotInstance);
-  this.settings = {};
-  this.hiddenRows = [];
-  this.lastSelectedRow = -1;
-};
-var $HiddenRows = HiddenRows;
-($traceurRuntime.createClass)(HiddenRows, {
-  isEnabled: function() {
-    return !!this.hot.getSettings().hiddenRows;
-  },
-  enablePlugin: function() {
-    var $__7 = this;
-    if (this.enabled) {
-      return;
-    }
-    var settings = this.hot.getSettings().hiddenRows;
-    if (typeof settings === 'object') {
-      this.settings = settings;
-      if (settings.copyPasteEnabled === void 0) {
-        settings.copyPasteEnabled = true;
-      }
-      if (Array.isArray(settings.rows)) {
-        this.hideRows(settings.rows);
-      }
-      if (!settings.copyPasteEnabled) {
-        this.addHook('modifyCopyableRange', (function(ranges) {
-          return $__7.onModifyCopyableRange(ranges);
-        }));
-      }
-    }
-    if (this.hot.hasRowHeaders()) {
-      this.addHook('afterGetRowHeader', (function(row, TH) {
-        return $__7.onAfterGetRowHeader(row, TH);
-      }));
-    } else {
-      this.addHook('afterRenderer', (function(TD, row) {
-        return $__7.onAfterGetRowHeader(row, TD);
-      }));
-    }
-    this.addHook('afterContextMenuDefaultOptions', (function(options) {
-      return $__7.onAfterContextMenuDefaultOptions(options);
-    }));
-    this.addHook('afterGetCellMeta', (function(row, col, cellProperties) {
-      return $__7.onAfterGetCellMeta(row, col, cellProperties);
-    }));
-    this.addHook('modifyRowHeight', (function(height, row) {
-      return $__7.onModifyRowHeight(height, row);
-    }));
-    this.addHook('beforeSetRangeStartOnly', (function(coords) {
-      return $__7.onBeforeSetRangeStart(coords);
-    }));
-    this.addHook('beforeSetRangeEnd', (function(coords) {
-      return $__7.onBeforeSetRangeEnd(coords);
-    }));
-    this.addHook('hiddenRow', (function(row) {
-      return $__7.isHidden(row);
-    }));
-    this.addHook('afterRowMove', (function(start, end) {
-      return $__7.onAfterRowMove(start, end);
-    }));
-    this.addHook('afterCreateRow', (function(index, amount) {
-      return $__7.onAfterCreateRow(index, amount);
-    }));
-    this.addHook('afterRemoveRow', (function(index, amount) {
-      return $__7.onAfterRemoveRow(index, amount);
-    }));
-    $traceurRuntime.superGet(this, $HiddenRows.prototype, "enablePlugin").call(this);
-  },
-  updatePlugin: function() {
-    this.disablePlugin();
-    this.enablePlugin();
-    $traceurRuntime.superGet(this, $HiddenRows.prototype, "updatePlugin").call(this);
-  },
-  disablePlugin: function() {
-    this.settings = {};
-    this.hiddenRows = [];
-    this.lastSelectedRow = -1;
-    $traceurRuntime.superGet(this, $HiddenRows.prototype, "disablePlugin").call(this);
-    this.resetCellsMeta();
-  },
-  showRows: function(rows) {
-    var $__7 = this;
-    arrayEach(rows, (function(row) {
-      row = parseInt(row, 10);
-      if ($__7.isHidden(row)) {
-        $__7.hiddenRows.splice($__7.hiddenRows.indexOf(row), 1);
-      }
-    }));
-  },
-  showRow: function() {
-    for (var row = [],
-        $__9 = 0; $__9 < arguments.length; $__9++)
-      row[$__9] = arguments[$__9];
-    this.showRows(row);
-  },
-  hideRows: function(rows) {
-    var $__7 = this;
-    arrayEach(rows, (function(row) {
-      row = parseInt(row, 10);
-      if (!$__7.isHidden(row)) {
-        $__7.hiddenRows.push(row);
-      }
-    }));
-  },
-  hideRow: function() {
-    for (var row = [],
-        $__10 = 0; $__10 < arguments.length; $__10++)
-      row[$__10] = arguments[$__10];
-    this.hideRows(row);
-  },
-  isHidden: function(row) {
-    return this.hiddenRows.indexOf(row) > -1;
-  },
-  resetCellsMeta: function() {
-    arrayEach(this.hot.getCellsMeta(), (function(meta) {
-      if (meta) {
-        meta.skipRowOnPaste = false;
-      }
-    }));
-  },
-  onAfterGetCellMeta: function(row, col, cellProperties) {
-    if (this.settings.copyPasteEnabled === false && this.isHidden(row)) {
-      cellProperties.skipRowOnPaste = true;
-    } else {
-      cellProperties.skipRowOnPaste = false;
-    }
-    if (this.isHidden(row - 1)) {
-      var firstSectionHidden = true;
-      var i = row - 1;
-      cellProperties.className = cellProperties.className || '';
-      if (cellProperties.className.indexOf('afterHiddenRow') === -1) {
-        cellProperties.className += ' afterHiddenRow';
-      }
-      do {
-        if (!this.isHidden(i)) {
-          firstSectionHidden = false;
-          break;
-        }
-        i--;
-      } while (i >= 0);
-      if (firstSectionHidden && cellProperties.className.indexOf('firstVisibleRow') === -1) {
-        cellProperties.className += ' firstVisibleRow';
-      }
-    } else if (cellProperties.className) {
-      var classArr = cellProperties.className.split(' ');
-      if (classArr.length) {
-        var containAfterHiddenColumn = classArr.indexOf('afterHiddenRow');
-        var containFirstVisible = classArr.indexOf('firstVisibleRow');
-        if (containAfterHiddenColumn > -1) {
-          classArr.splice(containAfterHiddenColumn, 1);
-        }
-        if (containFirstVisible > -1) {
-          classArr.splice(containFirstVisible, 1);
-        }
-        cellProperties.className = classArr.join(' ');
-      }
-    }
-  },
-  onAfterGetRowHeader: function(row, th) {
-    var tr = th.parentNode;
-    if (tr) {
-      if (this.isHidden(row)) {
-        addClass(tr, 'hide');
-      } else {
-        removeClass(tr, 'hide');
-      }
-    }
-    var firstSectionHidden = true;
-    var i = row - 1;
-    do {
-      if (!this.isHidden(i)) {
-        firstSectionHidden = false;
-        break;
-      }
-      i--;
-    } while (i >= 0);
-    if (firstSectionHidden) {
-      addClass(th, 'firstVisibleRow');
-    }
-    if (this.settings.indicators && this.hot.hasRowHeaders()) {
-      if (this.isHidden(row - 1)) {
-        addClass(th, 'afterHiddenRow');
-      }
-      if (this.isHidden(row + 1)) {
-        addClass(th, 'beforeHiddenRow');
-      }
-    }
-  },
-  onModifyRowHeight: function(height, row) {
-    if (this.isHidden(row)) {
-      return 0.1;
-    }
-    return height;
-  },
-  onModifyCopyableRange: function(ranges) {
-    var $__7 = this;
-    var newRanges = [];
-    var pushRange = (function(startRow, endRow, startCol, endCol) {
-      newRanges.push({
-        startRow: startRow,
-        endRow: endRow,
-        startCol: startCol,
-        endCol: endCol
-      });
-    });
-    arrayEach(ranges, (function(range) {
-      var isHidden = true;
-      var rangeStart = 0;
-      rangeEach(range.startRow, range.endRow, (function(row) {
-        if ($__7.isHidden(row)) {
-          if (!isHidden) {
-            pushRange(rangeStart, row - 1, range.startCol, range.endCol);
-          }
-          isHidden = true;
-        } else {
-          if (isHidden) {
-            rangeStart = row;
-          }
-          if (row === range.endRow) {
-            pushRange(rangeStart, row, range.startCol, range.endCol);
-          }
-          isHidden = false;
-        }
-      }));
-    }));
-    return newRanges;
-  },
-  onBeforeSetRangeStart: function(coords) {
-    var $__7 = this;
-    if (coords.row > 0) {
-      return;
-    }
-    coords.row = 0;
-    var getNextRow = (function(row) {
-      if ($__7.isHidden(row)) {
-        row = getNextRow(++row);
-      }
-      return row;
-    });
-    coords.row = getNextRow(coords.row);
-  },
-  onBeforeSetRangeEnd: function(coords) {
-    var $__7 = this;
-    var rowCount = this.hot.countRows();
-    var getNextRow = (function(row) {
-      if ($__7.isHidden(row)) {
-        if ($__7.lastSelectedRow > row || coords.row === rowCount - 1) {
-          if (row > 0) {
-            row = getNextRow(--row);
-          } else {
-            rangeEach(0, $__7.lastSelectedRow, (function(i) {
-              if (!$__7.isHidden(i)) {
-                row = i;
-                return false;
-              }
-            }));
-          }
-        } else {
-          row = getNextRow(++row);
-        }
-      }
-      return row;
-    });
-    coords.row = getNextRow(coords.row);
-    this.lastSelectedRow = coords.row;
-  },
-  onAfterContextMenuDefaultOptions: function(options) {
-    options.items.push(Handsontable.plugins.ContextMenu.SEPARATOR, hideRowItem(this), showRowItem(this));
-  },
-  onAfterRowMove: function(start, end) {
-    var tempHidden = [];
-    arrayEach(this.hiddenRows, (function(col) {
-      if (end > start) {
-        if (col > start && col < end) {
-          col--;
-        }
-      } else {
-        if (col < start && col > end) {
-          col++;
-        }
-      }
-      tempHidden.push(col);
-    }));
-    this.hiddenRows = tempHidden;
-    this.hot.render();
-  },
-  onAfterCreateRow: function(index, amount) {
-    var tempHidden = [];
-    arrayEach(this.hiddenRows, (function(col) {
-      if (col >= index) {
-        col += amount;
-      }
-      tempHidden.push(col);
-    }));
-    this.hiddenRows = tempHidden;
-  },
-  onAfterRemoveRow: function(index, amount) {
-    var tempHidden = [];
-    arrayEach(this.hiddenRows, (function(col) {
-      if (col >= index) {
-        col -= amount;
-      }
-      tempHidden.push(col);
-    }));
-    this.hiddenRows = tempHidden;
-  },
-  destroy: function() {
-    $traceurRuntime.superGet(this, $HiddenRows.prototype, "destroy").call(this);
-  }
-}, {}, BasePlugin);
-;
-registerPlugin('hiddenRows', HiddenRows);
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":62,"contextMenuItem/hideRow":169,"contextMenuItem/showRow":170}],172:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  NestedHeaders: {get: function() {
-      return NestedHeaders;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_helpers_47_dom_47_element__,
-    $__handsontable_47_helpers_47_number__,
-    $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_helpers_47_object__,
-    $__handsontable_47_plugins__,
-    $__handsontable_47_plugins_47__95_base__;
-var $__0 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
-    addClass = $__0.addClass,
-    removeClass = $__0.removeClass,
-    fastInnerHTML = $__0.fastInnerHTML,
-    empty = $__0.empty;
-var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
-var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
-var objectEach = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).objectEach;
-var $__4 = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}),
-    registerPlugin = $__4.registerPlugin,
-    getPlugin = $__4.getPlugin;
-var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
-var NestedHeaders = function NestedHeaders(hotInstance) {
-  $traceurRuntime.superConstructor($NestedHeaders).call(this, hotInstance);
-  this.settings = [];
-  this.columnHeaderLevelCount = 0;
-  this.colspanArray = [];
-};
-var $NestedHeaders = NestedHeaders;
-($traceurRuntime.createClass)(NestedHeaders, {
-  isEnabled: function() {
-    return !!this.hot.getSettings().nestedHeaders;
-  },
-  enablePlugin: function() {
-    var $__6 = this;
-    if (this.enabled) {
-      return;
-    }
-    this.settings = this.hot.getSettings().nestedHeaders;
-    this.addHook('afterGetColumnHeaderRenderers', (function(array) {
-      return $__6.onAfterGetColumnHeaderRenderers(array);
-    }));
-    this.addHook('afterInit', (function() {
-      return $__6.onAfterInit();
-    }));
-    this.addHook('afterOnCellMouseDown', (function(event, coords, TD) {
-      return $__6.onAfterOnCellMouseDown(event, coords, TD);
-    }));
-    this.addHook('beforeOnCellMouseOver', (function(event, coords, TD, blockCalculations) {
-      return $__6.onBeforeOnCellMouseOver(event, coords, TD, blockCalculations);
-    }));
-    this.addHook('afterViewportColumnCalculatorOverride', (function(calc) {
-      return $__6.onAfterViewportColumnCalculatorOverride(calc);
-    }));
-    this.setupColspanArray();
-    this.checkForFixedColumnsCollision();
-    this.columnHeaderLevelCount = this.hot.view ? this.hot.view.wt.getSetting('columnHeaders').length : 0;
-    $traceurRuntime.superGet(this, $NestedHeaders.prototype, "enablePlugin").call(this);
-  },
-  disablePlugin: function() {
-    this.clearColspans();
-    this.settings = [];
-    this.columnHeaderLevelCount = 0;
-    this.colspanArray = [];
-    $traceurRuntime.superGet(this, $NestedHeaders.prototype, "disablePlugin").call(this);
-  },
-  updatePlugin: function() {
-    this.disablePlugin();
-    this.enablePlugin();
-    $traceurRuntime.superGet(this, $NestedHeaders.prototype, "updatePlugin").call(this);
-  },
-  clearColspans: function() {
-    if (!this.hot.view) {
-      return;
-    }
-    var headerLevels = this.hot.view.wt.getSetting('columnHeaders').length;
-    var mainHeaders = this.hot.view.wt.wtTable.THEAD;
-    var topHeaders = this.hot.view.wt.wtOverlays.topOverlay.clone.wtTable.THEAD;
-    var topLeftCornerHeaders = this.hot.view.wt.wtOverlays.topLeftCornerOverlay ? this.hot.view.wt.wtOverlays.topLeftCornerOverlay.clone.wtTable.THEAD : null;
-    for (var i = 0; i < headerLevels; i++) {
-      var masterLevel = mainHeaders.childNodes[i];
-      if (!masterLevel) {
-        break;
-      }
-      var topLevel = topHeaders.childNodes[i];
-      var topLeftCornerLevel = topLeftCornerHeaders ? topLeftCornerHeaders.childNodes[i] : null;
-      for (var j = 0,
-          masterNodes = masterLevel.childNodes.length; j < masterNodes; j++) {
-        masterLevel.childNodes[j].removeAttribute('colspan');
-        if (topLevel && topLevel.childNodes[j]) {
-          topLevel.childNodes[j].removeAttribute('colspan');
-        }
-        if (topLeftCornerHeaders && topLeftCornerLevel && topLeftCornerLevel.childNodes[j]) {
-          topLeftCornerLevel.childNodes[j].removeAttribute('colspan');
-        }
-      }
-    }
-  },
-  checkForFixedColumnsCollision: function() {
-    var $__6 = this;
-    var fixedColumnsLeft = this.hot.getSettings().fixedColumnsLeft;
-    arrayEach(this.colspanArray, (function(value, i) {
-      if ($__6.getNestedParent(i, fixedColumnsLeft) !== fixedColumnsLeft) {
-        console.warn('You have declared a Nested Header overlapping the Fixed Columns section - it may lead to visual glitches. ' + 'To prevent that kind of problems, split the nested headers between the fixed and non-fixed columns.');
-      }
-    }));
-  },
-  checkForOverlappingHeaders: function() {
-    var $__6 = this;
-    arrayEach(this.colspanArray, (function(level, i) {
-      arrayEach($__6.colspanArray[i], (function(header, j) {
-        if (header.colspan > 1) {
-          var row = $__6.levelToRowCoords(i);
-          var childHeaders = $__6.getChildHeaders(row, j);
-          if (childHeaders.length > 0) {
-            var childColspanSum = 0;
-            arrayEach(childHeaders, (function(col, i) {
-              childColspanSum += $__6.getColspan(row + 1, col);
-            }));
-            if (childColspanSum > header.colspan) {
-              console.warn('Your Nested Headers plugin setup contains overlapping headers. This kind of configuration is ' + 'currently not supported and might result in glitches.');
-            }
-            return false;
-          }
-        }
-      }));
-    }));
-  },
-  setupColspanArray: function() {
-    var $__6 = this;
-    function checkIfExists(array, index) {
-      if (!array[index]) {
-        array[index] = [];
-      }
-    }
-    objectEach(this.settings, (function(levelValue, level) {
-      objectEach(levelValue, (function(val, col, levelValue) {
-        checkIfExists($__6.colspanArray, level);
-        if (levelValue[col].colspan === void 0) {
-          $__6.colspanArray[level].push({
-            label: levelValue[col] || '',
-            colspan: 1,
-            hidden: false
-          });
-        } else {
-          var colspan = levelValue[col].colspan || 1;
-          $__6.colspanArray[level].push({
-            label: levelValue[col].label || '',
-            colspan: colspan,
-            hidden: false
-          });
-          $__6.fillColspanArrayWithDummies(colspan, level);
-        }
-      }));
-    }));
-  },
-  fillColspanArrayWithDummies: function(colspan, level) {
-    var $__6 = this;
-    rangeEach(0, colspan - 2, (function(i) {
-      $__6.colspanArray[level].push({
-        label: '',
-        colspan: 1,
-        hidden: true
-      });
-    }));
-  },
-  headerRendererFactory: function(headerRow) {
-    var _this = this;
-    return function(index, TH) {
-      TH.removeAttribute('colspan');
-      removeClass(TH, 'hiddenHeader');
-      if (_this.colspanArray[headerRow][index] && _this.colspanArray[headerRow][index].colspan) {
-        var colspan = _this.colspanArray[headerRow][index].colspan;
-        var fixedColumnsLeft = _this.hot.getSettings().fixedColumnsLeft || 0;
-        var topLeftCornerOverlay = _this.hot.view.wt.wtOverlays.topLeftCornerOverlay;
-        var leftOverlay = _this.hot.view.wt.wtOverlays.leftOverlay;
-        var isInTopLeftCornerOverlay = topLeftCornerOverlay ? topLeftCornerOverlay.clone.wtTable.THEAD.contains(TH) : false;
-        var isInLeftOverlay = leftOverlay ? leftOverlay.clone.wtTable.THEAD.contains(TH) : false;
-        if (colspan > 1) {
-          TH.setAttribute('colspan', isInTopLeftCornerOverlay || isInLeftOverlay ? Math.min(colspan, fixedColumnsLeft - index) : colspan);
-        }
-        if (isInTopLeftCornerOverlay || isInLeftOverlay && index === fixedColumnsLeft - 1) {
-          addClass(TH, 'overlayEdge');
-        }
-      }
-      if (_this.colspanArray[headerRow][index] && _this.colspanArray[headerRow][index].hidden) {
-        addClass(TH, 'hiddenHeader');
-      }
-      empty(TH);
-      var divEl = document.createElement('DIV');
-      addClass(divEl, 'relative');
-      var spanEl = document.createElement('SPAN');
-      addClass(spanEl, 'colHeader');
-      fastInnerHTML(spanEl, _this.colspanArray[headerRow][index] ? _this.colspanArray[headerRow][index].label || '' : '');
-      divEl.appendChild(spanEl);
-      TH.appendChild(divEl);
-      _this.hot.runHooks('afterGetColHeader', index, TH);
-    };
-  },
-  getColspan: function(row, column) {
-    return this.colspanArray[this.rowCoordsToLevel(row)][column].colspan;
-  },
-  levelToRowCoords: function(level) {
-    return level - this.columnHeaderLevelCount;
-  },
-  rowCoordsToLevel: function(row) {
-    return row + this.columnHeaderLevelCount;
-  },
-  getNestedParent: function(level, column) {
-    var colspan = this.colspanArray[level][column] ? this.colspanArray[level][column].colspan : 1;
-    var hidden = this.colspanArray[level][column] ? this.colspanArray[level][column].hidden : false;
-    if (colspan > 1 || (colspan === 1 && hidden === false)) {
-      return column;
-    } else {
-      var parentCol = column - 1;
-      do {
-        if (this.colspanArray[level][parentCol].colspan > 1) {
-          break;
-        }
-        parentCol--;
-      } while (column >= 0);
-      return parentCol;
-    }
-  },
-  getChildHeaders: function(row, column) {
-    var level = this.rowCoordsToLevel(row);
-    var childColspanLevel = this.colspanArray[level + 1];
-    var nestedParentCol = this.getNestedParent(level, column);
-    var colspan = this.colspanArray[level][column].colspan;
-    var childHeaderRange = [];
-    if (!childColspanLevel) {
-      return childHeaderRange;
-    }
-    rangeEach(nestedParentCol, nestedParentCol + colspan - 1, (function(i) {
-      if (childColspanLevel[i] && childColspanLevel[i].colspan > 1) {
-        colspan -= childColspanLevel[i].colspan - 1;
-      }
-      if (childColspanLevel[i] && !childColspanLevel[i].hidden && childHeaderRange.indexOf(i) === -1) {
-        childHeaderRange.push(i);
-      }
-    }));
-    return childHeaderRange;
-  },
-  fillTheRemainingColspans: function() {
-    var $__6 = this;
-    objectEach(this.settings, (function(levelValue, level) {
-      rangeEach($__6.colspanArray[level].length - 1, $__6.hot.countCols() - 1, (function(col) {
-        $__6.colspanArray[level].push({
-          label: levelValue[col] || '',
-          colspan: 1,
-          hidden: false
-        });
-      }), true);
-    }));
-  },
-  onAfterViewportColumnCalculatorOverride: function(calc) {
-    var $__6 = this;
-    var newStartColumn = calc.startColumn;
-    rangeEach(0, Math.max(this.columnHeaderLevelCount - 1, 0), (function(l) {
-      var startColumnNestedParent = $__6.getNestedParent(l, calc.startColumn);
-      if (startColumnNestedParent < calc.startColumn) {
-        var earlierColumn = Math.min(newStartColumn, startColumnNestedParent);
-        newStartColumn = earlierColumn;
-      }
-    }));
-    calc.startColumn = newStartColumn;
-  },
-  onAfterOnCellMouseDown: function(event, coords, TD) {
-    if (coords.row < 0) {
-      var colspan = this.getColspan(coords.row, coords.col);
-      var lastColIndex = coords.col + colspan - 1;
-      if (colspan > 1) {
-        var lastRowIndex = this.hot.countRows() - 1;
-        this.hot.selection.setRangeEnd(new WalkontableCellCoords(lastRowIndex, lastColIndex));
-      }
-    }
-  },
-  onBeforeOnCellMouseOver: function(event, coords, TD, blockCalculations) {
-    var $__9;
-    if (coords.row < 0 && coords.col >= 0 && this.hot.view.isMouseDown()) {
-      var $__8 = this.hot.getSelectedRange(),
-          from = $__8.from,
-          to = $__8.to;
-      var colspan = this.getColspan(coords.row, coords.col);
-      var lastColIndex = coords.col + colspan - 1;
-      var changeDirection = false;
-      if (from.col <= to.col) {
-        if ((coords.col < from.col && lastColIndex === to.col) || (coords.col < from.col && lastColIndex < from.col) || (coords.col < from.col && lastColIndex >= from.col && lastColIndex < to.col)) {
-          changeDirection = true;
-        }
-      } else {
-        if ((coords.col < to.col && lastColIndex > from.col) || (coords.col > from.col) || (coords.col <= to.col && lastColIndex > from.col) || (coords.col > to.col && lastColIndex > from.col)) {
-          changeDirection = true;
-        }
-      }
-      if (changeDirection) {
-        ($__9 = [to.col, from.col], from.col = $__9[0], to.col = $__9[1], $__9);
-      }
-      if (colspan > 1) {
-        blockCalculations.column = true;
-        this.hot.selection.setSelectedHeaders(false, true);
-        if (from.col === to.col) {
-          if (lastColIndex <= from.col && coords.col < from.col) {
-            this.hot.selection.setRangeStartOnly(new WalkontableCellCoords(from.row, to.col));
-            this.hot.selection.setRangeEnd(new WalkontableCellCoords(to.row, coords.col));
-          } else {
-            this.hot.selection.setRangeStartOnly(new WalkontableCellCoords(from.row, coords.col < from.col ? coords.col : from.col));
-            this.hot.selection.setRangeEnd(new WalkontableCellCoords(to.row, lastColIndex > to.col ? lastColIndex : to.col));
-          }
-        }
-        if (from.col < to.col) {
-          this.hot.selection.setRangeStartOnly(new WalkontableCellCoords(from.row, coords.col < from.col ? coords.col : from.col));
-          this.hot.selection.setRangeEnd(new WalkontableCellCoords(to.row, lastColIndex));
-        }
-        if (from.col > to.col) {
-          this.hot.selection.setRangeStartOnly(new WalkontableCellCoords(from.row, from.col));
-          this.hot.selection.setRangeEnd(new WalkontableCellCoords(to.row, coords.col));
-        }
-      }
-    }
-  },
-  onAfterInit: function() {
-    this.columnHeaderLevelCount = this.hot.view.wt.getSetting('columnHeaders').length;
-    this.fillTheRemainingColspans();
-    this.checkForOverlappingHeaders();
-  },
-  onAfterGetColumnHeaderRenderers: function(renderersArray) {
-    if (renderersArray) {
-      renderersArray.length = 0;
-      for (var headersCount = this.colspanArray.length,
-          i = headersCount - 1; i >= 0; i--) {
-        renderersArray.push(this.headerRendererFactory(i));
-      }
-      renderersArray.reverse();
-    }
-  },
-  destroy: function() {
-    this.settings = null;
-    this.columnHeaderLevelCount = null;
-    this.colspanArray = null;
-    $traceurRuntime.superGet(this, $NestedHeaders.prototype, "destroy").call(this);
-  }
-}, {}, BasePlugin);
-;
-registerPlugin('nestedHeaders', NestedHeaders);
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":62}],173:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  RowsMapper: {get: function() {
-      return RowsMapper;
-    }},
-  __esModule: {value: true}
-});
-var $___46__46__47__46__46__47_browser__,
-    $__handsontable_47_mixins_47_arrayMapper__,
-    $__handsontable_47_helpers_47_object__,
-    $__handsontable_47_helpers_47_number__;
-var Handsontable = ($___46__46__47__46__46__47_browser__ = _dereq_("../../browser"), $___46__46__47__46__46__47_browser__ && $___46__46__47__46__46__47_browser__.__esModule && $___46__46__47__46__46__47_browser__ || {default: $___46__46__47__46__46__47_browser__}).default;
-var arrayMapper = ($__handsontable_47_mixins_47_arrayMapper__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper"), $__handsontable_47_mixins_47_arrayMapper__ && $__handsontable_47_mixins_47_arrayMapper__.__esModule && $__handsontable_47_mixins_47_arrayMapper__ || {default: $__handsontable_47_mixins_47_arrayMapper__}).arrayMapper;
-var mixin = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).mixin;
-var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
-var RowsMapper = function RowsMapper(trimRows) {
-  this.trimRows = trimRows;
-};
-($traceurRuntime.createClass)(RowsMapper, {
-  createMap: function(length) {
-    var $__4 = this;
-    var rowOffset = 0;
-    var originLength = length === void 0 ? this._arrayMap.length : length;
-    this._arrayMap.length = 0;
-    rangeEach(originLength - 1, (function(itemIndex) {
-      if ($__4.trimRows.isTrimmed(itemIndex)) {
-        rowOffset++;
-      } else {
-        $__4._arrayMap[itemIndex - rowOffset] = itemIndex;
-      }
-    }));
-  },
-  destroy: function() {
-    this._arrayMap = null;
-  }
-}, {});
-mixin(RowsMapper, arrayMapper);
-;
-Handsontable.utils.TrimRowsRowsMapper = RowsMapper;
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":56,"../../browser":113}],174:[function(_dereq_,module,exports){
-"use strict";
-Object.defineProperties(exports, {
-  TrimRows: {get: function() {
-      return TrimRows;
-    }},
-  __esModule: {value: true}
-});
-var $__handsontable_47_plugins_47__95_base__,
-    $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_helpers_47_number__,
-    $__handsontable_47_plugins__,
-    $__rowsMapper__;
-var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
-var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
-var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
-var registerPlugin = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}).registerPlugin;
-var RowsMapper = ($__rowsMapper__ = _dereq_("rowsMapper"), $__rowsMapper__ && $__rowsMapper__.__esModule && $__rowsMapper__ || {default: $__rowsMapper__}).RowsMapper;
-var TrimRows = function TrimRows(hotInstance) {
-  $traceurRuntime.superConstructor($TrimRows).call(this, hotInstance);
-  this.trimmedRows = [];
-  this.removedRows = [];
-  this.rowsMapper = new RowsMapper(this);
-};
-var $TrimRows = TrimRows;
-($traceurRuntime.createClass)(TrimRows, {
-  isEnabled: function() {
-    return !!this.hot.getSettings().trimRows;
-  },
-  enablePlugin: function() {
-    var $__5 = this;
-    if (this.enabled) {
-      return;
-    }
-    var settings = this.hot.getSettings().trimRows;
-    if (Array.isArray(settings)) {
-      this.trimmedRows = settings;
-    }
-    this.rowsMapper.createMap(this.hot.countSourceRows());
-    this.addHook('modifyRow', (function(row, source) {
-      return $__5.onModifyRow(row, source);
-    }));
-    this.addHook('afterCreateRow', (function(index, amount) {
-      return $__5.onAfterCreateRow(index, amount);
-    }));
-    this.addHook('beforeRemoveRow', (function(index, amount) {
-      return $__5.onBeforeRemoveRow(index, amount);
-    }));
-    this.addHook('afterRemoveRow', (function(index, amount) {
-      return $__5.onAfterRemoveRow(index, amount);
-    }));
-    this.addHook('afterLoadData', (function(firstRun) {
-      return $__5.onAfterLoadData(firstRun);
-    }));
-    $traceurRuntime.superGet(this, $TrimRows.prototype, "enablePlugin").call(this);
-  },
-  updatePlugin: function() {
-    this.disablePlugin();
-    this.enablePlugin();
-    $traceurRuntime.superGet(this, $TrimRows.prototype, "updatePlugin").call(this);
-  },
-  disablePlugin: function() {
-    this.trimmedRows = [];
-    this.removedRows.length = 0;
-    this.rowsMapper.clearMap();
-    $traceurRuntime.superGet(this, $TrimRows.prototype, "disablePlugin").call(this);
-  },
-  trimRows: function(rows) {
-    var $__5 = this;
-    arrayEach(rows, (function(row) {
-      row = parseInt(row, 10);
-      if (!$__5.isTrimmed(row)) {
-        $__5.trimmedRows.push(row);
-      }
-    }));
-    this.rowsMapper.createMap(this.hot.countSourceRows());
-    this.hot.runHooks('afterTrimRow', rows);
-  },
-  trimRow: function() {
-    for (var row = [],
-        $__7 = 0; $__7 < arguments.length; $__7++)
-      row[$__7] = arguments[$__7];
-    this.trimRows(row);
-  },
-  untrimRows: function(rows) {
-    var $__5 = this;
-    arrayEach(rows, (function(row) {
-      row = parseInt(row, 10);
-      if ($__5.isTrimmed(row)) {
-        $__5.trimmedRows.splice($__5.trimmedRows.indexOf(row), 1);
-      }
-    }));
-    this.rowsMapper.createMap(this.hot.countSourceRows());
-    this.hot.runHooks('afterUntrimRow', rows);
-  },
-  untrimRow: function() {
-    for (var row = [],
-        $__8 = 0; $__8 < arguments.length; $__8++)
-      row[$__8] = arguments[$__8];
-    this.untrimRows(row);
-  },
-  isTrimmed: function(row) {
-    return this.trimmedRows.indexOf(row) > -1;
-  },
-  untrimAll: function() {
-    this.untrimRows([].concat(this.trimmedRows));
-  },
-  onModifyRow: function(row, source) {
-    if (source !== this.pluginName) {
-      row = this.rowsMapper.getValueByIndex(row);
-    }
-    return row;
-  },
-  onAfterCreateRow: function(index, amount) {
-    this.rowsMapper.shiftItems(index, amount);
-  },
-  onBeforeRemoveRow: function(index, amount) {
-    var $__5 = this;
-    this.removedRows.length = 0;
-    if (index !== false) {
-      rangeEach(index, index + amount - 1, (function(removedIndex) {
-        $__5.removedRows.push($__5.hot.runHooks('modifyRow', removedIndex, $__5.pluginName));
-      }));
-    }
-  },
-  onAfterRemoveRow: function(index, amount) {
-    this.rowsMapper.unshiftItems(this.removedRows);
-  },
-  onAfterLoadData: function(firstRun) {
-    if (!firstRun) {
-      this.rowsMapper.createMap(this.hot.countSourceRows());
-    }
-  },
-  destroy: function() {
-    this.rowsMapper.destroy();
-    $traceurRuntime.superGet(this, $TrimRows.prototype, "destroy").call(this);
-  }
-}, {}, BasePlugin);
-;
-registerPlugin('trimRows', TrimRows);
-
-//# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":62,"rowsMapper":173}],"SheetClip":[function(_dereq_,module,exports){
+},{"browser":93,"moment":undefined}],"SheetClip":[function(_dereq_,module,exports){
 /**
  * SheetClip - Spreadsheet Clipboard Parser
  * version 0.2
@@ -29333,786 +31455,5 @@ if (typeof exports !== "undefined") {
     exports.Error = jsonpatch.Error;
 }
 
-},{}],"numeral":[function(_dereq_,module,exports){
-/*!
- * numeral.js
- * version : 1.5.3
- * author : Adam Draper
- * license : MIT
- * http://adamwdraper.github.com/Numeral-js/
- */
-
-(function () {
-
-    /************************************
-        Constants
-    ************************************/
-
-    var numeral,
-        VERSION = '1.5.3',
-        // internal storage for language config files
-        languages = {},
-        currentLanguage = 'en',
-        zeroFormat = null,
-        defaultFormat = '0,0',
-        // check for nodeJS
-        hasModule = (typeof module !== 'undefined' && module.exports);
-
-
-    /************************************
-        Constructors
-    ************************************/
-
-
-    // Numeral prototype object
-    function Numeral (number) {
-        this._value = number;
-    }
-
-    /**
-     * Implementation of toFixed() that treats floats more like decimals
-     *
-     * Fixes binary rounding issues (eg. (0.615).toFixed(2) === '0.61') that present
-     * problems for accounting- and finance-related software.
-     */
-    function toFixed (value, precision, roundingFunction, optionals) {
-        var power = Math.pow(10, precision),
-            optionalsRegExp,
-            output;
-
-        //roundingFunction = (roundingFunction !== undefined ? roundingFunction : Math.round);
-        // Multiply up by precision, round accurately, then divide and use native toFixed():
-        output = (roundingFunction(value * power) / power).toFixed(precision);
-
-        if (optionals) {
-            optionalsRegExp = new RegExp('0{1,' + optionals + '}$');
-            output = output.replace(optionalsRegExp, '');
-        }
-
-        return output;
-    }
-
-    /************************************
-        Formatting
-    ************************************/
-
-    // determine what type of formatting we need to do
-    function formatNumeral (n, format, roundingFunction) {
-        var output;
-
-        // figure out what kind of format we are dealing with
-        if (format.indexOf('$') > -1) { // currency!!!!!
-            output = formatCurrency(n, format, roundingFunction);
-        } else if (format.indexOf('%') > -1) { // percentage
-            output = formatPercentage(n, format, roundingFunction);
-        } else if (format.indexOf(':') > -1) { // time
-            output = formatTime(n, format);
-        } else { // plain ol' numbers or bytes
-            output = formatNumber(n._value, format, roundingFunction);
-        }
-
-        // return string
-        return output;
-    }
-
-    // revert to number
-    function unformatNumeral (n, string) {
-        var stringOriginal = string,
-            thousandRegExp,
-            millionRegExp,
-            billionRegExp,
-            trillionRegExp,
-            suffixes = ['KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
-            bytesMultiplier = false,
-            power;
-
-        if (string.indexOf(':') > -1) {
-            n._value = unformatTime(string);
-        } else {
-            if (string === zeroFormat) {
-                n._value = 0;
-            } else {
-                if (languages[currentLanguage].delimiters.decimal !== '.') {
-                    string = string.replace(/\./g,'').replace(languages[currentLanguage].delimiters.decimal, '.');
-                }
-
-                // see if abbreviations are there so that we can multiply to the correct number
-                thousandRegExp = new RegExp('[^a-zA-Z]' + languages[currentLanguage].abbreviations.thousand + '(?:\\)|(\\' + languages[currentLanguage].currency.symbol + ')?(?:\\))?)?$');
-                millionRegExp = new RegExp('[^a-zA-Z]' + languages[currentLanguage].abbreviations.million + '(?:\\)|(\\' + languages[currentLanguage].currency.symbol + ')?(?:\\))?)?$');
-                billionRegExp = new RegExp('[^a-zA-Z]' + languages[currentLanguage].abbreviations.billion + '(?:\\)|(\\' + languages[currentLanguage].currency.symbol + ')?(?:\\))?)?$');
-                trillionRegExp = new RegExp('[^a-zA-Z]' + languages[currentLanguage].abbreviations.trillion + '(?:\\)|(\\' + languages[currentLanguage].currency.symbol + ')?(?:\\))?)?$');
-
-                // see if bytes are there so that we can multiply to the correct number
-                for (power = 0; power <= suffixes.length; power++) {
-                    bytesMultiplier = (string.indexOf(suffixes[power]) > -1) ? Math.pow(1024, power + 1) : false;
-
-                    if (bytesMultiplier) {
-                        break;
-                    }
-                }
-
-                // do some math to create our number
-                n._value = ((bytesMultiplier) ? bytesMultiplier : 1) * ((stringOriginal.match(thousandRegExp)) ? Math.pow(10, 3) : 1) * ((stringOriginal.match(millionRegExp)) ? Math.pow(10, 6) : 1) * ((stringOriginal.match(billionRegExp)) ? Math.pow(10, 9) : 1) * ((stringOriginal.match(trillionRegExp)) ? Math.pow(10, 12) : 1) * ((string.indexOf('%') > -1) ? 0.01 : 1) * (((string.split('-').length + Math.min(string.split('(').length-1, string.split(')').length-1)) % 2)? 1: -1) * Number(string.replace(/[^0-9\.]+/g, ''));
-
-                // round if we are talking about bytes
-                n._value = (bytesMultiplier) ? Math.ceil(n._value) : n._value;
-            }
-        }
-        return n._value;
-    }
-
-    function formatCurrency (n, format, roundingFunction) {
-        var symbolIndex = format.indexOf('$'),
-            openParenIndex = format.indexOf('('),
-            minusSignIndex = format.indexOf('-'),
-            space = '',
-            spliceIndex,
-            output;
-
-        // check for space before or after currency
-        if (format.indexOf(' $') > -1) {
-            space = ' ';
-            format = format.replace(' $', '');
-        } else if (format.indexOf('$ ') > -1) {
-            space = ' ';
-            format = format.replace('$ ', '');
-        } else {
-            format = format.replace('$', '');
-        }
-
-        // format the number
-        output = formatNumber(n._value, format, roundingFunction);
-
-        // position the symbol
-        if (symbolIndex <= 1) {
-            if (output.indexOf('(') > -1 || output.indexOf('-') > -1) {
-                output = output.split('');
-                spliceIndex = 1;
-                if (symbolIndex < openParenIndex || symbolIndex < minusSignIndex){
-                    // the symbol appears before the "(" or "-"
-                    spliceIndex = 0;
-                }
-                output.splice(spliceIndex, 0, languages[currentLanguage].currency.symbol + space);
-                output = output.join('');
-            } else {
-                output = languages[currentLanguage].currency.symbol + space + output;
-            }
-        } else {
-            if (output.indexOf(')') > -1) {
-                output = output.split('');
-                output.splice(-1, 0, space + languages[currentLanguage].currency.symbol);
-                output = output.join('');
-            } else {
-                output = output + space + languages[currentLanguage].currency.symbol;
-            }
-        }
-
-        return output;
-    }
-
-    function formatPercentage (n, format, roundingFunction) {
-        var space = '',
-            output,
-            value = n._value * 100;
-
-        // check for space before %
-        if (format.indexOf(' %') > -1) {
-            space = ' ';
-            format = format.replace(' %', '');
-        } else {
-            format = format.replace('%', '');
-        }
-
-        output = formatNumber(value, format, roundingFunction);
-
-        if (output.indexOf(')') > -1 ) {
-            output = output.split('');
-            output.splice(-1, 0, space + '%');
-            output = output.join('');
-        } else {
-            output = output + space + '%';
-        }
-
-        return output;
-    }
-
-    function formatTime (n) {
-        var hours = Math.floor(n._value/60/60),
-            minutes = Math.floor((n._value - (hours * 60 * 60))/60),
-            seconds = Math.round(n._value - (hours * 60 * 60) - (minutes * 60));
-        return hours + ':' + ((minutes < 10) ? '0' + minutes : minutes) + ':' + ((seconds < 10) ? '0' + seconds : seconds);
-    }
-
-    function unformatTime (string) {
-        var timeArray = string.split(':'),
-            seconds = 0;
-        // turn hours and minutes into seconds and add them all up
-        if (timeArray.length === 3) {
-            // hours
-            seconds = seconds + (Number(timeArray[0]) * 60 * 60);
-            // minutes
-            seconds = seconds + (Number(timeArray[1]) * 60);
-            // seconds
-            seconds = seconds + Number(timeArray[2]);
-        } else if (timeArray.length === 2) {
-            // minutes
-            seconds = seconds + (Number(timeArray[0]) * 60);
-            // seconds
-            seconds = seconds + Number(timeArray[1]);
-        }
-        return Number(seconds);
-    }
-
-    function formatNumber (value, format, roundingFunction) {
-        var negP = false,
-            signed = false,
-            optDec = false,
-            abbr = '',
-            abbrK = false, // force abbreviation to thousands
-            abbrM = false, // force abbreviation to millions
-            abbrB = false, // force abbreviation to billions
-            abbrT = false, // force abbreviation to trillions
-            abbrForce = false, // force abbreviation
-            bytes = '',
-            ord = '',
-            abs = Math.abs(value),
-            suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
-            min,
-            max,
-            power,
-            w,
-            precision,
-            thousands,
-            d = '',
-            neg = false;
-
-        // check if number is zero and a custom zero format has been set
-        if (value === 0 && zeroFormat !== null) {
-            return zeroFormat;
-        } else {
-            // see if we should use parentheses for negative number or if we should prefix with a sign
-            // if both are present we default to parentheses
-            if (format.indexOf('(') > -1) {
-                negP = true;
-                format = format.slice(1, -1);
-            } else if (format.indexOf('+') > -1) {
-                signed = true;
-                format = format.replace(/\+/g, '');
-            }
-
-            // see if abbreviation is wanted
-            if (format.indexOf('a') > -1) {
-                // check if abbreviation is specified
-                abbrK = format.indexOf('aK') >= 0;
-                abbrM = format.indexOf('aM') >= 0;
-                abbrB = format.indexOf('aB') >= 0;
-                abbrT = format.indexOf('aT') >= 0;
-                abbrForce = abbrK || abbrM || abbrB || abbrT;
-
-                // check for space before abbreviation
-                if (format.indexOf(' a') > -1) {
-                    abbr = ' ';
-                    format = format.replace(' a', '');
-                } else {
-                    format = format.replace('a', '');
-                }
-
-                if (abs >= Math.pow(10, 12) && !abbrForce || abbrT) {
-                    // trillion
-                    abbr = abbr + languages[currentLanguage].abbreviations.trillion;
-                    value = value / Math.pow(10, 12);
-                } else if (abs < Math.pow(10, 12) && abs >= Math.pow(10, 9) && !abbrForce || abbrB) {
-                    // billion
-                    abbr = abbr + languages[currentLanguage].abbreviations.billion;
-                    value = value / Math.pow(10, 9);
-                } else if (abs < Math.pow(10, 9) && abs >= Math.pow(10, 6) && !abbrForce || abbrM) {
-                    // million
-                    abbr = abbr + languages[currentLanguage].abbreviations.million;
-                    value = value / Math.pow(10, 6);
-                } else if (abs < Math.pow(10, 6) && abs >= Math.pow(10, 3) && !abbrForce || abbrK) {
-                    // thousand
-                    abbr = abbr + languages[currentLanguage].abbreviations.thousand;
-                    value = value / Math.pow(10, 3);
-                }
-            }
-
-            // see if we are formatting bytes
-            if (format.indexOf('b') > -1) {
-                // check for space before
-                if (format.indexOf(' b') > -1) {
-                    bytes = ' ';
-                    format = format.replace(' b', '');
-                } else {
-                    format = format.replace('b', '');
-                }
-
-                for (power = 0; power <= suffixes.length; power++) {
-                    min = Math.pow(1024, power);
-                    max = Math.pow(1024, power+1);
-
-                    if (value >= min && value < max) {
-                        bytes = bytes + suffixes[power];
-                        if (min > 0) {
-                            value = value / min;
-                        }
-                        break;
-                    }
-                }
-            }
-
-            // see if ordinal is wanted
-            if (format.indexOf('o') > -1) {
-                // check for space before
-                if (format.indexOf(' o') > -1) {
-                    ord = ' ';
-                    format = format.replace(' o', '');
-                } else {
-                    format = format.replace('o', '');
-                }
-
-                ord = ord + languages[currentLanguage].ordinal(value);
-            }
-
-            if (format.indexOf('[.]') > -1) {
-                optDec = true;
-                format = format.replace('[.]', '.');
-            }
-
-            w = value.toString().split('.')[0];
-            precision = format.split('.')[1];
-            thousands = format.indexOf(',');
-
-            if (precision) {
-                if (precision.indexOf('[') > -1) {
-                    precision = precision.replace(']', '');
-                    precision = precision.split('[');
-                    d = toFixed(value, (precision[0].length + precision[1].length), roundingFunction, precision[1].length);
-                } else {
-                    d = toFixed(value, precision.length, roundingFunction);
-                }
-
-                w = d.split('.')[0];
-
-                if (d.split('.')[1].length) {
-                    d = languages[currentLanguage].delimiters.decimal + d.split('.')[1];
-                } else {
-                    d = '';
-                }
-
-                if (optDec && Number(d.slice(1)) === 0) {
-                    d = '';
-                }
-            } else {
-                w = toFixed(value, null, roundingFunction);
-            }
-
-            // format number
-            if (w.indexOf('-') > -1) {
-                w = w.slice(1);
-                neg = true;
-            }
-
-            if (thousands > -1) {
-                w = w.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1' + languages[currentLanguage].delimiters.thousands);
-            }
-
-            if (format.indexOf('.') === 0) {
-                w = '';
-            }
-
-            return ((negP && neg) ? '(' : '') + ((!negP && neg) ? '-' : '') + ((!neg && signed) ? '+' : '') + w + d + ((ord) ? ord : '') + ((abbr) ? abbr : '') + ((bytes) ? bytes : '') + ((negP && neg) ? ')' : '');
-        }
-    }
-
-    /************************************
-        Top Level Functions
-    ************************************/
-
-    numeral = function (input) {
-        if (numeral.isNumeral(input)) {
-            input = input.value();
-        } else if (input === 0 || typeof input === 'undefined') {
-            input = 0;
-        } else if (!Number(input)) {
-            input = numeral.fn.unformat(input);
-        }
-
-        return new Numeral(Number(input));
-    };
-
-    // version number
-    numeral.version = VERSION;
-
-    // compare numeral object
-    numeral.isNumeral = function (obj) {
-        return obj instanceof Numeral;
-    };
-
-    // This function will load languages and then set the global language.  If
-    // no arguments are passed in, it will simply return the current global
-    // language key.
-    numeral.language = function (key, values) {
-        if (!key) {
-            return currentLanguage;
-        }
-
-        if (key && !values) {
-            if(!languages[key]) {
-                throw new Error('Unknown language : ' + key);
-            }
-            currentLanguage = key;
-        }
-
-        if (values || !languages[key]) {
-            loadLanguage(key, values);
-        }
-
-        return numeral;
-    };
-
-    // This function provides access to the loaded language data.  If
-    // no arguments are passed in, it will simply return the current
-    // global language object.
-    numeral.languageData = function (key) {
-        if (!key) {
-            return languages[currentLanguage];
-        }
-
-        if (!languages[key]) {
-            throw new Error('Unknown language : ' + key);
-        }
-
-        return languages[key];
-    };
-
-    numeral.language('en', {
-        delimiters: {
-            thousands: ',',
-            decimal: '.'
-        },
-        abbreviations: {
-            thousand: 'k',
-            million: 'm',
-            billion: 'b',
-            trillion: 't'
-        },
-        ordinal: function (number) {
-            var b = number % 10;
-            return (~~ (number % 100 / 10) === 1) ? 'th' :
-                (b === 1) ? 'st' :
-                (b === 2) ? 'nd' :
-                (b === 3) ? 'rd' : 'th';
-        },
-        currency: {
-            symbol: '$'
-        }
-    });
-
-    numeral.zeroFormat = function (format) {
-        zeroFormat = typeof(format) === 'string' ? format : null;
-    };
-
-    numeral.defaultFormat = function (format) {
-        defaultFormat = typeof(format) === 'string' ? format : '0.0';
-    };
-
-    numeral.validate = function(val, culture) {
-
-        var _decimalSep,
-          _thousandSep,
-          _currSymbol,
-          _valArray,
-          _abbrObj,
-          _thousandRegEx,
-          languageData,
-          temp;
-
-        //coerce val to string
-        if (typeof val !== 'string') {
-            val += '';
-            if (console.warn) {
-                console.warn('Numeral.js: Value is not string. It has been co-erced to: ', val);
-            }
-        }
-
-        //trim whitespaces from either sides
-        val = val.trim();
-
-
-        //if val is empty return false
-        if (val === '') {
-            return false;
-        }
-
-        //replace the initial '+' or '-' sign if present
-        val = val.replace(/^[+-]?/, '');
-
-
-        //get the decimal and thousands separator from numeral.languageData
-        try {
-            //check if the culture is understood by numeral. if not, default it to current language
-            languageData = numeral.languageData(culture);
-        } catch (e) {
-            languageData = numeral.languageData(numeral.language());
-        }
-
-        //setup the delimiters and currency symbol based on culture/language
-        _currSymbol = languageData.currency.symbol;
-        _abbrObj = languageData.abbreviations;
-        _decimalSep = languageData.delimiters.decimal;
-        if (languageData.delimiters.thousands === '.') {
-            _thousandSep = '\\.';
-        } else {
-            _thousandSep = languageData.delimiters.thousands;
-        }
-
-        //validating currency symbol
-        temp = val.match(/^[^\d\.\,]+/);
-        if (temp !== null) {
-            //chuck the currency symbol away
-            val = val.substr(1);
-            if (temp[0] !== _currSymbol) {
-                return false;
-            }
-        }
-
-        //validating abbreviation symbol
-        temp = val.match(/[^\d]+$/);
-        if (temp !== null) {
-            val = val.slice(0, - 1);
-            if (temp[0] !== _abbrObj.thousand && temp[0] !== _abbrObj.million && temp[0] !== _abbrObj.billion && temp[0] !== _abbrObj.trillion) {
-                return false;
-            }
-        }
-
-        //if val is just digits the return true
-        if ( !! val.match(/^\d+$/)) {
-            return true;
-        }
-        _thousandRegEx = new RegExp(_thousandSep + '{2}');
-
-        if (!val.match(/[^\d.,]/g)) {
-            _valArray = val.split(_decimalSep);
-            if (_valArray.length > 2) {
-                return false;
-            } else {
-                if (_valArray.length < 2) {
-                    return ( !! _valArray[0].match(/^\d+.*\d$/) && !_valArray[0].match(_thousandRegEx));
-                } else {
-                    // for values without leading zero eg. .984
-                    if (_valArray[0] === '') {
-                        return ( !_valArray[0].match(_thousandRegEx) && !! _valArray[1].match(/^\d+$/));
-                    } else if (_valArray[0].length === 1) {
-                        return ( !! _valArray[0].match(/^\d+$/) && !_valArray[0].match(_thousandRegEx) && !! _valArray[1].match(/^\d+$/));
-                    } else {
-                        return ( !! _valArray[0].match(/^\d+.*\d$/) && !_valArray[0].match(_thousandRegEx) && !! _valArray[1].match(/^\d+$/));
-                    }
-                }
-            }
-        }
-
-        return false;
-    };
-
-    /************************************
-        Helpers
-    ************************************/
-
-    function loadLanguage(key, values) {
-        languages[key] = values;
-    }
-
-    /************************************
-        Floating-point helpers
-    ************************************/
-
-    // The floating-point helper functions and implementation
-    // borrows heavily from sinful.js: http://guipn.github.io/sinful.js/
-
-    /**
-     * Array.prototype.reduce for browsers that don't support it
-     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce#Compatibility
-     */
-    if ('function' !== typeof Array.prototype.reduce) {
-        Array.prototype.reduce = function (callback, opt_initialValue) {
-            'use strict';
-
-            if (null === this || 'undefined' === typeof this) {
-                // At the moment all modern browsers, that support strict mode, have
-                // native implementation of Array.prototype.reduce. For instance, IE8
-                // does not support strict mode, so this check is actually useless.
-                throw new TypeError('Array.prototype.reduce called on null or undefined');
-            }
-
-            if ('function' !== typeof callback) {
-                throw new TypeError(callback + ' is not a function');
-            }
-
-            var index,
-                value,
-                length = this.length >>> 0,
-                isValueSet = false;
-
-            if (1 < arguments.length) {
-                value = opt_initialValue;
-                isValueSet = true;
-            }
-
-            for (index = 0; length > index; ++index) {
-                if (this.hasOwnProperty(index)) {
-                    if (isValueSet) {
-                        value = callback(value, this[index], index, this);
-                    } else {
-                        value = this[index];
-                        isValueSet = true;
-                    }
-                }
-            }
-
-            if (!isValueSet) {
-                throw new TypeError('Reduce of empty array with no initial value');
-            }
-
-            return value;
-        };
-    }
-
-
-    /**
-     * Computes the multiplier necessary to make x >= 1,
-     * effectively eliminating miscalculations caused by
-     * finite precision.
-     */
-    function multiplier(x) {
-        var parts = x.toString().split('.');
-        if (parts.length < 2) {
-            return 1;
-        }
-        return Math.pow(10, parts[1].length);
-    }
-
-    /**
-     * Given a variable number of arguments, returns the maximum
-     * multiplier that must be used to normalize an operation involving
-     * all of them.
-     */
-    function correctionFactor() {
-        var args = Array.prototype.slice.call(arguments);
-        return args.reduce(function (prev, next) {
-            var mp = multiplier(prev),
-                mn = multiplier(next);
-        return mp > mn ? mp : mn;
-        }, -Infinity);
-    }
-
-
-    /************************************
-        Numeral Prototype
-    ************************************/
-
-
-    numeral.fn = Numeral.prototype = {
-
-        clone : function () {
-            return numeral(this);
-        },
-
-        format : function (inputString, roundingFunction) {
-            return formatNumeral(this,
-                  inputString ? inputString : defaultFormat,
-                  (roundingFunction !== undefined) ? roundingFunction : Math.round
-              );
-        },
-
-        unformat : function (inputString) {
-            if (Object.prototype.toString.call(inputString) === '[object Number]') {
-                return inputString;
-            }
-            return unformatNumeral(this, inputString ? inputString : defaultFormat);
-        },
-
-        value : function () {
-            return this._value;
-        },
-
-        valueOf : function () {
-            return this._value;
-        },
-
-        set : function (value) {
-            this._value = Number(value);
-            return this;
-        },
-
-        add : function (value) {
-            var corrFactor = correctionFactor.call(null, this._value, value);
-
-            function cback(accum, curr, currI, O) {
-                return accum + corrFactor * curr;
-            }
-            this._value = [this._value, value].reduce(cback, 0) / corrFactor;
-            return this;
-        },
-
-        subtract : function (value) {
-            var corrFactor = correctionFactor.call(null, this._value, value);
-
-            function cback(accum, curr, currI, O) {
-                return accum - corrFactor * curr;
-            }
-            this._value = [value].reduce(cback, this._value * corrFactor) / corrFactor;
-            return this;
-        },
-
-        multiply : function (value) {
-            function cback(accum, curr, currI, O) {
-                var corrFactor = correctionFactor(accum, curr);
-                return (accum * corrFactor) * (curr * corrFactor) /
-                    (corrFactor * corrFactor);
-            }
-            this._value = [this._value, value].reduce(cback, 1);
-            return this;
-        },
-
-        divide : function (value) {
-            function cback(accum, curr, currI, O) {
-                var corrFactor = correctionFactor(accum, curr);
-                return (accum * corrFactor) / (curr * corrFactor);
-            }
-            this._value = [this._value, value].reduce(cback);
-            return this;
-        },
-
-        difference : function (value) {
-            return Math.abs(numeral(this._value).subtract(value).value());
-        }
-
-    };
-
-    /************************************
-        Exposing Numeral
-    ************************************/
-
-    // CommonJS module is defined
-    if (hasModule) {
-        module.exports = numeral;
-    }
-
-    /*global ender:false */
-    if (typeof ender === 'undefined') {
-        // here, `this` means `window` in the browser, or `global` on the server
-        // add `numeral` as a global object via a string identifier,
-        // for Closure Compiler 'advanced' mode
-        this['numeral'] = numeral;
-    }
-
-    /*global define:false */
-    if (typeof define === 'function' && define.amd) {
-        define([], function () {
-            return numeral;
-        });
-    }
-}).call(window);
-
-},{}]},{},[113,63,65,64,66,87,88,89,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,90,91,92,93,107,108,109,110,96,97,98,99,100,101,31,35,32,33,40,34,36,37,38,39,114,115,116,117,118,172,166,167,168,119,120,121,122,123,125,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,158,159,160,161,162,163,164,165,169,170,171,173,174])(113)
+},{}]},{},[3,133,135,134,136,173,174,175,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,168,169,170,171,172,176,177,178,179,193,194,195,196,182,183,184,185,186,187,101,105,102,103,110,104,106,107,108,109,4,5,6,7,8,62,56,57,58,9,10,11,12,13,15,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,48,49,50,51,52,53,54,55,59,60,61,63,64,66,67,68,69,70])(93)
 });

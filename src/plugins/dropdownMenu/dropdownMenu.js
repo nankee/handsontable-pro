@@ -117,6 +117,8 @@ class DropdownMenu extends BasePlugin {
         className: 'htDropdownMenu',
         keepInViewport: true
       });
+      this.hot.runHooks('beforeDropdownMenuSetItems', menuItems);
+
       this.menu.setMenuItems(menuItems);
 
       this.menu.addLocalHook('afterOpen', () => this.onMenuAfterOpen());
@@ -129,7 +131,7 @@ class DropdownMenu extends BasePlugin {
   }
 
   /**
-   * Update the plugin according to Handsontable settings.
+   * Updates the plugin to use the latest options you have specified.
    */
   updatePlugin() {
     this.disablePlugin();

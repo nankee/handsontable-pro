@@ -114,7 +114,7 @@ describe('NestedRows Collapsing UI', function() {
         expect(hot.countRows()).toEqual(8);
 
         var plugin = hot.getPlugin('nestedRows');
-        plugin.collapsingUI.expandRows([2]);
+        plugin.collapsingUI.expandRows([2], true, true);
         hot.render();
 
         waits(100);
