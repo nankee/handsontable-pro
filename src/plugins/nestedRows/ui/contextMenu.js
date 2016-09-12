@@ -15,11 +15,9 @@ class ContextMenuUI extends BaseUI {
     // jscs:disable
     privatePool.set(this, {
       row_above: (key, selection) => {
-        // console.log('insert above');
         this.dataManager.addSibling(selection.start.row, 'above');
       },
       row_below: (key, selection) => {
-        // console.log('insert below');
         this.dataManager.addSibling(selection.start.row, 'below');
       }
     });

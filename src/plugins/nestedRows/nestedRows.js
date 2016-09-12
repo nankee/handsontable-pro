@@ -15,7 +15,7 @@ const privatePool = new WeakMap();
  * @description
  * Plugin responsible for displaying and operating on data sources with nested structures.
  *
- * @dependencies TrimRows, BindRowsWithHeaders
+ * @dependencies TrimRows BindRowsWithHeaders
  */
 class NestedRows extends BasePlugin {
 
@@ -39,12 +39,6 @@ class NestedRows extends BasePlugin {
      * @type {Object}
      */
     this.trimRowsPlugin = null;
-    /**
-     * Reference to the Manual Row Move plugin.
-     *
-     * @type {Object}
-     */
-    this.manualRowMovePlugin = null;
     /**
      * Reference to the BindRowsWithHeaders plugin.
      *
@@ -289,12 +283,12 @@ class NestedRows extends BasePlugin {
   }
 
   /**
-   * beforeOnCellMousedown callback
+   * `beforeOnCellMousedown` hook callback.
    *
    * @private
-   * @param {MouseEvent} event Mousedown event
-   * @param {Object} coords Cell coords
-   * @param {HTMLElement} TD clicked cell
+   * @param {MouseEvent} event Mousedown event.
+   * @param {Object} coords Cell coords.
+   * @param {HTMLElement} TD clicked cell.
    */
   onBeforeOnCellMouseDown(event, coords, TD) {
     this.collapsingUI.toggleState(event, coords, TD);
@@ -314,7 +308,7 @@ class NestedRows extends BasePlugin {
    * Modify the source data length to match the length of the nested structure.
    *
    * @private
-   * @returns {number}
+   * @returns {Number}
    */
   onModifySourceLength() {
     return this.dataManager.countAllRows();
@@ -322,10 +316,10 @@ class NestedRows extends BasePlugin {
 
   /**
    * @private
-   * @param index
-   * @param amount
-   * @param element
-   * @returns {boolean}
+   * @param {Number} index
+   * @param {Number} amount
+   * @param {Object} element
+   * @returns {Boolean}
    */
   onBeforeDataSplice(index, amount, element) {
     this.dataManager.spliceData(index, amount, element);
@@ -365,7 +359,7 @@ class NestedRows extends BasePlugin {
    * `afterContextMenuDefaultOptions` hook callback.
    *
    * @private
-   * @param defaultOptions
+   * @param {Object} defaultOptions
    */
   onAfterContextMenuDefaultOptions(defaultOptions) {
     return this.contextMenuUI.appendOptions(defaultOptions);
@@ -533,8 +527,8 @@ class NestedRows extends BasePlugin {
   /**
    * `beforeRender` hook callback.
    *
-   * @param force
-   * @param skipRender
+   * @param {Boolean} force
+   * @param {Object} skipRender
    * @private
    */
   onBeforeRender(force, skipRender) {
