@@ -44,7 +44,7 @@ class NestedRows extends BasePlugin {
      *
      * @type {Object}
      */
-    this.manualRowsMovePlugin = null;
+    this.manualRowMovePlugin = null;
     /**
      * Reference to the BindRowsWithHeaders plugin.
      *
@@ -82,7 +82,7 @@ class NestedRows extends BasePlugin {
   enablePlugin() {
     this.sourceData = this.hot.getSourceData();
     this.trimRowsPlugin = this.hot.getPlugin('trimRows');
-    this.manualRowsMovePlugin = this.hot.getPlugin('manualRowMove');
+    this.manualRowMovePlugin = this.hot.getPlugin('manualRowMove');
     this.bindRowsWithHeadersPlugin = this.hot.getPlugin('bindRowsWithHeaders');
 
     this.dataManager = new DataManager(this, this.hot, this.sourceData);
@@ -116,12 +116,6 @@ class NestedRows extends BasePlugin {
       // Workaround to prevent calling updateSetttings in the enablePlugin method, which causes many problems.
       this.trimRowsPlugin.enablePlugin();
       this.hot.getSettings().trimRows = true;
-    }
-
-    if (!this.manualRowsMovePlugin.isEnabled()) {
-      // Workaround to prevent calling updateSetttings in the enablePlugin method, which causes many problems.
-      this.manualRowsMovePlugin.enablePlugin();
-      this.hot.getSettings().manualRowsMovePlugin = true;
     }
 
     super.enablePlugin();
