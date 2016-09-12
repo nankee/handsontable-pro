@@ -46,6 +46,17 @@ describe('NestedRows', function() {
 
       expect(hot.getData()).toEqual(dataInOrder);
     });
+
+    it('should display the right amount of entries with the `manualRowMove` plugin enabled', function() {
+      var hot = handsontable({
+        data: this.complexData,
+        nestedRows: true,
+        manualRowMove: true
+      });
+
+      expect(hot.getData().length).toEqual(12);
+
+    });
   });
 
 });

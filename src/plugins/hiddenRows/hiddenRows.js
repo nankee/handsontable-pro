@@ -92,21 +92,7 @@ class HiddenRows extends BasePlugin {
     if (this.enabled) {
       return;
     }
-    let settings = this.hot.getSettings().hiddenRows;
 
-    if (typeof settings === 'object') {
-      this.settings = settings;
-
-      if (settings.copyPasteEnabled === void 0) {
-        settings.copyPasteEnabled = true;
-      }
-      if (Array.isArray(settings.rows)) {
-        this.hideRows(settings.rows);
-      }
-      if (!settings.copyPasteEnabled) {
-        this.addHook('modifyCopyableRange', (ranges) => this.onModifyCopyableRange(ranges));
-      }
-    }
     if (this.hot.hasRowHeaders()) {
       this.addHook('afterGetRowHeader', (row, TH) => this.onAfterGetRowHeader(row, TH));
     } else {
@@ -122,6 +108,11 @@ class HiddenRows extends BasePlugin {
     this.addHook('afterCreateRow', (index, amount) => this.onAfterCreateRow(index, amount));
     this.addHook('afterRemoveRow', (index, amount) => this.onAfterRemoveRow(index, amount));
 
+    // Dirty workaround - the section below runs only if the HOT instance is already prepared.
+    if (this.hot.view) {
+      this.onAfterPluginsInitialized();
+    }
+
     super.enablePlugin();
   }
 
@@ -131,6 +122,8 @@ class HiddenRows extends BasePlugin {
   updatePlugin() {
     this.disablePlugin();
     this.enablePlugin();
+
+    this.onAfterPluginsInitialized();
 
     super.updatePlugin();
   }
@@ -492,6 +485,29 @@ class HiddenRows extends BasePlugin {
       tempHidden.push(col);
     });
     this.hiddenRows = tempHidden;
+  }
+
+  /**
+   * `afterPluginsInitialized` hook callback.
+   *
+   * @private
+   */
+  onAfterPluginsInitialized() {
+    let settings = this.hot.getSettings().hiddenRows;
+
+    if (typeof settings === 'object') {
+      this.settings = settings;
+
+      if (settings.copyPasteEnabled === void 0) {
+        settings.copyPasteEnabled = true;
+      }
+      if (Array.isArray(settings.rows)) {
+        this.hideRows(settings.rows);
+      }
+      if (!settings.copyPasteEnabled) {
+        this.addHook('modifyCopyableRange', (ranges) => this.onModifyCopyableRange(ranges));
+      }
+    }
   }
 
   /**

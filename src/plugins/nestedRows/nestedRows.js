@@ -20,11 +20,11 @@ const privatePool = new WeakMap();
 class NestedRows extends BasePlugin {
 
   constructor(hotInstance) {
-
     privatePool.set(this, {
       changeSelection: false,
-      movedToParentBegin: false,
-      target: void 0,
+      movedToFirstChild: false,
+      movedToCollapsed: false,
+      skipRender: null,
     });
 
     /**
@@ -66,9 +66,6 @@ class NestedRows extends BasePlugin {
      */
     this.headersUI = null;
 
-    //TODO: make this private maybe?
-    this.skipRender = null;
-
     super(hotInstance);
   }
 
@@ -95,27 +92,25 @@ class NestedRows extends BasePlugin {
 
     this.dataManager.rewriteCache();
 
-    this.addHook('beforeRender', (force, skipRender) => this.onBeforeRender(force, skipRender));
-    this.addHook('modifyRowData', (row) => this.onModifyRowData(row));
-    this.addHook('modifySourceLength', () => this.onModifySourceLength());
-    this.addHook('beforeDataSplice', (index, amount, element) => this.onBeforeDataSplice(index, amount, element));
-    this.addHook('beforeDataFilter', (index, amount, logicRows) => this.onBeforeDataFilter(index, amount, logicRows));
-    this.addHook('afterContextMenuDefaultOptions', (defaultOptions) => this.onAfterContextMenuDefaultOptions(defaultOptions));
-    this.addHook('afterGetRowHeader', (row, th) => this.onAfterGetRowHeader(row, th));
-    this.addHook('beforeOnCellMouseDown', (event, coords, TD) => this.onBeforeOnCellMouseDown(event, coords, TD));
-    // this.addHook('beforeDataFilter', (index, amount, logicRows) => this.onBeforeDataFilter(index, amount, logicRows));
-    this.addHook('afterRemoveRow', (index, amount) => this.onAfterRemoveRow(index, amount));
-    this.addHook('modifyRemovedAmount', (amount, index) => this.onModifyRemovedAmount(amount, index));
-    this.addHook('afterInit', () => this.onAfterInit());
-    this.addHook('beforeAddChild', (parent, element) => this.onBeforeAddChild(parent, element));
-    this.addHook('afterAddChild', (parent, element) => this.onAfterAddChild(parent, element));
-    this.addHook('beforeDetachChild', (parent, element) => this.onBeforeDetachChild(parent, element));
-    this.addHook('afterDetachChild', (parent, element) => this.onAfterDetachChild(parent, element));
-    this.addHook('modifyRowHeaderWidth', (rowHeaderWidth) => this.onModifyRowHeaderWidth(rowHeaderWidth));
-    this.addHook('afterCreateRow', () => this.onAfterCreateRow());
-
-    this.addHook('beforeRowMove', (rows, target, blockMoving) => this.onBeforeRowMove(rows, target, blockMoving));
-    this.addHook('afterRowMove', (rows, target) => this.onAfterRowMove(rows, target));
+    this.addHook('afterInit', (...args) => this.onAfterInit(...args));
+    this.addHook('beforeRender', (...args) => this.onBeforeRender(...args));
+    this.addHook('modifyRowData', (...args) => this.onModifyRowData(...args));
+    this.addHook('modifySourceLength', (...args) => this.onModifySourceLength(...args));
+    this.addHook('beforeDataSplice', (...args) => this.onBeforeDataSplice(...args));
+    this.addHook('beforeDataFilter', (...args) => this.onBeforeDataFilter(...args));
+    this.addHook('afterContextMenuDefaultOptions', (...args) => this.onAfterContextMenuDefaultOptions(...args));
+    this.addHook('afterGetRowHeader', (...args) => this.onAfterGetRowHeader(...args));
+    this.addHook('beforeOnCellMouseDown', (...args) => this.onBeforeOnCellMouseDown(...args));
+    this.addHook('afterRemoveRow', (...args) => this.onAfterRemoveRow(...args));
+    this.addHook('modifyRemovedAmount', (...args) => this.onModifyRemovedAmount(...args));
+    this.addHook('beforeAddChild', (...args) => this.onBeforeAddChild(...args));
+    this.addHook('afterAddChild', (...args) => this.onAfterAddChild(...args));
+    this.addHook('beforeDetachChild', (...args) => this.onBeforeDetachChild(...args));
+    this.addHook('afterDetachChild', (...args) => this.onAfterDetachChild(...args));
+    this.addHook('modifyRowHeaderWidth', (...args) => this.onModifyRowHeaderWidth(...args));
+    this.addHook('afterCreateRow', (...args) => this.onAfterCreateRow(...args));
+    this.addHook('beforeRowMove', (...args) => this.onBeforeRowMove(...args));
+    this.addHook('afterRowMove', (...args) => this.onAfterRowMove(...args));
 
     if (!this.trimRowsPlugin.isEnabled()) {
       // Workaround to prevent calling updateSetttings in the enablePlugin method, which causes many problems.
@@ -149,17 +144,26 @@ class NestedRows extends BasePlugin {
     super.updatePlugin();
   }
 
-  //TODO: docs
+  /**
+   * `beforeRowMove` hook callback.
+   *
+   * @private
+   * @param {Array} rows Array of row indexes to be moved.
+   * @param {Number} target Index of the target row.
+   * @param {Object} blockMoving Defines if the default row moving mechanism should be blocked.
+   */
   onBeforeRowMove(rows, target, blockMoving) {
-    blockMoving.rows = true;
+    const priv = privatePool.get(this);
+    const rowsLen = rows.length;
+    const translatedStartIndexes = [];
 
-    let priv = privatePool.get(this);
-    let allowMove = true;
-    let rowsLen = rows.length;
-    let i;
-    let translatedStartIndexes = [];
     let translatedTargetIndex = this.dataManager.translateTrimmedRow(target);
-    // let translatedTargetIndex = target;
+    let allowMove = true;
+    let i;
+    let fromParent = null;
+    let toParent = null;
+    let sameParent = null;
+    blockMoving.rows = true;
 
     for (i = 0; i < rowsLen; i++) {
       translatedStartIndexes.push(this.dataManager.translateTrimmedRow(rows[i]));
@@ -173,9 +177,8 @@ class NestedRows extends BasePlugin {
       return;
     }
 
-    let fromParent = this.dataManager.getRowParent(translatedStartIndexes[0]);
-    // let toParent = this.dataManager.isParent(translatedTargetIndex - 1) ? this.dataManager.getDataObject(translatedTargetIndex - 1) : this.dataManager.getRowParent(translatedTargetIndex);
-    let toParent = this.dataManager.getRowParent(translatedTargetIndex);
+    fromParent = this.dataManager.getRowParent(translatedStartIndexes[0]);
+    toParent = this.dataManager.getRowParent(translatedTargetIndex);
 
     if (toParent == null) {
       toParent = this.dataManager.getRowParent(translatedTargetIndex - 1);
@@ -183,23 +186,21 @@ class NestedRows extends BasePlugin {
 
     if (toParent == null) {
       toParent = this.dataManager.getDataObject(translatedTargetIndex - 1);
-      priv.movedToParentBegin = true;
+      priv.movedToFirstChild = true;
     }
 
     if (!toParent) {
       return;
     }
 
-    let sameParent = fromParent === toParent;
-
+    sameParent = fromParent === toParent;
     priv.movedToCollapsed = this.collapsingUI.areChildrenCollapsed(toParent);
-
     this.collapsingUI.collapsedRowsStash.stash();
-    // this.collapsingUI.collapsedRowsStash.trimStash(translatedStartIndexes[0], rows.length);
 
     if (!sameParent) {
       if (Math.max(...translatedStartIndexes) <= translatedTargetIndex) {
         this.collapsingUI.collapsedRowsStash.shiftStash(translatedStartIndexes[0], (-1) * rows.length);
+
       } else {
         this.collapsingUI.collapsedRowsStash.shiftStash(translatedTargetIndex, rows.length);
       }
@@ -207,27 +208,14 @@ class NestedRows extends BasePlugin {
 
     priv.changeSelection = true;
 
-    if (translatedStartIndexes[rowsLen - 1] <= translatedTargetIndex && sameParent) {
+    if (translatedStartIndexes[rowsLen - 1] <= translatedTargetIndex && sameParent || priv.movedToFirstChild === true) {
       rows.reverse();
       translatedStartIndexes.reverse();
-      translatedTargetIndex--;
-    }
-    // if (translatedStartIndexes[rowsLen - 1] <= translatedTargetIndex && sameParent) {
-    //   rows.reverse();
-    //   translatedStartIndexes.reverse();
-    //   // translatedTargetIndex--;
-    //
-    // }
 
-    if (priv.movedToParentBegin === true) {
-      rows.reverse();
-      translatedStartIndexes.reverse();
+      if (priv.movedToFirstChild !== true) {
+        translatedTargetIndex--;
+      }
     }
-
-    // else if (this.dataManager.isParent(translatedTargetIndex)) {
-    //   priv.movedToParentBegin = true;
-    //   rows.reverse();
-    // }
 
     for (i = 0; i < rowsLen; i++) {
       this.dataManager.moveRow(translatedStartIndexes[i], translatedTargetIndex);
@@ -240,26 +228,33 @@ class NestedRows extends BasePlugin {
     this.dataManager.rewriteCache();
   }
 
-  //TODO: docs
+  /**
+   * `afterRowMove` hook callback.
+   *
+   * @private
+   * @param {Array} rows Array of row indexes to be moved.
+   * @param {Number} target Index of the target row.
+   */
   onAfterRowMove(rows, target) {
-    let priv = privatePool.get(this);
+    const priv = privatePool.get(this);
 
     if (!priv.changeSelection) {
       return;
     }
 
+    const rowsLen = rows.length;
     let startRow = 0;
     let endRow = 0;
-    let rowsLen = rows.length;
+    let translatedTargetIndex = null;
+    let selection = null;
+    let lastColIndex = null;
 
     this.collapsingUI.collapsedRowsStash.applyStash();
 
-    let translatedTargetIndex = this.dataManager.translateTrimmedRow(target);
+    translatedTargetIndex = this.dataManager.translateTrimmedRow(target);
 
-    if (priv.movedToParentBegin) {
-      priv.movedToParentBegin = false;
-      // endRow = target;
-      // startRow = endRow - rowsLen + 1;
+    if (priv.movedToFirstChild) {
+      priv.movedToFirstChild = false;
 
       startRow = target;
       endRow = target + rowsLen - 1;
@@ -270,7 +265,6 @@ class NestedRows extends BasePlugin {
       }
 
     } else if (priv.movedToCollapsed) {
-      // let parentObject = this.dataManager.getRowParent(target);
       let parentObject = this.dataManager.getRowParent(translatedTargetIndex - 1);
       if (parentObject == null) {
         parentObject = this.dataManager.getDataObject(translatedTargetIndex - 1);
@@ -282,7 +276,6 @@ class NestedRows extends BasePlugin {
 
     } else {
       if (rows[rowsLen - 1] < target) {
-        // endRow = this.dataManager.isParent(target) ? target + 1 : target - 1;
         endRow = target - 1;
         startRow = endRow - rowsLen + 1;
 
@@ -292,8 +285,8 @@ class NestedRows extends BasePlugin {
       }
     }
 
-    let selection = this.hot.selection;
-    let lastColIndex = this.hot.countCols() - 1;
+    selection = this.hot.selection;
+    lastColIndex = this.hot.countCols() - 1;
 
     selection.setRangeStart(new WalkontableCellCoords(startRow, 0));
     selection.setRangeEnd(new WalkontableCellCoords(endRow, lastColIndex), true);
@@ -358,6 +351,7 @@ class NestedRows extends BasePlugin {
   onBeforeDataFilter(index, amount, logicRows) {
     const realLogicRows = [];
     const startIndex = this.dataManager.translateTrimmedRow(index);
+    const priv = privatePool.get(this);
 
     rangeEach(startIndex, startIndex + amount - 1, (i) => {
       realLogicRows.push(i);
@@ -368,7 +362,7 @@ class NestedRows extends BasePlugin {
     this.collapsingUI.collapsedRowsStash.shiftStash(startIndex, (-1) * amount);
     this.dataManager.filterData(index, amount, realLogicRows);
 
-    this.skipRender = true;
+    priv.skipRender = true;
 
     return false;
   }
@@ -413,8 +407,10 @@ class NestedRows extends BasePlugin {
    * @private
    */
   onAfterRemoveRow(index, amount) {
+    const priv = privatePool.get(this);
+
     setTimeout(() => {
-      this.skipRender = null;
+      priv.skipRender = null;
       this.headersUI.updateRowHeaderWidth();
       this.collapsingUI.collapsedRowsStash.applyStash();
     }, 0);
@@ -429,8 +425,8 @@ class NestedRows extends BasePlugin {
    * @returns {Number} Modified amount.
    */
   onModifyRemovedAmount(amount, index) {
+    const lastParents = [];
     let childrenCount = 0;
-    let lastParents = [];
 
     rangeEach(index, index + amount - 1, (i) => {
       let isChild = false;
@@ -548,7 +544,9 @@ class NestedRows extends BasePlugin {
    * @private
    */
   onBeforeRender(force, skipRender) {
-    if (this.skipRender) {
+    const priv = privatePool.get(this);
+
+    if (priv.skipRender) {
       skipRender.skipRender = true;
     }
   }

@@ -45,8 +45,6 @@ class DataManager {
       rows: [],
       nodeInfo: new WeakMap()
     };
-
-    this.rowCounter = 0;
   }
 
   /**
@@ -544,6 +542,7 @@ class DataManager {
       } else {
         newRowParent.__children.splice(indexWithinParent, amount);
       }
+
     } else {
       if (element) {
         this.data.splice(indexWithinParent, amount, element);
@@ -556,14 +555,18 @@ class DataManager {
     this.rewriteCache();
   }
 
+  /**
+   * Move a single row.
+   *
+   * @param {Number} fromIndex Index of the row to be moved.
+   * @param {Number} toIndex Index of the destination.
+   */
   moveRow(fromIndex, toIndex) {
     let targetIsParent = this.isParent(toIndex);
-    // let nextToTargetIsParent = this.isParent(toIndex + 1);
 
     let fromParent = this.getRowParent(fromIndex);
     let indexInFromParent = this.getRowIndexWithinParent(fromIndex);
 
-    // let toParent = targetIsParent ? this.getDataObject(toIndex) : this.getRowParent(toIndex);
     let toParent = this.getRowParent(toIndex);
 
     if (toParent == null) {
@@ -582,8 +585,6 @@ class DataManager {
       toParent.__children = [];
     }
 
-    // let indexInToParent = targetIsParent ? 0 : this.getRowIndexWithinParent(toIndex);
-
     let previousToTargetParent = this.getRowParent(toIndex - 1);
     let indexInToParent = targetIsParent ? this.countChildren(previousToTargetParent) : this.getRowIndexWithinParent(toIndex);
 
@@ -591,10 +592,6 @@ class DataManager {
 
     fromParent.__children.splice(indexInFromParent, 1);
     toParent.__children.splice(indexInToParent, 0, elemToMove[0]);
-
-    // let elemToMove = this.getDataObject(fromIndex);
-    // this.spliceData(fromIndex, 1);
-    // this.addChildAtIndex(toParent, indexInToParent, elemToMove);
   }
 
   /**

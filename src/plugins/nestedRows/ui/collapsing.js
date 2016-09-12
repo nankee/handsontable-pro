@@ -60,8 +60,10 @@ class CollapsingUI extends BaseUI {
    * @param {Boolean} [forceRender=true] Whether to render the table after the function ends.
    */
   collapseChildren(row, forceRender = true, doTrimming = true) {
+    const rowsToCollapse = [];
     let rowObject = null;
     let rowIndex = null;
+    let rowsToTrim = null;
 
     if (isNaN(row)) {
       rowObject = row;
@@ -71,15 +73,13 @@ class CollapsingUI extends BaseUI {
       rowIndex = row;
     }
 
-    const rowsToCollapse = [];
-
     if (this.dataManager.hasChildren(rowObject)) {
       arrayEach(rowObject.__children, (elem, i) => {
         rowsToCollapse.push(this.dataManager.getRowIndex(elem));
       });
     }
 
-    const rowsToTrim = this.collapseRows(rowsToCollapse, true, false);
+    rowsToTrim = this.collapseRows(rowsToCollapse, true, false);
 
     if (doTrimming) {
       this.trimRowsPlugin.trimRows(rowsToTrim);
@@ -244,10 +244,13 @@ class CollapsingUI extends BaseUI {
    *
    * @param {Number|Object} row Parent row.
    * @param {Boolean} [forceRender=true] Whether to render the table after the function ends.
+   * @param {Boolean} [doTrimming=true] If set to `true`, the trimming will be applied when the function finishes.
    */
   expandChildren(row, forceRender = true, doTrimming = true) {
+    const rowsToExpand = [];
     let rowObject = null;
     let rowIndex = null;
+    let rowsToUntrim = null;
 
     if (isNaN(row)) {
       rowObject = row;
@@ -257,19 +260,17 @@ class CollapsingUI extends BaseUI {
       rowIndex = row;
     }
 
-    const rowsToExpand = [];
     this.collapsedRows.splice(this.collapsedRows.indexOf(rowIndex), 1);
 
     if (this.dataManager.hasChildren(rowObject)) {
       arrayEach(rowObject.__children, (elem, i) => {
         const childIndex = this.dataManager.getRowIndex(elem);
 
-        // if (this.collapsedRows.indexOf(childIndex) === -1) {
         rowsToExpand.push(childIndex);
       });
     }
 
-    const rowsToUntrim = this.expandRows(rowsToExpand, true, false);
+    rowsToUntrim = this.expandRows(rowsToExpand, true, false);
 
     if (doTrimming) {
       this.trimRowsPlugin.untrimRows(rowsToUntrim);
