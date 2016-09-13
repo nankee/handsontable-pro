@@ -224,7 +224,6 @@ class NestedRows extends BasePlugin {
    * @param {Number} target Index of the target row.
    */
   onAfterRowMove(rows, target) {
-    console.log(rows, target);
     const priv = privatePool.get(this);
 
     if (!priv.changeSelection) {
