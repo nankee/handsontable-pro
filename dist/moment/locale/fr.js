@@ -59,4 +59,10 @@
 
     return fr;
 
+})); the first week of the year.
+        }
+    });
+
+    return fr;
+
 }));

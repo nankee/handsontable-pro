@@ -55,4 +55,10 @@
 
     return fr_ca;
 
+}));mber === 1 ? 'er' : 'e');
+        }
+    });
+
+    return fr_ca;
+
 }));
