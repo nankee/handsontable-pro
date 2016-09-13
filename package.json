@@ -8,7 +8,7 @@
   },
   "author": "Handsoncode <hello@handsontable.com>",
   "version": "1.6.0",
-  "compatibleHotVersion": "feature/nestedRows",
+  "compatibleHotVersion": "develop",
   "main": "./dist/handsontable.js",
   "keywords": [
     "data",
