@@ -138,9 +138,8 @@ class NestedRows extends BasePlugin {
    * @private
    * @param {Array} rows Array of row indexes to be moved.
    * @param {Number} target Index of the target row.
-   * @param {Object} blockMoving Defines if the default row moving mechanism should be blocked.
    */
-  onBeforeRowMove(rows, target, blockMoving) {
+  onBeforeRowMove(rows, target) {
     const priv = privatePool.get(this);
     const rowsLen = rows.length;
     const translatedStartIndexes = [];
@@ -151,7 +150,6 @@ class NestedRows extends BasePlugin {
     let fromParent = null;
     let toParent = null;
     let sameParent = null;
-    blockMoving.rows = true;
 
     for (i = 0; i < rowsLen; i++) {
       translatedStartIndexes.push(this.dataManager.translateTrimmedRow(rows[i]));
@@ -162,7 +160,7 @@ class NestedRows extends BasePlugin {
     }
 
     if (translatedStartIndexes.indexOf(translatedTargetIndex) > -1 || !allowMove) {
-      return;
+      return false;
     }
 
     fromParent = this.dataManager.getRowParent(translatedStartIndexes[0]);
@@ -178,7 +176,7 @@ class NestedRows extends BasePlugin {
     }
 
     if (!toParent) {
-      return;
+      return false;
     }
 
     sameParent = fromParent === toParent;
@@ -214,6 +212,8 @@ class NestedRows extends BasePlugin {
     }
 
     this.dataManager.rewriteCache();
+
+    return false;
   }
 
   /**
@@ -224,6 +224,7 @@ class NestedRows extends BasePlugin {
    * @param {Number} target Index of the target row.
    */
   onAfterRowMove(rows, target) {
+    console.log(rows, target);
     const priv = privatePool.get(this);
 
     if (!priv.changeSelection) {
