@@ -23,7 +23,7 @@ export function showRowItem(hiddenRowsPlugin) {
         }
 
       } else {
-        rangeEach(start, end, (i) => hiddenRowsPlugin.showRow(i));
+        rangeEach(start, end, (row) => hiddenRowsPlugin.showRow(row));
       }
 
       this.render();

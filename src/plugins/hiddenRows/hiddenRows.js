@@ -140,9 +140,6 @@ class HiddenRows extends BasePlugin {
     this.resetCellsMeta();
   }
 
-  getLogicIndex(row) {
-    return this.hot.runHooks('modifyRow', row);
-  }
   /**
    * Show the rows provided in the array.
    *
@@ -151,7 +148,7 @@ class HiddenRows extends BasePlugin {
   showRows(rows) {
     arrayEach(rows, (row) => {
       row = parseInt(row, 10);
-      row = this.getLogicIndex(row);
+      row = this.getLogicalRowIndex(row);
 
       if (this.isHidden(row, true)) {
         this.hiddenRows.splice(this.hiddenRows.indexOf(row), 1);
@@ -176,7 +173,7 @@ class HiddenRows extends BasePlugin {
   hideRows(rows) {
     arrayEach(rows, (row) => {
       row = parseInt(row, 10);
-      row = this.getLogicIndex(row);
+      row = this.getLogicalRowIndex(row);
 
       if (!this.isHidden(row, true)) {
         this.hiddenRows.push(row);
@@ -196,11 +193,13 @@ class HiddenRows extends BasePlugin {
   /**
    * Check if given row is hidden.
    *
+   * @param {Number} row Column index.
+   * @param {Boolean} isLogicIndex flag which determines type of index.
    * @returns {Boolean}
    */
-  isHidden(row, isLogicIndex) {
+  isHidden(row, isLogicIndex = false) {
     if (!isLogicIndex) {
-      row = this.getLogicIndex(row);
+      row = this.getLogicalRowIndex(row);
     }
 
     return this.hiddenRows.indexOf(row) > -1;
@@ -217,6 +216,16 @@ class HiddenRows extends BasePlugin {
         meta.skipRowOnPaste = false;
       }
     });
+  }
+
+  /**
+   * Get the logical index of the provided row.
+   *
+   * @param {Number} row
+   * @returns {Number}
+   */
+  getLogicalRowIndex(row) {
+    return this.hot.runHooks('modifyRow', row);
   }
 
   /**

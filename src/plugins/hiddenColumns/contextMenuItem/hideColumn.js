@@ -9,7 +9,7 @@ export function hideColumnItem(hiddenColumnsPlugin) {
       let start = Math.min(from.col, to.col);
       let end = Math.max(from.col, to.col);
 
-      rangeEach(start, end, (i) => hiddenColumnsPlugin.hideColumn(hiddenColumnsPlugin.getLogicalColumnIndex(i)));
+      rangeEach(start, end, (column) => hiddenColumnsPlugin.hideColumn(column));
 
       this.render();
       this.view.wt.wtOverlays.adjustElementsSize(true);

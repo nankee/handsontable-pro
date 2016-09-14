@@ -212,21 +212,6 @@ describe('HiddenColumns', function() {
     expect(errorThrown).toBe(false);
   });
 
-  it("should properly hide columns, when using the manualColumnMove plugin", function() {
-    var hot = handsontable({
-      data: Handsontable.helper.createSpreadsheetData(4, 10),
-      manualColumnMove: [4, 1, 2, 6, 0, 3, 5, 7, 8, 9],
-      hiddenColumns: {
-        columns: [3]
-      },
-      rowHeaders: true
-    });
-
-    var COLGROUP = this.$container.find('.ht_master colgroup');
-
-    expect(parseInt(COLGROUP.find('col:nth-child(7)').css('width'), 10)).toEqual(0);
-  });
-
   describe('copy-paste functionality', function() {
 
     it('should allow to copy hidden columns, when "copyPasteEnabled" property is not set', function() {
@@ -457,6 +442,28 @@ describe('HiddenColumns', function() {
 
       expect(hot.getColWidth(2)).toBe(50);
       expect(hot.getColWidth(3)).toBe(50);
+    });
+  });
+
+  describe('manualColumnMove', function() {
+    it('should properly render hidden ranges after moving action', function() {
+      var hot = handsontable({
+        data: Handsontable.helper.createSpreadsheetData(5, 10),
+        hiddenColumns: {
+          columns: [3]
+        },
+        width: 500,
+        height: 300,
+        manualColumnMove: true
+      });
+      var hiddenColumns = hot.getPlugin('hiddenColumns');
+      var manualColumnMove = hot.getPlugin('manualColumnMove');
+
+      manualColumnMove.moveColumns([0, 1], 4);
+      hot.render();
+
+      expect(hiddenColumns.hiddenColumns[0]).toEqual(3);
+      expect(hot.getColWidth(1)).toEqual(0.1);
     });
   });
 
