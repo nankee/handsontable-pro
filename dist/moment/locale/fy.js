@@ -68,10 +68,4 @@
 
     return fy;
 
-})); the first week of the year.
-        }
-    });
-
-    return fy;
-
 }));

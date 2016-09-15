@@ -73,10 +73,4 @@
 
     return de;
 
-})); the first week of the year.
-        }
-    });
-
-    return de;
-
 }));

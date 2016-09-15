@@ -76,9 +76,4 @@
 
     return cy;
 
-}));    }
-    });
-
-    return cy;
-
 }));
