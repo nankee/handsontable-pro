@@ -204,6 +204,7 @@ class TrimRows extends BasePlugin {
   /**
    * On after create row listener.
    *
+   * @private
    * @param {Number} index Row index.
    * @param {Number} amount Defines how many rows removed.
    */
