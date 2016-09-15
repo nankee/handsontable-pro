@@ -20,11 +20,21 @@
  *  - dist/handsontable.full.min.css
  */
 
+var fs = require('fs');
+
 module.exports = function(grunt) {
 
   require('time-grunt')(grunt);
 
+  // handsontable path for npm 2.*
   var nodeHandsontablePath = 'node_modules/hot-builder/node_modules/handsontable/';
+
+  try {
+    fs.statSync(nodeHandsontablePath)
+  } catch(ex) {
+    // handsontable path for npm >=3.10.*
+    nodeHandsontablePath = 'node_modules/handsontable/';
+  }
 
   var pkg = grunt.file.readJSON('package.json');
 
@@ -56,9 +66,7 @@ module.exports = function(grunt) {
         }
       },
       options: {
-        config: '.jscsrc',
-        esnext: true,
-        verbose: true
+        config: '.jscsrc'
       }
     },
 
@@ -137,10 +145,7 @@ module.exports = function(grunt) {
           vendor: [
             nodeHandsontablePath + 'demo/js/jquery.min.js',
             'dist/numbro/numbro.js',
-            nodeHandsontablePath + 'lib/autoResize/autoResize.js',
-            nodeHandsontablePath + 'lib/copyPaste/copyPaste.js',
-            nodeHandsontablePath + 'lib/SheetClip/SheetClip.js',
-            nodeHandsontablePath + 'lib/jsonpatch/json-patch-duplex.js',
+            'dist/hot-formula-parser/formula-parser.js',
             nodeHandsontablePath + 'demo/js/moment/moment.js',
             nodeHandsontablePath + 'demo/js/pikaday/pikaday.js',
             nodeHandsontablePath + 'demo/js/ZeroClipboard.js',
@@ -152,13 +157,17 @@ module.exports = function(grunt) {
             nodeHandsontablePath + 'test/jasmine/spec/test-init.js'
           ],
           outfile: 'test/jasmine/SpecRunner.html',
-          template: 'test/jasmine/templates/SpecRunner.tmpl',
+          template: nodeHandsontablePath + 'test/jasmine/templates/SpecRunner.tmpl',
+          templateOptions: {
+            basePath: '../../' + nodeHandsontablePath + 'test/jasmine/',
+          },
           keepRunner: true
         }
       },
       proStandalone: {
         src: [
           'dist/handsontable.js',
+          'dist/numbro/languages.js',
           nodeHandsontablePath + 'demo/js/backbone/lodash.underscore.js',
           nodeHandsontablePath + 'demo/js/backbone/backbone.js',
           nodeHandsontablePath + 'demo/js/backbone/backbone-relational/backbone-relational.js',
@@ -179,13 +188,8 @@ module.exports = function(grunt) {
           ],
           vendor: [
             nodeHandsontablePath + 'demo/js/jquery.min.js',
-            'dist/numbro/languages.js',
             'dist/numbro/numbro.js',
-            nodeHandsontablePath + 'lib/numeral/numeral.js',
-            nodeHandsontablePath + 'lib/autoResize/autoResize.js',
-            nodeHandsontablePath + 'lib/copyPaste/copyPaste.js',
-            nodeHandsontablePath + 'lib/SheetClip/SheetClip.js',
-            nodeHandsontablePath + 'lib/jsonpatch/json-patch-duplex.js',
+            'dist/hot-formula-parser/formula-parser.js',
             nodeHandsontablePath + 'demo/js/moment/moment.js',
             nodeHandsontablePath + 'demo/js/pikaday/pikaday.js',
             nodeHandsontablePath + 'demo/js/ZeroClipboard.js',
@@ -198,13 +202,17 @@ module.exports = function(grunt) {
             'src/plugins/*/test/helpers/*.js'
           ],
           outfile: 'test/jasmine/SpecRunner.html',
-          template: 'test/jasmine/templates/SpecRunner.tmpl',
+          template: nodeHandsontablePath + 'test/jasmine/templates/SpecRunner.tmpl',
+          templateOptions: {
+            basePath: '../../' + nodeHandsontablePath + 'test/jasmine/',
+          },
           keepRunner: true
         }
       },
       proFull: {
         src: [
           'dist/handsontable.full.min.js',
+          'dist/numbro/languages.js',
           nodeHandsontablePath + 'demo/js/backbone/lodash.underscore.js',
           nodeHandsontablePath + 'demo/js/backbone/backbone.js',
           nodeHandsontablePath + 'demo/js/backbone/backbone-relational/backbone-relational.js',
@@ -225,11 +233,6 @@ module.exports = function(grunt) {
           ],
           vendor: [
             nodeHandsontablePath + 'demo/js/jquery.min.js',
-            'dist/numbro/languages.js',
-            nodeHandsontablePath + 'lib/autoResize/autoResize.js',
-            nodeHandsontablePath + 'lib/copyPaste/copyPaste.js',
-            nodeHandsontablePath + 'lib/SheetClip/SheetClip.js',
-            nodeHandsontablePath + 'lib/jsonpatch/json-patch-duplex.js',
             nodeHandsontablePath + 'demo/js/moment/moment.js',
             nodeHandsontablePath + 'test/jasmine/lib/jasmine-extensions.js'
           ],
@@ -240,7 +243,10 @@ module.exports = function(grunt) {
             'src/plugins/*/test/helpers/*.js'
           ],
           outfile: 'test/jasmine/SpecRunner.html',
-          template: 'test/jasmine/templates/SpecRunner.tmpl',
+          template: nodeHandsontablePath + 'test/jasmine/templates/SpecRunner.tmpl',
+          templateOptions: {
+            basePath: '../../' + nodeHandsontablePath + 'test/jasmine/',
+          },
           keepRunner: true
         }
       }
@@ -258,9 +264,9 @@ module.exports = function(grunt) {
   grunt.registerTask('test-pro', ['test-pro-standalone']);
   grunt.registerTask('test', ['default', 'jasmine:free', 'jasmine:proStandalone', 'jasmine:proFull']);
 
+  grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.loadNpmTasks('grunt-contrib-jasmine');
-  grunt.loadNpmTasks('hot-builder');
   grunt.loadNpmTasks('grunt-jscs');
+  grunt.loadNpmTasks('hot-builder');
 };

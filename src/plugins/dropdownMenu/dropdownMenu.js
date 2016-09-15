@@ -291,6 +291,8 @@ class DropdownMenu extends BasePlugin {
 
   /**
    * On menu after open listener.
+   *
+   * @private
    */
   onMenuAfterOpen() {
     this.hot.runHooks('afterDropdownMenuShow', this);
@@ -298,6 +300,8 @@ class DropdownMenu extends BasePlugin {
 
   /**
    * On menu after close listener.
+   *
+   * @private
    */
   onMenuAfterClose() {
     this.hot.listen();
