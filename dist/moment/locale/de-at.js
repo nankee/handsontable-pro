@@ -74,10 +74,4 @@
 
     return de_at;
 
-}));e first week of the year.
-        }
-    });
-
-    return de_at;
-
 }));

@@ -140,10 +140,4 @@
 
     return hr;
 
-}));the first week of the year.
-        }
-    });
-
-    return hr;
-
 }));

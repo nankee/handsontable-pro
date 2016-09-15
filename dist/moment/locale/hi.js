@@ -120,9 +120,4 @@
 
     return hi;
 
-})); }
-    });
-
-    return hi;
-
 }));
