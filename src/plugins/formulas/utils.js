@@ -48,6 +48,22 @@ export function toUpperCaseFormula(expression) {
   });
 }
 
+/**
+ * Cell coordinates function factory.
+ *
+ * @param {String} axis An axis name (`row` or `column`) which default index will be applied to.
+ * @param {Number} defaultIndex Default index.
+ * @returns {Function}
+ */
+export function cellCoordFactory(axis, defaultIndex) {
+  return function(cell) {
+    return {
+      row: axis === 'row' ? defaultIndex : cell.row,
+      column: axis === 'column' ? defaultIndex : cell.column,
+    };
+  };
+}
+
 // temp for tests only!
 Handsontable.utils.FormulasUtils = Handsontable.utils.FormulasUtils || {};
 Handsontable.utils.FormulasUtils.isFormulaExpression = isFormulaExpression;

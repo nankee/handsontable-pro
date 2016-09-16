@@ -161,6 +161,13 @@ class CellValue extends BaseCell {
   }
 
   /**
+   * Clear all precedent cells.
+   */
+  clearPrecedents() {
+    this.precedents.length = 0;
+  }
+
+  /**
    * Get precedent cells.
    *
    * @returns {Array}

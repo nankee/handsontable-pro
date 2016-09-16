@@ -35,7 +35,7 @@ class Formulas extends BasePlugin {
      *
      * @type {Sheet}
      */
-    this.sheet = new Sheet(this.dataProvider);
+    this.sheet = new Sheet(this.hot, this.dataProvider);
     /**
      * Instance of {@link UndoRedoSnapshot}.
      *
@@ -76,6 +76,7 @@ class Formulas extends BasePlugin {
       }
     }
 
+    this.addHook('afterColumnSort', (...args) => this.onAfterColumnSort(...args));
     this.addHook('afterCreateCol', (...args) => this.onAfterCreateCol(...args));
     this.addHook('afterCreateRow', (...args) => this.onAfterCreateRow(...args));
     this.addHook('afterLoadData', () => this.onAfterLoadData());
@@ -83,6 +84,7 @@ class Formulas extends BasePlugin {
     this.addHook('afterRemoveRow', (...args) => this.onAfterRemoveRow(...args));
     this.addHook('afterSetDataAtCell', (...args) => this.onAfterSetDataAtCell(...args));
     this.addHook('afterSetDataAtRowProp', (...args) => this.onAfterSetDataAtCell(...args));
+    this.addHook('beforeColumnSort', (...args) => this.onBeforeColumnSort(...args));
     this.addHook('beforeCreateCol', (...args) => this.onBeforeCreateCol(...args));
     this.addHook('beforeCreateRow', (...args) => this.onBeforeCreateRow(...args));
     this.addHook('beforeRemoveCol', (...args) => this.onBeforeRemoveCol(...args));
@@ -247,7 +249,7 @@ class Formulas extends BasePlugin {
    *
    * @private
    * @param {Array} changes Array of changes.
-   * @param {String} [source] Changes source.
+   * @param {String} [source] Source of changes.
    */
   onAfterSetDataAtCell(changes, source) {
     if (source === 'loadData') {
@@ -258,6 +260,7 @@ class Formulas extends BasePlugin {
 
     arrayEach(changes, ([row, column, oldValue, newValue]) => {
       column = this.hot.propToCol(column);
+      row = this.t.toPhysicalRow(row);
 
       if (isFormulaExpression(newValue)) {
         newValue = toUpperCaseFormula(newValue);
@@ -295,7 +298,7 @@ class Formulas extends BasePlugin {
    * @param {String} source Source of method call.
    */
   onAfterCreateRow(row, amount, source) {
-    this.sheet.alterManager.insertRow(row, amount, source !== 'undo');
+    this.sheet.alterManager.triggerAlter('insert_row', row, amount, source !== 'undo');
   }
 
   /**
@@ -315,11 +318,9 @@ class Formulas extends BasePlugin {
    * @private
    * @param {Number} row Row index.
    * @param {Number} amount An amount of removed rows.
-   * @param {Array} physicalRows An table of removed physical rows.
-   * @param {String} source Source of method call.
    */
-  onAfterRemoveRow(row, amount, physicalRows, source) {
-    this.sheet.alterManager.removeRow(row, amount);
+  onAfterRemoveRow(row, amount) {
+    this.sheet.alterManager.triggerAlter('remove_row', row, amount);
   }
 
   /**
@@ -345,7 +346,7 @@ class Formulas extends BasePlugin {
    * @param {String} source Source of method call.
    */
   onAfterCreateCol(column, amount, source) {
-    this.sheet.alterManager.insertColumn(column, amount, source !== 'undo');
+    this.sheet.alterManager.triggerAlter('insert_column', column, amount, source !== 'undo');
   }
 
   /**
@@ -365,10 +366,31 @@ class Formulas extends BasePlugin {
    * @private
    * @param {Number} column Column index.
    * @param {Number} amount An amount of created columns.
-   * @param {String} source Source of method call.
    */
-  onAfterRemoveCol(column, amount, source) {
-    this.sheet.alterManager.removeColumn(column, amount);
+  onAfterRemoveCol(column, amount) {
+    this.sheet.alterManager.triggerAlter('remove_column', column, amount);
+  }
+
+  /**
+   * On before column sorting listener.
+   *
+   * @private
+   * @param {Number} column Sorted column index.
+   * @param {Boolean} order Order type.
+   */
+  onBeforeColumnSort(column, order) {
+    this.sheet.alterManager.prepareAlter('column_sorting', column, order);
+  }
+
+  /**
+   * On after column sorting listener.
+   *
+   * @private
+   * @param {Number} column Sorted column index.
+   * @param {Boolean} order Order type.
+   */
+  onAfterColumnSort(column, order) {
+    this.sheet.alterManager.triggerAlter('column_sorting', column, order);
   }
 
   /**
