@@ -6,6 +6,7 @@ import {isFormulaExpression, toUpperCaseFormula} from './utils';
 import {Matrix} from './matrix';
 import {AlterManager} from './alterManager';
 import {localHooks} from 'handsontable/mixins/localHooks';
+import {getTranslator} from 'handsontable/utils/recordTranslator';
 import {objectEach, mixin} from 'handsontable/helpers/object';
 import {Parser, ERROR_REF} from 'hot-formula-parser';
 
@@ -18,7 +19,19 @@ const STATE_NEED_FULL_REBUILD = 3;
  * @util
  */
 class Sheet {
-  constructor(dataProvider) {
+  constructor(hot, dataProvider) {
+    /**
+     * Handsontable instance.
+     *
+     * @type {Core}
+     */
+    this.hot = hot;
+    /**
+     * Record translator for translating visual records into psychical and vice versa.
+     *
+     * @type {RecordTranslator}
+     */
+    this.t = getTranslator(this.hot);
     /**
      * Data provider for sheet calculations.
      *
@@ -36,7 +49,7 @@ class Sheet {
      *
      * @type {Matrix}
      */
-    this.matrix = new Matrix();
+    this.matrix = new Matrix(this.t);
     /**
      * Instance of {@link AlterManager}.
      *
@@ -138,8 +151,8 @@ class Sheet {
   /**
    * Apply changes to the sheet.
    *
-   * @param {Number} row Row index.
-   * @param {Number} column Column index.
+   * @param {Number} row Physical row index.
+   * @param {Number} column Physical column index.
    * @param {*} newValue Current cell value.
    */
   applyChanges(row, column, newValue) {
@@ -153,7 +166,7 @@ class Sheet {
       this.parseExpression(new CellValue(row, column), newValue.substr(1));
     }
 
-    const deps = this.getCellDependencies(row, column);
+    const deps = this.getCellDependencies(...this.t.toVisual(row, column));
 
     arrayEach(deps, (cellValue) => {
       cellValue.setState(CellValue.STATE_OUT_OFF_DATE);
@@ -183,10 +196,10 @@ class Sheet {
   }
 
   /**
-   * Get cell value object.
+   * Get cell value object at specified physical coordinates.
    *
-   * @param {Number} row Row index.
-   * @param {Number} column Column index.
+   * @param {Number} row Physical row index.
+   * @param {Number} column Physical column index.
    * @returns {CellValue|undefined}
    */
   getCellAt(row, column) {
@@ -194,10 +207,10 @@ class Sheet {
   }
 
   /**
-   * Get cell dependencies.
+   * Get cell dependencies at specified physical coordinates.
    *
-   * @param {Number} row Row index.
-   * @param {Number} column Column index.
+   * @param {Number} row Physical row index.
+   * @param {Number} column Physical column index.
    * @returns {Array}
    */
   getCellDependencies(row, column) {
@@ -207,9 +220,9 @@ class Sheet {
   /**
    * Listener for parser cell value.
    *
+   * @private
    * @param {Object} cellCoords Cell coordinates.
    * @param {Function} done Function to call with valid cell value.
-   * @private
    */
   _onCallCellValue({row, column}, done) {
     const cell = new CellReference(row, column);
@@ -221,16 +234,16 @@ class Sheet {
     this.matrix.registerCellRef(cell);
     this._processingCell.addPrecedent(cell);
 
-    done(this.dataProvider.getDataAtCell(cell.row, cell.column));
+    done(this.dataProvider.getDataAtCell(row.index, column.index));
   }
 
   /**
    * Listener for parser cells (range) value.
    *
+   * @private
    * @param {Object} startCell Cell coordinates (top-left corner coordinate).
    * @param {Object} endCell Cell coordinates (bottom-right corner coordinate).
    * @param {Function} done Function to call with valid cells values.
-   * @private
    */
   _onCallRangeValue({row: startRow, column: startColumn}, {row: endRow, column: endColumn}, done) {
     rangeEach(startRow.index, endRow.index, (row) => {
@@ -258,6 +271,8 @@ class Sheet {
    * Destroy class.
    */
   destroy() {
+    this.hot = null;
+    this.t = null;
     this.dataProvider.destroy();
     this.dataProvider = null;
     this.alterManager.destroy();

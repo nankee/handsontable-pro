@@ -11,9 +11,9 @@ class BaseCell {
     const columnObject = isObject(column);
 
     this._row = rowObject ? row.index : row;
-    this.rowAbsolute = rowObject ? row.isAbsolute : false;
+    this.rowAbsolute = rowObject ? row.isAbsolute : true;
     this._column = columnObject ? column.index : column;
-    this.columnAbsolute = columnObject ? column.isAbsolute : false;
+    this.columnAbsolute = columnObject ? column.isAbsolute : true;
     this.rowOffset = 0;
     this.columnOffset = 0;
 

@@ -30,6 +30,12 @@ class ExpressionModifier {
      * @type {Array}
      */
     this.cells = [];
+    /**
+     * Function which can modify default behaviour of how cells and cell ranges will be translated.
+     *
+     * @type {null|Function}
+     */
+    this.customModifier = null;
 
     if (typeof expression === 'string') {
       this.setExpression(expression);
@@ -53,19 +59,28 @@ class ExpressionModifier {
   }
 
   /**
+   * Set function which can modify default behaviour of how cells and cell ranges will be translated.
+   *
+   * @param {Function} customModifier Function with custom logic.
+   */
+  useCustomModifier(customModifier) {
+    this.customModifier = customModifier;
+  }
+
+  /**
    * Translate formula expression cells.
    *
-   * @param {Object} baseCoord Coordinates which translation will be applied from.
-   * @param {Object} [delta={row: undefined, column: undefined}] Distance to move in proper direction.
+   * @param {Object} delta Distance to move in proper direction.
+   * @param {Object} [startFrom] Coordinates which translation will be applied from.
    * @returns {ExpressionModifier}
    */
-  translate({row: baseRow, column: baseColumn}, {row: deltaRow, column: deltaColumn}) {
+  translate({row: deltaRow, column: deltaColumn}, startFrom = {}) {
     arrayEach(this.cells, (cell) => {
       if (deltaRow != null) {
-        this._translateCell(cell, 'row', baseRow, deltaRow);
+        this._translateCell(cell, 'row', deltaRow, startFrom.row);
       }
       if (deltaColumn != null) {
-        this._translateCell(cell, 'column', baseColumn, deltaColumn);
+        this._translateCell(cell, 'column', deltaColumn, startFrom.column);
       }
     });
 
@@ -113,56 +128,43 @@ class ExpressionModifier {
    * Translate single cell.
    *
    * @param {Object} cell Cell object.
-   * @param {String} property Property to change.
-   * @param {Number} baseIndex Base index which translation will be applied from.
+   * @param {String} axis Axis to modify.
    * @param {Number} delta Distance to move.
+   * @param {Number} [startFromIndex] Base index which translation will be applied from.
    * @private
    */
-  _translateCell(cell, property, baseIndex = 0, delta = 0) {
-    const {type, start, end} = cell;
-    let startIndex = start[property].index;
-    let endIndex = end[property].index;
+  _translateCell(cell, axis, delta, startFromIndex) {
+    const {start, end} = cell;
+    let startIndex = start[axis].index;
+    let endIndex = end[axis].index;
+
     let deltaStart = delta;
     let deltaEnd = delta;
     let refError = false;
-    const indexOffset = Math.abs(delta) - 1;
 
-    // Adding new items
-    if (delta > 0) {
-      if (baseIndex > startIndex) {
+    if (this.customModifier) {
+      [deltaStart, deltaEnd, refError] = this.customModifier(cell, axis, delta, startFromIndex);
+    } else {
+      // By default only relative cells are translated, if meets absolute reset deltas to 0
+      if (start[axis].isAbsolute) {
         deltaStart = 0;
       }
-      if (baseIndex > endIndex) {
+      if (end[axis].isAbsolute) {
         deltaEnd = 0;
-      }
-    } else { // Removing items
-      if (startIndex >= baseIndex && endIndex <= baseIndex + indexOffset) {
-        refError = true;
-      }
-      if (!refError && type === 'cell') {
-        if (baseIndex >= startIndex) {
-          deltaStart = 0;
-          deltaEnd = 0;
-        }
-      }
-      if (!refError && type === 'range') {
-        if (baseIndex >= startIndex) {
-          deltaStart = 0;
-        }
-        if (baseIndex > endIndex) {
-          deltaEnd = 0;
-
-        } else if (endIndex <= baseIndex + indexOffset) {
-          deltaEnd -= Math.min(endIndex - (baseIndex + indexOffset), 0);
-        }
       }
     }
 
     if (deltaStart && !refError) {
-      start[property].index = Math.max(startIndex + deltaStart, 0);
+      if (startIndex + deltaStart < 0) {
+        refError = true;
+      }
+      start[axis].index = Math.max(startIndex + deltaStart, 0);
     }
     if (deltaEnd && !refError) {
-      end[property].index = Math.max(endIndex + deltaEnd, 0);
+      if (endIndex + deltaEnd < 0) {
+        refError = true;
+      }
+      end[axis].index = Math.max(endIndex + deltaEnd, 0);
     }
     if (refError) {
       cell.refError = true;

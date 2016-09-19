@@ -6,7 +6,13 @@ import {CellValue} from './cell/value';
  * @util
  */
 class Matrix {
-  constructor() {
+  constructor(recordTranslator) {
+    /**
+     * Record translator for translating visual records into psychical and vice versa.
+     *
+     * @type {RecordTranslator}
+     */
+    this.t = recordTranslator;
     /**
      * List of all cell values with theirs precedents.
      *
@@ -24,8 +30,8 @@ class Matrix {
   /**
    * Get cell value at given row and column index.
    *
-   * @param {Number} row Row index.
-   * @param {Number} column Column index.
+   * @param {Number} row Physical row index.
+   * @param {Number} column Physical column index.
    * @returns {CellValue|null} Returns CellValue instance or `null` if cell not found.
    */
   getCellAt(row, column) {
@@ -90,11 +96,11 @@ class Matrix {
   }
 
   /**
-   * Get cell dependencies.
+   * Get cell dependencies using visual coordinates.
    *
-   * @param {CellValue|Object} cellValue Cell value object.
+   * @param {Object} cellCoord Visual cell coordinates object.
    */
-  getDependencies(cellValue) {
+  getDependencies(cellCoord) {
     const getDependencies = (cell) => {
       return arrayReduce(this.data, (acc, cellValue) => {
         if (cellValue.hasPrecedent(cell) && acc.indexOf(cellValue) === -1) {
@@ -111,7 +117,7 @@ class Matrix {
       if (deps.length) {
         arrayEach(deps, (cellValue) => {
           if (cellValue.hasPrecedents()) {
-            deps = deps.concat(getTotalDependencies(cellValue));
+            deps = deps.concat(getTotalDependencies(this.t.toVisual(cellValue)));
           }
         });
       }
@@ -119,7 +125,7 @@ class Matrix {
       return deps;
     };
 
-    return getTotalDependencies(cellValue);
+    return getTotalDependencies(cellCoord);
   }
 
   /**
@@ -136,8 +142,8 @@ class Matrix {
   /**
    * Remove cell references from the collection.
    *
-   * @param {Object} start Start coordinate.
-   * @param {Object} end End coordinate.
+   * @param {Object} start Start visual coordinate.
+   * @param {Object} end End visual coordinate.
    * @returns {Array} Returns removed cell references.
    */
   removeCellRefsAtRange({row: startRow, column: startColumn}, {row: endRow, column: endColumn}) {
