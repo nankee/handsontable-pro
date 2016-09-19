@@ -80,6 +80,7 @@ function customTranslateModifier(cell, axis, delta, startFromIndex) {
   if (startIndex >= startFromIndex && endIndex <= startFromIndex + indexOffset) {
     refError = true;
   }
+
   // Decrement all cells below startFromIndex
   if (!refError && type === 'cell') {
     if (startFromIndex >= startIndex) {
@@ -87,6 +88,7 @@ function customTranslateModifier(cell, axis, delta, startFromIndex) {
       deltaEnd = 0;
     }
   }
+
   if (!refError && type === 'range') {
     if (startFromIndex >= startIndex) {
       deltaStart = 0;
@@ -98,6 +100,7 @@ function customTranslateModifier(cell, axis, delta, startFromIndex) {
       deltaEnd -= Math.min(endIndex - (startFromIndex + indexOffset), 0);
     }
   }
+
   if (startIndex + deltaStart < 0) {
     deltaStart -= startIndex + deltaStart;
   }
