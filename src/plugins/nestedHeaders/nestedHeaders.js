@@ -317,7 +317,9 @@ class NestedHeaders extends BasePlugin {
    * @returns {Number}
    */
   getColspan(row, column) {
-    return this.colspanArray[this.rowCoordsToLevel(row)][column].colspan;
+    let header = this.colspanArray[this.rowCoordsToLevel(row)][column];
+
+    return header ? header.colspan : 1;
   }
 
   /**
