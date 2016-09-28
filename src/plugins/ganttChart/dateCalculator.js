@@ -60,11 +60,15 @@ class DateCalculator {
    * @param {String} day Day of the week. Available options: 'monday' or 'sunday'.
    */
   setFirstWeekDay(day) {
-    if (day.toLowerCase() !== 'monday' && day.toLowerCase() !== 'sunday') {
+    const lowercaseDay = day.toLowerCase();
+
+    if (lowercaseDay !== 'monday' && lowercaseDay !== 'sunday') {
       console.warn('First day of the week must be set to either Monday or Sunday');
     }
 
-    this.firstWeekDay = day.toLowerCase();
+    this.firstWeekDay = lowercaseDay;
+
+    this.calculateWeekStructure();
   }
 
   /**
