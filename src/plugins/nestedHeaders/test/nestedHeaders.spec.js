@@ -306,7 +306,54 @@ describe('NestedHeaders', function() {
       this.$container.find('.ht_clone_top thead tr:eq(2) th:eq(5)').simulate('mouseup');
 
       expect(hot.getSelected()).toEqual([0, 3, hot.countRows() - 1, 6]);
+    });
 
+    it('should highlight only last line of headers on cell selection', function() {
+      var hot = handsontable({
+        data: Handsontable.helper.createSpreadsheetData(10, 10),
+        colHeaders: true,
+        nestedHeaders: [
+          ['A', {label: 'B', colspan: 8}, 'C'],
+          ['D', {label: 'E', colspan: 4}, {label: 'F', colspan: 4}, 'G'],
+          ['H', {label: 'I', colspan: 2}, {label: 'J', colspan: 2}, {label: 'K', colspan: 2}, {label: 'L', colspan: 2}, 'M'],
+          ['N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W']
+        ]
+      });
+
+      this.$container.find('.ht_master tbody tr:eq(2) td:eq(1)').simulate('mousedown');
+      this.$container.find('.ht_master tbody tr:eq(2) td:eq(1)').simulate('mouseup');
+
+      var headerLvl3 = this.$container.find('.ht_clone_top thead tr:eq(2) th:eq(1)');
+      var headerLvl4 = this.$container.find('.ht_clone_top thead tr:eq(3) th:eq(1)');
+
+      expect(headerLvl3.hasClass('ht__highlight')).toBeFalsy();
+      expect(headerLvl4.hasClass('ht__highlight')).toBeTruthy();
+    });
+
+    it('should highlight every header which was in selection on headers selection', function() {
+      var hot = handsontable({
+        data: Handsontable.helper.createSpreadsheetData(10, 10),
+        colHeaders: true,
+        nestedHeaders: [
+          ['A', {label: 'B', colspan: 8}, 'C'],
+          ['D', {label: 'E', colspan: 4}, {label: 'F', colspan: 4}, 'G'],
+          ['H', {label: 'I', colspan: 2}, {label: 'J', colspan: 2}, {label: 'K', colspan: 2}, {label: 'L', colspan: 2}, 'M'],
+          ['N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W']
+        ]
+      });
+
+      this.$container.find('.ht_clone_top thead tr:eq(2) th:eq(1)').simulate('mousedown');
+      this.$container.find('.ht_clone_top thead tr:eq(2) th:eq(1)').simulate('mouseup');
+
+      var headerLvl2 = this.$container.find('.ht_clone_top thead tr:eq(1) th:eq(1)');
+      var headerLvl3 = this.$container.find('.ht_clone_top thead tr:eq(2) th:eq(1)');
+      var headerLvl4_1 = this.$container.find('.ht_clone_top thead tr:eq(3) th:eq(1)');
+      var headerLvl4_2 = this.$container.find('.ht_clone_top thead tr:eq(3) th:eq(2)');
+
+      expect(headerLvl2.hasClass('ht__highlight')).toBeFalsy();
+      expect(headerLvl3.hasClass('ht__highlight')).toBeTruthy();
+      expect(headerLvl4_1.hasClass('ht__highlight')).toBeTruthy();
+      expect(headerLvl4_2.hasClass('ht__highlight')).toBeTruthy();
     });
   });
 

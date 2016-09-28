@@ -1,6 +1,7 @@
 import {
   addClass,
   removeClass,
+  hasClass,
   fastInnerHTML,
   empty,
 } from 'handsontable/helpers/dom/element';
@@ -316,7 +317,9 @@ class NestedHeaders extends BasePlugin {
    * @returns {Number}
    */
   getColspan(row, column) {
-    return this.colspanArray[this.rowCoordsToLevel(row)][column].colspan;
+    let header = this.colspanArray[this.rowCoordsToLevel(row)][column];
+
+    return header ? header.colspan : 1;
   }
 
   /**
@@ -413,6 +416,52 @@ class NestedHeaders extends BasePlugin {
         });
 
       }, true);
+    });
+  }
+
+  /**
+   * Update headers highlight in nested structure.
+   *
+   * @private
+   */
+  updateHeadersHighlight() {
+    let selection = this.hot.getSelected();
+
+    if (selection === void 0) {
+      return;
+    }
+    const classHighlight = 'ht__highlight';
+
+    let wtOverlays = this.hot.view.wt.wtOverlays;
+    let selectionByHeader = this.hot.selection.selectedHeader.cols;
+    let from = Math.min(selection[1], selection[3]);
+    let to = Math.max(selection[1], selection[3]);
+    let levelLimit = selectionByHeader ? -1 : this.columnHeaderLevelCount - 1;
+
+    rangeEach(from, to, (column) => {
+      for (let level = this.columnHeaderLevelCount - 1; level > -1; level--) {
+        let visibleColumnIndex = this.getNestedParent(level, column);
+        let topTH = wtOverlays.topOverlay ? wtOverlays.topOverlay.clone.wtTable.getColumnHeader(visibleColumnIndex, level) : void 0;
+        let topLeftTH = wtOverlays.topLeftCornerOverlay ? wtOverlays.topLeftCornerOverlay.clone.wtTable.getColumnHeader(visibleColumnIndex, level) : void 0;
+        let listTH = [topTH, topLeftTH];
+        let colspanLen = this.getColspan(level - this.columnHeaderLevelCount, visibleColumnIndex);
+        let isInSelection = visibleColumnIndex >= from && (visibleColumnIndex + colspanLen - 1) <= to;
+
+        arrayEach(listTH, (TH, index, array) => {
+          if (TH === void 0) {
+            return false;
+          }
+
+          if ((!selectionByHeader && level < levelLimit) || (selectionByHeader && !isInSelection)) {
+            if (hasClass(TH, classHighlight)) {
+              removeClass(TH, classHighlight);
+            }
+
+          } else if (!hasClass(TH, classHighlight)) {
+            addClass(TH, classHighlight);
+          }
+        });
+      }
     });
   }
 
@@ -547,9 +596,10 @@ class NestedHeaders extends BasePlugin {
       for (let headersCount = this.colspanArray.length, i = headersCount - 1; i >= 0; i--) {
         renderersArray.push(this.headerRendererFactory(i));
       }
-
       renderersArray.reverse();
     }
+
+    this.updateHeadersHighlight();
   }
 
   /**
