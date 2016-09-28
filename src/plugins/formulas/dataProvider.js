@@ -1,5 +1,6 @@
 import {arrayEach} from 'handsontable/helpers/array';
 import {rangeEach} from 'handsontable/helpers/number';
+import {getTranslator} from 'handsontable/utils/recordTranslator';
 import {isFormulaExpression} from './utils';
 
 /**
@@ -20,13 +21,19 @@ class DataProvider {
      * @type {Object}
      */
     this.changes = {};
+    /**
+     * Record translator for translating visual records into psychical and vice versa.
+     *
+     * @type {RecordTranslator}
+     */
+    this.t = getTranslator(this.hot);
   }
 
   /**
    * Collect data changes to the collection.
    *
-   * @param {Number} row Row index.
-   * @param {Number} column Column index.
+   * @param {Number} row Physical row index.
+   * @param {Number} column Physical column index.
    * @param {*} value Value to save.
    */
   collectChanges(row, column, value) {
@@ -45,8 +52,8 @@ class DataProvider {
   /**
    * Check if provided coordinates match to the table range data.
    *
-   * @param {Number} row Row index.
-   * @param {Number} column Row index.
+   * @param {Number} row Visual row index.
+   * @param {Number} column Visual row index.
    * @returns {Boolean}
    */
   isInDataRange(row, column) {
@@ -56,12 +63,12 @@ class DataProvider {
   /**
    * Get calculated data at specified cell.
    *
-   * @param {Number} row Row index.
-   * @param {Number} column Column index.
+   * @param {Number} row Visual row index.
+   * @param {Number} column Visual column index.
    * @returns {*}
    */
   getDataAtCell(row, column) {
-    const id = this._coordId(row, column);
+    const id = this._coordId(...this.t.toPhysical(row, column));
     let result;
 
     if (this.changes.hasOwnProperty(id)) {
@@ -76,10 +83,10 @@ class DataProvider {
   /**
    * Get calculated data at specified range.
    *
-   * @param {Number} [row1] Row index.
-   * @param {Number} [column1] Column index.
-   * @param {Number} [row2] Row index.
-   * @param {Number} [column2] Column index.
+   * @param {Number} [row1] Visual row index.
+   * @param {Number} [column1] Visual column index.
+   * @param {Number} [row2] Visual row index.
+   * @param {Number} [column2] Visual column index.
    * @returns {Array}
    */
   getDataByRange(row1, column1, row2, column2) {
@@ -87,7 +94,7 @@ class DataProvider {
 
     arrayEach(result, (rowData, rowIndex) => {
       arrayEach(rowData, (value, columnIndex) => {
-        const id = this._coordId(rowIndex + row1, columnIndex + column1);
+        const id = this._coordId(...this.t.toPhysical(rowIndex + row1, columnIndex + column1));
 
         if (this.changes.hasOwnProperty(id)) {
           result[rowIndex][columnIndex] = this.changes[id];
@@ -99,10 +106,10 @@ class DataProvider {
   }
 
   /**
-   * Get source data at specified cell.
+   * Get source data at specified physical cell.
    *
-   * @param {Number} row Row index.
-   * @param {Number} column Column index.
+   * @param {Number} row Physical row index.
+   * @param {Number} column Physical column index.
    * @returns {*}
    */
   getSourceDataAtCell(row, column) {
@@ -110,12 +117,23 @@ class DataProvider {
   }
 
   /**
-   * Get source data at specified range.
+   * Get source data at specified visual cell.
    *
-   * @param {Number} [row1] Row index.
-   * @param {Number} [column1] Column index.
-   * @param {Number} [row2] Row index.
-   * @param {Number} [column2] Column index.
+   * @param {Number} row Visual row index.
+   * @param {Number} column Visual column index.
+   * @returns {*}
+   */
+  getRawDataAtCell(row, column) {
+    return this.getSourceDataAtCell(...this.t.toPhysical(row, column));
+  }
+
+  /**
+   * Get source data at specified physical range.
+   *
+   * @param {Number} [row1] Physical row index.
+   * @param {Number} [column1] Physical column index.
+   * @param {Number} [row2] Physical row index.
+   * @param {Number} [column2] Physical column index.
    * @returns {Array}
    */
   getSourceDataByRange(row1, column1, row2, column2) {
@@ -123,11 +141,26 @@ class DataProvider {
   }
 
   /**
+   * Get source data at specified visual range.
+   *
+   * @param {Number} [row1] Visual row index.
+   * @param {Number} [column1] Visual column index.
+   * @param {Number} [row2] Visual row index.
+   * @param {Number} [column2] Visual column index.
+   * @returns {Array}
+   */
+  getRawDataByRange(row1, column1, row2, column2) {
+    const args = [...this.t.toPhysical(row1, column1), ...this.t.toPhysical(row2, column2)];
+
+    return this.getSourceDataByRange(...args);
+  }
+
+  /**
    * Update source data.
    *
-   * @param {Number} row
-   * @param {Number} column
-   * @param {*} value
+   * @param {Number} row Physical row index.
+   * @param {Number} column Physical row index.
+   * @param {*} value Value to update.
    */
   updateSourceData(row, column, value) {
     this.hot.getSourceData()[row][this.hot.colToProp(column)] = value;
@@ -151,6 +184,7 @@ class DataProvider {
   destroy() {
     this.hot = null;
     this.changes = null;
+    this.t = null;
   }
 }
 

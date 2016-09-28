@@ -228,12 +228,26 @@ class GanttChartDataFeed {
   /**
    * Trim the dates in the provided range bar, if they exceed the currently processed year.
    *
-   * @param {Array} bar Range bar data.
+   * @param {Array|Object} bar Range bar data.
    * @returns {Array}
    */
   trimRangeIfNeeded(bar) {
-    let startDate = new Date(bar[1]);
-    let endDate = new Date(bar[2]);
+    let dateProps = null;
+    if (bar[1]) {
+      dateProps = {
+        startDate: 1,
+        endDate: 2
+      };
+
+    } else {
+      dateProps = {
+        startDate: 'startDate',
+        endDate: 'endDate'
+      };
+    }
+
+    let startDate = new Date(bar[dateProps.startDate]);
+    let endDate = new Date(bar[dateProps.endDate]);
 
     if (typeof startDate === 'string' || typeof endDate === 'string') {
       return false;
@@ -243,11 +257,11 @@ class GanttChartDataFeed {
     let endYear = endDate.getFullYear();
 
     if (startYear < this.chartPlugin.currentYear && endYear >= this.chartPlugin.currentYear) {
-      bar[1] = '01/01/' + this.chartPlugin.currentYear;
+      bar[dateProps.startDate] = '01/01/' + this.chartPlugin.currentYear;
     }
 
     if (endYear > this.chartPlugin.currentYear && startYear <= this.chartPlugin.currentYear) {
-      bar[2] = '12/31/' + this.chartPlugin.currentYear;
+      bar[dateProps.endDate] = '12/31/' + this.chartPlugin.currentYear;
     }
 
     return bar;
