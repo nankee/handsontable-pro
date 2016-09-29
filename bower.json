@@ -1,14 +1,18 @@
 {
   "name": "handsontable-pro",
   "description": "Spreadsheet-like data grid editor that provides copy/paste functionality compatible with Excel/Google Docs",
-  "main": ["./dist/handsontable.js", "./dist/handsontable.css"],
+  "main": [
+    "./dist/handsontable.js",
+    "./dist/handsontable.css"
+  ],
   "homepage": "http://handsontable.com/",
   "repository": {
     "type": "git",
     "url": "https://my.handsontable.com/handsontable/handsontable-pro.git"
   },
   "authors": [
-    "Handsoncode", "Handsoncode <hello@handsontable.com>"
+    "Handsoncode",
+    "Handsoncode <hello@handsontable.com>"
   ],
   "keywords": [
     "data",
@@ -32,6 +36,7 @@
     "test"
   ],
   "dependencies": {
+    "hot-formula-parser": "^1.0.18",
     "moment": "^2.13.0",
     "numbro": "^1.8.0",
     "pikaday": "^1.4.0",

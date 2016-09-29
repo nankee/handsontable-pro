@@ -6,7 +6,9 @@ import {addClass} from 'handsontable/helpers/dom/element';
 /**
  * Class responsible for the UI in the Nested Rows' row headers.
  *
- * @class
+ * @class HeadersUI
+ * @util
+ * @extends BaseUI
  */
 class HeadersUI extends BaseUI {
   /**

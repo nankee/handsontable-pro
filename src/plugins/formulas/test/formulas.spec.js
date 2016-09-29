@@ -983,4 +983,127 @@ describe('Formulas general', function() {
       expect(hot.getSourceDataAtRow(1)).toEqual([2012, '=SUM(A1:A2)', 12, '\'=SUM(E5)']);
     });
   });
+
+  describe('column sorting', function() {
+    it('should recalculate all formulas and update theirs cell coordinates if needed', function() {
+      var hot = handsontable({
+        data: getDataSimpleExampleFormulas(),
+        formulas: true,
+        columnSorting: true,
+        sortIndicator: true,
+        width: 500,
+        height: 300
+      });
+
+      hot.updateSettings({columnSorting: {column: 2, sortOrder: true}});
+
+      // source data is not involved in the translation process
+      expect(hot.getSourceDataAtRow(0)).toEqual(['=$B$2', 'Maserati', 'Mazda', 'Mercedes', 'Mini', '=A$1']);
+      expect(hot.getSourceDataAtRow(1)).toEqual([2009, 0, 2941, 4303, 354, 5814]);
+      expect(hot.getSourceDataAtRow(2)).toEqual([2010, 5, 2905, 2867, '=SUM(A3,2,3)', '=#REF!']);
+      expect(hot.getSourceDataAtRow(3)).toEqual([2011, 4, 2517, 4822, 552, 6127]);
+      expect(hot.getSourceDataAtRow(4)).toEqual([2012, '=SUM(A1:A4)', '=SUM(B4,E2)', '=A1/B1', 12, '\'=SUM(E5)']);
+
+      expect(hot.getDataAtRow(0)).toEqual([2011, 4, 2517, 4822, 552, 6127]);
+      expect(hot.getDataAtRow(1)).toEqual([2010, 5, 2905, 2867, 2014, '#REF!']);
+      expect(hot.getDataAtRow(2)).toEqual([2009, 0, 2941, 4303, 354, 5814]);
+      expect(hot.getDataAtRow(3)).toEqual([2012, 8042, 10056, 502.75, 12, '\'=SUM(E5)']);
+      expect(hot.getDataAtRow(4)).toEqual([5, 'Maserati', 'Mazda', 'Mercedes', 'Mini', 2011]);
+
+      hot.updateSettings({columnSorting: {column: 5, sortOrder: false}});
+
+      // source data is not involved in the translation process
+      expect(hot.getSourceDataAtRow(0)).toEqual(['=$B$2', 'Maserati', 'Mazda', 'Mercedes', 'Mini', '=A$1']);
+      expect(hot.getSourceDataAtRow(1)).toEqual([2009, 0, 2941, 4303, 354, 5814]);
+      expect(hot.getSourceDataAtRow(2)).toEqual([2010, 5, 2905, 2867, '=SUM(A3,2,3)', '=#REF!']);
+      expect(hot.getSourceDataAtRow(3)).toEqual([2011, 4, 2517, 4822, 552, 6127]);
+      expect(hot.getSourceDataAtRow(4)).toEqual([2012, '=SUM(#REF!)', '=SUM(B1,#REF!)', '=#REF!/#REF!', 12, '\'=SUM(E5)']);
+
+      expect(hot.getDataAtRow(0)).toEqual([2012, '#REF!', '#REF!', '#REF!', 12, '\'=SUM(E5)']);
+      expect(hot.getDataAtRow(1)).toEqual([2010, 5, 2905, 2867, 2016, '#REF!']);
+      expect(hot.getDataAtRow(2)).toEqual([2011, 4, 2517, 4822, 552, 6127]);
+      expect(hot.getDataAtRow(3)).toEqual([2009, 0, 2941, 4303, 354, 5814]);
+      expect(hot.getDataAtRow(4)).toEqual([5, 'Maserati', 'Mazda', 'Mercedes', 'Mini', 2012]);
+    });
+
+    it('should recalculate formula after precedent cells value was changed', function() {
+      var hot = handsontable({
+        data: getDataSimpleExampleFormulas(),
+        formulas: true,
+        columnSorting: true,
+        sortIndicator: true,
+        width: 500,
+        height: 300
+      });
+
+      hot.updateSettings({columnSorting: {column: 2, sortOrder: true}});
+
+      waits(200);
+      runs(function() {
+        hot.setDataAtCell(4, 0, '');
+
+        expect(hot.getDataAtRow(0)).toEqual([2011, 4, 2517, 4822, 552, 6127]);
+        expect(hot.getDataAtRow(1)).toEqual([2010, 5, 2905, 2867, 2014, '#REF!']);
+        expect(hot.getDataAtRow(2)).toEqual([2009, 0, 2941, 4303, 354, 5814]);
+        expect(hot.getDataAtRow(3)).toEqual([2012, 8042, 10056, 502.75, 12, '\'=SUM(E5)']);
+        expect(hot.getDataAtRow(4)).toEqual(['', 'Maserati', 'Mazda', 'Mercedes', 'Mini', 2011]);
+
+        hot.setDataAtCell(0, 0, 1);
+
+        expect(hot.getDataAtRow(0)).toEqual([1, 4, 2517, 4822, 552, 6127]);
+        expect(hot.getDataAtRow(1)).toEqual([2010, 5, 2905, 2867, 2014, '#REF!']);
+        expect(hot.getDataAtRow(2)).toEqual([2009, 0, 2941, 4303, 354, 5814]);
+        expect(hot.getDataAtRow(3)).toEqual([2012, 6032, 8046, 0.25, 12, '\'=SUM(E5)']);
+        expect(hot.getDataAtRow(4)).toEqual(['', 'Maserati', 'Mazda', 'Mercedes', 'Mini', 1]);
+
+        hot.setDataAtCell(1, 0, 2);
+
+        expect(hot.getDataAtRow(0)).toEqual([1, 4, 2517, 4822, 552, 6127]);
+        expect(hot.getDataAtRow(1)).toEqual([2, 5, 2905, 2867, 2014, '#REF!']);
+        expect(hot.getDataAtRow(2)).toEqual([2009, 0, 2941, 4303, 354, 5814]);
+        expect(hot.getDataAtRow(3)).toEqual([2012, 4024, 6038, 0.25, 12, '\'=SUM(E5)']);
+        expect(hot.getDataAtRow(4)).toEqual(['', 'Maserati', 'Mazda', 'Mercedes', 'Mini', 1]);
+
+        hot.setDataAtCell(2, 0, 3);
+
+        expect(hot.getDataAtRow(0)).toEqual([1, 4, 2517, 4822, 552, 6127]);
+        expect(hot.getDataAtRow(1)).toEqual([2, 5, 2905, 2867, 8, '#REF!']);
+        expect(hot.getDataAtRow(2)).toEqual([3, 0, 2941, 4303, 354, 5814]);
+        expect(hot.getDataAtRow(3)).toEqual([2012, 2018, 2026, 0.25, 12, '\'=SUM(E5)']);
+        expect(hot.getDataAtRow(4)).toEqual(['', 'Maserati', 'Mazda', 'Mercedes', 'Mini', 1]);
+
+        hot.setDataAtCell(3, 0, 4);
+
+        expect(hot.getDataAtRow(0)).toEqual([1, 4, 2517, 4822, 552, 6127]);
+        expect(hot.getDataAtRow(1)).toEqual([2, 5, 2905, 2867, 8, '#REF!']);
+        expect(hot.getDataAtRow(2)).toEqual([3, 0, 2941, 4303, 354, 5814]);
+        expect(hot.getDataAtRow(3)).toEqual([4, 10, 18, 0.25, 12, '\'=SUM(E5)']);
+        expect(hot.getDataAtRow(4)).toEqual(['', 'Maserati', 'Mazda', 'Mercedes', 'Mini', 1]);
+      });
+    });
+
+    it('should corectly recalculate formulas after changing formula expression in sorted cell', function() {
+      var hot = handsontable({
+        data: getDataSimpleExampleFormulas(),
+        formulas: true,
+        columnSorting: true,
+        sortIndicator: true,
+        width: 500,
+        height: 300
+      });
+
+      hot.updateSettings({columnSorting: {column: 2, sortOrder: true}});
+
+      waits(200);
+      runs(function() {
+        hot.setDataAtCell(3, 1, '=SUM(B1:B3)');
+
+        expect(hot.getDataAtRow(0)).toEqual([2011, 4, 2517, 4822, 552, 6127]);
+        expect(hot.getDataAtRow(1)).toEqual([2010, 5, 2905, 2867, 2014, '#REF!']);
+        expect(hot.getDataAtRow(2)).toEqual([2009, 0, 2941, 4303, 354, 5814]);
+        expect(hot.getDataAtRow(3)).toEqual([2012, 9, 2023, 502.75, 12, '\'=SUM(E5)']);
+        expect(hot.getDataAtRow(4)).toEqual([5, 'Maserati', 'Mazda', 'Mercedes', 'Mini', 2011]);
+      });
+    });
+  });
 });

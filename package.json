@@ -7,8 +7,8 @@
     "url": "https://my.handsontable.com/handsontable/handsontable-pro.git"
   },
   "author": "Handsoncode <hello@handsontable.com>",
-  "version": "1.7.0",
-  "compatibleHotVersion": "0.28.0",
+  "version": "1.7.1",
+  "compatibleHotVersion": "0.28.1",
   "main": "./dist/handsontable.js",
   "keywords": [
     "data",
@@ -26,7 +26,7 @@
     "data-spreadsheet"
   ],
   "dependencies": {
-    "hot-formula-parser": "^1.0.17"
+    "hot-formula-parser": "^1.0.18"
   },
   "devDependencies": {
     "grunt": "^0.4.5",

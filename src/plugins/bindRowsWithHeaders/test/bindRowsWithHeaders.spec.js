@@ -119,7 +119,8 @@ describe('BindRowsWithHeaders', function() {
       waits(100);
 
       runs(function() {
-        getHtCore().find('th span.columnSorting:eq(2)').simulate('click');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('mousedown');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('mouseup');
         alter('remove_row', 4, 1);
 
         expect(getRowHeader()).toEqual([1, 10, 2, 3, 5, 6, 7, 8, 9]);
@@ -144,7 +145,8 @@ describe('BindRowsWithHeaders', function() {
       waits(100);
 
       runs(function() {
-        getHtCore().find('th span.columnSorting:eq(2)').simulate('click');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('mousedown');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('mouseup');
         alter('insert_row', 4, 1);
 
         expect(getRowHeader()).toEqual([1, 10, 2, 3, 11, 4, 5, 6, 7, 8, 9]);
@@ -169,10 +171,12 @@ describe('BindRowsWithHeaders', function() {
       waits(100);
 
       runs(function() {
-        getHtCore().find('th span.columnSorting:eq(2)').simulate('click');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('mousedown');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('mouseup');
         alter('insert_row', 4, 1);
         alter('remove_row', 0, 5);
-        getHtCore().find('th span.columnSorting:eq(2)').simulate('click');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('mousedown');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('mouseup');
 
         expect(getRowHeader()).toEqual([9, 8, 7, 6, 5, 4]);
       });

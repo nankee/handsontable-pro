@@ -1331,7 +1331,8 @@ describe('Filters UI', function() {
         $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
 
         // sort
-        getHtCore().find('th span.columnSorting:eq(2)').simulate('click');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('mousedown');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('mouseup');
 
         dropdownMenu(2);
         $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
@@ -1383,8 +1384,9 @@ describe('Filters UI', function() {
         $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
 
         // sort
-        getHtCore().find('th span.columnSorting:eq(2)').simulate('click');
-        alter('remove_row', 1, 5)
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('mousedown');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('mouseup');
+        alter('remove_row', 1, 5);
 
         dropdownMenu(2);
         $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
@@ -1451,7 +1453,8 @@ describe('Filters UI', function() {
         $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
 
         // sort
-        getHtCore().find('th span.columnSorting:eq(2)').simulate('click');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('mousedown');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('mouseup');
         alter('insert_row', 1, 5);
 
         dropdownMenu(2);

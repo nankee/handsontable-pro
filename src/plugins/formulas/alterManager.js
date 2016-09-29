@@ -1,9 +1,20 @@
 import {arrayEach} from 'handsontable/helpers/array';
 import {mixin} from 'handsontable/helpers/object';
 import {localHooks} from 'handsontable/mixins/localHooks';
-import {CellValue} from './cell/value';
-import {isFormulaExpression} from './utils';
-import {ExpressionModifier} from './expressionModifier';
+
+import * as columnSorting from './alterOperation/columnSorting';
+import * as insertColumn from './alterOperation/insertColumn';
+import * as insertRow from './alterOperation/insertRow';
+import * as removeColumn from './alterOperation/removeColumn';
+import * as removeRow from './alterOperation/removeRow';
+
+const operations = new Map();
+
+registerOperation(columnSorting.OPERATION_NAME, columnSorting);
+registerOperation(insertColumn.OPERATION_NAME, insertColumn);
+registerOperation(insertRow.OPERATION_NAME, insertRow);
+registerOperation(removeColumn.OPERATION_NAME, removeColumn);
+registerOperation(removeRow.OPERATION_NAME, removeRow);
 
 /**
  * @class AlterManager
@@ -18,6 +29,12 @@ class AlterManager {
      */
     this.sheet = sheet;
     /**
+     * Handsontable instance.
+     *
+     * @type {Core}
+     */
+    this.hot = sheet.hot;
+    /**
      * Instance of {@link DataProvider}.
      *
      * @type {DataProvider}
@@ -31,137 +48,25 @@ class AlterManager {
     this.matrix = sheet.matrix;
   }
 
-  /**
-   * Insert row action.
-   *
-   * @param {Number} row Row index.
-   * @param {Number} amount An amount of rows to add.
-   * @param {Boolean} [modifyFormula=true] Indicate if alter operation should change formula expressions.
-   */
-  insertRow(row, amount, modifyFormula) {
-    this._alter('insert', 'row', row, amount, modifyFormula);
-  }
-
-  /**
-   * Remove row action.
-   *
-   * @param {Number} row Row index.
-   * @param {Number} amount An amount of rows to remove.
-   * @param {Boolean} [modifyFormula=true] Indicate if alter operation should change formula expressions.
-   */
-  removeRow(row, amount, modifyFormula) {
-    this._alter('remove', 'row', row, -amount, modifyFormula);
-  }
-
-  /**
-   * Insert column action.
-   *
-   * @param {Number} column Column index.
-   * @param {Number} amount An amount of columns to add.
-   * @param {Boolean} [modifyFormula=true] Indicates if alter operation should change formula expressions.
-   */
-  insertColumn(column, amount, modifyFormula) {
-    this._alter('insert', 'column', column, amount, modifyFormula);
-  }
-
-  /**
-   * Remove column action.
-   *
-   * @param {Number} column Column index.
-   * @param {Number} amount An amount of columns to remove.
-   * @param {Boolean} [modifyFormula=true] Indicate if alter operation should change formula expressions.
-   */
-  removeColumn(column, amount, modifyFormula) {
-    this._alter('remove', 'column', column, -amount, modifyFormula);
-  }
-
-  /**
-   * Alter sheet.
-   *
-   * @private
-   * @param {String} action Action to perform.
-   * @param {String} axis For what axis action will be performed (`row` or `column`).
-   * @param {Number} start Index which from action will be applied.
-   * @param {Number} amount An amount of items to add/remove.
-   * @param {Boolean} [modifyFormula=true] Indicate if alter operation should change formula expressions.
-   */
-  _alter(action, axis, start, amount, modifyFormula = true) {
-    const startCoord = (cell) => {
-      return {
-        row: axis === 'row' ? start : cell.row,
-        column: axis === 'column' ? start : cell.column,
-      };
-    };
-    const translateCellRefs = (row, column) => {
-      arrayEach(this.matrix.cellReferences, (cell) => {
-        if (cell[axis] >= start) {
-          cell.translateTo(row, column);
-        }
-      });
-    };
-
-    const translate = [];
-    const indexOffset = Math.abs(amount) - 1;
-
-    if (axis === 'row') {
-      translate.push(amount, 0);
-
-    } else if (axis === 'column') {
-      translate.push(0, amount);
+  prepareAlter(action, ...args) {
+    if (!operations.has(action)) {
+      throw Error(`Alter operation "${action}" not exist.`);
     }
+    operations.get(action).prepare.apply(this, args);
+  }
 
-    if (action === 'remove') {
-      let removedCellRef = this.matrix.removeCellRefsAtRange({[axis]: start}, {[axis]: start + indexOffset});
-      let toRemove = [];
-
-      arrayEach(this.matrix.data, (cell) => {
-        arrayEach(removedCellRef, (cellRef) => {
-          if (!cell.hasPrecedent(cellRef)) {
-            return;
-          }
-
-          cell.removePrecedent(cellRef);
-          cell.setState(CellValue.STATE_OUT_OFF_DATE);
-
-          arrayEach(this.sheet.getCellDependencies(cell.row, cell.column), (cellValue) => {
-            cellValue.setState(CellValue.STATE_OUT_OFF_DATE);
-          });
-        });
-
-        if (cell[axis] >= start && cell[axis] <= (start + indexOffset)) {
-          toRemove.push(cell);
-        }
-      });
-
-      this.matrix.remove(toRemove);
+  /**
+   * Trigger alter table action.
+   *
+   * @param {String} action One of action defined in alterOperation.
+   * @param {*} args Arguments pass to alter operation.
+   */
+  triggerAlter(action, ...args) {
+    if (!operations.has(action)) {
+      throw Error(`Alter operation "${action}" not exist.`);
     }
-
-    translateCellRefs(...translate);
-
-    arrayEach(this.matrix.data, (cell) => {
-      const origRow = cell.row;
-      const origColumn = cell.column;
-
-      if (cell[axis] >= start) {
-        cell.translateTo(...translate);
-        cell.setState(CellValue.STATE_OUT_OFF_DATE);
-      }
-
-      if (modifyFormula) {
-        const row = cell.row;
-        const column = cell.column;
-        const value = this.dataProvider.getSourceDataAtCell(row, column);
-
-        if (isFormulaExpression(value)) {
-          const expModifier = new ExpressionModifier(value);
-
-          expModifier.translate(startCoord({row: origRow, column: origColumn}), {[axis]: amount});
-
-          this.dataProvider.updateSourceData(row, column, expModifier.toString());
-        }
-      }
-    });
-    this.runLocalHooks('afterAlter', action, axis, start, amount);
+    operations.get(action).operate.apply(this, args);
+    this.runLocalHooks('afterAlter', ...args);
   }
 
   /**
@@ -169,6 +74,7 @@ class AlterManager {
    */
   destroy() {
     this.sheet = null;
+    this.hot = null;
     this.dataProvider = null;
     this.matrix = null;
   }
@@ -176,4 +82,15 @@ class AlterManager {
 
 mixin(AlterManager, localHooks);
 
-export {AlterManager};
+const empty = () => {};
+
+function registerOperation(name, descriptor) {
+  if (!operations.has(name)) {
+    operations.set(name, {
+      prepare: descriptor.prepare || empty,
+      operate: descriptor.operate || empty,
+    });
+  }
+}
+
+export {AlterManager, registerOperation};
