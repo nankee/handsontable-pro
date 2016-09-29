@@ -341,7 +341,8 @@ describe('TrimRows', function() {
 
       runs(function() {
         alter('insert_row', 2, 1);
-        getHtCore().find('th span.columnSorting:eq(2)').simulate('click');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('mousedown');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('mouseup');
         alter('remove_row', 2, 1);
 
         expect(getDataAtCell(0, 0)).toBe('A1');
@@ -369,9 +370,11 @@ describe('TrimRows', function() {
 
       runs(function() {
         alter('insert_row', 2, 1);
-        getHtCore().find('th span.columnSorting:eq(2)').simulate('click');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('mousedown');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('mouseup');
         alter('insert_row', 0, 1);
-        getHtCore().find('th span.columnSorting:eq(2)').simulate('click');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('mousedown');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('mouseup');
         alter('remove_row', 0, 3);
 
         expect(getDataAtCell(0, 0)).toBe('A1');
