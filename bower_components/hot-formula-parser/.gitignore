@@ -1,7 +1,0 @@
-node_modules
-coverage
-*.tgz
-.idea
-tmp/
-
-dev.html
