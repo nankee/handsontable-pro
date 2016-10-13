@@ -1358,7 +1358,7 @@ describe('Filters UI', function() {
         $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
         // none
         $(conditionMenuRootElement().querySelector('tbody :nth-child(1) td')).simulate('mousedown');
-      }, 700);
+      }, 800);
 
       setTimeout(function () {
         $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
@@ -1366,7 +1366,7 @@ describe('Filters UI', function() {
         expect(getData().length).toEqual(5);
         expect(getDataAtCol(0).join()).toBe('24,10,1,6,21');
         done();
-      }, 800);
+      }, 900);
     });
 
     it('should correctly insert rows into filtered values when sorting is applied', function(done) {
@@ -1424,14 +1424,14 @@ describe('Filters UI', function() {
         $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
         // is empty
         $(conditionMenuRootElement().querySelector('tbody :nth-child(3) td')).simulate('mousedown');
-      }, 700);
+      }, 800);
 
       setTimeout(function () {
         $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
 
         expect(getData().length).toBe(0);
         done();
-      }, 800);
+      }, 900);
     });
   });
 });
