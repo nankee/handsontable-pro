@@ -143,7 +143,7 @@ describe('Formulas general', function() {
     expect(hot.getDataAtRow(2)).toEqual([2010, 5, 2905, 2867, 2016, 'Maserati']);
     expect(hot.getDataAtRow(3)).toEqual([2011, 4, 2517, 4822, 552, 6127]);
     expect(hot.getDataAtRow(4)).toEqual([2012, 8042, 10058, 100.45, 12, '\'=SUM(E5)']);
-    expect(afterChange.calls[1].args).toEqual([[[1, 1, 0, 20]], 'edit', void 0, void 0, void 0, void 0]);
+    expect(afterChange.calls.argsFor(1)).toEqual([[[1, 1, 0, 20]], 'edit', void 0, void 0, void 0, void 0]);
   });
 
   it('should recalculate table after changing cell value (by reference)', function() {
@@ -184,7 +184,7 @@ describe('Formulas general', function() {
     expect(hot.getDataAtRow(2)).toEqual([2010, 5, 2905, 2867, 2016, 'Maserati']);
     expect(hot.getDataAtRow(3)).toEqual([2011, 4, 2517, 4822, 552, 6127]);
     expect(hot.getDataAtRow(4)).toEqual([2012, 8042, 10058, 0.333167495854063, 12, '\'=SUM(E5)']);
-    expect(afterChange.calls[1].args).toEqual([[[1, 1, 0, '=Sum(a2:A4)']], 'edit', void 0, void 0, void 0, void 0]);
+    expect(afterChange.calls.argsFor(1)).toEqual([[[1, 1, 0, '=Sum(a2:A4)']], 'edit', void 0, void 0, void 0, void 0]);
   });
 
   it('should prevent recalculate table after changing cell value into escaped formula expression', function() {
@@ -204,7 +204,7 @@ describe('Formulas general', function() {
     expect(hot.getDataAtRow(2)).toEqual([2010, 5, 2905, 2867, 2016, 'Maserati']);
     expect(hot.getDataAtRow(3)).toEqual([2011, 4, 2517, 4822, 552, 6127]);
     expect(hot.getDataAtRow(4)).toEqual([2012, 8042, 10058, '#VALUE!', 12, '\'=SUM(E5)']);
-    expect(afterChange.calls[1].args).toEqual([[[1, 1, 0, '\'=SUM(A2:A4)']], 'edit', void 0, void 0, void 0, void 0]);
+    expect(afterChange.calls.argsFor(1)).toEqual([[[1, 1, 0, '\'=SUM(A2:A4)']], 'edit', void 0, void 0, void 0, void 0]);
   });
 
   it('should recalculate table after changing cell value from escaped formula expression into valid formula expression', function() {
@@ -224,7 +224,7 @@ describe('Formulas general', function() {
     expect(hot.getDataAtRow(2)).toEqual([2010, 5, 2905, 2867, 2016, 'Maserati']);
     expect(hot.getDataAtRow(3)).toEqual([2011, 4, 2517, 4822, 552, 6127]);
     expect(hot.getDataAtRow(4)).toEqual([2012, 8042, 10058, '#DIV/0!', 12, 12]);
-    expect(afterChange.calls[1].args).toEqual([[[4, 5, '\'=SUM(E5)', '=SUM(E5)']], 'edit', void 0, void 0, void 0, void 0]);
+    expect(afterChange.calls.argsFor(1)).toEqual([[[4, 5, '\'=SUM(E5)', '=SUM(E5)']], 'edit', void 0, void 0, void 0, void 0]);
   });
 
   it('should recalculate table after changing cell value from primitive value into formula expression', function() {
@@ -244,7 +244,7 @@ describe('Formulas general', function() {
     expect(hot.getDataAtRow(2)).toEqual([2010, 5, 2905, 2867, 2016, 'Maserati']);
     expect(hot.getDataAtRow(3)).toEqual([2011, 4, 2517, 4822, 552, 6127]);
     expect(hot.getDataAtRow(4)).toEqual([2012, 8042, 10058, 0.333167495854063, 12, '\'=SUM(E5)']);
-    expect(afterChange.calls[1].args).toEqual([[[1, 1, 0, '=SUM(A2:A4)']], 'edit', void 0, void 0, void 0, void 0]);
+    expect(afterChange.calls.argsFor(1)).toEqual([[[1, 1, 0, '=SUM(A2:A4)']], 'edit', void 0, void 0, void 0, void 0]);
   });
 
   it('should recalculate table after changing cell value from formula expression into primitive value', function() {
@@ -264,7 +264,7 @@ describe('Formulas general', function() {
     expect(hot.getDataAtRow(2)).toEqual([2010, 5, 2905, 2867, 2016, "Maserati"]);
     expect(hot.getDataAtRow(3)).toEqual([2011, 4, 2517, 4822, 552, 6127]);
     expect(hot.getDataAtRow(4)).toEqual([2012, 15, 2031, '#DIV/0!', 12, '\'=SUM(E5)']);
-    expect(afterChange.calls[1].args).toEqual([[[4, 1, '=Sum(a2:a5)', 15]], 'edit', void 0, void 0, void 0, void 0]);
+    expect(afterChange.calls.argsFor(1)).toEqual([[[4, 1, '=Sum(a2:a5)', 15]], 'edit', void 0, void 0, void 0, void 0]);
   });
 
   it('should recalculate table after changing cell value from formula expression into another formula expression', function() {
@@ -284,7 +284,7 @@ describe('Formulas general', function() {
     expect(hot.getDataAtRow(2)).toEqual([2010, 5, 2905, 2867, 2016, 'Maserati']);
     expect(hot.getDataAtRow(3)).toEqual([2011, 4, 2517, 4822, 552, 6127]);
     expect(hot.getDataAtRow(4)).toEqual([2012, 6030, 8046, '#DIV/0!', 12, '\'=SUM(E5)']);
-    expect(afterChange.calls[1].args).toEqual([[[4, 1, '=Sum(a2:a5)', '=SUM(A2:A4)']], 'edit', void 0, void 0, void 0, void 0]);
+    expect(afterChange.calls.argsFor(1)).toEqual([[[4, 1, '=Sum(a2:a5)', '=SUM(A2:A4)']], 'edit', void 0, void 0, void 0, void 0]);
   });
 
   it('should correctly recalculate formulas when precedents cells are located out of table viewport', function() {
@@ -1026,7 +1026,7 @@ describe('Formulas general', function() {
       expect(hot.getDataAtRow(4)).toEqual([5, 'Maserati', 'Mazda', 'Mercedes', 'Mini', 2012]);
     });
 
-    it('should recalculate formula after precedent cells value was changed', function() {
+    it('should recalculate formula after precedent cells value was changed', function(done) {
       var hot = handsontable({
         data: getDataSimpleExampleFormulas(),
         formulas: true,
@@ -1038,8 +1038,7 @@ describe('Formulas general', function() {
 
       hot.updateSettings({columnSorting: {column: 2, sortOrder: true}});
 
-      waits(200);
-      runs(function() {
+      setTimeout(function () {
         hot.setDataAtCell(4, 0, '');
 
         expect(hot.getDataAtRow(0)).toEqual([2011, 4, 2517, 4822, 552, 6127]);
@@ -1079,10 +1078,11 @@ describe('Formulas general', function() {
         expect(hot.getDataAtRow(2)).toEqual([3, 0, 2941, 4303, 354, 5814]);
         expect(hot.getDataAtRow(3)).toEqual([4, 10, 18, 0.25, 12, '\'=SUM(E5)']);
         expect(hot.getDataAtRow(4)).toEqual(['', 'Maserati', 'Mazda', 'Mercedes', 'Mini', 1]);
-      });
+        done();
+      }, 200);
     });
 
-    it('should corectly recalculate formulas after changing formula expression in sorted cell', function() {
+    it('should corectly recalculate formulas after changing formula expression in sorted cell', function(done) {
       var hot = handsontable({
         data: getDataSimpleExampleFormulas(),
         formulas: true,
@@ -1094,8 +1094,7 @@ describe('Formulas general', function() {
 
       hot.updateSettings({columnSorting: {column: 2, sortOrder: true}});
 
-      waits(200);
-      runs(function() {
+      setTimeout(function () {
         hot.setDataAtCell(3, 1, '=SUM(B1:B3)');
 
         expect(hot.getDataAtRow(0)).toEqual([2011, 4, 2517, 4822, 552, 6127]);
@@ -1103,7 +1102,8 @@ describe('Formulas general', function() {
         expect(hot.getDataAtRow(2)).toEqual([2009, 0, 2941, 4303, 354, 5814]);
         expect(hot.getDataAtRow(3)).toEqual([2012, 9, 2023, 502.75, 12, '\'=SUM(E5)']);
         expect(hot.getDataAtRow(4)).toEqual([5, 'Maserati', 'Mazda', 'Mercedes', 'Mini', 2011]);
-      });
+        done();
+      }, 200);
     });
   });
 });

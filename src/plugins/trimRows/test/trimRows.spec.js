@@ -323,7 +323,7 @@ describe('TrimRows', function() {
       expect(getDataAtCell(2, 0)).toBe('A1');
     });
 
-    it('should remove correct rows after insert new rows in sorted column', function() {
+    it('should remove correct rows after insert new rows in sorted column', function(done) {
       var hot = handsontable({
         data: getMultilineData(5, 10),
         colHeaders: true,
@@ -337,22 +337,22 @@ describe('TrimRows', function() {
         height: 300
       });
 
-      waits(100);
-
-      runs(function() {
+      setTimeout(function () {
         alter('insert_row', 2, 1);
         getHtCore().find('th span.columnSorting:eq(2)').simulate('mousedown');
         getHtCore().find('th span.columnSorting:eq(2)').simulate('mouseup');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('click');
         alter('remove_row', 2, 1);
 
         expect(getDataAtCell(0, 0)).toBe('A1');
         expect(getDataAtCell(1, 0)).toBe('A3');
         expect(getDataAtCell(2, 0)).toBe('A5');
         expect(getDataAtCell(3, 0)).toBe(null);
-      });
+        done();
+      }, 100);
     });
 
-    it('should remove correct rows after insert new rows in sorted column (multiple sort click)', function() {
+    it('should remove correct rows after insert new rows in sorted column (multiple sort click)', function(done) {
       var hot = handsontable({
         data: getMultilineData(5, 10),
         colHeaders: true,
@@ -366,22 +366,23 @@ describe('TrimRows', function() {
         height: 300
       });
 
-      waits(100);
-
-      runs(function() {
+      setTimeout(function () {
         alter('insert_row', 2, 1);
         getHtCore().find('th span.columnSorting:eq(2)').simulate('mousedown');
         getHtCore().find('th span.columnSorting:eq(2)').simulate('mouseup');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('click');
         alter('insert_row', 0, 1);
         getHtCore().find('th span.columnSorting:eq(2)').simulate('mousedown');
         getHtCore().find('th span.columnSorting:eq(2)').simulate('mouseup');
+        getHtCore().find('th span.columnSorting:eq(2)').simulate('click');
         alter('remove_row', 0, 3);
 
         expect(getDataAtCell(0, 0)).toBe('A1');
         expect(getDataAtCell(1, 0)).toBe(null);
         expect(getDataAtCell(2, 0)).toBe(null);
         expect(getDataAtCell(3, 0)).toBe(null);
-      });
+        done();
+      }, 100);
     });
   });
 });
