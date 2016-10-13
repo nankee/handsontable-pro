@@ -23,14 +23,11 @@
 var fs = require('fs');
 
 module.exports = function(grunt) {
-
-  require('time-grunt')(grunt);
-
   // handsontable path for npm 2.*
   var nodeHandsontablePath = 'node_modules/hot-builder/node_modules/handsontable/';
 
   try {
-    fs.statSync(nodeHandsontablePath)
+    fs.statSync(nodeHandsontablePath);
   } catch(ex) {
     // handsontable path for npm >=3.10.*
     nodeHandsontablePath = 'node_modules/handsontable/';
@@ -70,14 +67,108 @@ module.exports = function(grunt) {
       }
     },
 
-    watch: {
+    jasmine: {
       options: {
-        livereload: true
+        page: {
+          viewportSize: {
+            width: 1200,
+            height: 1000
+          }
+        },
+        outfile: 'test/SpecRunner.html',
+        display: 'short',
+        summary: true,
+        keepRunner: true,
       },
-      files: [
-        'src/**/*(*.js|*.css|*.html)'
-      ],
-      tasks: ['build-dev']
+      free: {
+        src: [
+          'dist/handsontable.min.js',
+        ],
+        options: {
+          specs: [
+            nodeHandsontablePath + 'test/spec/**/*.spec.js',
+            nodeHandsontablePath + 'test/spec/!(mobile)*/*.spec.js',
+            nodeHandsontablePath + 'src/plugins/*/test/*.spec.js',
+            nodeHandsontablePath + 'test/spec/MemoryLeakTest.js',
+          ],
+          styles: [
+            nodeHandsontablePath + 'test/lib/normalize.css',
+            'dist/pikaday/pikaday.css',
+            'dist/handsontable.min.css',
+          ],
+          vendor: [
+            nodeHandsontablePath + 'test/lib/jquery.min.js',
+            nodeHandsontablePath + 'test/lib/jquery.simulate.js',
+            'dist/hot-formula-parser/formula-parser.js',
+            'dist/numbro/numbro.js',
+            'dist/numbro/languages.js',
+            'dist/moment/moment.js',
+            'dist/pikaday/pikaday.js',
+            'dist/zeroclipboard/ZeroClipboard.js',
+            nodeHandsontablePath + 'demo/js/backbone/lodash.underscore.js',
+            nodeHandsontablePath + 'demo/js/backbone/backbone.js',
+          ],
+          helpers: [
+            nodeHandsontablePath + 'test/SpecHelper.js',
+          ],
+        }
+      },
+      proStandalone: {
+        src: [
+          'dist/handsontable.js',
+        ],
+        options: {
+          specs: [
+            'src/plugins/*/test/**/*.spec.js',
+            'src/3rdparty/walkontable/test/jasmine/spec/**/*.spec.js'
+          ],
+          styles: [
+            nodeHandsontablePath + 'test/lib/normalize.css',
+            'dist/pikaday/pikaday.css',
+            'dist/handsontable.css',
+          ],
+          vendor: [
+            nodeHandsontablePath + 'test/lib/jquery.min.js',
+            nodeHandsontablePath + 'test/lib/jquery.simulate.js',
+            'dist/hot-formula-parser/formula-parser.js',
+            'dist/numbro/numbro.js',
+            'dist/numbro/languages.js',
+            'dist/moment/moment.js',
+            'dist/pikaday/pikaday.js',
+            'dist/zeroclipboard/ZeroClipboard.js',
+          ],
+          helpers: [
+            nodeHandsontablePath + 'test/SpecHelper.js',
+            'src/plugins/*/test/helpers/*.js'
+          ],
+        }
+      },
+      proFull: {
+        src: [
+          'dist/handsontable.full.min.js',
+          'dist/numbro/languages.js',
+        ],
+        options: {
+          specs: [
+            'src/plugins/*/test/**/*.spec.js',
+            'src/3rdparty/walkontable/test/jasmine/spec/**/*.spec.js'
+          ],
+          styles: [
+            nodeHandsontablePath + 'test/lib/normalize.css',
+            'dist/pikaday/pikaday.css',
+            'dist/handsontable.full.min.css',
+          ],
+          vendor: [
+            nodeHandsontablePath + 'test/lib/jquery.min.js',
+            nodeHandsontablePath + 'test/lib/jquery.simulate.js',
+            'dist/moment/moment.js',
+          ],
+          helpers: [
+            nodeHandsontablePath + 'test/SpecHelper.js',
+            'src/plugins/*/test/helpers/*.js'
+          ],
+        }
+      }
     },
 
     hotBuilder: {
@@ -107,150 +198,6 @@ module.exports = function(grunt) {
         hotBranch: pkg.compatibleHotVersion
       }
     },
-
-    jasmine: {
-      options: {
-        page: {
-          viewportSize: {
-            width: 1200,
-            height: 1000
-          }
-        },
-      },
-      free: {
-        src: [
-          'dist/handsontable.min.js',
-          'dist/numbro/languages.js',
-          nodeHandsontablePath + 'demo/js/backbone/lodash.underscore.js',
-          nodeHandsontablePath + 'demo/js/backbone/backbone.js',
-          nodeHandsontablePath + 'demo/js/backbone/backbone-relational/backbone-relational.js',
-          nodeHandsontablePath + 'demo/js/jquery-ui/js/jquery-ui.custom.js',
-          nodeHandsontablePath + 'plugins/removeRow/handsontable.removeRow.js'
-        ],
-        options: {
-          specs: [
-            nodeHandsontablePath + 'test/jasmine/spec/*Spec.js',
-            nodeHandsontablePath + 'test/jasmine/spec/!(mobile)*/*Spec.js',
-            nodeHandsontablePath + 'src/plugins/*/test/*.spec.js',
-            nodeHandsontablePath + 'plugins/*/test/*.spec.js',
-            nodeHandsontablePath + 'test/jasmine/spec/MemoryLeakTest.js'
-          ],
-          styles: [
-            nodeHandsontablePath + 'test/jasmine/css/SpecRunner.css',
-            'dist/handsontable.min.css',
-            nodeHandsontablePath + 'plugins/removeRow/handsontable.removeRow.css',
-            nodeHandsontablePath + 'demo/js/jquery-ui/css/ui-bootstrap/jquery-ui.custom.css',
-            nodeHandsontablePath + 'demo/js/pikaday/css/pikaday.css'
-          ],
-          vendor: [
-            nodeHandsontablePath + 'demo/js/jquery.min.js',
-            'dist/numbro/numbro.js',
-            'dist/hot-formula-parser/formula-parser.js',
-            nodeHandsontablePath + 'demo/js/moment/moment.js',
-            nodeHandsontablePath + 'demo/js/pikaday/pikaday.js',
-            nodeHandsontablePath + 'demo/js/ZeroClipboard.js',
-            nodeHandsontablePath + 'test/jasmine/lib/jasmine-extensions.js'
-          ],
-          helpers: [
-            nodeHandsontablePath + 'test/jasmine/spec/SpecHelper.js',
-            nodeHandsontablePath + 'test/jasmine/lib/nodeShim.js',
-            nodeHandsontablePath + 'test/jasmine/spec/test-init.js'
-          ],
-          outfile: 'test/jasmine/SpecRunner.html',
-          template: nodeHandsontablePath + 'test/jasmine/templates/SpecRunner.tmpl',
-          templateOptions: {
-            basePath: '../../' + nodeHandsontablePath + 'test/jasmine/',
-          },
-          keepRunner: true
-        }
-      },
-      proStandalone: {
-        src: [
-          'dist/handsontable.js',
-          'dist/numbro/languages.js',
-          nodeHandsontablePath + 'demo/js/backbone/lodash.underscore.js',
-          nodeHandsontablePath + 'demo/js/backbone/backbone.js',
-          nodeHandsontablePath + 'demo/js/backbone/backbone-relational/backbone-relational.js',
-          nodeHandsontablePath + 'demo/js/jquery-ui/js/jquery-ui.custom.js',
-          nodeHandsontablePath + 'plugins/removeRow/handsontable.removeRow.js'
-        ],
-        options: {
-          specs: [
-            'src/plugins/*/test/**/*.spec.js',
-            'src/3rdparty/walkontable/test/jasmine/spec/**/*.spec.js',
-          ],
-          styles: [
-            nodeHandsontablePath + 'test/jasmine/css/SpecRunner.css',
-            'dist/handsontable.min.css',
-            nodeHandsontablePath + 'plugins/removeRow/handsontable.removeRow.css',
-            nodeHandsontablePath + 'demo/js/jquery-ui/css/ui-bootstrap/jquery-ui.custom.css',
-            nodeHandsontablePath + 'demo/js/pikaday/css/pikaday.css'
-          ],
-          vendor: [
-            nodeHandsontablePath + 'demo/js/jquery.min.js',
-            'dist/numbro/numbro.js',
-            'dist/hot-formula-parser/formula-parser.js',
-            nodeHandsontablePath + 'demo/js/moment/moment.js',
-            nodeHandsontablePath + 'demo/js/pikaday/pikaday.js',
-            nodeHandsontablePath + 'demo/js/ZeroClipboard.js',
-            nodeHandsontablePath + 'test/jasmine/lib/jasmine-extensions.js'
-          ],
-          helpers: [
-            nodeHandsontablePath + 'test/jasmine/spec/SpecHelper.js',
-            nodeHandsontablePath + 'test/jasmine/lib/nodeShim.js',
-            nodeHandsontablePath + 'test/jasmine/spec/test-init.js',
-            'src/plugins/*/test/helpers/*.js'
-          ],
-          outfile: 'test/jasmine/SpecRunner.html',
-          template: nodeHandsontablePath + 'test/jasmine/templates/SpecRunner.tmpl',
-          templateOptions: {
-            basePath: '../../' + nodeHandsontablePath + 'test/jasmine/',
-          },
-          keepRunner: true
-        }
-      },
-      proFull: {
-        src: [
-          'dist/handsontable.full.min.js',
-          'dist/numbro/languages.js',
-          nodeHandsontablePath + 'demo/js/backbone/lodash.underscore.js',
-          nodeHandsontablePath + 'demo/js/backbone/backbone.js',
-          nodeHandsontablePath + 'demo/js/backbone/backbone-relational/backbone-relational.js',
-          nodeHandsontablePath + 'demo/js/jquery-ui/js/jquery-ui.custom.js',
-          nodeHandsontablePath + 'plugins/removeRow/handsontable.removeRow.js'
-        ],
-        options: {
-          specs: [
-            'src/plugins/*/test/**/*.spec.js',
-            'src/3rdparty/walkontable/test/jasmine/spec/**/*.spec.js',
-          ],
-          styles: [
-            nodeHandsontablePath + 'test/jasmine/css/SpecRunner.css',
-            'dist/handsontable.min.css',
-            nodeHandsontablePath + 'plugins/removeRow/handsontable.removeRow.css',
-            nodeHandsontablePath + 'demo/js/jquery-ui/css/ui-bootstrap/jquery-ui.custom.css',
-            nodeHandsontablePath + 'demo/js/pikaday/css/pikaday.css'
-          ],
-          vendor: [
-            nodeHandsontablePath + 'demo/js/jquery.min.js',
-            nodeHandsontablePath + 'demo/js/moment/moment.js',
-            nodeHandsontablePath + 'test/jasmine/lib/jasmine-extensions.js'
-          ],
-          helpers: [
-            nodeHandsontablePath + 'test/jasmine/spec/SpecHelper.js',
-            nodeHandsontablePath + 'test/jasmine/lib/nodeShim.js',
-            nodeHandsontablePath + 'test/jasmine/spec/test-init.js',
-            'src/plugins/*/test/helpers/*.js'
-          ],
-          outfile: 'test/jasmine/SpecRunner.html',
-          template: nodeHandsontablePath + 'test/jasmine/templates/SpecRunner.tmpl',
-          templateOptions: {
-            basePath: '../../' + nodeHandsontablePath + 'test/jasmine/',
-          },
-          keepRunner: true
-        }
-      }
-    },
   });
 
   // Default task.
@@ -258,15 +205,13 @@ module.exports = function(grunt) {
   grunt.registerTask('build', ['hotBuilder:handsontablePro']);
   grunt.registerTask('build-dev', ['hotBuilder:handsontableProDev']);
   grunt.registerTask('build-custom', ['hotBuilder:handsontableProCustom']);
-  grunt.registerTask('test-free', ['default', 'jasmine:free']);
-  grunt.registerTask('test-pro-standalone', ['default', 'jasmine:proStandalone']);
-  grunt.registerTask('test-pro-full', ['default', 'jasmine:proFull']);
-  grunt.registerTask('test-pro', ['test-pro-standalone']);
+  grunt.registerTask('test-free', ['jasmine:free']);
+  grunt.registerTask('test-pro', ['jasmine:proStandalone']);
+  grunt.registerTask('test-pro-full', ['jasmine:proFull']);
   grunt.registerTask('test', ['default', 'jasmine:free', 'jasmine:proStandalone', 'jasmine:proFull']);
 
   grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-jscs');
   grunt.loadNpmTasks('hot-builder');
 };

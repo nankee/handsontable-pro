@@ -447,6 +447,7 @@ class NestedHeaders extends BasePlugin {
         let colspanLen = this.getColspan(level - this.columnHeaderLevelCount, visibleColumnIndex);
         let isInSelection = visibleColumnIndex >= from && (visibleColumnIndex + colspanLen - 1) <= to;
 
+        /*jshint loopfunc: true */
         arrayEach(listTH, (TH, index, array) => {
           if (TH === void 0) {
             return false;
