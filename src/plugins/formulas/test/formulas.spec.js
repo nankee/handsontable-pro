@@ -54,6 +54,24 @@ describe('Formulas general', function() {
     expect(hot.getDataAtRow(16)).toEqual(['Marcin Kowalski', 'ken@syndex.pl', 'syndex.pl', '', '', '', '', '']);
   });
 
+  it('should not treat single equality sign (=) as a formula expression', function() {
+    var hot = handsontable({
+      data: [['=', '=3']],
+      formulas: true,
+      width: 500,
+      height: 300
+    });
+
+    expect(hot.getDataAtCell(0, 0)).toBe('=');
+    expect(hot.getDataAtCell(0, 1)).toBe(3);
+
+    hot.setDataAtCell(0, 1, '=');
+
+    expect(hot.getDataAtCell(0, 0)).toBe('=');
+    expect(hot.getDataAtCell(0, 1)).toBe('=');
+  });
+
+
   it('should calculate table with semicolon as separator of formula arguments', function() {
     var data = getDataSimpleExampleFormulas();
 
