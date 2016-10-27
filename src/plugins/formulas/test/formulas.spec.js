@@ -92,6 +92,31 @@ describe('Formulas general', function() {
     expect(hot.getDataAtRow(4)).toEqual([2012, 8042, 10058, '#DIV/0!', 12, '\'=SUM(E5)']);
   });
 
+  it('should throw error while parsing invalid cell coordinates syntax', function() {
+    var data = getDataSimpleExampleFormulas();
+
+    data[0][0] = '=SUM($$A4;2;3)';
+    data[0][1] = '=A$$$$$1';
+    data[0][2] = '=A1$';
+    data[0][3] = '=SUM(A2:D2$)';
+
+    var hot = handsontable({
+      data: data,
+      formulas: true,
+      width: 500,
+      height: 300
+    });
+
+    hot.setDataAtCell(2, 0, '=A1$');
+    hot.setDataAtCell(3, 0, '=$A$$1');
+
+    expect(hot.getDataAtRow(0)).toEqual(['#ERROR!', '#ERROR!', '#ERROR!', '#ERROR!', 'Mini', '#ERROR!']);
+    expect(hot.getDataAtRow(1)).toEqual([2009, 0, 2941, 4303, 354, 5814]);
+    expect(hot.getDataAtRow(2)).toEqual(['#ERROR!', 5, 2905, 2867, 5, '#ERROR!']);
+    expect(hot.getDataAtRow(3)).toEqual(['#ERROR!', 4, 2517, 4822, 552, 6127]);
+    expect(hot.getDataAtRow(4)).toEqual([2012, 4021, 4026, '#DIV/0!', 12, '\'=SUM(E5)']);
+  });
+
   it('should return correct values according to plugin state updated by updateSettings()', function() {
     var hot = handsontable({
       data: getDataSimpleExampleFormulas(),
