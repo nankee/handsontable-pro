@@ -119,6 +119,7 @@ module.exports = function(grunt) {
         ],
         options: {
           specs: [
+            'test/**/*.spec.js',
             'src/plugins/*/test/**/*.spec.js',
             'src/3rdparty/walkontable/test/jasmine/spec/**/*.spec.js'
           ],
@@ -150,6 +151,7 @@ module.exports = function(grunt) {
         ],
         options: {
           specs: [
+            'test/**/*.spec.js',
             'src/plugins/*/test/**/*.spec.js',
             'src/3rdparty/walkontable/test/jasmine/spec/**/*.spec.js'
           ],
