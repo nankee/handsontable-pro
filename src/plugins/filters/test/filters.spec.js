@@ -12,7 +12,7 @@ describe('Filters', function() {
     }
   });
 
-  it('should filter values when feature is enabled', function() {
+  it('should filter values when feature is enabled', function(done) {
     var hot = handsontable({
       data: getDataForFilters(),
       columns: getColumnsForFilters(),
@@ -26,17 +26,15 @@ describe('Filters', function() {
     $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
     $(conditionMenuRootElement().querySelector('tbody :nth-child(9) td')).simulate('mousedown');
 
-    waitsFor(function() {
-      return document.activeElement.nodeName === 'INPUT';
-    });
-    runs(function() {
+    setTimeout(function () {
       // Begins with 'c'
       document.activeElement.value = 'c';
       $(document.activeElement).simulate('keyup');
       $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
 
       expect(getData().length).toEqual(4);
-    });
+      done();
+    }, 200);
   });
 
   it('should disable filter functionality via `updateSettings`', function() {
@@ -375,16 +373,16 @@ describe('Filters', function() {
         plugin.filter();
 
         expect(spy).toHaveBeenCalled();
-        expect(spy.calls[0].args[0].length).toBe(3);
-        expect(spy.calls[0].args[0][0]).toEqual({
+        expect(spy.calls.argsFor(0)[0].length).toBe(3);
+        expect(spy.calls.argsFor(0)[0][0]).toEqual({
           column: 0,
           formulas: [{name: 'gt', args: [12]}]
         });
-        expect(spy.calls[0].args[0][1]).toEqual({
+        expect(spy.calls.argsFor(0)[0][1]).toEqual({
           column: 2,
           formulas: [{name: 'begins_with', args: ['b']}]
         });
-        expect(spy.calls[0].args[0][2]).toEqual({
+        expect(spy.calls.argsFor(0)[0][2]).toEqual({
           column: 4,
           formulas: [{name: 'eq', args: ['green']}]
         });
@@ -401,7 +399,7 @@ describe('Filters', function() {
         });
 
         var spy = jasmine.createSpy();
-        spy.andCallFake(function() {
+        spy.and.callFake(function() {
           return false;
         });
         hot.addHook('beforeFilter', spy);
@@ -438,16 +436,16 @@ describe('Filters', function() {
         plugin.filter();
 
         expect(spy).toHaveBeenCalled();
-        expect(spy.calls[0].args[0].length).toBe(3);
-        expect(spy.calls[0].args[0][0]).toEqual({
+        expect(spy.calls.argsFor(0)[0].length).toBe(3);
+        expect(spy.calls.argsFor(0)[0][0]).toEqual({
           column: 0,
           formulas: [{name: 'gt', args: [12]}]
         });
-        expect(spy.calls[0].args[0][1]).toEqual({
+        expect(spy.calls.argsFor(0)[0][1]).toEqual({
           column: 2,
           formulas: [{name: 'begins_with', args: ['b']}]
         });
-        expect(spy.calls[0].args[0][2]).toEqual({
+        expect(spy.calls.argsFor(0)[0][2]).toEqual({
           column: 4,
           formulas: [{name: 'eq', args: ['green']}]
         });

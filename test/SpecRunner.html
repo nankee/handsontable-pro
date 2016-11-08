@@ -1,0 +1,315 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Jasmine Spec Runner</title>
+  <link rel="shortcut icon" type="image/png" href=".grunt/grunt-contrib-jasmine/jasmine_favicon.png">
+
+  <link rel="stylesheet" type="text/css" href="../.grunt/grunt-contrib-jasmine/jasmine.css">
+
+  <link rel="stylesheet" type="text/css" href="../node_modules/handsontable/test/lib/normalize.css">
+
+  <link rel="stylesheet" type="text/css" href="../dist/pikaday/pikaday.css">
+
+  <link rel="stylesheet" type="text/css" href="../dist/handsontable.min.css">
+
+
+</head>
+<body>
+
+  
+  <script src="../.grunt/grunt-contrib-jasmine/es5-shim.js"></script>
+  
+  <script src="../.grunt/grunt-contrib-jasmine/jasmine.js"></script>
+  
+  <script src="../.grunt/grunt-contrib-jasmine/jasmine-html.js"></script>
+  
+  <script src="../.grunt/grunt-contrib-jasmine/json2.js"></script>
+  
+  <script src="../.grunt/grunt-contrib-jasmine/boot.js"></script>
+  
+  <script src="../node_modules/handsontable/test/lib/jquery.min.js"></script>
+  
+  <script src="../node_modules/handsontable/test/lib/jquery.simulate.js"></script>
+  
+  <script src="../dist/hot-formula-parser/formula-parser.js"></script>
+  
+  <script src="../dist/numbro/numbro.js"></script>
+  
+  <script src="../dist/numbro/languages.js"></script>
+  
+  <script src="../dist/moment/moment.js"></script>
+  
+  <script src="../dist/pikaday/pikaday.js"></script>
+  
+  <script src="../dist/zeroclipboard/ZeroClipboard.js"></script>
+  
+  <script src="../node_modules/handsontable/demo/js/backbone/lodash.underscore.js"></script>
+  
+  <script src="../node_modules/handsontable/demo/js/backbone/backbone.js"></script>
+  
+  <script src="../node_modules/handsontable/test/SpecHelper.js"></script>
+  
+  <script src="../dist/handsontable.min.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/ColHeader.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_alter.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_beforechange.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_beforeKeyDown.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_copy.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_count.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_datachange.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_dataSchema.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_destroy.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_destroyEditor.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_getCellMeta.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_getColHeader.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_getDataAt.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_getDataType.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_getRowHeader.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_init.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_isEmpty.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_keepEmptyRows.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_listen.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_loadData.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_navigation.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_onKeyDown.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_paste.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_populateFromArray.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_reCreate.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_removeCellMeta.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_render.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_selection.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_setCellMeta.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_setDataAtCell.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_splice.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_update.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_validate.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Core_view.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/core/countSourceCols.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/core/getCellsMeta.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/core/getCopyableData.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/core/getCopyableText.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/core/getSourceDataArray.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/core/getSourceDataAtCell.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/core/propToCol.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/core/toPhysicalColumn.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/core/toPhysicalRow.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/core/toVisualColumn.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/core/toVisualRow.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Dom.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/editors/autocompleteEditor.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/editors/baseEditor.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/editors/dateEditor.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/editors/dropdownEditor.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/editors/handsontableEditor.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/editors/noEditor.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/editors/numericEditor.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/editors/passwordEditor.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/editors/selectEditor.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/editors/textEditor.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/EventManager.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/FillHandle.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/helpers/Array.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/helpers/Data.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/helpers/Date.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/helpers/dom/Element.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/helpers/dom/Event.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/helpers/Feature.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/helpers/Function.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/helpers/Mixed.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/helpers/Number.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/helpers/Object.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/helpers/String.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/helpers/Unicode.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/mixins/localHooks.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/mobile/mobileTextEditor.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/multiMap.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/Performance.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/PluginHooks.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/publicAPI.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/renderers/autocompleteRenderer.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/renderers/cellDecorator.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/renderers/checkboxRenderer.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/renderers/htmlRenderer.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/renderers/numericRenderer.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/renderers/passwordRenderer.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/renderers/textRenderer.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/RowHeader.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/settings/columns.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/settings/colWidths.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/settings/copyable.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/settings/currentHeaderClassName.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/settings/currentRowClassName.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/settings/editor.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/settings/fixedColumnsLeft.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/settings/fixedRowsTop.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/settings/fragmentSelection.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/settings/renderer.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/settings/tableClassName.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/utils/ghostTable.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/utils/Interval.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/utils/recordTranslator.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/utils/samplesGenerator.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/validators/autocompleteValidator.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/validators/dateValidator.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/validators/numericValidator.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/validators/timeValidator.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/autoColumnSize/test/autoColumnSize.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/autoRowSize/test/autoRowSize.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/columnSorting/test/columnSorting.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/comments/test/comments.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/contextMenu/test/contextMenu.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/contextMenu/test/cursor.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/contextMenuCopyPaste/test/contextMenuCopyPaste.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/copyPaste/test/copyPaste.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/customBorders/test/customBorders.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/dragToScroll/test/dragToScroll.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/manualColumnFreeze/test/manualColumnFreeze.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/manualColumnMove/test/columnsMapper.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/manualColumnMove/test/manualColumnMove.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/manualColumnMove/test/manualColumnMoveUI.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/manualColumnResize/test/manualColumnResize.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/manualRowMove/test/manualRowMove.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/manualRowMove/test/manualRowMoveUI.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/manualRowMove/test/rowsMapper.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/manualRowResize/test/manualRowResize.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/mergeCells/test/MergeCells.canMergeRange.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/observeChanges/test/observeChanges.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/persistentState/test/persistentState.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/search/test/search.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/src/plugins/undoRedo/test/UndoRedo.spec.js"></script>
+  
+  <script src="../node_modules/handsontable/test/spec/MemoryLeakTest.js"></script>
+  
+  <script src="../.grunt/grunt-contrib-jasmine/reporter.js"></script>
+  
+
+</body>
+</html>
