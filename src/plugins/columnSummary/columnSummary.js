@@ -1,4 +1,5 @@
 import BasePlugin from 'handsontable/plugins/_base.js';
+import {Endpoints} from './endpoints';
 import {deepClone, objectEach} from 'handsontable/helpers/object';
 import {arrayEach} from 'handsontable/helpers/array';
 import {registerPlugin, getPlugin} from 'handsontable/plugins.js';
@@ -14,28 +15,12 @@ import {registerPlugin, getPlugin} from 'handsontable/plugins.js';
 class ColumnSummary extends BasePlugin {
   constructor(hotInstance) {
     super(hotInstance);
-
     /**
-     * Array of declared plugin endpoints (calculation destination points).
+     * The Endpoints class instance. Used to make all endpoint-related operations.
      *
-     * @type {Array}
-     * @default {Array} Empty array.
+     * @type {null|Endpoints}
      */
-    this.endpoints = [];
-    /**
-     * The plugin settings, taken from Handsontable configuration.
-     *
-     * @type {Object}
-     * @default null
-     */
-    this.settings = null;
-    /**
-     * The current endpoint (calculation destination point) in question.
-     *
-     * @type {Object}
-     * @default null
-     */
-    this.currentEndpoint = null;
+    this.endpoints = null;
   }
 
   /**
@@ -56,13 +41,14 @@ class ColumnSummary extends BasePlugin {
     }
 
     this.settings = this.hot.getSettings().columnSummary;
+    this.endpoints = new Endpoints(this, this.settings);
 
     this.hot.addHook('afterInit', () => this.onAfterInit());
     this.hot.addHook('afterChange', (changes, source) => this.onAfterChange(changes, source));
-    this.hot.addHook('afterCreateRow', (index, num, auto) => this.resetSetupAfterStructureAlteration('insert_row', index, num, auto));
-    this.hot.addHook('afterCreateCol', (index, num, auto) => this.resetSetupAfterStructureAlteration('insert_col', index, num, auto));
-    this.hot.addHook('afterRemoveRow', (index, num, auto) => this.resetSetupAfterStructureAlteration('remove_row', index, num, auto));
-    this.hot.addHook('afterRemoveCol', (index, num, auto) => this.resetSetupAfterStructureAlteration('remove_col', index, num, auto));
+    this.hot.addHook('afterCreateRow', (index, num, auto) => this.endpoints.resetSetupAfterStructureAlteration('insert_row', index, num, auto));
+    this.hot.addHook('afterCreateCol', (index, num, auto) => this.endpoints.resetSetupAfterStructureAlteration('insert_col', index, num, auto));
+    this.hot.addHook('afterRemoveRow', (index, num, auto) => this.endpoints.resetSetupAfterStructureAlteration('remove_row', index, num, auto));
+    this.hot.addHook('afterRemoveCol', (index, num, auto) => this.endpoints.resetSetupAfterStructureAlteration('remove_col', index, num, auto));
 
     super.enablePlugin();
   }
@@ -77,74 +63,13 @@ class ColumnSummary extends BasePlugin {
   }
 
   /**
-   * afterCreateRow/afterCreateRow/afterRemoveRow/afterRemoveCol hook callback. Reset and reenables the summary functionality
-   * after changing the table structure.
-   *
-   * @private
-   * @param action {String}
-   * @param index {Number}
-   * @param number {Number}
-   * @param createdAutomatically {Boolean}
-   */
-  resetSetupAfterStructureAlteration(action, index, number, createdAutomatically) {
-    if (createdAutomatically) {
-      return;
-    }
-
-    let type = action.indexOf('row') > -1 ? 'row' : 'col';
-    let oldEndpoints = deepClone(this.endpoints);
-
-    objectEach(oldEndpoints, (val, key, obj) => {
-      if (type === 'row' && val.destinationRow >= index) {
-        if (action === 'insert_row') {
-          val.alterRowOffset = number;
-        } else if (action === 'remove_row') {
-          val.alterRowOffset = (-1) * number;
-        }
-      }
-
-      if (type === 'col' && val.destinationColumn >= index) {
-        if (action === 'insert_col') {
-          val.alterColumnOffset = number;
-        } else if (action === 'remove_col') {
-          val.alterColumnOffset = (-1) * number;
-        }
-      }
-    });
-
-    this.endpoints = [];
-    this.resetAllEndpoints(oldEndpoints);
-    this.parseSettings();
-
-    objectEach(this.endpoints, (val, key, obj) => {
-      if (type === 'row' && val.destinationRow >= index) {
-        if (action === 'insert_row') {
-          val.alterRowOffset = number;
-        } else if (action === 'remove_row') {
-          val.alterRowOffset = (-1) * number;
-        }
-      }
-
-      if (type === 'col' && val.destinationColumn >= index) {
-        if (action === 'insert_col') {
-          val.alterColumnOffset = number;
-        } else if (action === 'remove_col') {
-          val.alterColumnOffset = (-1) * number;
-        }
-      }
-    });
-
-    this.refreshAllEndpoints(true);
-  }
-
-  /**
    * afterInit hook callback.
    *
    * @private
    */
   onAfterInit() {
-    this.parseSettings(this.settings);
-    this.refreshAllEndpoints(true);
+    this.endpoints.parseSettings(this.settings);
+    this.endpoints.refreshAllEndpoints(true);
   }
 
   /**
@@ -156,65 +81,7 @@ class ColumnSummary extends BasePlugin {
    */
   onAfterChange(changes, source) {
     if (changes && source !== 'columnSummary' && source !== 'loadData') {
-      this.refreshChangedEndpoints(changes);
-    }
-  }
-
-  /**
-   * Parse plugin's settings.
-   */
-  parseSettings() {
-    objectEach(this.settings, (val, key, obj) => {
-      let newEndpoint = {};
-
-      this.assignSetting(val, newEndpoint, 'ranges', [[0, this.hot.countRows() - 1]]);
-      this.assignSetting(val, newEndpoint, 'reversedRowCoords', false);
-      this.assignSetting(val, newEndpoint, 'destinationRow', new Error('You must provide a destination row for the Column Summary plugin in order to work properly!'));
-      this.assignSetting(val, newEndpoint, 'destinationColumn', new Error('You must provide a destination column for the Column Summary plugin in order to work properly!'));
-      this.assignSetting(val, newEndpoint, 'sourceColumn', val.destinationColumn);
-      this.assignSetting(val, newEndpoint, 'type', 'sum');
-      this.assignSetting(val, newEndpoint, 'forceNumeric', false);
-      this.assignSetting(val, newEndpoint, 'suppressDataTypeErrors', true);
-      this.assignSetting(val, newEndpoint, 'suppressDataTypeErrors', true);
-      this.assignSetting(val, newEndpoint, 'customFunction', null);
-      this.assignSetting(val, newEndpoint, 'readOnly', true);
-      this.assignSetting(val, newEndpoint, 'roundFloat', false);
-
-      this.endpoints.push(newEndpoint);
-    });
-  }
-
-  /**
-   * Setter for the internal setting objects.
-   *
-   * @param {Object} settings Object with the settings.
-   * @param {Object} endpoint Contains information about the endpoint for the the calculation.
-   * @param {String} name Settings name.
-   * @param defaultValue Default value for the settings.
-   */
-  assignSetting(settings, endpoint, name, defaultValue) {
-    if (name === 'ranges' && settings[name] === void 0) {
-      endpoint[name] = defaultValue;
-      return;
-    } else if (name === 'ranges' && settings[name].length === 0) {
-      return;
-    }
-
-    if (settings[name] === void 0) {
-      if (defaultValue instanceof Error) {
-        throw defaultValue;
-
-      }
-
-      endpoint[name] = defaultValue;
-
-    } else {
-      if (name === 'destinationRow' && endpoint.reversedRowCoords) {
-        endpoint[name] = this.hot.countRows() - settings[name] - 1;
-
-      } else {
-        endpoint[name] = settings[name];
-      }
+      this.endpoints.refreshChangedEndpoints(changes);
     }
   }
 
@@ -244,131 +111,6 @@ class ColumnSummary extends BasePlugin {
         endpoint.result = endpoint.customFunction.call(this, endpoint);
         break;
     }
-  }
-
-  /**
-   * Resets (removes) the endpoints from the table.
-   *
-   * @param {Array} endpoints Array containing the endpoints.
-   */
-  resetAllEndpoints(endpoints) {
-    if (!endpoints) {
-      endpoints = this.endpoints;
-    }
-
-    arrayEach(endpoints, (value) => {
-      this.resetEndpointValue(value);
-    });
-  }
-
-  /**
-   * Calculate and refresh all defined endpoints.
-   *
-   * @param {Boolean} init `true` if it's the initial call.
-   */
-  refreshAllEndpoints(init) {
-    arrayEach(this.endpoints, (value) => {
-      this.currentEndpoint = value;
-      this.calculate(value);
-      this.setEndpointValue(value, 'init');
-    });
-    this.currentEndpoint = null;
-  }
-
-  /**
-   * Calculate and refresh endpoints only in the changed columns.
-   *
-   * @param {Array} changes Array of changes from the `afterChange` hook.
-   */
-  refreshChangedEndpoints(changes) {
-    let needToRefresh = [];
-
-    arrayEach(changes, (value, key, changes) => {
-      // if nothing changed, dont update anything
-      if ((value[2] || '') + '' === value[3] + '') {
-        return;
-      }
-
-      arrayEach(this.endpoints, (value, j) => {
-        if (this.hot.propToCol(changes[key][1]) === value.sourceColumn && needToRefresh.indexOf(j) === -1) {
-          needToRefresh.push(j);
-        }
-      });
-    });
-
-    arrayEach(needToRefresh, (value) => {
-      this.refreshEndpoint(this.endpoints[value]);
-    });
-  }
-
-  /**
-   * Calculate and refresh a single endpoint.
-   *
-   * @param {Object} endpoint Contains the endpoint information.
-   */
-  refreshEndpoint(endpoint) {
-    this.currentEndpoint = endpoint;
-    this.calculate(endpoint);
-    this.setEndpointValue(endpoint);
-    this.currentEndpoint = null;
-  }
-
-  /**
-   * Reset the endpoint value.
-   *
-   * @param {Object} endpoint Contains the endpoint information.
-   */
-  resetEndpointValue(endpoint) {
-    let alterRowOffset = endpoint.alterRowOffset || 0;
-    let alterColOffset = endpoint.alterColumnOffset || 0;
-
-    if (endpoint.destinationRow + alterRowOffset > this.hot.countRows() ||
-        endpoint.destinationColumn + alterColOffset > this.hot.countCols()) {
-      this.throwOutOfBoundsWarning();
-      return;
-    }
-
-    this.hot.setCellMeta(endpoint.destinationRow, endpoint.destinationColumn, 'readOnly', false);
-    this.hot.setCellMeta(endpoint.destinationRow, endpoint.destinationColumn, 'className', '');
-    this.hot.setDataAtCell(endpoint.destinationRow + alterRowOffset, endpoint.destinationColumn + alterColOffset, '', 'columnSummary');
-  }
-
-  /**
-   * Set the endpoint value.
-   *
-   * @param {Object} endpoint Contains the endpoint information.
-   * @param {String} [source] Source of the call information.
-   */
-  setEndpointValue(endpoint, source) {
-    let alterRowOffset = endpoint.alterRowOffset || 0;
-    let alterColumnOffset = endpoint.alterColumnOffset || 0;
-
-    let rowOffset = Math.max(-alterRowOffset, 0);
-    let colOffset = Math.max(-alterColumnOffset, 0);
-
-    if (endpoint.destinationRow + rowOffset > this.hot.countRows() ||
-        endpoint.destinationColumn + colOffset > this.hot.countCols()) {
-      this.throwOutOfBoundsWarning();
-      return;
-    }
-
-    if (source === 'init') {
-      this.hot.setCellMeta(endpoint.destinationRow + rowOffset, endpoint.destinationColumn + colOffset, 'readOnly', endpoint.readOnly);
-      this.hot.setCellMeta(endpoint.destinationRow + rowOffset, endpoint.destinationColumn + colOffset, 'className', 'columnSummaryResult');
-    }
-
-    if (endpoint.roundFloat && !isNaN(endpoint.result)) {
-      endpoint.result = endpoint.result.toFixed(endpoint.roundFloat);
-    }
-
-    this.hot.setDataAtCell(endpoint.destinationRow, endpoint.destinationColumn, endpoint.result, 'columnSummary');
-
-    endpoint.alterRowOffset = void 0;
-    endpoint.alterColOffset = void 0;
-  }
-
-  throwOutOfBoundsWarning() {
-    console.warn('One of the  Column Summary plugins\' destination points you provided is beyond the table boundaries!');
   }
 
   /**
@@ -555,7 +297,7 @@ class ColumnSummary extends BasePlugin {
       return null;
     }
 
-    if (this.currentEndpoint.forceNumeric) {
+    if (this.endpoints.currentEndpoint.forceNumeric) {
       if (typeof cellValue === 'string') {
         cellValue = cellValue.replace(/,/, '.');
       }
@@ -564,8 +306,8 @@ class ColumnSummary extends BasePlugin {
     }
 
     if (isNaN(cellValue)) {
-      if (!this.currentEndpoint.suppressDataTypeErrors) {
-        throw new Error('ColumnSummary plugin: cell at (${row}, ${col}) is not in a numeric format. Cannot do the calculation.');
+      if (!this.endpoints.currentEndpoint.suppressDataTypeErrors) {
+        throw new Error(`ColumnSummary plugin: cell at (${row}, ${col}) is not in a numeric format. Cannot do the calculation.`);
       }
     }
 

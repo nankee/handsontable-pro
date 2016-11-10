@@ -51,8 +51,8 @@ describe("ColumnSummarySpec", function() {
 
       var plugin = hot.getPlugin('ColumnSummary');
       var endpoints = [
-        plugin.endpoints[0],
-        plugin.endpoints[1]
+        plugin.endpoints.getEndpoint(0),
+        plugin.endpoints.getEndpoint(1)
       ];
 
       expect(endpoints[0].destinationColumn).toEqual(0);
@@ -248,7 +248,7 @@ describe("ColumnSummarySpec", function() {
           this.setCellMeta(12, 4, 'extraProperty', 'different value');
 
           // ensure the summary values are up to date:
-          this.getPlugin('ColumnSummary').refreshAllEndpoints();
+          this.getPlugin('ColumnSummary').endpoints.refreshAllEndpoints();
         }
       });
 
