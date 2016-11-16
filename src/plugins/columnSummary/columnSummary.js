@@ -43,12 +43,12 @@ class ColumnSummary extends BasePlugin {
     this.settings = this.hot.getSettings().columnSummary;
     this.endpoints = new Endpoints(this, this.settings);
 
-    this.hot.addHook('afterInit', () => this.onAfterInit());
-    this.hot.addHook('afterChange', (changes, source) => this.onAfterChange(changes, source));
-    this.hot.addHook('afterCreateRow', (index, num, auto) => this.endpoints.resetSetupAfterStructureAlteration('insert_row', index, num, auto));
-    this.hot.addHook('afterCreateCol', (index, num, auto) => this.endpoints.resetSetupAfterStructureAlteration('insert_col', index, num, auto));
-    this.hot.addHook('afterRemoveRow', (index, num, auto) => this.endpoints.resetSetupAfterStructureAlteration('remove_row', index, num, auto));
-    this.hot.addHook('afterRemoveCol', (index, num, auto) => this.endpoints.resetSetupAfterStructureAlteration('remove_col', index, num, auto));
+    this.hot.addHook('afterInit', (...args) => this.onAfterInit(...args));
+    this.hot.addHook('afterChange', (...args) => this.onAfterChange(...args));
+    this.hot.addHook('afterCreateRow', (...args) => this.endpoints.resetSetupAfterStructureAlteration('insert_row', ...args));
+    this.hot.addHook('afterCreateCol', (...args) => this.endpoints.resetSetupAfterStructureAlteration('insert_col', ...args));
+    this.hot.addHook('afterRemoveRow', (...args) => this.endpoints.resetSetupAfterStructureAlteration('remove_row', ...args));
+    this.hot.addHook('afterRemoveCol', (...args) => this.endpoints.resetSetupAfterStructureAlteration('remove_col', ...args));
 
     super.enablePlugin();
   }

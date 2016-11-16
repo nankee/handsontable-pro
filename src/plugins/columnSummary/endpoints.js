@@ -161,20 +161,30 @@ class Endpoints {
    * after changing the table structure.
    *
    * @private
-   * @param action {String}
-   * @param index {Number}
-   * @param number {Number}
-   * @param createdAutomatically {Boolean}
+   * @param {String} action
+   * @param {Number} index
+   * @param {Number} number
+   * @param {Number} logicRows
+   * @param {Boolean} createdAutomatically
    */
-  resetSetupAfterStructureAlteration(action, index, number, createdAutomatically) {
+  resetSetupAfterStructureAlteration(action, index, number, logicRows, createdAutomatically) {
     if (createdAutomatically || this.settingsType === 'function') {
       return;
     }
 
     let type = action.indexOf('row') > -1 ? 'row' : 'col';
-    let oldEndpoints = deepClone(this.getAllEndpoints());
+    let multiplier = action.indexOf('insert') > -1 ? 1 : -1;
+    let endpoints = this.getAllEndpoints();
+    let rowOffset = 0;
+    let columnOffset = 0;
 
-    arrayEach(oldEndpoints, (val, key, obj) => {
+    if (type === 'row') {
+      rowOffset = multiplier * number;
+    } else if (type === 'col') {
+      columnOffset = multiplier * number;
+    }
+
+    arrayEach(endpoints, (val, key, obj) => {
       if (type === 'row' && val.destinationRow >= index) {
         if (action === 'insert_row') {
           val.alterRowOffset = number;
@@ -192,29 +202,31 @@ class Endpoints {
       }
     });
 
-    this.endpoints = [];
-    this.resetAllEndpoints(oldEndpoints);
-    this.endpoints = this.parseSettings();
+    this.resetAllEndpoints(endpoints);
 
-    arrayEach(this.getAllEndpoints(), (val, key, obj) => {
-      if (type === 'row' && val.destinationRow >= index) {
-        if (action === 'insert_row') {
-          val.alterRowOffset = number;
-        } else if (action === 'remove_row') {
-          val.alterRowOffset = (-1) * number;
-        }
-      }
-
-      if (type === 'col' && val.destinationColumn >= index) {
-        if (action === 'insert_col') {
-          val.alterColumnOffset = number;
-        } else if (action === 'remove_col') {
-          val.alterColumnOffset = (-1) * number;
-        }
-      }
+    arrayEach(endpoints, (val, key, obj) => {
+      this.shiftEndpointCoordinates(val, index, rowOffset, columnOffset);
     });
 
     this.refreshAllEndpoints(true);
+  }
+
+  //TODO: docs
+  shiftEndpointCoordinates(endpoint, offsetStartIndex) {
+    if (endpoint.alterRowOffset !== 0) {
+      endpoint.destinationRow += endpoint.alterRowOffset || 0;
+
+      arrayEach(endpoint.ranges, (element, i) => {
+        arrayEach(element, (subElement, j) => {
+          if (subElement >= offsetStartIndex) {
+            element[j] += endpoint.alterRowOffset || 0;
+          }
+        });
+      });
+
+    } else if (endpoint.alterColumnOffset !== 0) {
+      endpoint.destinationColumn += endpoint.alterColumnOffset || 0;
+    }
   }
 
   /**
@@ -297,12 +309,6 @@ class Endpoints {
     let alterRowOffset = endpoint.alterRowOffset || 0;
     let alterColOffset = endpoint.alterColumnOffset || 0;
 
-    if (endpoint.destinationRow + alterRowOffset > this.hot.countRows() ||
-      endpoint.destinationColumn + alterColOffset > this.hot.countCols()) {
-      this.throwOutOfBoundsWarning();
-      return;
-    }
-
     this.hot.setCellMeta(endpoint.destinationRow, endpoint.destinationColumn, 'readOnly', false);
     this.hot.setCellMeta(endpoint.destinationRow, endpoint.destinationColumn, 'className', '');
     this.hot.setDataAtCell(endpoint.destinationRow + alterRowOffset, endpoint.destinationColumn + alterColOffset, '', 'columnSummary');
@@ -315,21 +321,20 @@ class Endpoints {
    * @param {String} [source] Source of the call information.
    */
   setEndpointValue(endpoint, source) {
-    let alterRowOffset = endpoint.alterRowOffset || 0;
-    let alterColumnOffset = endpoint.alterColumnOffset || 0;
+    // We'll need the reversed offset values, because cellMeta will be shifted AGAIN afterwards.
+    const reverseRowOffset = (-1) * endpoint.alterRowOffset || 0;
+    const reverseColOffset = (-1) * endpoint.alterColOffset || 0;
+    const cellMeta = this.hot.getCellMeta(endpoint.destinationRow + reverseRowOffset, endpoint.destinationColumn + reverseColOffset);
 
-    let rowOffset = Math.max(-alterRowOffset, 0);
-    let colOffset = Math.max(-alterColumnOffset, 0);
-
-    if (endpoint.destinationRow + rowOffset > this.hot.countRows() ||
-      endpoint.destinationColumn + colOffset > this.hot.countCols()) {
+    if (endpoint.destinationRow > this.hot.countRows() ||
+      endpoint.destinationColumn > this.hot.countCols()) {
       this.throwOutOfBoundsWarning();
       return;
     }
 
-    if (source === 'init') {
-      this.hot.setCellMeta(endpoint.destinationRow + rowOffset, endpoint.destinationColumn + colOffset, 'readOnly', endpoint.readOnly);
-      this.hot.setCellMeta(endpoint.destinationRow + rowOffset, endpoint.destinationColumn + colOffset, 'className', 'columnSummaryResult');
+    if (source === 'init' || cellMeta.readOnly !== endpoint.readOnly) {
+      cellMeta.readOnly = endpoint.readOnly;
+      cellMeta.className = 'columnSummaryResult';
     }
 
     if (endpoint.roundFloat && !isNaN(endpoint.result)) {
