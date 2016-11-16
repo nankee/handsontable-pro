@@ -1,4 +1,5 @@
 import {arrayEach} from 'handsontable/helpers/array';
+import {deepClone} from 'handsontable/helpers/object';
 
 /**
  * Class used to make all endpoint-related operations.
@@ -57,7 +58,7 @@ class Endpoints {
    */
   getEndpoint(index) {
     if (this.settingsType === 'function') {
-      return this.settings()[index];
+      return this.fillMissingEndpointData(this.settings)[index];
     } else {
       return this.endpoints[index];
     }
@@ -70,23 +71,36 @@ class Endpoints {
    */
   getAllEndpoints() {
     if (this.settingsType === 'function') {
-      return this.settings();
+      return this.fillMissingEndpointData(this.settings);
     } else {
       return this.endpoints;
     }
   }
 
+  //TODO: docs
+  fillMissingEndpointData(func) {
+    return this.parseSettings(func.call(this));
+  }
+
   /**
    * Parse plugin's settings.
+   *
+   * @param {Array} settings The settings array.
    */
-  parseSettings() {
-    if (typeof this.settings === 'function') {
+  parseSettings(settings) {
+    let endpointsArray = [];
+
+    if (!settings && typeof this.settings === 'function') {
       this.settingsType = 'function';
 
       return;
     }
 
-    arrayEach(this.settings, (val) => {
+    if (!settings) {
+      settings = this.settings;
+    }
+
+    arrayEach(settings, (val) => {
       let newEndpoint = {};
 
       this.assignSetting(val, newEndpoint, 'ranges', [[0, this.hot.countRows() - 1]]);
@@ -102,8 +116,10 @@ class Endpoints {
       this.assignSetting(val, newEndpoint, 'readOnly', true);
       this.assignSetting(val, newEndpoint, 'roundFloat', false);
 
-      this.endpoints.push(newEndpoint);
+      endpointsArray.push(newEndpoint);
     });
+
+    return endpointsArray;
   }
 
   /**
@@ -178,7 +194,7 @@ class Endpoints {
 
     this.endpoints = [];
     this.resetAllEndpoints(oldEndpoints);
-    this.parseSettings();
+    this.endpoints = this.parseSettings();
 
     arrayEach(this.getAllEndpoints(), (val, key, obj) => {
       if (type === 'row' && val.destinationRow >= index) {
@@ -267,7 +283,7 @@ class Endpoints {
    */
   refreshEndpoint(endpoint) {
     this.currentEndpoint = endpoint;
-    this.calculate(endpoint);
+    this.plugin.calculate(endpoint);
     this.setEndpointValue(endpoint);
     this.currentEndpoint = null;
   }

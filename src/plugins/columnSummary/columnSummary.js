@@ -68,7 +68,7 @@ class ColumnSummary extends BasePlugin {
    * @private
    */
   onAfterInit() {
-    this.endpoints.parseSettings(this.settings);
+    this.endpoints.endpoints = this.endpoints.parseSettings();
     this.endpoints.refreshAllEndpoints(true);
   }
 

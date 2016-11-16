@@ -11,6 +11,7 @@ const privatePool = new WeakMap();
 
 /**
  * @plugin NestedRows
+ * @pro
  *
  * @description
  * Plugin responsible for displaying and operating on data sources with nested structures.
