@@ -156,33 +156,14 @@ class Endpoints {
     }
   }
 
-  /**
-   * afterCreateRow/afterCreateRow/afterRemoveRow/afterRemoveCol hook callback. Reset and reenables the summary functionality
-   * after changing the table structure.
-   *
-   * @private
-   * @param {String} action
-   * @param {Number} index
-   * @param {Number} number
-   * @param {Number} logicRows
-   * @param {Boolean} createdAutomatically
-   */
-  resetSetupAfterStructureAlteration(action, index, number, logicRows, createdAutomatically) {
-    if (createdAutomatically || this.settingsType === 'function') {
+  //TODO: docs
+  resetSetupBeforeStructureAlteration(action, index, number, logicRows, source) {
+    if (this.settingsType !== 'function') {
       return;
     }
 
-    let type = action.indexOf('row') > -1 ? 'row' : 'col';
-    let multiplier = action.indexOf('insert') > -1 ? 1 : -1;
-    let endpoints = this.getAllEndpoints();
-    let rowOffset = 0;
-    let columnOffset = 0;
-
-    if (type === 'row') {
-      rowOffset = multiplier * number;
-    } else if (type === 'col') {
-      columnOffset = multiplier * number;
-    }
+    const type = action.indexOf('row') > -1 ? 'row' : 'col';
+    const endpoints = this.getAllEndpoints();
 
     arrayEach(endpoints, (val, key, obj) => {
       if (type === 'row' && val.destinationRow >= index) {
@@ -202,6 +183,55 @@ class Endpoints {
       }
     });
 
+    this.resetAllEndpoints(endpoints, false);
+  }
+
+  /**
+   * afterCreateRow/afterCreateRow/afterRemoveRow/afterRemoveCol hook callback. Reset and reenables the summary functionality
+   * after changing the table structure.
+   *
+   * @private
+   * @param {String} action
+   * @param {Number} index
+   * @param {Number} number
+   * @param {Number} logicRows
+   * @param {String} source
+   */
+  resetSetupAfterStructureAlteration(action, index, number, logicRows, source) {
+    if (this.settingsType === 'function') {
+
+      // We need to run it on a next avaiable hook, because the TrimRows' `afterCreateRow` hook triggers after this one,
+      // and it needs to be run to properly calculate the endpoint value.
+      const beforeRenderCallback = () => {
+        this.hot.removeHook('beforeRender', beforeRenderCallback);
+        return this.refreshAllEndpoints(true);
+      };
+      this.hot.addHookOnce('beforeRender', beforeRenderCallback);
+      return;
+    }
+
+    let type = action.indexOf('row') > -1 ? 'row' : 'col';
+    let multiplier = action.indexOf('insert') > -1 ? 1 : -1;
+    let endpoints = this.getAllEndpoints();
+    let rowOffset = 0;
+    let columnOffset = 0;
+
+    if (type === 'row') {
+      rowOffset = multiplier * number;
+    } else if (type === 'col') {
+      columnOffset = multiplier * number;
+    }
+
+    arrayEach(endpoints, (val, key, obj) => {
+      if (type === 'row' && val.destinationRow >= index) {
+        val.alterRowOffset = multiplier * number;
+      }
+
+      if (type === 'col' && val.destinationColumn >= index) {
+        val.alterColumnOffset = multiplier * number;
+      }
+    });
+
     this.resetAllEndpoints(endpoints);
 
     arrayEach(endpoints, (val, key, obj) => {
@@ -213,7 +243,7 @@ class Endpoints {
 
   //TODO: docs
   shiftEndpointCoordinates(endpoint, offsetStartIndex) {
-    if (endpoint.alterRowOffset !== 0) {
+    if (endpoint.alterRowOffset && endpoint.alterRowOffset !== 0) {
       endpoint.destinationRow += endpoint.alterRowOffset || 0;
 
       arrayEach(endpoint.ranges, (element, i) => {
@@ -224,8 +254,9 @@ class Endpoints {
         });
       });
 
-    } else if (endpoint.alterColumnOffset !== 0) {
+    } else if (endpoint.alterColumnOffset && endpoint.alterColumnOffset !== 0) {
       endpoint.destinationColumn += endpoint.alterColumnOffset || 0;
+      endpoint.sourceColumn += endpoint.alterColumnOffset || 0;
     }
   }
 
@@ -233,18 +264,26 @@ class Endpoints {
    * Resets (removes) the endpoints from the table.
    *
    * @param {Array} endpoints Array containing the endpoints.
+   * @param {Boolean} [useOffset=true] Use the cell offset value.
    */
-  resetAllEndpoints(endpoints) {
-    if (this.settingsType === 'function') {
-      return;
-    }
-
+  resetAllEndpoints(endpoints, useOffset = true) {
     if (!endpoints) {
       endpoints = this.getAllEndpoints();
     }
 
     arrayEach(endpoints, (value) => {
-      this.resetEndpointValue(value);
+      this.resetEndpointValue(value, useOffset);
+    });
+  }
+
+  //TODO: docs
+  resetAllEndpointsMeta(endpoints) {
+    if (!endpoints) {
+      endpoints = this.getAllEndpoints();
+    }
+
+    arrayEach(endpoints, (value) => {
+      this.resetEndpointMeta(value);
     });
   }
 
@@ -304,14 +343,21 @@ class Endpoints {
    * Reset the endpoint value.
    *
    * @param {Object} endpoint Contains the endpoint information.
+   * @param {Boolean} [useOffset=true] Use the cell offset value.
    */
-  resetEndpointValue(endpoint) {
+  resetEndpointValue(endpoint, useOffset = true) {
     let alterRowOffset = endpoint.alterRowOffset || 0;
     let alterColOffset = endpoint.alterColumnOffset || 0;
 
     this.hot.setCellMeta(endpoint.destinationRow, endpoint.destinationColumn, 'readOnly', false);
     this.hot.setCellMeta(endpoint.destinationRow, endpoint.destinationColumn, 'className', '');
-    this.hot.setDataAtCell(endpoint.destinationRow + alterRowOffset, endpoint.destinationColumn + alterColOffset, '', 'columnSummary');
+    this.hot.setDataAtCell(endpoint.destinationRow + (useOffset ? alterRowOffset : 0), endpoint.destinationColumn + (useOffset ? alterColOffset : 0), '', 'columnSummary');
+  }
+
+  //TODO: docs
+  resetEndpointMeta(endpoint) {
+    this.hot.setCellMeta(endpoint.destinationRow, endpoint.destinationColumn, 'readOnly', false);
+    this.hot.setCellMeta(endpoint.destinationRow, endpoint.destinationColumn, 'className', '');
   }
 
   /**
@@ -321,9 +367,10 @@ class Endpoints {
    * @param {String} [source] Source of the call information.
    */
   setEndpointValue(endpoint, source) {
-    // We'll need the reversed offset values, because cellMeta will be shifted AGAIN afterwards.
+    // // We'll need the reversed offset values, because cellMeta will be shifted AGAIN afterwards.
     const reverseRowOffset = (-1) * endpoint.alterRowOffset || 0;
-    const reverseColOffset = (-1) * endpoint.alterColOffset || 0;
+    const reverseColOffset = (-1) * endpoint.alterColumnOffset || 0;
+
     const cellMeta = this.hot.getCellMeta(endpoint.destinationRow + reverseRowOffset, endpoint.destinationColumn + reverseColOffset);
 
     if (endpoint.destinationRow > this.hot.countRows() ||
@@ -344,7 +391,7 @@ class Endpoints {
     this.hot.setDataAtCell(endpoint.destinationRow, endpoint.destinationColumn, endpoint.result, 'columnSummary');
 
     endpoint.alterRowOffset = void 0;
-    endpoint.alterColOffset = void 0;
+    endpoint.alterColumnOffset = void 0;
   }
 
   /**

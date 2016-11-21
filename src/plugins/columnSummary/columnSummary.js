@@ -43,12 +43,18 @@ class ColumnSummary extends BasePlugin {
     this.settings = this.hot.getSettings().columnSummary;
     this.endpoints = new Endpoints(this, this.settings);
 
-    this.hot.addHook('afterInit', (...args) => this.onAfterInit(...args));
-    this.hot.addHook('afterChange', (...args) => this.onAfterChange(...args));
-    this.hot.addHook('afterCreateRow', (...args) => this.endpoints.resetSetupAfterStructureAlteration('insert_row', ...args));
-    this.hot.addHook('afterCreateCol', (...args) => this.endpoints.resetSetupAfterStructureAlteration('insert_col', ...args));
-    this.hot.addHook('afterRemoveRow', (...args) => this.endpoints.resetSetupAfterStructureAlteration('remove_row', ...args));
-    this.hot.addHook('afterRemoveCol', (...args) => this.endpoints.resetSetupAfterStructureAlteration('remove_col', ...args));
+    this.addHook('afterInit', (...args) => this.onAfterInit(...args));
+    this.addHook('afterChange', (...args) => this.onAfterChange(...args));
+
+    this.addHook('beforeCreateRow', (index, amount, source) => this.endpoints.resetSetupBeforeStructureAlteration('insert_row', index, amount, null, source));
+    this.addHook('beforeCreateCol', (index, amount, source) => this.endpoints.resetSetupBeforeStructureAlteration('insert_col', index, amount, null, source));
+    this.addHook('beforeRemoveRow', (...args) => this.endpoints.resetSetupBeforeStructureAlteration('remove_row', ...args));
+    this.addHook('beforeRemoveCol', (...args) => this.endpoints.resetSetupBeforeStructureAlteration('remove_col', ...args));
+
+    this.addHook('afterCreateRow', (index, amount, source) => this.endpoints.resetSetupAfterStructureAlteration('insert_row', index, amount, null, source));
+    this.addHook('afterCreateCol', (index, amount, source) => this.endpoints.resetSetupAfterStructureAlteration('insert_col', index, amount, null, source));
+    this.addHook('afterRemoveRow', (...args) => this.endpoints.resetSetupAfterStructureAlteration('remove_row', ...args));
+    this.addHook('afterRemoveCol', (...args) => this.endpoints.resetSetupAfterStructureAlteration('remove_col', ...args));
 
     super.enablePlugin();
   }

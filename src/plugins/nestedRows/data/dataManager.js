@@ -355,6 +355,13 @@ class DataManager {
    */
   addChild(parent, element) {
     this.hot.runHooks('beforeAddChild', parent, element);
+
+    let parentIndex = null;
+    if (parent) {
+      parentIndex = this.getRowIndex(parent);
+    }
+
+    this.hot.runHooks('beforeCreateRow', parentIndex + this.countChildren(parent) + 1, 1);
     let functionalParent = parent;
 
     if (!parent) {
@@ -373,6 +380,7 @@ class DataManager {
     this.rewriteCache();
 
     const newRowIndex = this.getRowIndex(element);
+
     this.hot.runHooks('afterCreateRow', newRowIndex, 1);
     this.hot.runHooks('afterAddChild', parent, element);
   }
@@ -383,9 +391,11 @@ class DataManager {
    * @param {Object} parent Parent node.
    * @param {Number} index Index to insert the child element at.
    * @param {Object} [element] Element (node) to insert.
+   * @param {Number} [globalIndex] Global index of the inserted row.
    */
-  addChildAtIndex(parent, index, element) {
+  addChildAtIndex(parent, index, element, globalIndex) {
     this.hot.runHooks('beforeAddChild', parent, element, index);
+    this.hot.runHooks('beforeCreateRow', globalIndex + 1, 1);
     let functionalParent = parent;
 
     if (!parent) {
@@ -404,7 +414,7 @@ class DataManager {
 
     this.rewriteCache();
 
-    this.hot.runHooks('afterCreateRow', index + 1, 1);
+    this.hot.runHooks('afterCreateRow', globalIndex + 1, 1);
     this.hot.runHooks('afterAddChild', parent, element, index);
   }
 
@@ -421,10 +431,10 @@ class DataManager {
 
     switch (where) {
       case 'below':
-        this.addChildAtIndex(parent, indexWithinParent + 1);
+        this.addChildAtIndex(parent, indexWithinParent + 1, null, index);
         break;
       case 'above':
-        this.addChildAtIndex(parent, indexWithinParent);
+        this.addChildAtIndex(parent, indexWithinParent, null, index);
         break;
     }
   }
