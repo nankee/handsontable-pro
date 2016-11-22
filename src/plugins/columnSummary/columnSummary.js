@@ -296,8 +296,9 @@ class ColumnSummary extends BasePlugin {
    * @returns {String} The cell value.
    */
   getCellValue(row, col) {
-    let cellValue = this.hot.getDataAtCell(row, col);
-    let cellClassName = this.hot.getCellMeta(row, col).className || '';
+    let cellValue = this.hot.getSourceDataAtCell(row, col);
+    let visualRowIndex = this.endpoints.getVisualRowIndex(row);
+    let cellClassName = this.hot.getCellMeta(visualRowIndex, col).className || '';
 
     if (cellClassName.indexOf('columnSummaryResult') > -1) {
       return null;

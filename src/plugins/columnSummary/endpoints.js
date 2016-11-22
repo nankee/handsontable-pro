@@ -48,6 +48,8 @@ class Endpoints {
      * @default null
      */
     this.currentEndpoint = null;
+    //TODO: docs
+    this.cellsToSetCache = [];
   }
 
   /**
@@ -267,6 +269,8 @@ class Endpoints {
    * @param {Boolean} [useOffset=true] Use the cell offset value.
    */
   resetAllEndpoints(endpoints, useOffset = true) {
+    this.cellsToSetCache = [];
+
     if (!endpoints) {
       endpoints = this.getAllEndpoints();
     }
@@ -274,17 +278,10 @@ class Endpoints {
     arrayEach(endpoints, (value) => {
       this.resetEndpointValue(value, useOffset);
     });
-  }
 
-  //TODO: docs
-  resetAllEndpointsMeta(endpoints) {
-    if (!endpoints) {
-      endpoints = this.getAllEndpoints();
-    }
+    this.hot.setDataAtCell(this.cellsToSetCache, 'columnSummary');
 
-    arrayEach(endpoints, (value) => {
-      this.resetEndpointMeta(value);
-    });
+    this.cellsToSetCache = [];
   }
 
   /**
@@ -293,12 +290,18 @@ class Endpoints {
    * @param {Boolean} init `true` if it's the initial call.
    */
   refreshAllEndpoints(init) {
+    this.cellsToSetCache = [];
+
     arrayEach(this.getAllEndpoints(), (value) => {
       this.currentEndpoint = value;
       this.plugin.calculate(value);
       this.setEndpointValue(value, 'init');
     });
     this.currentEndpoint = null;
+
+    this.hot.setDataAtCell(this.cellsToSetCache, 'columnSummary');
+
+    this.cellsToSetCache = [];
   }
 
   /**
@@ -308,6 +311,7 @@ class Endpoints {
    */
   refreshChangedEndpoints(changes) {
     let needToRefresh = [];
+    this.cellsToSetCache = [];
 
     arrayEach(changes, (value, key, changes) => {
       // if nothing changed, dont update anything
@@ -325,6 +329,9 @@ class Endpoints {
     arrayEach(needToRefresh, (value) => {
       this.refreshEndpoint(this.getEndpoint(value));
     });
+
+    this.hot.setDataAtCell(this.cellsToSetCache, 'columnSummary');
+    this.cellsToSetCache = [];
   }
 
   /**
@@ -349,15 +356,12 @@ class Endpoints {
     let alterRowOffset = endpoint.alterRowOffset || 0;
     let alterColOffset = endpoint.alterColumnOffset || 0;
 
-    this.hot.setCellMeta(endpoint.destinationRow, endpoint.destinationColumn, 'readOnly', false);
-    this.hot.setCellMeta(endpoint.destinationRow, endpoint.destinationColumn, 'className', '');
-    this.hot.setDataAtCell(endpoint.destinationRow + (useOffset ? alterRowOffset : 0), endpoint.destinationColumn + (useOffset ? alterColOffset : 0), '', 'columnSummary');
-  }
+    const visualEndpointRowIndex = this.getVisualRowIndex(endpoint.destinationRow);
 
-  //TODO: docs
-  resetEndpointMeta(endpoint) {
-    this.hot.setCellMeta(endpoint.destinationRow, endpoint.destinationColumn, 'readOnly', false);
-    this.hot.setCellMeta(endpoint.destinationRow, endpoint.destinationColumn, 'className', '');
+    this.hot.setCellMeta(visualEndpointRowIndex, endpoint.destinationColumn, 'readOnly', false);
+    this.hot.setCellMeta(visualEndpointRowIndex, endpoint.destinationColumn, 'className', '');
+    this.cellsToSetCache.push([this.getVisualRowIndex(endpoint.destinationRow + (useOffset ? alterRowOffset : 0)), endpoint.destinationColumn + (useOffset ? alterColOffset : 0), '']);
+    // this.hot.setDataAtCell(endpoint.destinationRow + (useOffset ? alterRowOffset : 0), endpoint.destinationColumn + (useOffset ? alterColOffset : 0), '', 'columnSummary');
   }
 
   /**
@@ -365,15 +369,17 @@ class Endpoints {
    *
    * @param {Object} endpoint Contains the endpoint information.
    * @param {String} [source] Source of the call information.
+   * @param {Boolean} [render=false] `true` if it needs to render the table afterwards.
    */
-  setEndpointValue(endpoint, source) {
-    // // We'll need the reversed offset values, because cellMeta will be shifted AGAIN afterwards.
+  setEndpointValue(endpoint, source, render = false) {
+    // We'll need the reversed offset values, because cellMeta will be shifted AGAIN afterwards.
     const reverseRowOffset = (-1) * endpoint.alterRowOffset || 0;
     const reverseColOffset = (-1) * endpoint.alterColumnOffset || 0;
+    const visualEndpointRowIndex = this.getVisualRowIndex(endpoint.destinationRow);
 
-    const cellMeta = this.hot.getCellMeta(endpoint.destinationRow + reverseRowOffset, endpoint.destinationColumn + reverseColOffset);
+    const cellMeta = this.hot.getCellMeta(this.getVisualRowIndex(endpoint.destinationRow + reverseRowOffset), endpoint.destinationColumn + reverseColOffset);
 
-    if (endpoint.destinationRow > this.hot.countRows() ||
+    if (visualEndpointRowIndex > this.hot.countRows() ||
       endpoint.destinationColumn > this.hot.countCols()) {
       this.throwOutOfBoundsWarning();
       return;
@@ -388,10 +394,19 @@ class Endpoints {
       endpoint.result = endpoint.result.toFixed(endpoint.roundFloat);
     }
 
-    this.hot.setDataAtCell(endpoint.destinationRow, endpoint.destinationColumn, endpoint.result, 'columnSummary');
+    if (render) {
+      this.hot.setDataAtCell(visualEndpointRowIndex, endpoint.destinationColumn, endpoint.result, 'columnSummary');
+    } else {
+      this.cellsToSetCache.push([visualEndpointRowIndex, endpoint.destinationColumn, endpoint.result]);
+    }
 
     endpoint.alterRowOffset = void 0;
     endpoint.alterColumnOffset = void 0;
+  }
+
+  //TODO: docs
+  getVisualRowIndex(row) {
+    return this.hot.runHooks('unmodifyRow', row, 'columnSummary');
   }
 
   /**
