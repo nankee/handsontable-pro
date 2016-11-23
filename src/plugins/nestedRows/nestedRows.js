@@ -393,9 +393,15 @@ class NestedRows extends BasePlugin {
    *
    * @param {Number} index Removed row.
    * @param {Number} amount Amount of removed rows.
+   * @param {Array} logicRows
+   * @param {String} source Source of action.
    * @private
    */
-  onAfterRemoveRow(index, amount) {
+  onAfterRemoveRow(index, amount, logicRows, source) {
+    if (source === this.pluginName) {
+      return;
+    }
+
     const priv = privatePool.get(this);
 
     setTimeout(() => {
@@ -503,7 +509,18 @@ class NestedRows extends BasePlugin {
     this.headersUI.updateRowHeaderWidth();
   }
 
-  onAfterCreateRow() {
+  /**
+   * `afterCreateRow` hook callback.
+   *
+   * @param {Number} index
+   * @param {Number} amount
+   * @param {String} source
+   * @private
+   */
+  onAfterCreateRow(index, amount, source) {
+    if (source === this.pluginName) {
+      return;
+    }
     this.dataManager.rewriteCache();
   }
 

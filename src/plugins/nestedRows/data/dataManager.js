@@ -464,23 +464,40 @@ class DataManager {
       element = elements;
     }
 
+    const childRowIndex = this.getRowIndex(element);
     const indexWithinParent = this.getRowIndexWithinParent(element);
     const parent = this.getRowParent(element);
     const grandparent = this.getRowParent(parent);
+    const grandparentRowIndex = this.getRowIndex(grandparent);
+    let movedElementRowIndex = null;
 
     this.hot.runHooks('beforeDetachChild', parent, element);
 
     if (indexWithinParent != null) {
+      this.hot.runHooks('beforeRemoveRow', childRowIndex, 1, [childRowIndex], this.plugin.pluginName);
+
       parent.__children.splice(indexWithinParent, 1);
 
+      this.rewriteCache();
+
+      this.hot.runHooks('afterRemoveRow', childRowIndex, 1, [childRowIndex], this.plugin.pluginName);
+
       if (grandparent) {
+        movedElementRowIndex = grandparentRowIndex + this.countChildren(grandparent);
+        this.hot.runHooks('beforeCreateRow', movedElementRowIndex, 1, this.plugin.pluginName);
+
         grandparent.__children.push(element);
       } else {
+        movedElementRowIndex = this.hot.countRows() + 1;
+        this.hot.runHooks('beforeCreateRow', movedElementRowIndex, 1, this.plugin.pluginName);
+
         this.data.push(element);
       }
     }
 
     this.rewriteCache();
+
+    this.hot.runHooks('afterCreateRow', movedElementRowIndex, 1, this.plugin.pluginName);
 
     if (forceRender) {
       this.hot.render();

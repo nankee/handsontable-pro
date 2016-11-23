@@ -147,13 +147,22 @@ class ColumnSummary extends BasePlugin {
   getPartialSum(rowRange, col) {
     let sum = 0;
     let i = rowRange[1] || rowRange[0];
+    let cellValue = null;
+    let biggestDecimalPlacesCount = 0;
 
     do {
-      sum += this.getCellValue(i, col) || 0;
+      cellValue = this.getCellValue(i, col) || 0;
+      let decimalPlaces = (((cellValue + '').split('.')[1] || []).length) || 1;
+      if (decimalPlaces > biggestDecimalPlacesCount) {
+        biggestDecimalPlacesCount = decimalPlaces;
+      }
+
+      sum += cellValue || 0;
       i--;
     } while (i >= rowRange[0]);
 
-    return sum;
+    //Workaround for e.g. 802.2 + 1.1 = 803.3000000000001
+    return Math.round(sum * 10 * biggestDecimalPlacesCount) / 10 * biggestDecimalPlacesCount;
   }
 
   /**
