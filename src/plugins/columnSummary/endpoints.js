@@ -48,7 +48,13 @@ class Endpoints {
      * @default null
      */
     this.currentEndpoint = null;
-    //TODO: docs
+    /**
+     * Array containing a list of changes to be applied.
+     *
+     * @private
+     * @type {Array}
+     * @default {[]}
+     */
     this.cellsToSetCache = [];
   }
 
@@ -79,7 +85,13 @@ class Endpoints {
     }
   }
 
-  //TODO: docs
+  /**
+   * Used to fill the blanks in the endpoint data provided by a settings function.
+   *
+   * @private
+   * @param {Function} func Function provided in the HOT settings.
+   * @returns {Array} An array of endpoints.
+   */
   fillMissingEndpointData(func) {
     return this.parseSettings(func.call(this));
   }
@@ -158,7 +170,16 @@ class Endpoints {
     }
   }
 
-  //TODO: docs
+  /**
+   * Resets the endpoint setup before the structure alteration (like inserting or removing rows/columns). Used for settings provided as a function.
+   *
+   * @private
+   * @param {String} action Type of the action performed.
+   * @param {Number} index Row/column index.
+   * @param {Number} number Number of rows/columns added/removed.
+   * @param {Array} [logicRows] Array of the logical indexes.
+   * @param {String} [source] Source of change.
+   */
   resetSetupBeforeStructureAlteration(action, index, number, logicRows, source) {
     if (this.settingsType !== 'function') {
       return;
@@ -193,11 +214,11 @@ class Endpoints {
    * after changing the table structure.
    *
    * @private
-   * @param {String} action
-   * @param {Number} index
-   * @param {Number} number
-   * @param {Number} logicRows
-   * @param {String} source
+   * @param {String} action Type of the action performed.
+   * @param {Number} index Row/column index.
+   * @param {Number} number Number of rows/columns added/removed.
+   * @param {Array} [logicRows] Array of the logical indexes.
+   * @param {String} [source] Source of change.
    */
   resetSetupAfterStructureAlteration(action, index, number, logicRows, source) {
     if (this.settingsType === 'function') {
@@ -243,7 +264,13 @@ class Endpoints {
     this.refreshAllEndpoints(true);
   }
 
-  //TODO: docs
+  /**
+   * Shifts the endpoint coordinates by the defined offset.
+   *
+   * @private
+   * @param {Object} endpoint Endpoint object.
+   * @param {Number} offsetStartIndex Index of the performed change (if the change is located after the endpoint, nothing about the endpoint has to be changed.
+   */
   shiftEndpointCoordinates(endpoint, offsetStartIndex) {
     if (endpoint.alterRowOffset && endpoint.alterRowOffset !== 0) {
       endpoint.destinationRow += endpoint.alterRowOffset || 0;
@@ -361,7 +388,6 @@ class Endpoints {
     this.hot.setCellMeta(visualEndpointRowIndex, endpoint.destinationColumn, 'readOnly', false);
     this.hot.setCellMeta(visualEndpointRowIndex, endpoint.destinationColumn, 'className', '');
     this.cellsToSetCache.push([this.getVisualRowIndex(endpoint.destinationRow + (useOffset ? alterRowOffset : 0)), endpoint.destinationColumn + (useOffset ? alterColOffset : 0), '']);
-    // this.hot.setDataAtCell(endpoint.destinationRow + (useOffset ? alterRowOffset : 0), endpoint.destinationColumn + (useOffset ? alterColOffset : 0), '', 'columnSummary');
   }
 
   /**
@@ -404,7 +430,13 @@ class Endpoints {
     endpoint.alterColumnOffset = void 0;
   }
 
-  //TODO: docs
+  /**
+   * Get the visual row index for the provided row. Uses the `umodifyRow` hook.
+   *
+   * @private
+   * @param {Number} row Row index.
+   * @returns {Number}
+   */
   getVisualRowIndex(row) {
     return this.hot.runHooks('unmodifyRow', row, 'columnSummary');
   }
