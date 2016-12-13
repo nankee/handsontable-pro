@@ -355,6 +355,13 @@ class DataManager {
    */
   addChild(parent, element) {
     this.hot.runHooks('beforeAddChild', parent, element);
+
+    let parentIndex = null;
+    if (parent) {
+      parentIndex = this.getRowIndex(parent);
+    }
+
+    this.hot.runHooks('beforeCreateRow', parentIndex + this.countChildren(parent) + 1, 1);
     let functionalParent = parent;
 
     if (!parent) {
@@ -373,6 +380,7 @@ class DataManager {
     this.rewriteCache();
 
     const newRowIndex = this.getRowIndex(element);
+
     this.hot.runHooks('afterCreateRow', newRowIndex, 1);
     this.hot.runHooks('afterAddChild', parent, element);
   }
@@ -383,9 +391,11 @@ class DataManager {
    * @param {Object} parent Parent node.
    * @param {Number} index Index to insert the child element at.
    * @param {Object} [element] Element (node) to insert.
+   * @param {Number} [globalIndex] Global index of the inserted row.
    */
-  addChildAtIndex(parent, index, element) {
+  addChildAtIndex(parent, index, element, globalIndex) {
     this.hot.runHooks('beforeAddChild', parent, element, index);
+    this.hot.runHooks('beforeCreateRow', globalIndex + 1, 1);
     let functionalParent = parent;
 
     if (!parent) {
@@ -404,7 +414,7 @@ class DataManager {
 
     this.rewriteCache();
 
-    this.hot.runHooks('afterCreateRow', index + 1, 1);
+    this.hot.runHooks('afterCreateRow', globalIndex + 1, 1);
     this.hot.runHooks('afterAddChild', parent, element, index);
   }
 
@@ -421,10 +431,10 @@ class DataManager {
 
     switch (where) {
       case 'below':
-        this.addChildAtIndex(parent, indexWithinParent + 1);
+        this.addChildAtIndex(parent, indexWithinParent + 1, null, index);
         break;
       case 'above':
-        this.addChildAtIndex(parent, indexWithinParent);
+        this.addChildAtIndex(parent, indexWithinParent, null, index);
         break;
     }
   }
@@ -454,23 +464,40 @@ class DataManager {
       element = elements;
     }
 
+    const childRowIndex = this.getRowIndex(element);
     const indexWithinParent = this.getRowIndexWithinParent(element);
     const parent = this.getRowParent(element);
     const grandparent = this.getRowParent(parent);
+    const grandparentRowIndex = this.getRowIndex(grandparent);
+    let movedElementRowIndex = null;
 
     this.hot.runHooks('beforeDetachChild', parent, element);
 
     if (indexWithinParent != null) {
+      this.hot.runHooks('beforeRemoveRow', childRowIndex, 1, [childRowIndex], this.plugin.pluginName);
+
       parent.__children.splice(indexWithinParent, 1);
 
+      this.rewriteCache();
+
+      this.hot.runHooks('afterRemoveRow', childRowIndex, 1, [childRowIndex], this.plugin.pluginName);
+
       if (grandparent) {
+        movedElementRowIndex = grandparentRowIndex + this.countChildren(grandparent);
+        this.hot.runHooks('beforeCreateRow', movedElementRowIndex, 1, this.plugin.pluginName);
+
         grandparent.__children.push(element);
       } else {
+        movedElementRowIndex = this.hot.countRows() + 1;
+        this.hot.runHooks('beforeCreateRow', movedElementRowIndex, 1, this.plugin.pluginName);
+
         this.data.push(element);
       }
     }
 
     this.rewriteCache();
+
+    this.hot.runHooks('afterCreateRow', movedElementRowIndex, 1, this.plugin.pluginName);
 
     if (forceRender) {
       this.hot.render();
