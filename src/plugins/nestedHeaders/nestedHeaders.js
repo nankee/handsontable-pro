@@ -63,6 +63,10 @@ class NestedHeaders extends BasePlugin {
      * @type {Array}
      */
     this.colspanArray = [];
+
+    this.ghostTable = void 0;
+
+    this.widthsCache = [];
   }
 
   /**
@@ -89,6 +93,7 @@ class NestedHeaders extends BasePlugin {
     this.addHook('afterOnCellMouseDown', (event, coords, TD) => this.onAfterOnCellMouseDown(event, coords, TD));
     this.addHook('beforeOnCellMouseOver', (event, coords, TD, blockCalculations) => this.onBeforeOnCellMouseOver(event, coords, TD, blockCalculations));
     this.addHook('afterViewportColumnCalculatorOverride', (calc) => this.onAfterViewportColumnCalculatorOverride(calc));
+    this.addHook('modifyColWidth', (width, column) => this.onModifyColWidth(width, column));
 
     this.setupColspanArray();
     this.checkForFixedColumnsCollision();
@@ -98,6 +103,11 @@ class NestedHeaders extends BasePlugin {
     super.enablePlugin();
   }
 
+  onModifyColWidth(width, column) {
+    let cachedWidth = this.widthsCache[column];
+
+    return width > cachedWidth ? width : cachedWidth;
+  }
   /**
    * Disable the plugin.
    */
@@ -107,6 +117,7 @@ class NestedHeaders extends BasePlugin {
     this.settings = [];
     this.columnHeaderLevelCount = 0;
     this.colspanArray = [];
+    this.widthsCache.length = 0;
 
     super.disablePlugin();
   }
@@ -347,9 +358,13 @@ class NestedHeaders extends BasePlugin {
    *
    * @param {Number} level Header level.
    * @param {Number} column Column index.
-   * @returns {Number}
+   * @returns {*}
    */
   getNestedParent(level, column) {
+    if (level < 0) {
+      return false;
+    }
+
     let colspan = this.colspanArray[level][column] ? this.colspanArray[level][column].colspan : 1;
     let hidden = this.colspanArray[level][column] ? this.colspanArray[level][column].hidden : false;
 
@@ -582,8 +597,82 @@ class NestedHeaders extends BasePlugin {
     this.fillTheRemainingColspans();
 
     this.checkForOverlappingHeaders();
+
+    this.buildWidthsMapper();
   }
 
+  buildWidthsMapper() {
+    this.ghostTable = document.createElement('div');
+
+    this.buildGhostTable(this.ghostTable);
+    this.hot.rootElement.appendChild(this.ghostTable);
+
+    let columns = this.ghostTable.querySelectorAll('tr:last-of-type td');
+    let maxColumns = columns.length;
+
+    for (let i = 0; i < maxColumns; i++) {
+      this.widthsCache.push(columns[i].offsetWidth);
+    }
+
+    this.ghostTable.parentNode.removeChild(this.ghostTable);
+
+    this.hot.render();
+  }
+
+  buildGhostTable(container) {
+    let d = document;
+    let fragment = d.createDocumentFragment();
+    let table = d.createElement('table');
+    let lastRowColspan = false;
+    let isDropdownEnabled = !!this.hot.getSettings().dropdownMenu;
+    let maxRows = this.colspanArray.length;
+    let maxCols = this.hot.countCols();
+    let lastRowIndex = maxRows - 1;
+
+    for (let row = 0; row < maxRows; row++) {
+      let tr = d.createElement('tr');
+
+      lastRowColspan = false;
+
+      for (let col = 0; col < maxCols; col++) {
+        let td = d.createElement('td');
+        let headerObj = this.colspanArray[row][col];
+
+        if (!headerObj.hidden) {
+          if (row === lastRowIndex) {
+            if (headerObj.colspan > 1) {
+              lastRowColspan = true;
+            }
+            if (isDropdownEnabled) {
+              headerObj.label += '<button class="changeType"></button>';
+            }
+          }
+
+          fastInnerHTML(td, headerObj.label);
+          td.colSpan = headerObj.colspan;
+          tr.appendChild(td);
+        }
+      }
+
+      table.appendChild(tr);
+    }
+
+    if (lastRowColspan) {
+      {
+        let tr = d.createElement('tr');
+
+        for (let col = 0; col < maxCols; col++) {
+          let td = d.createElement('td');
+          tr.appendChild(td);
+        }
+
+        table.appendChild(tr);
+      }
+    }
+
+    fragment.appendChild(table);
+    container.appendChild(fragment);
+  }
   /**
    * `afterGetColumnHeader` hook callback - prepares the header structure.
    *
