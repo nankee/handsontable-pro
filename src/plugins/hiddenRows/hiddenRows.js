@@ -102,7 +102,8 @@ class HiddenRows extends BasePlugin {
     this.addHook('afterContextMenuDefaultOptions', (options) => this.onAfterContextMenuDefaultOptions(options));
     this.addHook('afterGetCellMeta', (row, col, cellProperties) => this.onAfterGetCellMeta(row, col, cellProperties));
     this.addHook('modifyRowHeight', (height, row) => this.onModifyRowHeight(height, row));
-    this.addHook('beforeSetRangeStartOnly', (coords) => this.onBeforeSetRangeStart(coords));
+    this.addHook('beforeSetRangeStartOnly', (coords) => this.onBeforeSetRangeStartOnly(coords));
+    this.addHook('beforeSetRangeStart', (coords) => this.onBeforeSetRangeStart(coords));
     this.addHook('beforeSetRangeEnd', (coords) => this.onBeforeSetRangeEnd(coords));
     this.addHook('hiddenRow', (row) => this.isHidden(row));
     this.addHook('afterCreateRow', (index, amount) => this.onAfterCreateRow(index, amount));
@@ -385,12 +386,32 @@ class HiddenRows extends BasePlugin {
   }
 
   /**
-   * On before set range start listener.
+   * On before set range start listener, when selection was triggered by the cell.
    *
    * @private
    * @param {Object} coords Object with `row` and `col` properties.
    */
   onBeforeSetRangeStart(coords) {
+    let getNextRow = (row) => {
+
+      if (this.isHidden(row)) {
+        let direction = row > this.lastSelectedRow ? 1 : -1;
+        row = getNextRow(row + direction);
+      }
+
+      return row;
+    };
+
+    coords.row = getNextRow(coords.row);
+  }
+
+  /**
+   * On before set range start listener, when selection was triggered by the headers.
+   *
+   * @private
+   * @param {Object} coords Object with `row` and `col` properties.
+   */
+  onBeforeSetRangeStartOnly(coords) {
     if (coords.row > 0) {
       return;
     }

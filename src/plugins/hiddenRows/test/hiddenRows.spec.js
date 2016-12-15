@@ -384,9 +384,7 @@ describe('HiddenRows', function() {
       var hot = handsontable({
         data: getMultilineData(10, 10),
         hiddenRows: {
-          rows: [
-            2,
-            4]
+          rows: [2, 4]
         },
         width: 500,
         height: 300
@@ -404,6 +402,22 @@ describe('HiddenRows', function() {
       keyDownUp(Handsontable.helper.KEY_CODES.ARROW_DOWN);
 
       expect(getSelected()).toEqual([5, 0, 5, 0]);
+    });
+
+    it('should properly highlight selected cell', function() {
+      var hot = handsontable({
+        data: Handsontable.helper.createSpreadsheetData(3, 1),
+        hiddenRows: {
+          rows: [1]
+        },
+        mergeCells: [],
+        colHeaders: true
+      });
+
+      selectCell(0, 0, 0, 0);
+      keyDownUp(Handsontable.helper.KEY_CODES.ARROW_DOWN);
+
+      expect(hot.getSelectedRange().highlight.row).toBe(2);
     });
   });
 
