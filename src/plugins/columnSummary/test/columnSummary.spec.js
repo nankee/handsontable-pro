@@ -304,7 +304,7 @@ describe("ColumnSummarySpec", function() {
         }
       });
 
-        expect(getDataAtCell(14,0)).toEqual(3);
+      expect(getDataAtCell(14,0)).toEqual(3);
 
     });
   });
@@ -571,4 +571,50 @@ describe("ColumnSummarySpec", function() {
     });
   });
 
+  describe('maxRows options set', function() {
+    it('should apply summary operation only on rows which are < maxRows', function() {
+      var rows = 9;
+      var columns = 5;
+
+      // [
+      //   [1, 1, 1, 1, 1],
+      //   [2, 2, 2, 2, 2],
+      //   [3, 3, 3, 3, 3],
+      //   [4, 4, 4, 4, 4],
+      //   [5, 5, 5, 5, 5],
+      //
+      //   [6, 6, 6, 6, 6],
+      //   [7, 7, 7, 7, 7],
+      //   [8, 8, 8, 8, 8].
+      //   [9, 9, 9, 9, 9]
+      // ]
+
+      var hot = handsontable({
+        data: createNumericData(rows, columns),
+        rowHeaders: true,
+        colHeaders: ['sum', 'min', 'max', 'count', 'average'],
+        maxRows: 5,
+        columnSummary: function() {
+          var configArray = [];
+          var summaryTypes = ['sum', 'min', 'max', 'count', 'average'];
+          for (var i = 0; i < columns; i++) {
+            configArray.push({
+              sourceColumn: i,
+              destinationRow: 0,
+              destinationColumn: i,
+              type: summaryTypes[i],
+              forceNumeric: true
+            });
+          }
+          return configArray;
+        }
+      });
+
+      expect(getDataAtCell(0, 0)).toEqual(15);
+      expect(getDataAtCell(0, 1)).toEqual(1);
+      expect(getDataAtCell(0, 2)).toEqual(5);
+      expect(getDataAtCell(0, 3)).toEqual(5);
+      expect(getDataAtCell(0, 4)).toEqual(3);
+    });
+  });
 });

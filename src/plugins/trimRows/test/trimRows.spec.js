@@ -385,4 +385,22 @@ describe('TrimRows', function() {
       }, 100);
     });
   });
+
+  describe('maxRows option set', function () {
+    it('should return properly data after trimming', function (done) {
+      handsontable({
+        data: Handsontable.helper.createSpreadsheetData(10, 10),
+        maxRows: 3,
+        trimRows: [2, 3]
+      });
+
+      setTimeout(function () {
+        expect(getData().length).toEqual(3);
+        expect(getDataAtCell(0, 1)).toEqual('B1');
+        expect(getDataAtCell(1, 1)).toEqual('B2');
+        expect(getDataAtCell(2, 1)).toEqual('B5');
+        done();
+      }, 100);
+    });
+  });
 });
