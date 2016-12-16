@@ -63,9 +63,17 @@ class NestedHeaders extends BasePlugin {
      * @type {Array}
      */
     this.colspanArray = [];
-
+    /**
+     * Temporary element created to get minimal headers widths.
+     *
+     * @type {HTMLElement}
+     */
     this.ghostTable = void 0;
-
+    /**
+     * Cached the headers widths.
+     *
+     * @type {Array}
+     */
     this.widthsCache = [];
   }
 
@@ -103,11 +111,6 @@ class NestedHeaders extends BasePlugin {
     super.enablePlugin();
   }
 
-  onModifyColWidth(width, column) {
-    let cachedWidth = this.widthsCache[column];
-
-    return width > cachedWidth ? width : cachedWidth;
-  }
   /**
    * Disable the plugin.
    */
@@ -482,6 +485,91 @@ class NestedHeaders extends BasePlugin {
   }
 
   /**
+   * Build cache of the headers widths.
+   *
+   * @private
+   */
+  buildWidthsMapper() {
+    this.ghostTable = document.createElement('div');
+
+    this.buildGhostTable(this.ghostTable);
+    this.hot.rootElement.appendChild(this.ghostTable);
+
+    let columns = this.ghostTable.querySelectorAll('tr:last-of-type td');
+    let maxColumns = columns.length;
+
+    for (let i = 0; i < maxColumns; i++) {
+      this.widthsCache.push(columns[i].offsetWidth);
+    }
+
+    this.ghostTable.parentNode.removeChild(this.ghostTable);
+
+    this.hot.render();
+  }
+
+  /**
+   * Build temporary table for getting minimal columns widths.
+   *
+   * @private
+   * @param {HTMLElement} container
+   */
+  buildGhostTable(container) {
+    let d = document;
+    let fragment = d.createDocumentFragment();
+    let table = d.createElement('table');
+    let lastRowColspan = false;
+    let isDropdownEnabled = !!this.hot.getSettings().dropdownMenu;
+    let maxRows = this.colspanArray.length;
+    let maxCols = this.hot.countCols();
+    let lastRowIndex = maxRows - 1;
+
+    for (let row = 0; row < maxRows; row++) {
+      let tr = d.createElement('tr');
+
+      lastRowColspan = false;
+
+      for (let col = 0; col < maxCols; col++) {
+        let td = d.createElement('td');
+        let headerObj = this.colspanArray[row][col];
+
+        if (!headerObj.hidden) {
+          if (row === lastRowIndex) {
+            if (headerObj.colspan > 1) {
+              lastRowColspan = true;
+            }
+            if (isDropdownEnabled) {
+              headerObj.label += '<button class="changeType"></button>';
+            }
+          }
+
+          fastInnerHTML(td, headerObj.label);
+          td.colSpan = headerObj.colspan;
+          tr.appendChild(td);
+        }
+      }
+
+      table.appendChild(tr);
+    }
+
+    // We have to be sure the last row contains only the single columns.
+    if (lastRowColspan) {
+      {
+        let tr = d.createElement('tr');
+
+        for (let col = 0; col < maxCols; col++) {
+          let td = d.createElement('td');
+          tr.appendChild(td);
+        }
+
+        table.appendChild(tr);
+      }
+    }
+
+    fragment.appendChild(table);
+    container.appendChild(fragment);
+  }
+
+  /**
    * Make the renderer render the first nested column in its entirety.
    *
    * @private
@@ -601,78 +689,6 @@ class NestedHeaders extends BasePlugin {
     this.buildWidthsMapper();
   }
 
-  buildWidthsMapper() {
-    this.ghostTable = document.createElement('div');
-
-    this.buildGhostTable(this.ghostTable);
-    this.hot.rootElement.appendChild(this.ghostTable);
-
-    let columns = this.ghostTable.querySelectorAll('tr:last-of-type td');
-    let maxColumns = columns.length;
-
-    for (let i = 0; i < maxColumns; i++) {
-      this.widthsCache.push(columns[i].offsetWidth);
-    }
-
-    this.ghostTable.parentNode.removeChild(this.ghostTable);
-
-    this.hot.render();
-  }
-
-  buildGhostTable(container) {
-    let d = document;
-    let fragment = d.createDocumentFragment();
-    let table = d.createElement('table');
-    let lastRowColspan = false;
-    let isDropdownEnabled = !!this.hot.getSettings().dropdownMenu;
-    let maxRows = this.colspanArray.length;
-    let maxCols = this.hot.countCols();
-    let lastRowIndex = maxRows - 1;
-
-    for (let row = 0; row < maxRows; row++) {
-      let tr = d.createElement('tr');
-
-      lastRowColspan = false;
-
-      for (let col = 0; col < maxCols; col++) {
-        let td = d.createElement('td');
-        let headerObj = this.colspanArray[row][col];
-
-        if (!headerObj.hidden) {
-          if (row === lastRowIndex) {
-            if (headerObj.colspan > 1) {
-              lastRowColspan = true;
-            }
-            if (isDropdownEnabled) {
-              headerObj.label += '<button class="changeType"></button>';
-            }
-          }
-
-          fastInnerHTML(td, headerObj.label);
-          td.colSpan = headerObj.colspan;
-          tr.appendChild(td);
-        }
-      }
-
-      table.appendChild(tr);
-    }
-
-    if (lastRowColspan) {
-      {
-        let tr = d.createElement('tr');
-
-        for (let col = 0; col < maxCols; col++) {
-          let td = d.createElement('td');
-          tr.appendChild(td);
-        }
-
-        table.appendChild(tr);
-      }
-    }
-
-    fragment.appendChild(table);
-    container.appendChild(fragment);
-  }
   /**
    * `afterGetColumnHeader` hook callback - prepares the header structure.
    *
@@ -690,6 +706,20 @@ class NestedHeaders extends BasePlugin {
     }
 
     this.updateHeadersHighlight();
+  }
+
+  /**
+   * `modifyColWidth` hook callback - returns width from cache, when is greater than incoming from hook.
+   *
+   * @private
+   * @param width Width from hook.
+   * @param column Visual index of an column.
+   * @returns {Number}
+   */
+  onModifyColWidth(width, column) {
+    let cachedWidth = this.widthsCache[column];
+
+    return width > cachedWidth ? width : cachedWidth;
   }
 
   /**
