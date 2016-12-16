@@ -392,10 +392,23 @@ class HiddenRows extends BasePlugin {
    * @param {Object} coords Object with `row` and `col` properties.
    */
   onBeforeSetRangeStart(coords) {
+    let actualSelection = this.hot.getSelected() || false;
+    let lastPossibleIndex = this.hot.countRows() - 1;
+
     let getNextRow = (row) => {
+      let direction = 0;
+
+      if (actualSelection) {
+        direction = row > actualSelection[0] ? 1 : -1;
+
+        this.lastSelectedRow = actualSelection[0];
+      }
+
+      if (lastPossibleIndex < row || row < 0) {
+        return this.lastSelectedRow;
+      }
 
       if (this.isHidden(row)) {
-        let direction = row > this.lastSelectedRow ? 1 : -1;
         row = getNextRow(row + direction);
       }
 

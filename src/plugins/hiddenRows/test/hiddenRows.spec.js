@@ -406,19 +406,25 @@ describe('HiddenRows', function() {
 
     it('should properly highlight selected cell', function() {
       var hot = handsontable({
-        data: Handsontable.helper.createSpreadsheetData(3, 1),
+        data: Handsontable.helper.createSpreadsheetData(5, 5),
         hiddenRows: {
-          rows: [1]
+          rows: [0]
         },
-        mergeCells: [],
+        mergeCells: [
+          {row: 1, col: 1, colspan: 2, rowspan: 2}
+        ],
         colHeaders: true
       });
 
-      selectCell(0, 0, 0, 0);
-      keyDownUp(Handsontable.helper.KEY_CODES.ARROW_DOWN);
+      selectCell(3, 1, 3, 1);
+      keyDownUp(Handsontable.helper.KEY_CODES.ARROW_UP);
+      keyDownUp(Handsontable.helper.KEY_CODES.ARROW_UP);
+      keyDownUp(Handsontable.helper.KEY_CODES.ARROW_UP);
 
-      expect(hot.getSelectedRange().highlight.row).toBe(2);
+      expect(hot.getSelectedRange().highlight.row).toBe(1);
     });
+
+
   });
 
   describe('context-menu', function() {
