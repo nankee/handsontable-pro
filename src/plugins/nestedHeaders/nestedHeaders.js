@@ -12,6 +12,7 @@ import {
   registerPlugin,
   getPlugin
 } from 'handsontable/plugins';
+import {GhostTable} from './utils/ghostTable';
 import BasePlugin from 'handsontable/plugins/_base';
 
 /**
@@ -64,17 +65,12 @@ class NestedHeaders extends BasePlugin {
      */
     this.colspanArray = [];
     /**
-     * Temporary element created to get minimal headers widths.
+     * Custom helper for getting widths of the nested headers.
+     * @TODO This should be changed after refactor handsontable/utils/ghostTable.
      *
-     * @type {HTMLElement}
+     * @type {GhostTable}
      */
-    this.ghostTable = void 0;
-    /**
-     * Cached the headers widths.
-     *
-     * @type {Array}
-     */
-    this.widthsCache = [];
+    this.ghostTable = new GhostTable(this);
   }
 
   /**
@@ -120,7 +116,7 @@ class NestedHeaders extends BasePlugin {
     this.settings = [];
     this.columnHeaderLevelCount = 0;
     this.colspanArray = [];
-    this.widthsCache.length = 0;
+    this.ghostTable.widthsCache.length = 0;
 
     super.disablePlugin();
   }
@@ -485,91 +481,6 @@ class NestedHeaders extends BasePlugin {
   }
 
   /**
-   * Build cache of the headers widths.
-   *
-   * @private
-   */
-  buildWidthsMapper() {
-    this.ghostTable = document.createElement('div');
-
-    this.buildGhostTable(this.ghostTable);
-    this.hot.rootElement.appendChild(this.ghostTable);
-
-    let columns = this.ghostTable.querySelectorAll('tr:last-of-type td');
-    let maxColumns = columns.length;
-
-    for (let i = 0; i < maxColumns; i++) {
-      this.widthsCache.push(columns[i].offsetWidth);
-    }
-
-    this.ghostTable.parentNode.removeChild(this.ghostTable);
-
-    this.hot.render();
-  }
-
-  /**
-   * Build temporary table for getting minimal columns widths.
-   *
-   * @private
-   * @param {HTMLElement} container
-   */
-  buildGhostTable(container) {
-    let d = document;
-    let fragment = d.createDocumentFragment();
-    let table = d.createElement('table');
-    let lastRowColspan = false;
-    let isDropdownEnabled = !!this.hot.getSettings().dropdownMenu;
-    let maxRows = this.colspanArray.length;
-    let maxCols = this.hot.countCols();
-    let lastRowIndex = maxRows - 1;
-
-    for (let row = 0; row < maxRows; row++) {
-      let tr = d.createElement('tr');
-
-      lastRowColspan = false;
-
-      for (let col = 0; col < maxCols; col++) {
-        let td = d.createElement('td');
-        let headerObj = this.colspanArray[row][col];
-
-        if (!headerObj.hidden) {
-          if (row === lastRowIndex) {
-            if (headerObj.colspan > 1) {
-              lastRowColspan = true;
-            }
-            if (isDropdownEnabled) {
-              headerObj.label += '<button class="changeType"></button>';
-            }
-          }
-
-          fastInnerHTML(td, headerObj.label);
-          td.colSpan = headerObj.colspan;
-          tr.appendChild(td);
-        }
-      }
-
-      table.appendChild(tr);
-    }
-
-    // We have to be sure the last row contains only the single columns.
-    if (lastRowColspan) {
-      {
-        let tr = d.createElement('tr');
-
-        for (let col = 0; col < maxCols; col++) {
-          let td = d.createElement('td');
-          tr.appendChild(td);
-        }
-
-        table.appendChild(tr);
-      }
-    }
-
-    fragment.appendChild(table);
-    container.appendChild(fragment);
-  }
-
-  /**
    * Make the renderer render the first nested column in its entirety.
    *
    * @private
@@ -686,7 +597,7 @@ class NestedHeaders extends BasePlugin {
 
     this.checkForOverlappingHeaders();
 
-    this.buildWidthsMapper();
+    this.ghostTable.buildWidthsMapper();
   }
 
   /**
@@ -717,7 +628,7 @@ class NestedHeaders extends BasePlugin {
    * @returns {Number}
    */
   onModifyColWidth(width, column) {
-    let cachedWidth = this.widthsCache[column];
+    let cachedWidth = this.ghostTable.widthsCache[column];
 
     return width > cachedWidth ? width : cachedWidth;
   }
