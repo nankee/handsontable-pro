@@ -116,7 +116,8 @@ class NestedHeaders extends BasePlugin {
     this.settings = [];
     this.columnHeaderLevelCount = 0;
     this.colspanArray = [];
-    this.ghostTable.widthsCache.length = 0;
+
+    this.ghostTable.clear();
 
     super.disablePlugin();
   }
@@ -129,6 +130,7 @@ class NestedHeaders extends BasePlugin {
     this.enablePlugin();
 
     super.updatePlugin();
+    this.ghostTable.buildWidthsMapper();
   }
 
   /**

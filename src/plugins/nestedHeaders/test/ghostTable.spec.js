@@ -21,7 +21,6 @@ describe('NestedHeaders', function() {
           ['a', 'b', 'c', 'd', 'e', 'f', 'g']
         ]
       });
-
       var ghostTable = hot.getPlugin('nestedHeaders').ghostTable;
 
       expect(ghostTable).toBeDefined();
@@ -36,7 +35,6 @@ describe('NestedHeaders', function() {
             ['a', 'b', 'c', 'd', 'e', 'f', 'g']
           ]
         });
-
         var ghostTable = hot.getPlugin('nestedHeaders').ghostTable;
 
         expect(ghostTable.widthsCache.length).toBeGreaterThan(0);
@@ -50,10 +48,31 @@ describe('NestedHeaders', function() {
             ['a', 'b', 'c', 'd', 'e', 'f', 'g']
           ]
         });
-
         var ghostTable = hot.getPlugin('nestedHeaders').ghostTable;
 
         expect(ghostTable.container).toBeNull();
+      });
+    });
+
+    describe('updateSettings', function() {
+      it('should recreate the widths cache', function() {
+        var hot = handsontable({
+          data: Handsontable.helper.createSpreadsheetData(10, 10),
+          nestedHeaders: [
+            ['a', 'b', 'c', 'd', 'e', 'f', 'g']
+          ]
+        });
+        var beforeUpdate = hot.getPlugin('nestedHeaders').ghostTable.widthsCache[1];
+
+        hot.updateSettings({
+          nestedHeaders: [
+            ['a', 'bbbbbbbbbbbbbbbbb', 'c', 'd', 'e', 'f', 'g']
+          ]
+        });
+
+        var afterUpdate = hot.getPlugin('nestedHeaders').ghostTable.widthsCache[1];
+
+        expect(afterUpdate).toBeGreaterThan(beforeUpdate);
       });
     });
   });

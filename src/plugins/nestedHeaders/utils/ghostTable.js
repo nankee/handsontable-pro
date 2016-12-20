@@ -71,7 +71,7 @@ class GhostTable {
         let td = d.createElement('td');
         let headerObj = this.nestedHeaders.colspanArray[row][col];
 
-        if (!headerObj.hidden) {
+        if (headerObj && !headerObj.hidden) {
           if (row === lastRowIndex) {
             if (headerObj.colspan > 1) {
               lastRowColspan = true;
@@ -106,6 +106,14 @@ class GhostTable {
 
     fragment.appendChild(table);
     container.appendChild(fragment);
+  }
+
+  /**
+   * Clear the widths cache.
+   */
+  clear() {
+    this.container = null;
+    this.widthsCache.length = 0;
   }
 
 }
