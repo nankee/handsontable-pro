@@ -4465,10 +4465,10 @@ var domHelpers = ($__helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"
 var domEventHelpers = ($__helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $__helpers_47_dom_47_event__ && $__helpers_47_dom_47_event__.__esModule && $__helpers_47_dom_47_event__ || {default: $__helpers_47_dom_47_event__});
 var HELPERS = [arrayHelpers, browserHelpers, dataHelpers, dateHelpers, featureHelpers, functionHelpers, mixedHelpers, numberHelpers, objectHelpers, settingHelpers, stringHelpers, unicodeHelpers];
 var DOM = [domHelpers, domEventHelpers];
-Handsontable.buildDate = 'Tue Dec 13 2016 11:05:42 GMT+0100 (CET)';
+Handsontable.buildDate = 'Wed Dec 21 2016 14:03:43 GMT+0100 (CET)';
 Handsontable.packageName = 'handsontable-pro';
-Handsontable.version = '1.8.1';
-var baseVersion = '0.29.1';
+Handsontable.version = '1.8.2';
+var baseVersion = '0.29.2';
 if (!/^@@/.test(baseVersion)) {
   Handsontable.baseVersion = baseVersion;
 }
@@ -6991,6 +6991,13 @@ DataMap.prototype.clearLengthCache = function() {
 };
 DataMap.prototype.getLength = function() {
   var $__9 = this;
+  var maxRows,
+      maxRowsFromSettings = this.instance.getSettings().maxRows;
+  if (maxRowsFromSettings < 0 || maxRowsFromSettings === 0) {
+    maxRows = 0;
+  } else {
+    maxRows = maxRowsFromSettings || Infinity;
+  }
   var length = this.instance.countSourceRows();
   if (Handsontable.hooks.has('modifyRow', this.instance)) {
     var reValidate = this.skipCache;
@@ -7013,15 +7020,19 @@ DataMap.prototype.getLength = function() {
   } else {
     this.interval.stop();
   }
-  return length;
+  return Math.min(length, maxRows);
 };
 DataMap.prototype.getAll = function() {
   var start = {
     row: 0,
     col: 0
   };
+  var maxRows = this.instance.getSettings().maxRows;
+  if (maxRows === 0) {
+    return [];
+  }
   var end = {
-    row: Math.max(this.instance.countSourceRows() - 1, 0),
+    row: Math.min(Math.max(maxRows - 1, 0), Math.max(this.instance.countSourceRows() - 1, 0)),
     col: Math.max(this.instance.countCols() - 1, 0)
   };
   if (start.row - end.row === 0 && !this.instance.countSourceRows()) {
@@ -7035,8 +7046,7 @@ DataMap.prototype.getRange = function(start, end, destination) {
       c,
       clen,
       output = [],
-      row,
-      rowExists;
+      row;
   var getFn = destination === this.DESTINATION_CLIPBOARD_GENERATOR ? this.getCopyable : this.get;
   rlen = Math.max(start.row, end.row);
   clen = Math.max(start.col, end.col);
@@ -7044,7 +7054,6 @@ DataMap.prototype.getRange = function(start, end, destination) {
     row = [];
     var physicalRow = Handsontable.hooks.run(this.instance, 'modifyRow', r);
     for (c = Math.min(start.col, end.col); c <= clen; c++) {
-      var rowValue;
       if (physicalRow === null) {
         break;
       }
@@ -13538,8 +13547,15 @@ var $ColumnSorting = ColumnSorting;
         sortFunction;
     this.hot.sortingEnabled = false;
     this.hot.sortIndex.length = 0;
+    var nrOfRows;
+    var emptyRows = this.hot.countEmptyRows();
+    if (this.hot.getSettings().maxRows === Number.POSITIVE_INFINITY) {
+      nrOfRows = this.hot.countRows() - this.hot.getSettings().minSpareRows;
+    } else {
+      nrOfRows = this.hot.countRows() - emptyRows;
+    }
     for (var i = 0,
-        ilen = this.hot.countRows() - this.hot.getSettings().minSpareRows; i < ilen; i++) {
+        ilen = nrOfRows; i < ilen; i++) {
       this.hot.sortIndex.push([i, this.hot.getDataAtCell(i, this.hot.sortColumn)]);
     }
     colMeta = this.hot.getCellMeta(0, this.hot.sortColumn);
@@ -31155,6 +31171,9 @@ var $HiddenRows = HiddenRows;
       return $__7.onModifyRowHeight(height, row);
     }));
     this.addHook('beforeSetRangeStartOnly', (function(coords) {
+      return $__7.onBeforeSetRangeStartOnly(coords);
+    }));
+    this.addHook('beforeSetRangeStart', (function(coords) {
       return $__7.onBeforeSetRangeStart(coords);
     }));
     this.addHook('beforeSetRangeEnd', (function(coords) {
@@ -31346,6 +31365,26 @@ var $HiddenRows = HiddenRows;
   },
   onBeforeSetRangeStart: function(coords) {
     var $__7 = this;
+    var actualSelection = this.hot.getSelected() || false;
+    var lastPossibleIndex = this.hot.countRows() - 1;
+    var getNextRow = (function(row) {
+      var direction = 0;
+      if (actualSelection) {
+        direction = row > actualSelection[0] ? 1 : -1;
+        $__7.lastSelectedRow = actualSelection[0];
+      }
+      if (lastPossibleIndex < row || row < 0) {
+        return $__7.lastSelectedRow;
+      }
+      if ($__7.isHidden(row)) {
+        row = getNextRow(row + direction);
+      }
+      return row;
+    });
+    coords.row = getNextRow(coords.row);
+  },
+  onBeforeSetRangeStartOnly: function(coords) {
+    var $__7 = this;
     if (coords.row > 0) {
       return;
     }
@@ -31445,6 +31484,7 @@ var $__handsontable_47_helpers_47_dom_47_element__,
     $__handsontable_47_helpers_47_array__,
     $__handsontable_47_helpers_47_object__,
     $__handsontable_47_plugins__,
+    $__utils_47_ghostTable__,
     $__handsontable_47_plugins_47__95_base__;
 var $__0 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
     addClass = $__0.addClass,
@@ -31458,12 +31498,14 @@ var objectEach = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../nod
 var $__4 = ($__handsontable_47_plugins__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins"), $__handsontable_47_plugins__ && $__handsontable_47_plugins__.__esModule && $__handsontable_47_plugins__ || {default: $__handsontable_47_plugins__}),
     registerPlugin = $__4.registerPlugin,
     getPlugin = $__4.getPlugin;
+var GhostTable = ($__utils_47_ghostTable__ = _dereq_("utils/ghostTable"), $__utils_47_ghostTable__ && $__utils_47_ghostTable__.__esModule && $__utils_47_ghostTable__ || {default: $__utils_47_ghostTable__}).GhostTable;
 var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
 var NestedHeaders = function NestedHeaders(hotInstance) {
   $traceurRuntime.superConstructor($NestedHeaders).call(this, hotInstance);
   this.settings = [];
   this.columnHeaderLevelCount = 0;
   this.colspanArray = [];
+  this.ghostTable = new GhostTable(this);
 };
 var $NestedHeaders = NestedHeaders;
 ($traceurRuntime.createClass)(NestedHeaders, {
@@ -31471,25 +31513,28 @@ var $NestedHeaders = NestedHeaders;
     return !!this.hot.getSettings().nestedHeaders;
   },
   enablePlugin: function() {
-    var $__6 = this;
+    var $__7 = this;
     if (this.enabled) {
       return;
     }
     this.settings = this.hot.getSettings().nestedHeaders;
     this.addHook('afterGetColumnHeaderRenderers', (function(array) {
-      return $__6.onAfterGetColumnHeaderRenderers(array);
+      return $__7.onAfterGetColumnHeaderRenderers(array);
     }));
     this.addHook('afterInit', (function() {
-      return $__6.onAfterInit();
+      return $__7.onAfterInit();
     }));
     this.addHook('afterOnCellMouseDown', (function(event, coords, TD) {
-      return $__6.onAfterOnCellMouseDown(event, coords, TD);
+      return $__7.onAfterOnCellMouseDown(event, coords, TD);
     }));
     this.addHook('beforeOnCellMouseOver', (function(event, coords, TD, blockCalculations) {
-      return $__6.onBeforeOnCellMouseOver(event, coords, TD, blockCalculations);
+      return $__7.onBeforeOnCellMouseOver(event, coords, TD, blockCalculations);
     }));
     this.addHook('afterViewportColumnCalculatorOverride', (function(calc) {
-      return $__6.onAfterViewportColumnCalculatorOverride(calc);
+      return $__7.onAfterViewportColumnCalculatorOverride(calc);
+    }));
+    this.addHook('modifyColWidth', (function(width, column) {
+      return $__7.onModifyColWidth(width, column);
     }));
     this.setupColspanArray();
     this.checkForFixedColumnsCollision();
@@ -31501,12 +31546,14 @@ var $NestedHeaders = NestedHeaders;
     this.settings = [];
     this.columnHeaderLevelCount = 0;
     this.colspanArray = [];
+    this.ghostTable.clear();
     $traceurRuntime.superGet(this, $NestedHeaders.prototype, "disablePlugin").call(this);
   },
   updatePlugin: function() {
     this.disablePlugin();
     this.enablePlugin();
     $traceurRuntime.superGet(this, $NestedHeaders.prototype, "updatePlugin").call(this);
+    this.ghostTable.buildWidthsMapper();
   },
   clearColspans: function() {
     if (!this.hot.view) {
@@ -31536,25 +31583,25 @@ var $NestedHeaders = NestedHeaders;
     }
   },
   checkForFixedColumnsCollision: function() {
-    var $__6 = this;
+    var $__7 = this;
     var fixedColumnsLeft = this.hot.getSettings().fixedColumnsLeft;
     arrayEach(this.colspanArray, (function(value, i) {
-      if ($__6.getNestedParent(i, fixedColumnsLeft) !== fixedColumnsLeft) {
+      if ($__7.getNestedParent(i, fixedColumnsLeft) !== fixedColumnsLeft) {
         console.warn('You have declared a Nested Header overlapping the Fixed Columns section - it may lead to visual glitches. ' + 'To prevent that kind of problems, split the nested headers between the fixed and non-fixed columns.');
       }
     }));
   },
   checkForOverlappingHeaders: function() {
-    var $__6 = this;
+    var $__7 = this;
     arrayEach(this.colspanArray, (function(level, i) {
-      arrayEach($__6.colspanArray[i], (function(header, j) {
+      arrayEach($__7.colspanArray[i], (function(header, j) {
         if (header.colspan > 1) {
-          var row = $__6.levelToRowCoords(i);
-          var childHeaders = $__6.getChildHeaders(row, j);
+          var row = $__7.levelToRowCoords(i);
+          var childHeaders = $__7.getChildHeaders(row, j);
           if (childHeaders.length > 0) {
             var childColspanSum = 0;
             arrayEach(childHeaders, (function(col, i) {
-              childColspanSum += $__6.getColspan(row + 1, col);
+              childColspanSum += $__7.getColspan(row + 1, col);
             }));
             if (childColspanSum > header.colspan) {
               console.warn('Your Nested Headers plugin setup contains overlapping headers. This kind of configuration is ' + 'currently not supported and might result in glitches.');
@@ -31566,7 +31613,7 @@ var $NestedHeaders = NestedHeaders;
     }));
   },
   setupColspanArray: function() {
-    var $__6 = this;
+    var $__7 = this;
     function checkIfExists(array, index) {
       if (!array[index]) {
         array[index] = [];
@@ -31574,29 +31621,29 @@ var $NestedHeaders = NestedHeaders;
     }
     objectEach(this.settings, (function(levelValue, level) {
       objectEach(levelValue, (function(val, col, levelValue) {
-        checkIfExists($__6.colspanArray, level);
+        checkIfExists($__7.colspanArray, level);
         if (levelValue[col].colspan === void 0) {
-          $__6.colspanArray[level].push({
+          $__7.colspanArray[level].push({
             label: levelValue[col] || '',
             colspan: 1,
             hidden: false
           });
         } else {
           var colspan = levelValue[col].colspan || 1;
-          $__6.colspanArray[level].push({
+          $__7.colspanArray[level].push({
             label: levelValue[col].label || '',
             colspan: colspan,
             hidden: false
           });
-          $__6.fillColspanArrayWithDummies(colspan, level);
+          $__7.fillColspanArrayWithDummies(colspan, level);
         }
       }));
     }));
   },
   fillColspanArrayWithDummies: function(colspan, level) {
-    var $__6 = this;
+    var $__7 = this;
     rangeEach(0, colspan - 2, (function(i) {
-      $__6.colspanArray[level].push({
+      $__7.colspanArray[level].push({
         label: '',
         colspan: 1,
         hidden: true
@@ -31647,6 +31694,9 @@ var $NestedHeaders = NestedHeaders;
     return row + this.columnHeaderLevelCount;
   },
   getNestedParent: function(level, column) {
+    if (level < 0) {
+      return false;
+    }
     var colspan = this.colspanArray[level][column] ? this.colspanArray[level][column].colspan : 1;
     var hidden = this.colspanArray[level][column] ? this.colspanArray[level][column].hidden : false;
     if (colspan > 1 || (colspan === 1 && hidden === false)) {
@@ -31682,10 +31732,10 @@ var $NestedHeaders = NestedHeaders;
     return childHeaderRange;
   },
   fillTheRemainingColspans: function() {
-    var $__6 = this;
+    var $__7 = this;
     objectEach(this.settings, (function(levelValue, level) {
-      rangeEach($__6.colspanArray[level].length - 1, $__6.hot.countCols() - 1, (function(col) {
-        $__6.colspanArray[level].push({
+      rangeEach($__7.colspanArray[level].length - 1, $__7.hot.countCols() - 1, (function(col) {
+        $__7.colspanArray[level].push({
           label: levelValue[col] || '',
           colspan: 1,
           hidden: false
@@ -31694,7 +31744,7 @@ var $NestedHeaders = NestedHeaders;
     }));
   },
   updateHeadersHighlight: function() {
-    var $__6 = this;
+    var $__7 = this;
     var selection = this.hot.getSelected();
     if (selection === void 0) {
       return;
@@ -31706,12 +31756,12 @@ var $NestedHeaders = NestedHeaders;
     var to = Math.max(selection[1], selection[3]);
     var levelLimit = selectionByHeader ? -1 : this.columnHeaderLevelCount - 1;
     rangeEach(from, to, (function(column) {
-      var $__10 = function(level) {
-        var visibleColumnIndex = $__6.getNestedParent(level, column);
+      var $__11 = function(level) {
+        var visibleColumnIndex = $__7.getNestedParent(level, column);
         var topTH = wtOverlays.topOverlay ? wtOverlays.topOverlay.clone.wtTable.getColumnHeader(visibleColumnIndex, level) : void 0;
         var topLeftTH = wtOverlays.topLeftCornerOverlay ? wtOverlays.topLeftCornerOverlay.clone.wtTable.getColumnHeader(visibleColumnIndex, level) : void 0;
         var listTH = [topTH, topLeftTH];
-        var colspanLen = $__6.getColspan(level - $__6.columnHeaderLevelCount, visibleColumnIndex);
+        var colspanLen = $__7.getColspan(level - $__7.columnHeaderLevelCount, visibleColumnIndex);
         var isInSelection = visibleColumnIndex >= from && (visibleColumnIndex + colspanLen - 1) <= to;
         arrayEach(listTH, (function(TH, index, array) {
           if (TH === void 0) {
@@ -31726,16 +31776,16 @@ var $NestedHeaders = NestedHeaders;
           }
         }));
       };
-      for (var level = $__6.columnHeaderLevelCount - 1; level > -1; level--) {
-        $__10(level);
+      for (var level = $__7.columnHeaderLevelCount - 1; level > -1; level--) {
+        $__11(level);
       }
     }));
   },
   onAfterViewportColumnCalculatorOverride: function(calc) {
-    var $__6 = this;
+    var $__7 = this;
     var newStartColumn = calc.startColumn;
     rangeEach(0, Math.max(this.columnHeaderLevelCount - 1, 0), (function(l) {
-      var startColumnNestedParent = $__6.getNestedParent(l, calc.startColumn);
+      var startColumnNestedParent = $__7.getNestedParent(l, calc.startColumn);
       if (startColumnNestedParent < calc.startColumn) {
         var earlierColumn = Math.min(newStartColumn, startColumnNestedParent);
         newStartColumn = earlierColumn;
@@ -31754,11 +31804,11 @@ var $NestedHeaders = NestedHeaders;
     }
   },
   onBeforeOnCellMouseOver: function(event, coords, TD, blockCalculations) {
-    var $__9;
+    var $__10;
     if (coords.row < 0 && coords.col >= 0 && this.hot.view.isMouseDown()) {
-      var $__8 = this.hot.getSelectedRange(),
-          from = $__8.from,
-          to = $__8.to;
+      var $__9 = this.hot.getSelectedRange(),
+          from = $__9.from,
+          to = $__9.to;
       var colspan = this.getColspan(coords.row, coords.col);
       var lastColIndex = coords.col + colspan - 1;
       var changeDirection = false;
@@ -31772,7 +31822,7 @@ var $NestedHeaders = NestedHeaders;
         }
       }
       if (changeDirection) {
-        ($__9 = [to.col, from.col], from.col = $__9[0], to.col = $__9[1], $__9);
+        ($__10 = [to.col, from.col], from.col = $__10[0], to.col = $__10[1], $__10);
       }
       if (colspan > 1) {
         blockCalculations.column = true;
@@ -31802,6 +31852,7 @@ var $NestedHeaders = NestedHeaders;
     this.columnHeaderLevelCount = this.hot.view.wt.getSetting('columnHeaders').length;
     this.fillTheRemainingColspans();
     this.checkForOverlappingHeaders();
+    this.ghostTable.buildWidthsMapper();
   },
   onAfterGetColumnHeaderRenderers: function(renderersArray) {
     if (renderersArray) {
@@ -31814,6 +31865,10 @@ var $NestedHeaders = NestedHeaders;
     }
     this.updateHeadersHighlight();
   },
+  onModifyColWidth: function(width, column) {
+    var cachedWidth = this.ghostTable.widthsCache[column];
+    return width > cachedWidth ? width : cachedWidth;
+  },
   destroy: function() {
     this.settings = null;
     this.columnHeaderLevelCount = null;
@@ -31825,7 +31880,88 @@ var $NestedHeaders = NestedHeaders;
 registerPlugin('nestedHeaders', NestedHeaders);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":62}],214:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":62,"utils/ghostTable":214}],214:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  GhostTable: {get: function() {
+      return GhostTable;
+    }},
+  __esModule: {value: true}
+});
+var $__handsontable_47_helpers_47_dom_47_element__;
+var fastInnerHTML = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).fastInnerHTML;
+var GhostTable = function GhostTable(plugin) {
+  this.nestedHeaders = plugin;
+  this.container = void 0;
+  this.widthsCache = [];
+};
+($traceurRuntime.createClass)(GhostTable, {
+  buildWidthsMapper: function() {
+    this.container = document.createElement('div');
+    this.buildGhostTable(this.container);
+    this.nestedHeaders.hot.rootElement.appendChild(this.container);
+    var columns = this.container.querySelectorAll('tr:last-of-type td');
+    var maxColumns = columns.length;
+    for (var i = 0; i < maxColumns; i++) {
+      this.widthsCache.push(columns[i].offsetWidth);
+    }
+    this.container.parentNode.removeChild(this.container);
+    this.container = null;
+    this.nestedHeaders.hot.render();
+  },
+  buildGhostTable: function(container) {
+    var d = document;
+    var fragment = d.createDocumentFragment();
+    var table = d.createElement('table');
+    var lastRowColspan = false;
+    var isDropdownEnabled = !!this.nestedHeaders.hot.getSettings().dropdownMenu;
+    var maxRows = this.nestedHeaders.colspanArray.length;
+    var maxCols = this.nestedHeaders.hot.countCols();
+    var lastRowIndex = maxRows - 1;
+    for (var row = 0; row < maxRows; row++) {
+      var tr = d.createElement('tr');
+      lastRowColspan = false;
+      for (var col = 0; col < maxCols; col++) {
+        var td = d.createElement('td');
+        var headerObj = this.nestedHeaders.colspanArray[row][col];
+        if (headerObj && !headerObj.hidden) {
+          if (row === lastRowIndex) {
+            if (headerObj.colspan > 1) {
+              lastRowColspan = true;
+            }
+            if (isDropdownEnabled) {
+              headerObj.label += '<button class="changeType"></button>';
+            }
+          }
+          fastInnerHTML(td, headerObj.label);
+          td.colSpan = headerObj.colspan;
+          tr.appendChild(td);
+        }
+      }
+      table.appendChild(tr);
+    }
+    if (lastRowColspan) {
+      {
+        var tr$__2 = d.createElement('tr');
+        for (var col$__3 = 0; col$__3 < maxCols; col$__3++) {
+          var td$__4 = d.createElement('td');
+          tr$__2.appendChild(td$__4);
+        }
+        table.appendChild(tr$__2);
+      }
+    }
+    fragment.appendChild(table);
+    container.appendChild(fragment);
+  },
+  clear: function() {
+    this.container = null;
+    this.widthsCache.length = 0;
+  }
+}, {});
+;
+
+//# 
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46}],215:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DataManager: {get: function() {
@@ -32195,7 +32331,7 @@ var DataManager = function DataManager(nestedRowsPlugin, hotInstance, sourceData
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52}],215:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52}],216:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   NestedRows: {get: function() {
@@ -32627,7 +32763,7 @@ var $NestedRows = NestedRows;
 registerPlugin('nestedRows', NestedRows);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":62,"data/dataManager":214,"ui/collapsing":217,"ui/contextMenu":218,"ui/headers":219}],216:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":62,"data/dataManager":215,"ui/collapsing":218,"ui/contextMenu":219,"ui/headers":220}],217:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BaseUI: {get: function() {
@@ -32643,7 +32779,7 @@ var BaseUI = function BaseUI(pluginInstance, hotInstance) {
 ;
 
 //# 
-},{}],217:[function(_dereq_,module,exports){
+},{}],218:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   CollapsingUI: {get: function() {
@@ -32949,7 +33085,7 @@ var $CollapsingUI = CollapsingUI;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"_base":216,"headers":219}],218:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"_base":217,"headers":220}],219:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ContextMenuUI: {get: function() {
@@ -33036,7 +33172,7 @@ var $ContextMenuUI = ContextMenuUI;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"_base":216}],219:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"_base":217}],220:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   HeadersUI: {get: function() {
@@ -33116,7 +33252,7 @@ var $HeadersUI = HeadersUI;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"_base":216}],220:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":46,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"_base":217}],221:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   RowsMapper: {get: function() {
@@ -33158,7 +33294,7 @@ mixin(RowsMapper, arrayMapper);
 Handsontable.utils.TrimRowsRowsMapper = RowsMapper;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":56,"../../browser":137}],221:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":56,"../../browser":137}],222:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   TrimRows: {get: function() {
@@ -33309,7 +33445,7 @@ var $TrimRows = TrimRows;
 registerPlugin('trimRows', TrimRows);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":62,"rowsMapper":220}],"SheetClip":[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":51,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":61,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":62,"rowsMapper":221}],"SheetClip":[function(_dereq_,module,exports){
 /**
  * SheetClip - Spreadsheet Clipboard Parser
  * version 0.2
@@ -34814,5 +34950,5 @@ if (typeof exports !== "undefined") {
     exports.Error = jsonpatch.Error;
 }
 
-},{}]},{},[137,63,65,64,66,109,110,111,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,98,99,100,101,102,104,105,106,107,108,112,113,114,115,131,132,133,134,118,119,120,121,122,123,31,35,32,33,40,34,36,37,38,39,138,139,140,141,142,213,207,208,209,143,144,145,146,147,148,150,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,183,184,185,186,187,188,189,190,191,192,194,195,196,197,198,199,200,201,202,203,204,205,206,210,211,212,214,215,217,218,219,220,221])(137)
+},{}]},{},[137,63,65,64,66,109,110,111,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,98,99,100,101,102,104,105,106,107,108,112,113,114,115,131,132,133,134,118,119,120,121,122,123,31,35,32,33,40,34,36,37,38,39,138,139,140,141,142,213,214,207,208,209,143,144,145,146,147,148,150,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,183,184,185,186,187,188,189,190,191,192,194,195,196,197,198,199,200,201,202,203,204,205,206,210,211,212,215,216,218,219,220,221,222])(137)
 });
