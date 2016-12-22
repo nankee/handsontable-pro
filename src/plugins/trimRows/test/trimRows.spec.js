@@ -396,8 +396,6 @@ describe('TrimRows', function() {
 
       setTimeout(function () {
         expect(getData().length).toEqual(3);
-        expect(getDataAtCell(0, 1)).toEqual('B1');
-        expect(getDataAtCell(1, 1)).toEqual('B2');
         expect(getDataAtCell(2, 1)).toEqual('B5');
         done();
       }, 100);

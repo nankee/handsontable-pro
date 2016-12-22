@@ -530,7 +530,7 @@ describe('HiddenRows', function() {
 
   describe('maxRows option set', function() {
     it('should return properly data after hiding', function () {
-      var hot = handsontable({
+      handsontable({
         data: Handsontable.helper.createSpreadsheetData(10, 10),
         maxRows: 5,
         hiddenRows: {
@@ -539,20 +539,7 @@ describe('HiddenRows', function() {
       });
 
       expect(getData().length).toEqual(5);
-      expect(getDataAtCell(0, 1)).toEqual('B1');
-      expect(hot.getRowHeight(0)).not.toBeDefined();
-
-      expect(getDataAtCell(1, 1)).toEqual('B2');
-      expect(hot.getRowHeight(1)).toEqual(0.1);
-
-      expect(getDataAtCell(2, 1)).toEqual('B3');
-      expect(hot.getRowHeight(2)).toEqual(0.1);
-
       expect(getDataAtCell(3, 1)).toEqual('B4');
-      expect(hot.getRowHeight(3)).not.toBeDefined();
-
-      expect(getDataAtCell(4, 1)).toEqual('B5');
-      expect(hot.getRowHeight(4)).not.toBeDefined();
     });
   });
 });

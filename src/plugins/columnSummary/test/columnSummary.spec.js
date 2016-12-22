@@ -576,27 +576,15 @@ describe("ColumnSummarySpec", function() {
       var rows = 9;
       var columns = 5;
 
-      // [
-      //   [1, 1, 1, 1, 1],
-      //   [2, 2, 2, 2, 2],
-      //   [3, 3, 3, 3, 3],
-      //   [4, 4, 4, 4, 4],
-      //   [5, 5, 5, 5, 5],
-      //
-      //   [6, 6, 6, 6, 6],
-      //   [7, 7, 7, 7, 7],
-      //   [8, 8, 8, 8, 8].
-      //   [9, 9, 9, 9, 9]
-      // ]
+      var summaryTypes = ['sum', 'min', 'max', 'count', 'average'];
 
-      var hot = handsontable({
+      handsontable({
         data: createNumericData(rows, columns),
         rowHeaders: true,
-        colHeaders: ['sum', 'min', 'max', 'count', 'average'],
+        colHeaders: summaryTypes,
         maxRows: 5,
         columnSummary: function() {
           var configArray = [];
-          var summaryTypes = ['sum', 'min', 'max', 'count', 'average'];
           for (var i = 0; i < columns; i++) {
             configArray.push({
               sourceColumn: i,
