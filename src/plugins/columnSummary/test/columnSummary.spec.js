@@ -304,7 +304,7 @@ describe("ColumnSummarySpec", function() {
         }
       });
 
-        expect(getDataAtCell(14,0)).toEqual(3);
+      expect(getDataAtCell(14,0)).toEqual(3);
 
     });
   });
@@ -571,4 +571,38 @@ describe("ColumnSummarySpec", function() {
     });
   });
 
+  describe('maxRows options set', function() {
+    it('should apply summary operation only on rows which are < maxRows', function() {
+      var rows = 9;
+      var columns = 5;
+
+      var summaryTypes = ['sum', 'min', 'max', 'count', 'average'];
+
+      handsontable({
+        data: createNumericData(rows, columns),
+        rowHeaders: true,
+        colHeaders: summaryTypes,
+        maxRows: 5,
+        columnSummary: function() {
+          var configArray = [];
+          for (var i = 0; i < columns; i++) {
+            configArray.push({
+              sourceColumn: i,
+              destinationRow: 0,
+              destinationColumn: i,
+              type: summaryTypes[i],
+              forceNumeric: true
+            });
+          }
+          return configArray;
+        }
+      });
+
+      expect(getDataAtCell(0, 0)).toEqual(15);
+      expect(getDataAtCell(0, 1)).toEqual(1);
+      expect(getDataAtCell(0, 2)).toEqual(5);
+      expect(getDataAtCell(0, 3)).toEqual(5);
+      expect(getDataAtCell(0, 4)).toEqual(3);
+    });
+  });
 });
