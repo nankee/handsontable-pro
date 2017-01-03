@@ -50,11 +50,13 @@ class ColumnSummary extends BasePlugin {
     this.addHook('beforeCreateCol', (index, amount, source) => this.endpoints.resetSetupBeforeStructureAlteration('insert_col', index, amount, null, source));
     this.addHook('beforeRemoveRow', (...args) => this.endpoints.resetSetupBeforeStructureAlteration('remove_row', ...args));
     this.addHook('beforeRemoveCol', (...args) => this.endpoints.resetSetupBeforeStructureAlteration('remove_col', ...args));
+    this.addHook('beforeRowMove', (...args) => this.onBeforeRowMove(...args));
 
     this.addHook('afterCreateRow', (index, amount, source) => this.endpoints.resetSetupAfterStructureAlteration('insert_row', index, amount, null, source));
     this.addHook('afterCreateCol', (index, amount, source) => this.endpoints.resetSetupAfterStructureAlteration('insert_col', index, amount, null, source));
     this.addHook('afterRemoveRow', (...args) => this.endpoints.resetSetupAfterStructureAlteration('remove_row', ...args));
     this.addHook('afterRemoveCol', (...args) => this.endpoints.resetSetupAfterStructureAlteration('remove_col', ...args));
+    this.addHook('afterRowMove', (...args) => this.onAfterRowMove(...args));
 
     super.enablePlugin();
   }
@@ -66,29 +68,6 @@ class ColumnSummary extends BasePlugin {
     this.endpoints = null;
     this.settings = null;
     this.currentEndpoint = null;
-  }
-
-  /**
-   * afterInit hook callback.
-   *
-   * @private
-   */
-  onAfterInit() {
-    this.endpoints.endpoints = this.endpoints.parseSettings();
-    this.endpoints.refreshAllEndpoints(true);
-  }
-
-  /**
-   * afterChange hook callback.
-   *
-   * @private
-   * @param {Array} changes
-   * @param {String} source
-   */
-  onAfterChange(changes, source) {
-    if (changes && source !== 'columnSummary' && source !== 'loadData') {
-      this.endpoints.refreshChangedEndpoints(changes);
-    }
   }
 
   /**
@@ -162,7 +141,7 @@ class ColumnSummary extends BasePlugin {
     } while (i >= rowRange[0]);
 
     //Workaround for e.g. 802.2 + 1.1 = 803.3000000000001
-    return Math.round(sum * 10 * biggestDecimalPlacesCount) / 10 * biggestDecimalPlacesCount;
+    return Math.round(sum * Math.pow(10, biggestDecimalPlacesCount)) / Math.pow(10, biggestDecimalPlacesCount);
   }
 
   /**
@@ -305,9 +284,11 @@ class ColumnSummary extends BasePlugin {
    * @returns {String} The cell value.
    */
   getCellValue(row, col) {
-    let cellValue = this.hot.getSourceDataAtCell(row, col);
     let visualRowIndex = this.endpoints.getVisualRowIndex(row);
-    let cellClassName = this.hot.getCellMeta(visualRowIndex, col).className || '';
+    let visualColumnIndex = this.endpoints.getVisualColumnIndex(col);
+
+    let cellValue = this.hot.getSourceDataAtCell(row, col);
+    let cellClassName = this.hot.getCellMeta(visualRowIndex, visualColumnIndex).className || '';
 
     if (cellClassName.indexOf('columnSummaryResult') > -1) {
       return null;
@@ -318,7 +299,7 @@ class ColumnSummary extends BasePlugin {
         cellValue = cellValue.replace(/,/, '.');
       }
 
-      cellValue = parseFloat(cellValue, 10);
+      cellValue = parseFloat(cellValue);
     }
 
     if (isNaN(cellValue)) {
@@ -330,6 +311,48 @@ class ColumnSummary extends BasePlugin {
     return cellValue;
   }
 
+  /**
+   * `afterInit` hook callback.
+   *
+   * @private
+   */
+  onAfterInit() {
+    this.endpoints.endpoints = this.endpoints.parseSettings();
+    this.endpoints.refreshAllEndpoints(true);
+  }
+
+  /**
+   * `afterChange` hook callback.
+   *
+   * @private
+   * @param {Array} changes
+   * @param {String} source
+   */
+  onAfterChange(changes, source) {
+    if (changes && source !== 'columnSummary' && source !== 'loadData') {
+      this.endpoints.refreshChangedEndpoints(changes);
+    }
+  }
+
+  /**
+   * `beforeRowMove` hook callback.
+   *
+   * @param {Array} rows Array of logical rows to be moved.
+   * @param {Number} target Index of the destination row.
+   */
+  onBeforeRowMove(rows, target) {
+    this.endpoints.resetSetupBeforeStructureAlteration('move_row', rows[0], rows.length, rows, this.pluginName);
+  }
+
+  /**
+   * `afterRowMove` hook callback.
+   *
+   * @param {Array} rows Array of logical rows that were moved.
+   * @param {Number} target Index of the destination row.
+   */
+  onAfterRowMove(rows, target) {
+    this.endpoints.resetSetupAfterStructureAlteration('move_row', target, rows.length, rows, this.pluginName);
+  }
 }
 
 export {ColumnSummary};
