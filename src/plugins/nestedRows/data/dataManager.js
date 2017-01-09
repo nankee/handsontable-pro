@@ -1,6 +1,7 @@
 import {rangeEach} from 'handsontable/helpers/number';
-import {objectEach} from 'handsontable/helpers/object';
+import {objectEach, extend} from 'handsontable/helpers/object';
 import {arrayEach} from 'handsontable/helpers/array';
+import {getTranslator} from 'handsontable/utils/recordTranslator';
 
 /**
  * Class responsible for making data operations.
@@ -45,6 +46,13 @@ class DataManager {
       rows: [],
       nodeInfo: new WeakMap()
     };
+    /**
+     * A `recordTranslator` instance.
+     *
+     * @private
+     * @type {Object}
+     */
+    this.recordTranslator = getTranslator(this.hot);
   }
 
   /**
@@ -619,6 +627,20 @@ class DataManager {
 
     fromParent.__children.splice(indexInFromParent, 1);
     toParent.__children.splice(indexInToParent, 0, elemToMove[0]);
+  }
+
+  /**
+   * Move the cell meta
+   *
+   * @private
+   * @param {Number} fromIndex Index of the starting row.
+   * @param {Number} toIndex Index of the ending row.
+   */
+  moveCellMeta(fromIndex, toIndex) {
+    const rowOfMeta = this.hot.getCellMetaAtRow(fromIndex);
+
+    this.hot.spliceCellsMeta(toIndex, 0, rowOfMeta);
+    this.hot.spliceCellsMeta(fromIndex + (fromIndex < toIndex ? 0 : 1), 1);
   }
 
   /**

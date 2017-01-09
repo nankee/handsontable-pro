@@ -1,5 +1,45 @@
 describe("ColumnSummarySpec", function() {
   var id = 'testContainer';
+  var columnSummaryFunction = function() {
+    // We're assuming there are two levels, and the upper level has the summary results, while its children contain the calculation data.
+    var endpoints = [];
+    var nestedRowsPlugin = this.hot.getPlugin('nestedRows');
+    var getRowIndex = nestedRowsPlugin.dataManager.getRowIndex.bind(nestedRowsPlugin.dataManager);
+    var nestedRowsCache = null;
+    var tempEndpoint = null;
+    var resultColumn = 1;
+
+    if (nestedRowsPlugin.isEnabled()) {
+      nestedRowsCache = this.hot.getPlugin('nestedRows').dataManager.cache;
+    } else {
+      return;
+    }
+
+    for (var i = 0; i < nestedRowsCache.levels[0].length; i++) {
+      tempEndpoint = {};
+
+      if (!nestedRowsCache.levels[0][i].__children || nestedRowsCache.levels[0][i].__children.length === 0) {
+        continue;
+      }
+
+      tempEndpoint.destinationColumn = resultColumn;
+      tempEndpoint.destinationRow = getRowIndex(nestedRowsCache.levels[0][i]);
+      tempEndpoint.type = 'sum';
+      tempEndpoint.forceNumeric = true;
+      tempEndpoint.ranges = [];
+
+      tempEndpoint.ranges.push([
+        getRowIndex(nestedRowsCache.levels[0][i].__children[0]),
+        getRowIndex(nestedRowsCache.levels[0][i].__children[nestedRowsCache.levels[0][i].__children.length - 1])
+      ]);
+
+      endpoints.push(tempEndpoint);
+      tempEndpoint = null;
+    }
+
+
+    return endpoints;
+  };
 
   function getNestedData() {
     return [
@@ -438,7 +478,8 @@ describe("ColumnSummarySpec", function() {
     it('should shift the endpoint coordinates when a row was removed above an endpoint', function() {
       var hot = handsontable({
         data: createNumericData(40, 40),
-        height: 200,
+        height: 520,
+        rowHeaders: true,
         width: 200,
         columnSummary: [
           {
@@ -485,6 +526,109 @@ describe("ColumnSummarySpec", function() {
       expect(getCellMeta(0, 2).readOnly).toEqual(true);
     });
 
+    it('should modify the calculation row range when a row was moved outside the range', function() {
+      var hot = handsontable({
+        data: createNumericData(40, 40),
+        height: 200,
+        width: 200,
+        manualRowMove: true,
+        columnSummary: [
+          {
+            destinationColumn: 3,
+            destinationRow: 7,
+            ranges: [
+              [0, 6]
+            ],
+            type: 'sum'
+          }]
+      });
+
+      expect(JSON.stringify(hot.getPlugin('columnSummary').endpoints.getEndpoint(0).ranges)).toEqual('[[0,6]]');
+      hot.getPlugin('manualRowMove').moveRow(3, 10);
+      expect(JSON.stringify(hot.getPlugin('columnSummary').endpoints.getEndpoint(0).ranges)).toEqual('[[0,2],[4,6]]');
+    });
+
+    it('should modify the calculation row range when a row was moved into the range', function() {
+      var hot = handsontable({
+        data: createNumericData(40, 40),
+        height: 200,
+        width: 200,
+        manualRowMove: true,
+        columnSummary: [
+          {
+            destinationColumn: 3,
+            destinationRow: 7,
+            ranges: [
+              [0, 6]
+            ],
+            type: 'sum'
+          }]
+      });
+
+      expect(JSON.stringify(hot.getPlugin('columnSummary').endpoints.getEndpoint(0).ranges)).toEqual('[[0,6]]');
+      hot.getPlugin('manualRowMove').moveRow(10, 3);
+      expect(JSON.stringify(hot.getPlugin('columnSummary').endpoints.getEndpoint(0).ranges)).toEqual('[[0,2],[10,10],[3,6]]');
+    });
+
+    it('should shift the visual calculation result position when a row was moved outside the endpoint range', function() {
+      var hot = handsontable({
+        data: createNumericData(40, 40),
+        height: 200,
+        width: 200,
+        manualRowMove: true,
+        columnSummary: [
+          {
+            destinationColumn: 3,
+            destinationRow: 7,
+            ranges: [
+              [0, 6]
+            ],
+            type: 'sum'
+          }]
+      });
+
+      expect(this.$container.find('.columnSummaryResult').size()).toEqual(1);
+      expect(this.$container.find('.htDimmed').size()).toEqual(1);
+      expect($(hot.getCell(7, 3)).hasClass('columnSummaryResult')).toBe(true);
+      expect($(hot.getCell(7, 3)).hasClass('htDimmed')).toBe(true);
+
+      hot.getPlugin('manualRowMove').moveRow(3, 10);
+
+      expect(this.$container.find('.columnSummaryResult').size()).toEqual(1);
+      expect(this.$container.find('.htDimmed').size()).toEqual(1);
+      expect($(hot.getCell(6, 3)).hasClass('columnSummaryResult')).toBe(true);
+      expect($(hot.getCell(6, 3)).hasClass('htDimmed')).toBe(true);
+    });
+
+    it('should shift the visual calculation result position when a row was moved inside the endpoint range', function() {
+      var hot = handsontable({
+        data: createNumericData(40, 40),
+        height: 200,
+        width: 200,
+        manualRowMove: true,
+        columnSummary: [
+          {
+            destinationColumn: 3,
+            destinationRow: 7,
+            ranges: [
+              [0, 6]
+            ],
+            type: 'sum'
+          }]
+      });
+
+      expect(this.$container.find('.columnSummaryResult').size()).toEqual(1);
+      expect(this.$container.find('.htDimmed').size()).toEqual(1);
+      expect($(hot.getCell(7, 3)).hasClass('columnSummaryResult')).toBe(true);
+      expect($(hot.getCell(7, 3)).hasClass('htDimmed')).toBe(true);
+
+      hot.getPlugin('manualRowMove').moveRow(10, 3);
+
+      expect(this.$container.find('.columnSummaryResult').size()).toEqual(1);
+      expect(this.$container.find('.htDimmed').size()).toEqual(1);
+      expect($(hot.getCell(8, 3)).hasClass('columnSummaryResult')).toBe(true);
+      expect($(hot.getCell(8, 3)).hasClass('htDimmed')).toBe(true);
+    });
   });
 
   describe('compatibility with other plugins', function() {
@@ -496,46 +640,7 @@ describe("ColumnSummarySpec", function() {
           width: 200,
           rowHeaders: true,
           nestedRows: true,
-          columnSummary: function() {
-            // We're assuming there are two levels, and the upper level has the summary results, while its children contain the calculation data.
-            var endpoints = [];
-            var nestedRowsPlugin = this.hot.getPlugin('nestedRows');
-            var getRowIndex = nestedRowsPlugin.dataManager.getRowIndex.bind(nestedRowsPlugin.dataManager);
-            var nestedRowsCache = null;
-            var tempEndpoint = null;
-            var resultColumn = 1;
-
-            if (nestedRowsPlugin.isEnabled()) {
-              nestedRowsCache = this.hot.getPlugin('nestedRows').dataManager.cache;
-            } else {
-              return;
-            }
-
-            for (var i = 0; i < nestedRowsCache.levels[0].length; i++) {
-              tempEndpoint = {};
-
-              if (!nestedRowsCache.levels[0][i].__children || nestedRowsCache.levels[0][i].__children.length === 0) {
-                continue;
-              }
-
-              tempEndpoint.destinationColumn = resultColumn;
-              tempEndpoint.destinationRow = getRowIndex(nestedRowsCache.levels[0][i]);
-              tempEndpoint.type = 'sum';
-              tempEndpoint.forceNumeric = true;
-              tempEndpoint.ranges = [];
-
-              tempEndpoint.ranges.push([
-                getRowIndex(nestedRowsCache.levels[0][i].__children[0]),
-                getRowIndex(nestedRowsCache.levels[0][i].__children[nestedRowsCache.levels[0][i].__children.length - 1])
-              ]);
-
-              endpoints.push(tempEndpoint);
-              tempEndpoint = null;
-            }
-
-
-            return endpoints;
-          }
+          columnSummary: columnSummaryFunction
         });
 
         var nestedRowsPlugin = hot.getPlugin('nestedRows');
@@ -569,8 +674,32 @@ describe("ColumnSummarySpec", function() {
         }, 300);
       });
     });
-  });
 
+    it('should calculate the endpoints properly after moving rows between groups', function() {
+      var hot = handsontable({
+        data: getNestedData(),
+        height: 200,
+        width: 200,
+        rowHeaders: true,
+        nestedRows: true,
+        columnSummary: columnSummaryFunction
+      });
+
+      var nestedRowsPlugin = hot.getPlugin('nestedRows');
+
+      expect(hot.getDataAtCell(0, 1)).toEqual(106);
+      expect(hot.getDataAtCell(4, 1)).toEqual(3996);
+      expect(this.$container.find('.columnSummaryResult').size()).toEqual(3);
+      expect(this.$container.find('.htDimmed').size()).toEqual(3);
+
+      hot.getPlugin('manualRowMove').moveRow(2, 7);
+
+      expect(hot.getDataAtCell(0, 1)).toEqual(70);
+      expect(hot.getDataAtCell(3, 1)).toEqual(4032);
+      expect(this.$container.find('.columnSummaryResult').size()).toEqual(3);
+      expect(this.$container.find('.htDimmed').size()).toEqual(3);
+    });
+  });
   describe('maxRows options set', function() {
     it('should apply summary operation only on rows which are < maxRows', function() {
       var rows = 9;
