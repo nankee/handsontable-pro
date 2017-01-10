@@ -23,22 +23,13 @@
 var fs = require('fs');
 
 module.exports = function(grunt) {
-  // handsontable path for npm 2.*
-  var nodeHandsontablePath = 'node_modules/hot-builder/node_modules/handsontable/';
-
-  try {
-    fs.statSync(nodeHandsontablePath);
-  } catch(ex) {
-    // handsontable path for npm >=3.10.*
-    nodeHandsontablePath = 'node_modules/handsontable/';
-  }
-
   var pkg = grunt.file.readJSON('package.json');
 
   grunt.initConfig({
     pkg: pkg,
 
     meta: {
+      handsontablePath: '',
       src: [
         'src/*.js',
         'src/editors/*.js',
@@ -86,30 +77,30 @@ module.exports = function(grunt) {
         ],
         options: {
           specs: [
-            nodeHandsontablePath + 'test/spec/**/*.spec.js',
-            nodeHandsontablePath + 'test/spec/!(mobile)*/*.spec.js',
-            nodeHandsontablePath + 'src/plugins/*/test/*.spec.js',
-            nodeHandsontablePath + 'test/spec/MemoryLeakTest.js',
+            '<%= meta.handsontablePath %>/test/spec/**/*.spec.js',
+            '<%= meta.handsontablePath %>/test/spec/!(mobile)*/*.spec.js',
+            '<%= meta.handsontablePath %>/src/plugins/*/test/*.spec.js',
+            '<%= meta.handsontablePath %>/test/spec/MemoryLeakTest.js',
           ],
           styles: [
-            nodeHandsontablePath + 'test/lib/normalize.css',
+            '<%= meta.handsontablePath %>/test/lib/normalize.css',
             'dist/pikaday/pikaday.css',
             'dist/handsontable.min.css',
           ],
           vendor: [
-            nodeHandsontablePath + 'test/lib/jquery.min.js',
-            nodeHandsontablePath + 'test/lib/jquery.simulate.js',
+            '<%= meta.handsontablePath %>/test/lib/jquery.min.js',
+            '<%= meta.handsontablePath %>/test/lib/jquery.simulate.js',
             'dist/hot-formula-parser/formula-parser.js',
             'dist/numbro/numbro.js',
             'dist/numbro/languages.js',
             'dist/moment/moment.js',
             'dist/pikaday/pikaday.js',
             'dist/zeroclipboard/ZeroClipboard.js',
-            nodeHandsontablePath + 'demo/js/backbone/lodash.underscore.js',
-            nodeHandsontablePath + 'demo/js/backbone/backbone.js',
+            '<%= meta.handsontablePath %>/demo/js/backbone/lodash.underscore.js',
+            '<%= meta.handsontablePath %>/demo/js/backbone/backbone.js',
           ],
           helpers: [
-            nodeHandsontablePath + 'test/SpecHelper.js',
+            '<%= meta.handsontablePath %>/test/SpecHelper.js',
           ],
         }
       },
@@ -124,13 +115,13 @@ module.exports = function(grunt) {
             'src/3rdparty/walkontable/test/jasmine/spec/**/*.spec.js'
           ],
           styles: [
-            nodeHandsontablePath + 'test/lib/normalize.css',
+            '<%= meta.handsontablePath %>/test/lib/normalize.css',
             'dist/pikaday/pikaday.css',
             'dist/handsontable.css',
           ],
           vendor: [
-            nodeHandsontablePath + 'test/lib/jquery.min.js',
-            nodeHandsontablePath + 'test/lib/jquery.simulate.js',
+            '<%= meta.handsontablePath %>/test/lib/jquery.min.js',
+            '<%= meta.handsontablePath %>/test/lib/jquery.simulate.js',
             'dist/hot-formula-parser/formula-parser.js',
             'dist/numbro/numbro.js',
             'dist/numbro/languages.js',
@@ -139,7 +130,7 @@ module.exports = function(grunt) {
             'dist/zeroclipboard/ZeroClipboard.js',
           ],
           helpers: [
-            nodeHandsontablePath + 'test/SpecHelper.js',
+            '<%= meta.handsontablePath %>/test/SpecHelper.js',
             'src/plugins/*/test/helpers/*.js'
           ],
         }
@@ -156,17 +147,17 @@ module.exports = function(grunt) {
             'src/3rdparty/walkontable/test/jasmine/spec/**/*.spec.js'
           ],
           styles: [
-            nodeHandsontablePath + 'test/lib/normalize.css',
+            '<%= meta.handsontablePath %>/test/lib/normalize.css',
             'dist/pikaday/pikaday.css',
             'dist/handsontable.full.min.css',
           ],
           vendor: [
-            nodeHandsontablePath + 'test/lib/jquery.min.js',
-            nodeHandsontablePath + 'test/lib/jquery.simulate.js',
+            '<%= meta.handsontablePath %>/test/lib/jquery.min.js',
+            '<%= meta.handsontablePath %>/test/lib/jquery.simulate.js',
             'dist/moment/moment.js',
           ],
           helpers: [
-            nodeHandsontablePath + 'test/SpecHelper.js',
+            '<%= meta.handsontablePath %>/test/SpecHelper.js',
             'src/plugins/*/test/helpers/*.js'
           ],
         }
@@ -210,7 +201,22 @@ module.exports = function(grunt) {
   grunt.registerTask('test-free', ['jasmine:free']);
   grunt.registerTask('test-pro', ['jasmine:proStandalone']);
   grunt.registerTask('test-pro-full', ['jasmine:proFull']);
-  grunt.registerTask('test', ['default', 'jasmine:free', 'jasmine:proStandalone', 'jasmine:proFull']);
+  grunt.registerTask('test', ['default', '_prepareHandsontablePath', 'jasmine:free', 'jasmine:proStandalone', 'jasmine:proFull']);
+
+  grunt.registerTask('_prepareHandsontablePath', '', function() {
+    grunt.task.requires('build');
+
+    // handsontable path for npm 2.*
+    var nodeHandsontablePath = 'node_modules/hot-builder/node_modules/handsontable/';
+
+    try {
+      fs.statSync(nodeHandsontablePath);
+    } catch(ex) {
+      // handsontable path for npm >=3.10.*
+      nodeHandsontablePath = 'node_modules/handsontable/';
+    }
+    grunt.config.set('meta.handsontablePath', nodeHandsontablePath);
+  });
 
   grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-contrib-jshint');
