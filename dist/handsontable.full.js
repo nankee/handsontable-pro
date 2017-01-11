@@ -4467,10 +4467,10 @@ var domHelpers = ($__helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"
 var domEventHelpers = ($__helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $__helpers_47_dom_47_event__ && $__helpers_47_dom_47_event__.__esModule && $__helpers_47_dom_47_event__ || {default: $__helpers_47_dom_47_event__});
 var HELPERS = [arrayHelpers, browserHelpers, dataHelpers, dateHelpers, featureHelpers, functionHelpers, mixedHelpers, numberHelpers, objectHelpers, settingHelpers, stringHelpers, unicodeHelpers];
 var DOM = [domHelpers, domEventHelpers];
-Handsontable.buildDate = 'Wed Dec 21 2016 14:03:43 GMT+0100 (CET)';
+Handsontable.buildDate = 'Wed Jan 11 2017 12:17:09 GMT+0100 (CET)';
 Handsontable.packageName = 'handsontable-pro';
-Handsontable.version = '1.8.2';
-var baseVersion = '0.29.2';
+Handsontable.version = '1.9.0';
+var baseVersion = '0.30.0';
 if (!/^@@/.test(baseVersion)) {
   Handsontable.baseVersion = baseVersion;
 }
@@ -4496,7 +4496,7 @@ arrayHelpers.arrayEach(DOM, (function(helper) {
 }));
 
 //# 
-},{"cellTypes":25,"core":26,"es6collections":"es6collections","helpers/array":43,"helpers/browser":44,"helpers/data":45,"helpers/date":46,"helpers/dom/element":47,"helpers/dom/event":48,"helpers/feature":49,"helpers/function":50,"helpers/mixed":51,"helpers/number":52,"helpers/object":53,"helpers/setting":54,"helpers/string":55,"helpers/unicode":56,"moment":"moment","numbro":"numbro","pluginHooks":61,"plugins":62,"plugins/jqueryHandsontable":2,"renderers/_cellDecorator":118,"shims/runtime":125}],25:[function(_dereq_,module,exports){
+},{"cellTypes":25,"core":26,"es6collections":"es6collections","helpers/array":43,"helpers/browser":44,"helpers/data":45,"helpers/date":46,"helpers/dom/element":47,"helpers/dom/event":48,"helpers/feature":49,"helpers/function":50,"helpers/mixed":51,"helpers/number":52,"helpers/object":53,"helpers/setting":54,"helpers/string":55,"helpers/unicode":56,"moment":"moment","numbro":"numbro","pluginHooks":61,"plugins":62,"plugins/jqueryHandsontable":2,"renderers/_cellDecorator":119,"shims/runtime":126}],25:[function(_dereq_,module,exports){
 "use strict";
 var $__helpers_47_browser__,
     $__editors__,
@@ -4606,7 +4606,7 @@ Handsontable.cellLookup = {validator: {
   }};
 
 //# 
-},{"browser":24,"editors":30,"editors/autocompleteEditor":32,"editors/checkboxEditor":33,"editors/dateEditor":34,"editors/dropdownEditor":35,"editors/handsontableEditor":36,"editors/mobileTextEditor":37,"editors/numericEditor":38,"editors/passwordEditor":39,"editors/selectEditor":40,"editors/textEditor":41,"helpers/browser":44,"renderers":117,"renderers/autocompleteRenderer":119,"renderers/checkboxRenderer":120,"renderers/htmlRenderer":121,"renderers/numericRenderer":122,"renderers/passwordRenderer":123,"renderers/textRenderer":124,"validators/autocompleteValidator":132,"validators/dateValidator":133,"validators/numericValidator":134,"validators/timeValidator":135}],26:[function(_dereq_,module,exports){
+},{"browser":24,"editors":30,"editors/autocompleteEditor":32,"editors/checkboxEditor":33,"editors/dateEditor":34,"editors/dropdownEditor":35,"editors/handsontableEditor":36,"editors/mobileTextEditor":37,"editors/numericEditor":38,"editors/passwordEditor":39,"editors/selectEditor":40,"editors/textEditor":41,"helpers/browser":44,"renderers":118,"renderers/autocompleteRenderer":120,"renderers/checkboxRenderer":121,"renderers/htmlRenderer":122,"renderers/numericRenderer":123,"renderers/passwordRenderer":124,"renderers/textRenderer":125,"validators/autocompleteValidator":133,"validators/dateValidator":134,"validators/numericValidator":135,"validators/timeValidator":136}],26:[function(_dereq_,module,exports){
 "use strict";
 var $__browser__,
     $__numbro__,
@@ -4783,10 +4783,10 @@ Handsontable.Core = function Core(rootElement, userSettings) {
         case 'remove_col':
           var logicalColumnIndex = recordTranslator.toPhysicalColumn(index);
           datamap.removeCol(index, amount, source);
-          for (var row$__25 = 0,
-              len$__26 = instance.countSourceRows(); row$__25 < len$__26; row$__25++) {
-            if (priv.cellSettings[row$__25]) {
-              priv.cellSettings[row$__25].splice(logicalColumnIndex, amount);
+          for (var row$__27 = 0,
+              len$__28 = instance.countSourceRows(); row$__27 < len$__28; row$__27++) {
+            if (priv.cellSettings[row$__27]) {
+              priv.cellSettings[row$__27].splice(logicalColumnIndex, amount);
             }
           }
           var fixedColumnsLeft = instance.getSettings().fixedColumnsLeft;
@@ -5349,7 +5349,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
             if (numbro.validate(changes[i][3]) && !isNaN(changes[i][3])) {
               changes[i][3] = parseFloat(changes[i][3]);
             } else {
-              changes[i][3] = numbro().unformat(changes[i][3]);
+              changes[i][3] = numbro().unformat(changes[i][3]) || changes[i][3];
             }
           }
         }
@@ -5424,6 +5424,10 @@ Handsontable.Core = function Core(rootElement, userSettings) {
     selection.refreshBorders(null, true);
     instance.view.wt.wtOverlays.adjustElementsSize();
     Handsontable.hooks.run(instance, 'afterChange', changes, source || 'edit');
+    var activeEditor = instance.getActiveEditor();
+    if (activeEditor && isDefined(activeEditor.refreshValue)) {
+      activeEditor.refreshValue();
+    }
   }
   this.validateCell = function(value, cellProperties, callback, source) {
     var validator = instance.getCellValidator(cellProperties);
@@ -5727,9 +5731,9 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       }
     }
     if (height === null) {
-      var initialStyle$__27 = instance.rootElement.getAttribute('data-initialstyle');
-      if (initialStyle$__27 && (initialStyle$__27.indexOf('height') > -1 || initialStyle$__27.indexOf('overflow') > -1)) {
-        instance.rootElement.setAttribute('style', initialStyle$__27);
+      var initialStyle$__29 = instance.rootElement.getAttribute('data-initialstyle');
+      if (initialStyle$__29 && (initialStyle$__29.indexOf('height') > -1 || initialStyle$__29.indexOf('overflow') > -1)) {
+        instance.rootElement.setAttribute('style', initialStyle$__29);
       } else {
         instance.rootElement.style.height = '';
         instance.rootElement.style.overflow = '';
@@ -5912,6 +5916,13 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       delete priv.cellSettings[row][col][key];
     }
   };
+  this.spliceCellsMeta = function(index, deleteAmount) {
+    var $__26;
+    for (var items = [],
+        $__24 = 2; $__24 < arguments.length; $__24++)
+      items[$__24 - 2] = arguments[$__24];
+    ($__26 = priv.cellSettings).splice.apply($__26, $traceurRuntime.spread([index, deleteAmount], items));
+  };
   this.setCellMetaObject = function(row, col, prop) {
     if (typeof prop === 'object') {
       for (var key in prop) {
@@ -5923,6 +5934,8 @@ Handsontable.Core = function Core(rootElement, userSettings) {
     }
   };
   this.setCellMeta = function(row, col, key, val) {
+    var $__25;
+    ($__25 = recordTranslator.toPhysical(row, col), row = $__25[0], col = $__25[1], $__25);
     if (!priv.cellSettings[row]) {
       priv.cellSettings[row] = [];
     }
@@ -5936,12 +5949,12 @@ Handsontable.Core = function Core(rootElement, userSettings) {
     return arrayFlatten(priv.cellSettings);
   };
   this.getCellMeta = function(row, col) {
-    var $__24;
+    var $__25;
     var prop = datamap.colToProp(col),
         cellProperties;
     var visualRow = row;
     var visualCol = col;
-    ($__24 = recordTranslator.toPhysical(row, col), row = $__24[0], col = $__24[1], $__24);
+    ($__25 = recordTranslator.toPhysical(row, col), row = $__25[0], col = $__25[1], $__25);
     if (!priv.columnSettings[col]) {
       priv.columnSettings[col] = columnFactory(GridSettings, priv.columnsSettingConflicts);
     }
@@ -5969,6 +5982,9 @@ Handsontable.Core = function Core(rootElement, userSettings) {
     }
     Handsontable.hooks.run(instance, 'afterGetCellMeta', row, col, cellProperties);
     return cellProperties;
+  };
+  this.getCellMetaAtRow = function(row) {
+    return priv.cellSettings[row];
   };
   this.isColumnModificationAllowed = function() {
     return !(instance.dataType === 'object' || instance.getSettings().columns);
@@ -6536,7 +6552,7 @@ DefaultSettings.prototype = {
 Handsontable.DefaultSettings = DefaultSettings;
 
 //# 
-},{"3rdparty/walkontable/src/calculator/viewportColumns":4,"3rdparty/walkontable/src/cell/coords":6,"3rdparty/walkontable/src/cell/range":7,"browser":24,"dataMap":27,"dataSource":28,"editorManager":29,"eventManager":42,"helpers/array":43,"helpers/browser":44,"helpers/data":45,"helpers/dom/element":47,"helpers/function":50,"helpers/mixed":51,"helpers/number":52,"helpers/object":53,"helpers/setting":54,"helpers/string":55,"numbro":"numbro","plugins":62,"renderers":117,"tableView":126,"utils/recordTranslator":130}],27:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/calculator/viewportColumns":4,"3rdparty/walkontable/src/cell/coords":6,"3rdparty/walkontable/src/cell/range":7,"browser":24,"dataMap":27,"dataSource":28,"editorManager":29,"eventManager":42,"helpers/array":43,"helpers/browser":44,"helpers/data":45,"helpers/dom/element":47,"helpers/function":50,"helpers/mixed":51,"helpers/number":52,"helpers/object":53,"helpers/setting":54,"helpers/string":55,"numbro":"numbro","plugins":62,"renderers":118,"tableView":127,"utils/recordTranslator":131}],27:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DataMap: {get: function() {
@@ -7093,7 +7109,7 @@ DataMap.prototype.destroy = function() {
 ;
 
 //# 
-},{"SheetClip":"SheetClip","browser":24,"helpers/array":43,"helpers/data":45,"helpers/number":52,"helpers/object":53,"helpers/setting":54,"multiMap":60,"utils/interval":129}],28:[function(_dereq_,module,exports){
+},{"SheetClip":"SheetClip","browser":24,"helpers/array":43,"helpers/data":45,"helpers/number":52,"helpers/object":53,"helpers/setting":54,"multiMap":60,"utils/interval":130}],28:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DataSource: {get: function() {
@@ -7724,6 +7740,7 @@ BaseEditor.prototype.finishEditing = function(restoreOriginalValue, ctrlDown, ca
         previousCloseCallback(result);
       }
       callback(result);
+      _this.instance.view.render();
     };
   }
   if (this.isWaiting()) {
@@ -9059,6 +9076,12 @@ SelectEditor.prototype.close = function() {
 SelectEditor.prototype.focus = function() {
   this.select.focus();
 };
+SelectEditor.prototype.refreshValue = function() {
+  var sourceData = this.instance.getSourceDataAtCell(this.row, this.prop);
+  this.originalValue = sourceData;
+  this.setValue(sourceData);
+  this.refreshDimensions();
+};
 SelectEditor.prototype.refreshDimensions = function() {
   if (this.state !== Handsontable.EditorState.EDITING) {
     return;
@@ -9367,6 +9390,12 @@ TextEditor.prototype.getEditedCell = function() {
       break;
   }
   return editedCell != -1 && editedCell != -2 ? editedCell : void 0;
+};
+TextEditor.prototype.refreshValue = function() {
+  var sourceData = this.instance.getSourceDataAtCell(this.row, this.prop);
+  this.originalValue = sourceData;
+  this.setValue(sourceData);
+  this.refreshDimensions();
 };
 TextEditor.prototype.refreshDimensions = function() {
   if (this.state !== Handsontable.EditorState.EDITING) {
@@ -9709,6 +9738,9 @@ Object.defineProperties(exports, {
   arrayUnique: {get: function() {
       return arrayUnique;
     }},
+  arrayIncludes: {get: function() {
+      return arrayIncludes;
+    }},
   __esModule: {value: true}
 });
 function to2dArray(arr) {
@@ -9823,6 +9855,25 @@ function arrayUnique(array) {
     }
   }));
   return unique;
+}
+function arrayIncludes(array, searchElement, fromIndex) {
+  if (array == null) {
+    throw new TypeError('"array" is null or not defined');
+  }
+  var o = Object(array);
+  var len = o.length >>> 0;
+  if (len === 0) {
+    return false;
+  }
+  var n = fromIndex | 0;
+  var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+  while (k < len) {
+    if (o[k] === searchElement) {
+      return true;
+    }
+    k++;
+  }
+  return false;
 }
 
 //# 
@@ -12006,7 +12057,7 @@ Object.defineProperties(exports, {
 });
 var $__helpers_47_array__,
     $__helpers_47_object__;
-var REGISTERED_HOOKS = ['afterCellMetaReset', 'afterChange', 'afterChangesObserved', 'afterContextMenuDefaultOptions', 'beforeContextMenuSetItems', 'afterDropdownMenuDefaultOptions', 'beforeDropdownMenuSetItems', 'afterContextMenuHide', 'afterContextMenuShow', 'afterCopyLimit', 'beforeCreateCol', 'afterCreateCol', 'beforeCreateRow', 'afterCreateRow', 'afterDeselect', 'afterDestroy', 'afterDocumentKeyDown', 'afterGetCellMeta', 'afterGetColHeader', 'afterGetRowHeader', 'afterInit', 'afterLoadData', 'afterMomentumScroll', 'afterOnCellCornerMouseDown', 'afterOnCellMouseDown', 'afterOnCellMouseOver', 'afterRemoveCol', 'afterRemoveRow', 'afterRender', 'beforeRenderer', 'afterRenderer', 'afterScrollHorizontally', 'afterScrollVertically', 'afterSelection', 'afterSelectionByProp', 'afterSelectionEnd', 'afterSelectionEndByProp', 'afterSetCellMeta', 'afterSetDataAtCell', 'afterSetDataAtRowProp', 'afterUpdateSettings', 'afterValidate', 'beforeAutofill', 'beforeCellAlignment', 'beforeChange', 'beforeChangeRender', 'beforeDrawBorders', 'beforeGetCellMeta', 'beforeInit', 'beforeInitWalkontable', 'beforeKeyDown', 'beforeOnCellMouseDown', 'beforeOnCellMouseOver', 'beforeRemoveCol', 'beforeRemoveRow', 'beforeRender', 'beforeSetRangeStart', 'beforeSetRangeEnd', 'beforeTouchScroll', 'beforeValidate', 'beforeValueRender', 'construct', 'init', 'modifyCol', 'unmodifyCol', 'unmodifyRow', 'modifyColHeader', 'modifyColWidth', 'modifyRow', 'modifyRowHeader', 'modifyRowHeight', 'modifyData', 'modifyRowData', 'persistentStateLoad', 'persistentStateReset', 'persistentStateSave', 'beforeColumnSort', 'afterColumnSort', 'afterAutofillApplyValues', 'modifyCopyableRange', 'beforeColumnMove', 'afterColumnMove', 'beforeRowMove', 'afterRowMove', 'beforeColumnResize', 'afterColumnResize', 'beforeRowResize', 'afterRowResize', 'afterGetColumnHeaderRenderers', 'afterGetRowHeaderRenderers', 'beforeStretchingColumnWidth', 'beforeFilter', 'afterFilter', 'modifyColumnHeaderHeight', 'beforeUndo', 'afterUndo', 'beforeRedo', 'afterRedo', 'modifyRowHeaderWidth', 'beforeAutofillInsidePopulate', 'modifyTransformStart', 'modifyTransformEnd', 'afterModifyTransformStart', 'afterModifyTransformEnd', 'beforeValueRender', 'afterViewportRowCalculatorOverride', 'afterViewportColumnCalculatorOverride', 'afterPluginsInitialized', 'manualRowHeights', 'skipLengthCache', 'afterTrimRow', 'afterUntrimRow', 'afterDropdownMenuShow', 'afterDropdownMenuHide', 'hiddenRow', 'hiddenColumn', 'beforeAddChild', 'afterAddChild', 'beforeDetachChild', 'afterDetachChild', 'afterBeginEditing'];
+var REGISTERED_HOOKS = ['afterCellMetaReset', 'afterChange', 'afterChangesObserved', 'afterContextMenuDefaultOptions', 'beforeContextMenuSetItems', 'afterDropdownMenuDefaultOptions', 'beforeDropdownMenuSetItems', 'afterContextMenuHide', 'afterContextMenuShow', 'afterCopyLimit', 'beforeCreateCol', 'afterCreateCol', 'beforeCreateRow', 'afterCreateRow', 'afterDeselect', 'afterDestroy', 'afterDocumentKeyDown', 'afterGetCellMeta', 'afterGetColHeader', 'afterGetRowHeader', 'afterInit', 'afterLoadData', 'afterMomentumScroll', 'afterOnCellCornerMouseDown', 'afterOnCellCornerDblClick', 'afterOnCellMouseDown', 'afterOnCellMouseOver', 'afterRemoveCol', 'afterRemoveRow', 'afterRender', 'beforeRenderer', 'afterRenderer', 'afterScrollHorizontally', 'afterScrollVertically', 'afterSelection', 'afterSelectionByProp', 'afterSelectionEnd', 'afterSelectionEndByProp', 'afterSetCellMeta', 'afterSetDataAtCell', 'afterSetDataAtRowProp', 'afterUpdateSettings', 'afterValidate', 'beforeAutofill', 'beforeCellAlignment', 'beforeChange', 'beforeChangeRender', 'beforeDrawBorders', 'beforeGetCellMeta', 'beforeInit', 'beforeInitWalkontable', 'beforeKeyDown', 'beforeOnCellMouseDown', 'beforeOnCellMouseOver', 'beforeRemoveCol', 'beforeRemoveRow', 'beforeRender', 'beforeSetRangeStart', 'beforeSetRangeEnd', 'beforeTouchScroll', 'beforeValidate', 'beforeValueRender', 'construct', 'init', 'modifyCol', 'unmodifyCol', 'unmodifyRow', 'modifyColHeader', 'modifyColWidth', 'modifyRow', 'modifyRowHeader', 'modifyRowHeight', 'modifyData', 'modifyRowData', 'persistentStateLoad', 'persistentStateReset', 'persistentStateSave', 'beforeColumnSort', 'afterColumnSort', 'modifyAutofillRange', 'modifyCopyableRange', 'beforeColumnMove', 'afterColumnMove', 'beforeRowMove', 'afterRowMove', 'beforeColumnResize', 'afterColumnResize', 'beforeRowResize', 'afterRowResize', 'afterGetColumnHeaderRenderers', 'afterGetRowHeaderRenderers', 'beforeStretchingColumnWidth', 'beforeFilter', 'afterFilter', 'modifyColumnHeaderHeight', 'beforeUndo', 'afterUndo', 'beforeRedo', 'afterRedo', 'modifyRowHeaderWidth', 'beforeAutofillInsidePopulate', 'modifyTransformStart', 'modifyTransformEnd', 'afterModifyTransformStart', 'afterModifyTransformEnd', 'beforeValueRender', 'afterViewportRowCalculatorOverride', 'afterViewportColumnCalculatorOverride', 'afterPluginsInitialized', 'manualRowHeights', 'skipLengthCache', 'afterTrimRow', 'afterUntrimRow', 'afterDropdownMenuShow', 'afterDropdownMenuHide', 'hiddenRow', 'hiddenColumn', 'beforeAddChild', 'afterAddChild', 'beforeDetachChild', 'afterDetachChild', 'afterBeginEditing'];
 var arrayEach = ($__helpers_47_array__ = _dereq_("helpers/array"), $__helpers_47_array__ && $__helpers_47_array__.__esModule && $__helpers_47_array__ || {default: $__helpers_47_array__}).arrayEach;
 var objectEach = ($__helpers_47_object__ = _dereq_("helpers/object"), $__helpers_47_object__ && $__helpers_47_object__.__esModule && $__helpers_47_object__ || {default: $__helpers_47_object__}).objectEach;
 var Hooks = function Hooks() {
@@ -12360,7 +12411,7 @@ var $__default = BasePlugin;
 Handsontable.plugins.BasePlugin = BasePlugin;
 
 //# 
-},{"browser":24,"helpers/array":43,"helpers/object":53,"plugins":62,"utils/recordTranslator":130}],64:[function(_dereq_,module,exports){
+},{"browser":24,"helpers/array":43,"helpers/object":53,"plugins":62,"utils/recordTranslator":131}],64:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   AutoColumnSize: {get: function() {
@@ -12652,7 +12703,7 @@ var $AutoColumnSize = AutoColumnSize;
 registerPlugin('autoColumnSize', AutoColumnSize);
 
 //# 
-},{"3rdparty/walkontable/src/calculator/viewportColumns":4,"_base":63,"helpers/array":43,"helpers/dom/element":47,"helpers/feature":49,"helpers/number":52,"helpers/object":53,"helpers/string":55,"plugins":62,"utils/ghostTable":128,"utils/samplesGenerator":131}],65:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/calculator/viewportColumns":4,"_base":63,"helpers/array":43,"helpers/dom/element":47,"helpers/feature":49,"helpers/number":52,"helpers/object":53,"helpers/string":55,"plugins":62,"utils/ghostTable":129,"utils/samplesGenerator":132}],65:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   AutoRowSize: {get: function() {
@@ -12995,7 +13046,7 @@ var $AutoRowSize = AutoRowSize;
 registerPlugin('autoRowSize', AutoRowSize);
 
 //# 
-},{"_base":63,"helpers/array":43,"helpers/dom/element":47,"helpers/feature":49,"helpers/number":52,"helpers/object":53,"helpers/string":55,"plugins":62,"utils/ghostTable":128,"utils/samplesGenerator":131}],66:[function(_dereq_,module,exports){
+},{"_base":63,"helpers/array":43,"helpers/dom/element":47,"helpers/feature":49,"helpers/number":52,"helpers/object":53,"helpers/string":55,"plugins":62,"utils/ghostTable":129,"utils/samplesGenerator":132}],66:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Autofill: {get: function() {
@@ -13003,277 +13054,386 @@ Object.defineProperties(exports, {
     }},
   __esModule: {value: true}
 });
-var $___46__46__47__46__46__47_browser__,
+var $___46__46__47__95_base__,
+    $___46__46__47__46__46__47_browser__,
+    $___46__46__47__46__46__47_helpers_47_array__,
     $___46__46__47__46__46__47_helpers_47_dom_47_element__,
     $___46__46__47__46__46__47_eventManager__,
     $___46__46__47__46__46__47_plugins__,
-    $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__;
+    $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__,
+    $__utils__;
+var BasePlugin = ($___46__46__47__95_base__ = _dereq_("_base"), $___46__46__47__95_base__ && $___46__46__47__95_base__.__esModule && $___46__46__47__95_base__ || {default: $___46__46__47__95_base__}).default;
 var Handsontable = ($___46__46__47__46__46__47_browser__ = _dereq_("browser"), $___46__46__47__46__46__47_browser__ && $___46__46__47__46__46__47_browser__.__esModule && $___46__46__47__46__46__47_browser__ || {default: $___46__46__47__46__46__47_browser__}).default;
-var $__1 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}),
-    offset = $__1.offset,
-    outerHeight = $__1.outerHeight,
-    outerWidth = $__1.outerWidth;
+var arrayIncludes = ($___46__46__47__46__46__47_helpers_47_array__ = _dereq_("helpers/array"), $___46__46__47__46__46__47_helpers_47_array__ && $___46__46__47__46__46__47_helpers_47_array__.__esModule && $___46__46__47__46__46__47_helpers_47_array__ || {default: $___46__46__47__46__46__47_helpers_47_array__}).arrayIncludes;
+var $__3 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}),
+    offset = $__3.offset,
+    outerHeight = $__3.outerHeight,
+    outerWidth = $__3.outerWidth;
 var eventManagerObject = ($___46__46__47__46__46__47_eventManager__ = _dereq_("eventManager"), $___46__46__47__46__46__47_eventManager__ && $___46__46__47__46__46__47_eventManager__.__esModule && $___46__46__47__46__46__47_eventManager__ || {default: $___46__46__47__46__46__47_eventManager__}).eventManager;
 var registerPlugin = ($___46__46__47__46__46__47_plugins__ = _dereq_("plugins"), $___46__46__47__46__46__47_plugins__ && $___46__46__47__46__46__47_plugins__.__esModule && $___46__46__47__46__46__47_plugins__ || {default: $___46__46__47__46__46__47_plugins__}).registerPlugin;
 var WalkontableCellCoords = ($___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__ = _dereq_("3rdparty/walkontable/src/cell/coords"), $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__ && $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__.__esModule && $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__ || {default: $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__}).WalkontableCellCoords;
+var $__7 = ($__utils__ = _dereq_("utils"), $__utils__ && $__utils__.__esModule && $__utils__ || {default: $__utils__}),
+    getDeltas = $__7.getDeltas,
+    getDragDirectionAndRange = $__7.getDragDirectionAndRange,
+    DIRECTIONS = $__7.DIRECTIONS,
+    getMappedFillHandleSetting = $__7.getMappedFillHandleSetting;
+var INSERT_ROW_ALTER_ACTION_NAME = 'insert_row';
+var INTERVAL_FOR_ADDING_ROW = 200;
+var Autofill = function Autofill(hotInstance) {
+  $traceurRuntime.superConstructor($Autofill).call(this, hotInstance);
+  this.eventManager = eventManagerObject(this);
+  this.addingStarted = false;
+  this.mouseDownOnCellCorner = false;
+  this.mouseDragOutside = false;
+  this.handleDraggedCells = 0;
+  this.directions = [];
+  this.autoInsertRow = false;
+};
+var $Autofill = Autofill;
+($traceurRuntime.createClass)(Autofill, {
+  isEnabled: function() {
+    return this.hot.getSettings().fillHandle;
+  },
+  enablePlugin: function() {
+    var $__8 = this;
+    if (this.enabled) {
+      return;
+    }
+    this.mapSettings();
+    this.registerEvents();
+    this.addHook('afterOnCellCornerMouseDown', (function(event) {
+      return $__8.onAfterCellCornerMouseDown(event);
+    }));
+    this.addHook('afterOnCellCornerDblClick', (function(event) {
+      return $__8.onCellCornerDblClick(event);
+    }));
+    this.addHook('beforeOnCellMouseOver', (function(event, coords, TD) {
+      return $__8.onBeforeCellMouseOver(coords);
+    }));
+    $traceurRuntime.superGet(this, $Autofill.prototype, "enablePlugin").call(this);
+  },
+  updatePlugin: function() {
+    this.disablePlugin();
+    this.enablePlugin();
+    $traceurRuntime.superGet(this, $Autofill.prototype, "updatePlugin").call(this);
+  },
+  disablePlugin: function() {
+    this.clearMappedSettings();
+    $traceurRuntime.superGet(this, $Autofill.prototype, "disablePlugin").call(this);
+  },
+  getSelectionData: function() {
+    var selRange = {
+      from: this.hot.getSelectedRange().from,
+      to: this.hot.getSelectedRange().to
+    };
+    return this.hot.getData(selRange.from.row, selRange.from.col, selRange.to.row, selRange.to.col);
+  },
+  fillIn: function() {
+    if (this.hot.view.wt.selections.fill.isEmpty()) {
+      return false;
+    }
+    var cornersOfSelectionAndDragAreas = this.hot.view.wt.selections.fill.getCorners();
+    this.resetSelectionOfDraggedArea();
+    var cornersOfSelectedCells = this.getCornersOfSelectedCells();
+    var $__10 = getDragDirectionAndRange(cornersOfSelectedCells, cornersOfSelectionAndDragAreas),
+        directionOfDrag = $__10.directionOfDrag,
+        startOfDragCoords = $__10.startOfDragCoords,
+        endOfDragCoords = $__10.endOfDragCoords;
+    this.hot.runHooks('modifyAutofillRange', cornersOfSelectedCells, cornersOfSelectionAndDragAreas);
+    if (startOfDragCoords && startOfDragCoords.row > -1 && startOfDragCoords.col > -1) {
+      var selectionData = this.getSelectionData();
+      var deltas = getDeltas(startOfDragCoords, endOfDragCoords, selectionData, directionOfDrag);
+      this.hot.runHooks('beforeAutofill', startOfDragCoords, endOfDragCoords, selectionData);
+      this.hot.populateFromArray(startOfDragCoords.row, startOfDragCoords.col, selectionData, endOfDragCoords.row, endOfDragCoords.col, 'autofill', null, directionOfDrag, deltas);
+      this.setSelection(cornersOfSelectionAndDragAreas);
+    } else {
+      this.hot.selection.refreshBorders();
+    }
+    return true;
+  },
+  reduceSelectionAreaIfNeeded: function(coords) {
+    if (coords.row < 0) {
+      coords.row = 0;
+    }
+    if (coords.col < 0) {
+      coords.col = 0;
+    }
+    return coords;
+  },
+  getCoordsOfDragAndDropBorders: function(coordsOfSelection) {
+    var topLeftCorner = this.hot.getSelectedRange().getTopLeftCorner();
+    var bottomRightCorner = this.hot.getSelectedRange().getBottomRightCorner();
+    var coords;
+    if (arrayIncludes(this.directions, DIRECTIONS.vertical) && (bottomRightCorner.row < coordsOfSelection.row || topLeftCorner.row > coordsOfSelection.row)) {
+      coords = new WalkontableCellCoords(coordsOfSelection.row, bottomRightCorner.col);
+    } else if (arrayIncludes(this.directions, DIRECTIONS.horizontal)) {
+      coords = new WalkontableCellCoords(bottomRightCorner.row, coordsOfSelection.col);
+    } else {
+      return;
+    }
+    return this.reduceSelectionAreaIfNeeded(coords);
+  },
+  showBorder: function(coordsOfSelection) {
+    var coordsOfDragAndDropBorders = this.getCoordsOfDragAndDropBorders(coordsOfSelection);
+    if (coordsOfDragAndDropBorders) {
+      this.redrawBorders(coordsOfDragAndDropBorders);
+    }
+  },
+  addRow: function() {
+    var $__8 = this;
+    this.hot._registerTimeout(setTimeout((function() {
+      $__8.hot.alter(INSERT_ROW_ALTER_ACTION_NAME);
+      $__8.addingStarted = false;
+    }), INTERVAL_FOR_ADDING_ROW));
+  },
+  addNewRowIfNeeded: function() {
+    if (this.hot.view.wt.selections.fill.cellRange && this.addingStarted === false && this.autoInsertRow) {
+      var cornersOfSelectedCells = this.hot.getSelected();
+      var cornersOfSelectedDragArea = this.hot.view.wt.selections.fill.getCorners();
+      var nrOfTableRows = this.hot.countRows();
+      if (cornersOfSelectedCells[2] < nrOfTableRows - 1 && cornersOfSelectedDragArea[2] === nrOfTableRows - 1) {
+        this.addingStarted = true;
+        this.addRow();
+      }
+    }
+  },
+  getCornersOfSelectedCells: function() {
+    if (this.hot.selection.isMultiple()) {
+      return this.hot.view.wt.selections.area.getCorners();
+    } else {
+      return this.hot.view.wt.selections.current.getCorners();
+    }
+  },
+  getIndexOfLastAdjacentFilledInRow: function(cornersOfSelectedCells) {
+    var data = this.hot.getData();
+    var nrOfTableRows = this.hot.countRows();
+    var lastFilledInRowIndex;
+    for (var rowIndex = cornersOfSelectedCells[2] + 1; rowIndex < nrOfTableRows; rowIndex++) {
+      for (var columnIndex = cornersOfSelectedCells[1]; columnIndex <= cornersOfSelectedCells[3]; columnIndex++) {
+        var dataInCell = data[rowIndex][columnIndex];
+        if (dataInCell) {
+          return -1;
+        }
+      }
+      var dataInNextLeftCell = data[rowIndex][cornersOfSelectedCells[1] - 1];
+      var dataInNextRightCell = data[rowIndex][cornersOfSelectedCells[3] + 1];
+      if (!!dataInNextLeftCell || !!dataInNextRightCell) {
+        lastFilledInRowIndex = rowIndex;
+      }
+    }
+    return lastFilledInRowIndex;
+  },
+  addSelectionFromStartAreaToSpecificRowIndex: function(selectStartArea, rowIndex) {
+    this.hot.view.wt.selections.fill.clear();
+    this.hot.view.wt.selections.fill.add(new WalkontableCellCoords(selectStartArea[0], selectStartArea[1]));
+    this.hot.view.wt.selections.fill.add(new WalkontableCellCoords(rowIndex, selectStartArea[3]));
+  },
+  setSelection: function(cornersOfArea) {
+    this.hot.selection.setRangeStart(new WalkontableCellCoords(cornersOfArea[0], cornersOfArea[1]));
+    this.hot.selection.setRangeEnd(new WalkontableCellCoords(cornersOfArea[2], cornersOfArea[3]));
+  },
+  selectAdjacent: function() {
+    var cornersOfSelectedCells = this.getCornersOfSelectedCells();
+    var lastFilledInRowIndex = this.getIndexOfLastAdjacentFilledInRow(cornersOfSelectedCells);
+    if (lastFilledInRowIndex === -1) {
+      return false;
+    } else {
+      this.addSelectionFromStartAreaToSpecificRowIndex(cornersOfSelectedCells, lastFilledInRowIndex);
+      return true;
+    }
+  },
+  resetSelectionOfDraggedArea: function() {
+    this.handleDraggedCells = 0;
+    this.hot.view.wt.selections.fill.clear();
+  },
+  redrawBorders: function(coords) {
+    this.hot.view.wt.selections.fill.clear();
+    this.hot.view.wt.selections.fill.add(this.hot.getSelectedRange().from);
+    this.hot.view.wt.selections.fill.add(this.hot.getSelectedRange().to);
+    this.hot.view.wt.selections.fill.add(coords);
+    this.hot.view.render();
+  },
+  getIfMouseWasDraggedOutside: function(event) {
+    var tableBottom = offset(this.hot.table).top - (window.pageYOffset || document.documentElement.scrollTop) + outerHeight(this.hot.table);
+    var tableRight = offset(this.hot.table).left - (window.pageXOffset || document.documentElement.scrollLeft) + outerWidth(this.hot.table);
+    return event.clientY > tableBottom && event.clientX <= tableRight;
+  },
+  registerEvents: function() {
+    var $__8 = this;
+    this.eventManager.addEventListener(document.documentElement, 'mouseup', (function() {
+      return $__8.onMouseUp();
+    }));
+    this.eventManager.addEventListener(document.documentElement, 'mousemove', (function(event) {
+      return $__8.onMouseMove(event);
+    }));
+  },
+  onCellCornerDblClick: function() {
+    var selectionApplied = this.selectAdjacent();
+    if (selectionApplied) {
+      this.fillIn();
+    }
+  },
+  onAfterCellCornerMouseDown: function() {
+    this.handleDraggedCells = 1;
+    this.mouseDownOnCellCorner = true;
+  },
+  onBeforeCellMouseOver: function(coords) {
+    if (this.mouseDownOnCellCorner && !this.hot.view.isMouseDown() && this.handleDraggedCells) {
+      this.handleDraggedCells++;
+      this.showBorder(coords);
+      this.addNewRowIfNeeded();
+    }
+  },
+  onMouseUp: function() {
+    if (this.handleDraggedCells) {
+      if (this.handleDraggedCells > 1) {
+        this.fillIn();
+      }
+      this.handleDraggedCells = 0;
+      this.mouseDownOnCellCorner = false;
+    }
+  },
+  onMouseMove: function(event) {
+    var mouseWasDraggedOutside = this.getIfMouseWasDraggedOutside(event);
+    if (this.addingStarted === false && this.handleDraggedCells > 0 && mouseWasDraggedOutside) {
+      this.mouseDragOutside = true;
+      this.addingStarted = true;
+    } else {
+      this.mouseDragOutside = false;
+    }
+    if (this.mouseDragOutside && this.autoInsertRow) {
+      this.addRow();
+    }
+  },
+  clearMappedSettings: function() {
+    this.directions.length = 0;
+    this.autoInsertRow = false;
+  },
+  mapSettings: function() {
+    var mappedSettings = getMappedFillHandleSetting(this.hot.getSettings().fillHandle);
+    this.directions = mappedSettings.directions;
+    this.autoInsertRow = mappedSettings.autoInsertRow;
+  },
+  destroy: function() {
+    $traceurRuntime.superGet(this, $Autofill.prototype, "destroy").call(this);
+  }
+}, {}, BasePlugin);
 ;
+registerPlugin('autofill', Autofill);
+Handsontable.hooks.register('modifyAutofillRange');
+Handsontable.hooks.register('beforeAutofill');
+
+//# 
+},{"3rdparty/walkontable/src/cell/coords":6,"_base":63,"browser":24,"eventManager":42,"helpers/array":43,"helpers/dom/element":47,"plugins":62,"utils":67}],67:[function(_dereq_,module,exports){
+"use strict";
+Object.defineProperties(exports, {
+  DIRECTIONS: {get: function() {
+      return DIRECTIONS;
+    }},
+  getDeltas: {get: function() {
+      return getDeltas;
+    }},
+  getDragDirectionAndRange: {get: function() {
+      return getDragDirectionAndRange;
+    }},
+  getMappedFillHandleSetting: {get: function() {
+      return getMappedFillHandleSetting;
+    }},
+  __esModule: {value: true}
+});
+var $___46__46__47__46__46__47_helpers_47_object__,
+    $___46__46__47__46__46__47_helpers_47_mixed__;
+var isObject = ($___46__46__47__46__46__47_helpers_47_object__ = _dereq_("helpers/object"), $___46__46__47__46__46__47_helpers_47_object__ && $___46__46__47__46__46__47_helpers_47_object__.__esModule && $___46__46__47__46__46__47_helpers_47_object__ || {default: $___46__46__47__46__46__47_helpers_47_object__}).isObject;
+var isDefined = ($___46__46__47__46__46__47_helpers_47_mixed__ = _dereq_("helpers/mixed"), $___46__46__47__46__46__47_helpers_47_mixed__ && $___46__46__47__46__46__47_helpers_47_mixed__.__esModule && $___46__46__47__46__46__47_helpers_47_mixed__ || {default: $___46__46__47__46__46__47_helpers_47_mixed__}).isDefined;
+var DIRECTIONS = {
+  horizontal: 'horizontal',
+  vertical: 'vertical'
+};
 function getDeltas(start, end, data, direction) {
-  var rlength = data.length,
-      clength = data ? data[0].length : 0,
-      deltas = [],
-      arr = [],
-      diffRow,
-      diffCol,
-      startValue,
-      endValue,
-      delta;
-  diffRow = end.row - start.row;
-  diffCol = end.col - start.col;
+  var rowsLength = data.length;
+  var columnsLength = data ? data[0].length : 0;
+  var deltas = [];
+  var diffRow = end.row - start.row;
+  var diffCol = end.col - start.col;
   if (['down', 'up'].indexOf(direction) !== -1) {
+    var arr = [];
     for (var col = 0; col <= diffCol; col++) {
-      startValue = parseInt(data[0][col], 10);
-      endValue = parseInt(data[rlength - 1][col], 10);
-      delta = (direction === 'down' ? (endValue - startValue) : (startValue - endValue)) / (rlength - 1) || 0;
+      var startValue = parseInt(data[0][col], 10);
+      var endValue = parseInt(data[rowsLength - 1][col], 10);
+      var delta = (direction === 'down' ? (endValue - startValue) : (startValue - endValue)) / (rowsLength - 1) || 0;
       arr.push(delta);
     }
     deltas.push(arr);
   }
   if (['right', 'left'].indexOf(direction) !== -1) {
     for (var row = 0; row <= diffRow; row++) {
-      startValue = parseInt(data[row][0], 10);
-      endValue = parseInt(data[row][clength - 1], 10);
-      delta = (direction === 'right' ? (endValue - startValue) : (startValue - endValue)) / (clength - 1) || 0;
-      arr = [];
-      arr.push(delta);
-      deltas.push(arr);
+      var startValue$__2 = parseInt(data[row][0], 10);
+      var endValue$__3 = parseInt(data[row][columnsLength - 1], 10);
+      var delta$__4 = (direction === 'right' ? (endValue$__3 - startValue$__2) : (startValue$__2 - endValue$__3)) / (columnsLength - 1) || 0;
+      deltas.push([delta$__4]);
     }
   }
   return deltas;
 }
-function Autofill(instance) {
-  var _this = this,
-      mouseDownOnCellCorner = false,
-      wtOnCellCornerMouseDown,
-      wtOnCellMouseOver,
-      eventManager;
-  this.instance = instance;
-  this.addingStarted = false;
-  eventManager = eventManagerObject(instance);
-  function mouseUpCallback(event) {
-    if (!instance.autofill) {
-      return true;
-    }
-    if (instance.autofill.handle && instance.autofill.handle.isDragged) {
-      if (instance.autofill.handle.isDragged > 1) {
-        instance.autofill.apply();
-      }
-      instance.autofill.handle.isDragged = 0;
-      mouseDownOnCellCorner = false;
-    }
+function getDragDirectionAndRange(startSelection, endSelection) {
+  var startOfDragCoords,
+      endOfDragCoords,
+      directionOfDrag;
+  if (endSelection[0] === startSelection[0] && endSelection[1] < startSelection[1]) {
+    directionOfDrag = 'left';
+    startOfDragCoords = new WalkontableCellCoords(endSelection[0], endSelection[1]);
+    endOfDragCoords = new WalkontableCellCoords(endSelection[2], startSelection[1] - 1);
+  } else if (endSelection[0] === startSelection[0] && endSelection[3] > startSelection[3]) {
+    directionOfDrag = 'right';
+    startOfDragCoords = new WalkontableCellCoords(endSelection[0], startSelection[3] + 1);
+    endOfDragCoords = new WalkontableCellCoords(endSelection[2], endSelection[3]);
+  } else if (endSelection[0] < startSelection[0] && endSelection[1] === startSelection[1]) {
+    directionOfDrag = 'up';
+    startOfDragCoords = new WalkontableCellCoords(endSelection[0], endSelection[1]);
+    endOfDragCoords = new WalkontableCellCoords(startSelection[0] - 1, endSelection[3]);
+  } else if (endSelection[2] > startSelection[2] && endSelection[1] === startSelection[1]) {
+    directionOfDrag = 'down';
+    startOfDragCoords = new WalkontableCellCoords(startSelection[2] + 1, endSelection[1]);
+    endOfDragCoords = new WalkontableCellCoords(endSelection[2], endSelection[3]);
   }
-  function mouseMoveCallback(event) {
-    var tableBottom,
-        tableRight;
-    if (!_this.instance.autofill) {
-      return false;
-    }
-    tableBottom = offset(_this.instance.table).top - (window.pageYOffset || document.documentElement.scrollTop) + outerHeight(_this.instance.table);
-    tableRight = offset(_this.instance.table).left - (window.pageXOffset || document.documentElement.scrollLeft) + outerWidth(_this.instance.table);
-    if (_this.addingStarted === false && _this.instance.autofill.handle.isDragged > 0 && event.clientY > tableBottom && event.clientX <= tableRight) {
-      _this.instance.mouseDragOutside = true;
-      _this.addingStarted = true;
+  return {
+    directionOfDrag: directionOfDrag,
+    startOfDragCoords: startOfDragCoords,
+    endOfDragCoords: endOfDragCoords
+  };
+}
+function getMappedFillHandleSetting(fillHandle) {
+  var mappedSettings = {};
+  if (fillHandle === true) {
+    mappedSettings.directions = Object.keys(DIRECTIONS);
+    mappedSettings.autoInsertRow = true;
+  } else if (isObject(fillHandle)) {
+    if (isDefined(fillHandle.autoInsertRow)) {
+      if (fillHandle.direction === DIRECTIONS.horizontal) {
+        mappedSettings.autoInsertRow = false;
+      } else {
+        mappedSettings.autoInsertRow = fillHandle.autoInsertRow;
+      }
     } else {
-      _this.instance.mouseDragOutside = false;
+      mappedSettings.autoInsertRow = false;
     }
-    if (_this.instance.mouseDragOutside && settings('autoInsertRow')) {
-      setTimeout(function() {
-        _this.addingStarted = false;
-        _this.instance.alter('insert_row');
-      }, 200);
+    if (isDefined(fillHandle.direction)) {
+      mappedSettings.directions = [fillHandle.direction];
+    } else {
+      mappedSettings.directions = Object.keys(DIRECTIONS);
     }
+  } else if (typeof fillHandle === 'string') {
+    mappedSettings.directions = [fillHandle];
+    mappedSettings.autoInsertRow = true;
+  } else {
+    mappedSettings.directions = [];
+    mappedSettings.autoInsertRow = false;
   }
-  eventManager.addEventListener(document, 'mouseup', mouseUpCallback);
-  eventManager.addEventListener(document, 'mousemove', mouseMoveCallback);
-  wtOnCellCornerMouseDown = this.instance.view.wt.wtSettings.settings.onCellCornerMouseDown;
-  this.instance.view.wt.wtSettings.settings.onCellCornerMouseDown = function(event) {
-    instance.autofill.handle.isDragged = 1;
-    mouseDownOnCellCorner = true;
-    wtOnCellCornerMouseDown(event);
-  };
-  wtOnCellMouseOver = this.instance.view.wt.wtSettings.settings.onCellMouseOver;
-  this.instance.view.wt.wtSettings.settings.onCellMouseOver = function(event, coords, TD, wt) {
-    if (instance.autofill && mouseDownOnCellCorner && !instance.view.isMouseDown() && instance.autofill.handle && instance.autofill.handle.isDragged) {
-      instance.autofill.handle.isDragged++;
-      instance.autofill.showBorder(coords);
-      instance.autofill.checkIfNewRowNeeded();
-    }
-    wtOnCellMouseOver(event, coords, TD, wt);
-  };
-  this.instance.view.wt.wtSettings.settings.onCellCornerDblClick = function() {
-    instance.autofill.selectAdjacent();
-  };
+  return mappedSettings;
 }
-Autofill.prototype.init = function() {
-  this.handle = {};
-};
-Autofill.prototype.disable = function() {
-  this.handle.disabled = true;
-};
-Autofill.prototype.selectAdjacent = function() {
-  var select,
-      data,
-      r,
-      maxR,
-      c;
-  if (this.instance.selection.isMultiple()) {
-    select = this.instance.view.wt.selections.area.getCorners();
-  } else {
-    select = this.instance.view.wt.selections.current.getCorners();
-  }
-  data = this.instance.getData();
-  rows: for (r = select[2] + 1; r < this.instance.countRows(); r++) {
-    for (c = select[1]; c <= select[3]; c++) {
-      if (data[r][c]) {
-        break rows;
-      }
-    }
-    if (!!data[r][select[1] - 1] || !!data[r][select[3] + 1]) {
-      maxR = r;
-    }
-  }
-  if (maxR) {
-    this.instance.view.wt.selections.fill.clear();
-    this.instance.view.wt.selections.fill.add(new WalkontableCellCoords(select[0], select[1]));
-    this.instance.view.wt.selections.fill.add(new WalkontableCellCoords(maxR, select[3]));
-    this.apply();
-  }
-};
-Autofill.prototype.apply = function() {
-  var drag,
-      select,
-      start,
-      end,
-      _data,
-      direction,
-      deltas,
-      selRange;
-  this.handle.isDragged = 0;
-  if (this.instance.view.wt.selections.fill.isEmpty()) {
-    return;
-  }
-  drag = this.instance.view.wt.selections.fill.getCorners();
-  this.instance.view.wt.selections.fill.clear();
-  if (this.instance.selection.isMultiple()) {
-    select = this.instance.view.wt.selections.area.getCorners();
-  } else {
-    select = this.instance.view.wt.selections.current.getCorners();
-  }
-  Handsontable.hooks.run(this.instance, 'afterAutofillApplyValues', select, drag);
-  if (drag[0] === select[0] && drag[1] < select[1]) {
-    direction = 'left';
-    start = new WalkontableCellCoords(drag[0], drag[1]);
-    end = new WalkontableCellCoords(drag[2], select[1] - 1);
-  } else if (drag[0] === select[0] && drag[3] > select[3]) {
-    direction = 'right';
-    start = new WalkontableCellCoords(drag[0], select[3] + 1);
-    end = new WalkontableCellCoords(drag[2], drag[3]);
-  } else if (drag[0] < select[0] && drag[1] === select[1]) {
-    direction = 'up';
-    start = new WalkontableCellCoords(drag[0], drag[1]);
-    end = new WalkontableCellCoords(select[0] - 1, drag[3]);
-  } else if (drag[2] > select[2] && drag[1] === select[1]) {
-    direction = 'down';
-    start = new WalkontableCellCoords(select[2] + 1, drag[1]);
-    end = new WalkontableCellCoords(drag[2], drag[3]);
-  }
-  if (start && start.row > -1 && start.col > -1) {
-    selRange = {
-      from: this.instance.getSelectedRange().from,
-      to: this.instance.getSelectedRange().to
-    };
-    _data = this.instance.getData(selRange.from.row, selRange.from.col, selRange.to.row, selRange.to.col);
-    deltas = getDeltas(start, end, _data, direction);
-    Handsontable.hooks.run(this.instance, 'beforeAutofill', start, end, _data);
-    this.instance.populateFromArray(start.row, start.col, _data, end.row, end.col, 'autofill', null, direction, deltas);
-    this.instance.selection.setRangeStart(new WalkontableCellCoords(drag[0], drag[1]));
-    this.instance.selection.setRangeEnd(new WalkontableCellCoords(drag[2], drag[3]));
-  } else {
-    this.instance.selection.refreshBorders();
-  }
-};
-Autofill.prototype.showBorder = function(coords) {
-  var topLeft = this.instance.getSelectedRange().getTopLeftCorner(),
-      bottomRight = this.instance.getSelectedRange().getBottomRightCorner();
-  if (settings('direction') !== 'horizontal' && (bottomRight.row < coords.row || topLeft.row > coords.row)) {
-    coords = new WalkontableCellCoords(coords.row, bottomRight.col);
-  } else if (settings('direction') !== 'vertical') {
-    coords = new WalkontableCellCoords(bottomRight.row, coords.col);
-  } else {
-    return;
-  }
-  this.instance.view.wt.selections.fill.clear();
-  this.instance.view.wt.selections.fill.add(this.instance.getSelectedRange().from);
-  this.instance.view.wt.selections.fill.add(this.instance.getSelectedRange().to);
-  this.instance.view.wt.selections.fill.add(coords);
-  this.instance.view.render();
-};
-Autofill.prototype.checkIfNewRowNeeded = function() {
-  var fillCorners,
-      selection,
-      tableRows = this.instance.countRows(),
-      that = this;
-  if (this.instance.view.wt.selections.fill.cellRange && this.addingStarted === false && settings('autoInsertRow')) {
-    selection = this.instance.getSelected();
-    fillCorners = this.instance.view.wt.selections.fill.getCorners();
-    if (selection[2] < tableRows - 1 && fillCorners[2] === tableRows - 1) {
-      this.addingStarted = true;
-      this.instance._registerTimeout(setTimeout(function() {
-        that.instance.alter('insert_row');
-        that.addingStarted = false;
-      }, 200));
-    }
-  }
-};
-Handsontable.hooks.add('afterInit', function() {
-  var autofill = new Autofill(this);
-  settings = settingsFactory(this.getSettings().fillHandle);
-  if (settings('fillHandle') !== void 0) {
-    if (autofill.handle && settings('fillHandle') === false) {
-      autofill.disable();
-    } else if (!autofill.handle && settings('fillHandle') !== false) {
-      this.autofill = autofill;
-      this.autofill.init();
-    }
-  }
-});
-var settings;
-function settingsFactory(settings) {
-  return function(key) {
-    var result;
-    if (key === 'direction') {
-      if (typeof settings === 'string') {
-        result = settings;
-      } else if (typeof settings === 'object' && settings[key] !== void 0) {
-        result = settings[key];
-      } else {
-        result = true;
-      }
-    } else if (key === 'autoInsertRow') {
-      if (typeof settings === 'object' && settings[key] !== void 0) {
-        result = settings[key];
-      } else {
-        result = true;
-      }
-    } else if (key === 'fillHandle') {
-      result = settings ? true : false;
-    }
-    return result;
-  };
-}
-Handsontable.Autofill = Autofill;
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":6,"browser":24,"eventManager":42,"helpers/dom/element":47,"plugins":62}],67:[function(_dereq_,module,exports){
+},{"helpers/mixed":51,"helpers/object":53}],68:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ColumnSorting: {get: function() {
@@ -13689,7 +13849,7 @@ var $ColumnSorting = ColumnSorting;
 registerPlugin('columnSorting', ColumnSorting);
 
 //# 
-},{"_base":63,"browser":24,"eventManager":42,"helpers/array":43,"helpers/dom/element":47,"moment":"moment","plugins":62}],68:[function(_dereq_,module,exports){
+},{"_base":63,"browser":24,"eventManager":42,"helpers/array":43,"helpers/dom/element":47,"moment":"moment","plugins":62}],69:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   CommentEditor: {get: function() {
@@ -13794,7 +13954,7 @@ var $CommentEditor = CommentEditor;
 ;
 
 //# 
-},{"helpers/dom/element":47}],69:[function(_dereq_,module,exports){
+},{"helpers/dom/element":47}],70:[function(_dereq_,module,exports){
 "use strict";
 var $__13;
 Object.defineProperties(exports, {
@@ -13823,7 +13983,9 @@ var $__1 = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = _dereq_("he
     outerWidth = $__1.outerWidth,
     outerHeight = $__1.outerHeight,
     getScrollableElement = $__1.getScrollableElement;
-var deepExtend = ($___46__46__47__46__46__47_helpers_47_object__ = _dereq_("helpers/object"), $___46__46__47__46__46__47_helpers_47_object__ && $___46__46__47__46__46__47_helpers_47_object__.__esModule && $___46__46__47__46__46__47_helpers_47_object__ || {default: $___46__46__47__46__46__47_helpers_47_object__}).deepExtend;
+var $__2 = ($___46__46__47__46__46__47_helpers_47_object__ = _dereq_("helpers/object"), $___46__46__47__46__46__47_helpers_47_object__ && $___46__46__47__46__46__47_helpers_47_object__.__esModule && $___46__46__47__46__46__47_helpers_47_object__ || {default: $___46__46__47__46__46__47_helpers_47_object__}),
+    deepClone = $__2.deepClone,
+    deepExtend = $__2.deepExtend;
 var debounce = ($___46__46__47__46__46__47_helpers_47_function__ = _dereq_("helpers/function"), $___46__46__47__46__46__47_helpers_47_function__ && $___46__46__47__46__46__47_helpers_47_function__.__esModule && $___46__46__47__46__46__47_helpers_47_function__ || {default: $___46__46__47__46__46__47_helpers_47_function__}).debounce;
 var EventManager = ($___46__46__47__46__46__47_eventManager__ = _dereq_("eventManager"), $___46__46__47__46__46__47_eventManager__ && $___46__46__47__46__46__47_eventManager__.__esModule && $___46__46__47__46__46__47_eventManager__ || {default: $___46__46__47__46__46__47_eventManager__}).EventManager;
 var WalkontableCellCoords = ($___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__ = _dereq_("3rdparty/walkontable/src/cell/coords"), $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__ && $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__.__esModule && $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__ || {default: $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__}).WalkontableCellCoords;
@@ -13994,7 +14156,7 @@ var $Comments = Comments;
     if (!this.range.from) {
       throw new Error('Before using this method, first set cell range (hot.getPlugin("comment").setRange())');
     }
-    this.hot.getCellMeta(this.range.from.row, this.range.from.col)[META_COMMENT] = void 0;
+    this.hot.setCellMeta(this.range.from.row, this.range.from.col, META_COMMENT, void 0);
     if (forceRender) {
       this.hot.render();
     }
@@ -14108,15 +14270,15 @@ var $Comments = Comments;
   writable: true
 }), Object.defineProperty($__13, "updateCommentMeta", {
   value: function(row, column, metaObject) {
-    var $__13;
-    var cellMeta = this.hot.getCellMeta(row, column);
-    var newObj = ($__13 = {}, Object.defineProperty($__13, META_COMMENT, {
-      value: metaObject,
-      configurable: true,
-      enumerable: true,
-      writable: true
-    }), $__13);
-    deepExtend(cellMeta, newObj);
+    var oldComment = this.hot.getCellMeta(row, column)[META_COMMENT];
+    var newComment;
+    if (oldComment) {
+      newComment = deepClone(oldComment);
+      deepExtend(newComment, metaObject);
+    } else {
+      newComment = metaObject;
+    }
+    this.hot.setCellMeta(row, column, META_COMMENT, newComment);
   },
   configurable: true,
   enumerable: true,
@@ -14162,7 +14324,7 @@ var $Comments = Comments;
     var priv = privatePool.get(this);
     priv.cellBelowCursor = document.elementFromPoint(event.clientX, event.clientY);
     debounce((function() {
-      if (hasClass(event.target, 'wtBorder') || priv.cellBelowCursor !== event.target) {
+      if (hasClass(event.target, 'wtBorder') || priv.cellBelowCursor !== event.target || !$__10.editor) {
         return;
       }
       if ($__10.targetIsCellWithComment(event)) {
@@ -14359,7 +14521,7 @@ var $Comments = Comments;
 registerPlugin('comments', Comments);
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":6,"_base":63,"browser":24,"commentEditor":68,"contextMenu/utils":88,"eventManager":42,"helpers/dom/element":47,"helpers/function":50,"helpers/object":53,"plugins":62}],70:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":6,"_base":63,"browser":24,"commentEditor":69,"contextMenu/utils":89,"eventManager":42,"helpers/dom/element":47,"helpers/function":50,"helpers/object":53,"plugins":62}],71:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   CommandExecutor: {get: function() {
@@ -14432,7 +14594,7 @@ function findSubCommand(subCommandName, subCommands) {
 ;
 
 //# 
-},{"helpers/array":43}],71:[function(_dereq_,module,exports){
+},{"helpers/array":43}],72:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ContextMenu: {get: function() {
@@ -14622,7 +14784,7 @@ Handsontable.hooks.register('afterContextMenuExecute');
 registerPlugin('contextMenu', ContextMenu);
 
 //# 
-},{"_base":63,"browser":24,"commandExecutor":70,"eventManager":42,"helpers/array":43,"helpers/dom/element":47,"helpers/dom/event":48,"itemsFactory":73,"menu":74,"plugins":62,"predefinedItems":75}],72:[function(_dereq_,module,exports){
+},{"_base":63,"browser":24,"commandExecutor":71,"eventManager":42,"helpers/array":43,"helpers/dom/element":47,"helpers/dom/event":48,"itemsFactory":74,"menu":75,"plugins":62,"predefinedItems":76}],73:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Cursor: {get: function() {
@@ -14704,7 +14866,7 @@ Handsontable.plugins.utils = Handsontable.plugins.utils || {};
 Handsontable.plugins.utils.Cursor = Cursor;
 
 //# 
-},{"browser":24,"helpers/dom/element":47,"helpers/dom/event":48}],73:[function(_dereq_,module,exports){
+},{"browser":24,"helpers/dom/element":47,"helpers/dom/event":48}],74:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ItemsFactory: {get: function() {
@@ -14809,7 +14971,7 @@ function getItems() {
 ;
 
 //# 
-},{"helpers/array":43,"helpers/object":53,"predefinedItems":75}],74:[function(_dereq_,module,exports){
+},{"helpers/array":43,"helpers/object":53,"predefinedItems":76}],75:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Menu: {get: function() {
@@ -15315,7 +15477,7 @@ mixin(Menu, localHooks);
 ;
 
 //# 
-},{"browser":24,"cursor":72,"eventManager":42,"helpers/array":43,"helpers/dom/element":47,"helpers/dom/event":48,"helpers/function":50,"helpers/object":53,"helpers/unicode":56,"mixins/localHooks":58,"predefinedItems":75,"utils":88}],75:[function(_dereq_,module,exports){
+},{"browser":24,"cursor":73,"eventManager":42,"helpers/array":43,"helpers/dom/element":47,"helpers/dom/event":48,"helpers/function":50,"helpers/object":53,"helpers/unicode":56,"mixins/localHooks":58,"predefinedItems":76,"utils":89}],76:[function(_dereq_,module,exports){
 "use strict";
 var $__13;
 Object.defineProperties(exports, {
@@ -15516,7 +15678,7 @@ function addItem(key, item) {
 }
 
 //# 
-},{"helpers/object":53,"predefinedItems/alignment":76,"predefinedItems/clearColumn":77,"predefinedItems/columnLeft":78,"predefinedItems/columnRight":79,"predefinedItems/readOnly":80,"predefinedItems/redo":81,"predefinedItems/removeColumn":82,"predefinedItems/removeRow":83,"predefinedItems/rowAbove":84,"predefinedItems/rowBelow":85,"predefinedItems/separator":86,"predefinedItems/undo":87}],76:[function(_dereq_,module,exports){
+},{"helpers/object":53,"predefinedItems/alignment":77,"predefinedItems/clearColumn":78,"predefinedItems/columnLeft":79,"predefinedItems/columnRight":80,"predefinedItems/readOnly":81,"predefinedItems/redo":82,"predefinedItems/removeColumn":83,"predefinedItems/removeRow":84,"predefinedItems/rowAbove":85,"predefinedItems/rowBelow":86,"predefinedItems/separator":87,"predefinedItems/undo":88}],77:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   KEY: {get: function() {
@@ -15765,7 +15927,7 @@ function alignmentItem() {
 }
 
 //# 
-},{"separator":86,"utils":88}],77:[function(_dereq_,module,exports){
+},{"separator":87,"utils":89}],78:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   KEY: {get: function() {
@@ -15802,7 +15964,7 @@ function clearColumnItem() {
 }
 
 //# 
-},{"utils":88}],78:[function(_dereq_,module,exports){
+},{"utils":89}],79:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   KEY: {get: function() {
@@ -15843,7 +16005,7 @@ function columnLeftItem() {
 }
 
 //# 
-},{"utils":88}],79:[function(_dereq_,module,exports){
+},{"utils":89}],80:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   KEY: {get: function() {
@@ -15884,7 +16046,7 @@ function columnRightItem() {
 }
 
 //# 
-},{"utils":88}],80:[function(_dereq_,module,exports){
+},{"utils":89}],81:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   KEY: {get: function() {
@@ -15921,7 +16083,7 @@ function readOnlyItem() {
         return $__1.getCellMeta(row, col).readOnly;
       }));
       range.forAll((function(row, col) {
-        $__1.getCellMeta(row, col).readOnly = atLeastOneReadOnly ? false : true;
+        $__1.setCellMeta(row, col, 'readOnly', atLeastOneReadOnly ? false : true);
       }));
       this.render();
     },
@@ -15932,7 +16094,7 @@ function readOnlyItem() {
 }
 
 //# 
-},{"utils":88}],81:[function(_dereq_,module,exports){
+},{"utils":89}],82:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   KEY: {get: function() {
@@ -15958,7 +16120,7 @@ function redoItem() {
 }
 
 //# 
-},{}],82:[function(_dereq_,module,exports){
+},{}],83:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   KEY: {get: function() {
@@ -15992,7 +16154,7 @@ function removeColumnItem() {
 }
 
 //# 
-},{"utils":88}],83:[function(_dereq_,module,exports){
+},{"utils":89}],84:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   KEY: {get: function() {
@@ -16026,7 +16188,7 @@ function removeRowItem() {
 }
 
 //# 
-},{"utils":88}],84:[function(_dereq_,module,exports){
+},{"utils":89}],85:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   KEY: {get: function() {
@@ -16058,7 +16220,7 @@ function rowAboveItem() {
 }
 
 //# 
-},{"utils":88}],85:[function(_dereq_,module,exports){
+},{"utils":89}],86:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   KEY: {get: function() {
@@ -16090,7 +16252,7 @@ function rowBelowItem() {
 }
 
 //# 
-},{"utils":88}],86:[function(_dereq_,module,exports){
+},{"utils":89}],87:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   KEY: {get: function() {
@@ -16107,7 +16269,7 @@ function separatorItem() {
 }
 
 //# 
-},{}],87:[function(_dereq_,module,exports){
+},{}],88:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   KEY: {get: function() {
@@ -16133,7 +16295,7 @@ function undoItem() {
 }
 
 //# 
-},{}],88:[function(_dereq_,module,exports){
+},{}],89:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   normalizeSelection: {get: function() {
@@ -16324,7 +16486,7 @@ function filterSeparators(items) {
 }
 
 //# 
-},{"helpers/array":43,"helpers/dom/element":47,"predefinedItems/separator":86}],89:[function(_dereq_,module,exports){
+},{"helpers/array":43,"helpers/dom/element":47,"predefinedItems/separator":87}],90:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ContextMenuCopyPaste: {get: function() {
@@ -16470,7 +16632,7 @@ var $ContextMenuCopyPaste = ContextMenuCopyPaste;
 registerPlugin('contextMenuCopyPaste', ContextMenuCopyPaste);
 
 //# 
-},{"_base":63,"contextMenu/predefinedItems":75,"eventManager":42,"helpers/array":43,"helpers/dom/element":47,"plugins":62,"zeroclipboard":"zeroclipboard"}],90:[function(_dereq_,module,exports){
+},{"_base":63,"contextMenu/predefinedItems":76,"eventManager":42,"helpers/array":43,"helpers/dom/element":47,"plugins":62,"zeroclipboard":"zeroclipboard"}],91:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   CopyPastePlugin: {get: function() {
@@ -16675,7 +16837,7 @@ Handsontable.hooks.register('modifyCopyableRange');
 ;
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":6,"3rdparty/walkontable/src/cell/range":7,"SheetClip":"SheetClip","browser":24,"copyPaste":"copyPaste","helpers/array":43,"helpers/dom/element":47,"helpers/dom/event":48,"helpers/function":50,"helpers/number":52,"helpers/unicode":56,"plugins":62}],91:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":6,"3rdparty/walkontable/src/cell/range":7,"SheetClip":"SheetClip","browser":24,"copyPaste":"copyPaste","helpers/array":43,"helpers/dom/element":47,"helpers/dom/event":48,"helpers/function":50,"helpers/number":52,"helpers/unicode":56,"plugins":62}],92:[function(_dereq_,module,exports){
 "use strict";
 var $___46__46__47__46__46__47_browser__,
     $___46__46__47__46__46__47_plugins__,
@@ -17013,7 +17175,7 @@ Handsontable.hooks.add('afterInit', function() {
 Handsontable.CustomBorders = CustomBorders;
 
 //# 
-},{"3rdparty/walkontable/src/cell/range":7,"3rdparty/walkontable/src/selection":19,"browser":24,"plugins":62}],92:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/cell/range":7,"3rdparty/walkontable/src/selection":19,"browser":24,"plugins":62}],93:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DragToScroll: {get: function() {
@@ -17103,7 +17265,7 @@ Handsontable.hooks.add('afterOnCellCornerMouseDown', function() {
 Handsontable.plugins.DragToScroll = DragToScroll;
 
 //# 
-},{"browser":24,"eventManager":42,"plugins":62}],93:[function(_dereq_,module,exports){
+},{"browser":24,"eventManager":42,"plugins":62}],94:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   freezeColumnItem: {get: function() {
@@ -17135,7 +17297,7 @@ function freezeColumnItem(manualColumnFreezePlugin) {
 }
 
 //# 
-},{}],94:[function(_dereq_,module,exports){
+},{}],95:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   unfreezeColumnItem: {get: function() {
@@ -17167,7 +17329,7 @@ function unfreezeColumnItem(manualColumnFreezePlugin) {
 }
 
 //# 
-},{}],95:[function(_dereq_,module,exports){
+},{}],96:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ManualColumnFreeze: {get: function() {
@@ -17324,7 +17486,7 @@ var $ManualColumnFreeze = ManualColumnFreeze;
 registerPlugin('manualColumnFreeze', ManualColumnFreeze);
 
 //# 
-},{"_base":63,"browser":24,"contextMenuItem/freezeColumn":93,"contextMenuItem/unfreezeColumn":94,"helpers/array":43,"plugins":62}],96:[function(_dereq_,module,exports){
+},{"_base":63,"browser":24,"contextMenuItem/freezeColumn":94,"contextMenuItem/unfreezeColumn":95,"helpers/array":43,"plugins":62}],97:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ColumnsMapper: {get: function() {
@@ -17373,7 +17535,7 @@ mixin(ColumnsMapper, arrayMapper);
 Handsontable.utils.ManualColumnMoveColumnsMapper = ColumnsMapper;
 
 //# 
-},{"browser":24,"helpers/array":43,"helpers/number":52,"helpers/object":53,"mixins/arrayMapper":57}],97:[function(_dereq_,module,exports){
+},{"browser":24,"helpers/array":43,"helpers/number":52,"helpers/object":53,"mixins/arrayMapper":57}],98:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ManualColumnMove: {get: function() {
@@ -17809,7 +17971,7 @@ Handsontable.hooks.register('afterColumnMove');
 Handsontable.hooks.register('unmodifyCol');
 
 //# 
-},{"_base.js":63,"browser":24,"columnsMapper":96,"eventManager":42,"helpers/array":43,"helpers/dom/element":47,"helpers/number":52,"plugins":62,"ui/backlight":99,"ui/guideline":100}],98:[function(_dereq_,module,exports){
+},{"_base.js":63,"browser":24,"columnsMapper":97,"eventManager":42,"helpers/array":43,"helpers/dom/element":47,"helpers/number":52,"plugins":62,"ui/backlight":100,"ui/guideline":101}],99:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BaseUI: {get: function() {
@@ -17896,7 +18058,7 @@ var BaseUI = function BaseUI(hotInstance) {
 ;
 
 //# 
-},{"helpers/number":52}],99:[function(_dereq_,module,exports){
+},{"helpers/number":52}],100:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BacklightUI: {get: function() {
@@ -17920,7 +18082,7 @@ var $BacklightUI = BacklightUI;
 ;
 
 //# 
-},{"_base":98,"helpers/dom/element":47}],100:[function(_dereq_,module,exports){
+},{"_base":99,"helpers/dom/element":47}],101:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   GuidelineUI: {get: function() {
@@ -17944,7 +18106,7 @@ var $GuidelineUI = GuidelineUI;
 ;
 
 //# 
-},{"_base":98,"helpers/dom/element":47}],101:[function(_dereq_,module,exports){
+},{"_base":99,"helpers/dom/element":47}],102:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ManualColumnResize: {get: function() {
@@ -18291,7 +18453,7 @@ var $ManualColumnResize = ManualColumnResize;
 registerPlugin('manualColumnResize', ManualColumnResize);
 
 //# 
-},{"_base.js":63,"browser":24,"eventManager":42,"helpers/array":43,"helpers/dom/element":47,"helpers/dom/event":48,"helpers/number":52,"plugins":62}],102:[function(_dereq_,module,exports){
+},{"_base.js":63,"browser":24,"eventManager":42,"helpers/array":43,"helpers/dom/element":47,"helpers/dom/event":48,"helpers/number":52,"plugins":62}],103:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ManualRowMove: {get: function() {
@@ -18701,7 +18863,7 @@ Handsontable.hooks.register('afterRowMove');
 Handsontable.hooks.register('unmodifyRow');
 
 //# 
-},{"_base.js":63,"browser":24,"eventManager":42,"helpers/array":43,"helpers/dom/element":47,"helpers/number":52,"plugins":62,"rowsMapper":103,"ui/backlight":105,"ui/guideline":106}],103:[function(_dereq_,module,exports){
+},{"_base.js":63,"browser":24,"eventManager":42,"helpers/array":43,"helpers/dom/element":47,"helpers/number":52,"plugins":62,"rowsMapper":104,"ui/backlight":106,"ui/guideline":107}],104:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   RowsMapper: {get: function() {
@@ -18750,7 +18912,7 @@ mixin(RowsMapper, arrayMapper);
 Handsontable.utils.ManualRowMoveRowsMapper = RowsMapper;
 
 //# 
-},{"browser":24,"helpers/array":43,"helpers/number":52,"helpers/object":53,"mixins/arrayMapper":57}],104:[function(_dereq_,module,exports){
+},{"browser":24,"helpers/array":43,"helpers/number":52,"helpers/object":53,"mixins/arrayMapper":57}],105:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BaseUI: {get: function() {
@@ -18835,7 +18997,7 @@ var BaseUI = function BaseUI(hotInstance) {
 ;
 
 //# 
-},{}],105:[function(_dereq_,module,exports){
+},{}],106:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BacklightUI: {get: function() {
@@ -18859,7 +19021,7 @@ var $BacklightUI = BacklightUI;
 ;
 
 //# 
-},{"_base":104,"helpers/dom/element":47}],106:[function(_dereq_,module,exports){
+},{"_base":105,"helpers/dom/element":47}],107:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   GuidelineUI: {get: function() {
@@ -18883,7 +19045,7 @@ var $GuidelineUI = GuidelineUI;
 ;
 
 //# 
-},{"_base":104,"helpers/dom/element":47}],107:[function(_dereq_,module,exports){
+},{"_base":105,"helpers/dom/element":47}],108:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ManualRowResize: {get: function() {
@@ -19200,7 +19362,7 @@ var $ManualRowResize = ManualRowResize;
 registerPlugin('manualRowResize', ManualRowResize);
 
 //# 
-},{"_base.js":63,"browser":24,"eventManager":42,"helpers/array":43,"helpers/dom/element":47,"helpers/dom/event":48,"helpers/number":52,"plugins":62}],108:[function(_dereq_,module,exports){
+},{"_base.js":63,"browser":24,"eventManager":42,"helpers/array":43,"helpers/dom/element":47,"helpers/dom/event":48,"helpers/number":52,"plugins":62}],109:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   MergeCells: {get: function() {
@@ -19685,7 +19847,7 @@ var isMultipleSelection = function(isMultiple) {
   }
   return isMultiple;
 };
-function afterAutofillApplyValues(select, drag) {
+function modifyAutofillRange(select, drag) {
   var mergeCellsSetting = this.getSettings().mergeCells;
   if (!mergeCellsSetting || this.selection.isMultiple()) {
     return;
@@ -19732,7 +19894,7 @@ Handsontable.hooks.add('afterContextMenuDefaultOptions', addMergeActionsToContex
 Handsontable.hooks.add('afterGetCellMeta', afterGetCellMeta);
 Handsontable.hooks.add('afterViewportRowCalculatorOverride', afterViewportRowCalculatorOverride);
 Handsontable.hooks.add('afterViewportColumnCalculatorOverride', afterViewportColumnCalculatorOverride);
-Handsontable.hooks.add('afterAutofillApplyValues', afterAutofillApplyValues);
+Handsontable.hooks.add('modifyAutofillRange', modifyAutofillRange);
 Handsontable.hooks.add('afterCreateCol', onAfterCreateCol);
 Handsontable.hooks.add('afterRemoveCol', onAfterRemoveCol);
 Handsontable.hooks.add('afterCreateRow', onAfterCreateRow);
@@ -19740,7 +19902,7 @@ Handsontable.hooks.add('afterRemoveRow', onAfterRemoveRow);
 Handsontable.MergeCells = MergeCells;
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":6,"3rdparty/walkontable/src/cell/range":7,"3rdparty/walkontable/src/table":21,"browser":24,"helpers/dom/event":48,"plugins":62}],109:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":6,"3rdparty/walkontable/src/cell/range":7,"3rdparty/walkontable/src/table":21,"browser":24,"helpers/dom/event":48,"plugins":62}],110:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   MultipleSelectionHandles: {get: function() {
@@ -20031,7 +20193,7 @@ var $MultipleSelectionHandles = MultipleSelectionHandles;
 registerPlugin('multipleSelectionHandles', MultipleSelectionHandles);
 
 //# 
-},{"_base":63,"browser":24,"eventManager":42,"helpers/browser":44,"helpers/dom/element":47,"plugins":62}],110:[function(_dereq_,module,exports){
+},{"_base":63,"browser":24,"eventManager":42,"helpers/browser":44,"helpers/dom/element":47,"plugins":62}],111:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DataObserver: {get: function() {
@@ -20086,7 +20248,7 @@ mixin(DataObserver, localHooks);
 ;
 
 //# 
-},{"../../helpers/object":53,"../../mixins/localHooks":58,"jsonpatch":"jsonpatch","utils":112}],111:[function(_dereq_,module,exports){
+},{"../../helpers/object":53,"../../mixins/localHooks":58,"jsonpatch":"jsonpatch","utils":113}],112:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ObserveChanges: {get: function() {
@@ -20232,7 +20394,7 @@ var $ObserveChanges = ObserveChanges;
 registerPlugin('observeChanges', ObserveChanges);
 
 //# 
-},{"_base":63,"browser":24,"dataObserver":110,"helpers/array":43,"jsonpatch":"jsonpatch","plugins":62}],112:[function(_dereq_,module,exports){
+},{"_base":63,"browser":24,"dataObserver":111,"helpers/array":43,"jsonpatch":"jsonpatch","plugins":62}],113:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   cleanPatches: {get: function() {
@@ -20291,7 +20453,7 @@ function parsePath(path) {
 }
 
 //# 
-},{"../../helpers/array":43}],113:[function(_dereq_,module,exports){
+},{"../../helpers/array":43}],114:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   HandsontablePersistentState: {get: function() {
@@ -20405,7 +20567,7 @@ Handsontable.hooks.add('beforeInit', htPersistentState.init);
 Handsontable.hooks.add('afterUpdateSettings', htPersistentState.init);
 
 //# 
-},{"browser":24,"plugins":62}],114:[function(_dereq_,module,exports){
+},{"browser":24,"plugins":62}],115:[function(_dereq_,module,exports){
 "use strict";
 var $___46__46__47__46__46__47_browser__,
     $___46__46__47__46__46__47_helpers_47_dom_47_element__,
@@ -20515,7 +20677,7 @@ Handsontable.hooks.add('afterInit', init);
 Handsontable.hooks.add('afterUpdateSettings', init);
 
 //# 
-},{"browser":24,"helpers/dom/element":47,"renderers":117}],115:[function(_dereq_,module,exports){
+},{"browser":24,"helpers/dom/element":47,"renderers":118}],116:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   TouchScroll: {get: function() {
@@ -20630,7 +20792,7 @@ var $TouchScroll = TouchScroll;
 registerPlugin('touchScroll', TouchScroll);
 
 //# 
-},{"_base":63,"browser":24,"helpers/dom/element":47,"plugins":62}],116:[function(_dereq_,module,exports){
+},{"_base":63,"browser":24,"helpers/dom/element":47,"plugins":62}],117:[function(_dereq_,module,exports){
 "use strict";
 var $___46__46__47__46__46__47_browser__,
     $___46__46__47__46__46__47_helpers_47_array__,
@@ -21057,7 +21219,7 @@ Handsontable.hooks.register('beforeRedo');
 Handsontable.hooks.register('afterRedo');
 
 //# 
-},{"browser":24,"helpers/array":43,"helpers/dom/event":48,"helpers/number":52,"helpers/object":53}],117:[function(_dereq_,module,exports){
+},{"browser":24,"helpers/array":43,"helpers/dom/event":48,"helpers/number":52,"helpers/object":53}],118:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   registerRenderer: {get: function() {
@@ -21107,7 +21269,7 @@ function hasRenderer(rendererName) {
 ;
 
 //# 
-},{"browser":24,"helpers/string":55}],118:[function(_dereq_,module,exports){
+},{"browser":24,"helpers/string":55}],119:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   cellDecorator: {get: function() {
@@ -21148,7 +21310,7 @@ function cellDecorator(instance, TD, row, col, prop, value, cellProperties) {
 registerRenderer('base', cellDecorator);
 
 //# 
-},{"helpers/dom/element":47,"renderers":117}],119:[function(_dereq_,module,exports){
+},{"helpers/dom/element":47,"renderers":118}],120:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   autocompleteRenderer: {get: function() {
@@ -21209,7 +21371,7 @@ function autocompleteRenderer(instance, TD, row, col, prop, value, cellPropertie
 registerRenderer('autocomplete', autocompleteRenderer);
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":6,"eventManager":42,"helpers/dom/element":47,"renderers":117}],120:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":6,"eventManager":42,"helpers/dom/element":47,"renderers":118}],121:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   checkboxRenderer: {get: function() {
@@ -21453,7 +21615,7 @@ function isCheckboxInput(element) {
 registerRenderer('checkbox', checkboxRenderer);
 
 //# 
-},{"eventManager":42,"helpers/dom/element":47,"helpers/dom/event":48,"helpers/function":50,"helpers/string":55,"helpers/unicode":56,"renderers":117}],121:[function(_dereq_,module,exports){
+},{"eventManager":42,"helpers/dom/element":47,"helpers/dom/event":48,"helpers/function":50,"helpers/string":55,"helpers/unicode":56,"renderers":118}],122:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   htmlRenderer: {get: function() {
@@ -21478,7 +21640,7 @@ function htmlRenderer(instance, TD, row, col, prop, value, cellProperties) {
 registerRenderer('html', htmlRenderer);
 
 //# 
-},{"helpers/dom/element":47,"renderers":117}],122:[function(_dereq_,module,exports){
+},{"helpers/dom/element":47,"renderers":118}],123:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   numericRenderer: {get: function() {
@@ -21516,7 +21678,7 @@ function numericRenderer(instance, TD, row, col, prop, value, cellProperties) {
 registerRenderer('numeric', numericRenderer);
 
 //# 
-},{"helpers/number":52,"numbro":"numbro","renderers":117}],123:[function(_dereq_,module,exports){
+},{"helpers/number":52,"numbro":"numbro","renderers":118}],124:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   passwordRenderer: {get: function() {
@@ -21543,7 +21705,7 @@ function passwordRenderer(instance, TD, row, col, prop, value, cellProperties) {
 registerRenderer('password', passwordRenderer);
 
 //# 
-},{"helpers/dom/element":47,"renderers":117}],124:[function(_dereq_,module,exports){
+},{"helpers/dom/element":47,"renderers":118}],125:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   textRenderer: {get: function() {
@@ -21586,7 +21748,7 @@ function textRenderer(instance, TD, row, col, prop, value, cellProperties) {
 registerRenderer('text', textRenderer);
 
 //# 
-},{"helpers/dom/element":47,"helpers/mixed":51,"renderers":117}],125:[function(_dereq_,module,exports){
+},{"helpers/dom/element":47,"helpers/mixed":51,"renderers":118}],126:[function(_dereq_,module,exports){
 // jscs:disable
 /* jshint ignore:start */
 (function(global) {
@@ -21941,7 +22103,7 @@ registerRenderer('text', textRenderer);
 })();
 /* jshint ignore:end */
 
-},{}],126:[function(_dereq_,module,exports){
+},{}],127:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   TableView: {get: function() {
@@ -22334,6 +22496,10 @@ function TableView(instance) {
       event.preventDefault();
       Handsontable.hooks.run(instance, 'afterOnCellCornerMouseDown', event);
     },
+    onCellCornerDblClick: function(event) {
+      event.preventDefault();
+      Handsontable.hooks.run(instance, 'afterOnCellCornerDblClick', event);
+    },
     beforeDraw: function(force, skipRender) {
       that.beforeRender(force, skipRender);
     },
@@ -22558,7 +22724,7 @@ TableView.prototype.destroy = function() {
 ;
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":6,"3rdparty/walkontable/src/core":8,"3rdparty/walkontable/src/selection":19,"browser":24,"eventManager":42,"helpers/dom/element":47,"helpers/dom/event":48,"helpers/object":53}],127:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":6,"3rdparty/walkontable/src/core":8,"3rdparty/walkontable/src/selection":19,"browser":24,"eventManager":42,"helpers/dom/element":47,"helpers/dom/event":48,"helpers/object":53}],128:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Stack: {get: function() {
@@ -22597,7 +22763,7 @@ var Stack = function Stack() {
 Handsontable.utils.Stack = Stack;
 
 //# 
-},{"browser":24}],128:[function(_dereq_,module,exports){
+},{"browser":24}],129:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   GhostTable: {get: function() {
@@ -22878,7 +23044,7 @@ var GhostTable = function GhostTable(hotInstance) {
 Handsontable.utils.GhostTable = GhostTable;
 
 //# 
-},{"browser":24,"helpers/array":43,"helpers/dom/element":47,"helpers/mixed":51,"helpers/number":52,"helpers/object":53}],129:[function(_dereq_,module,exports){
+},{"browser":24,"helpers/array":43,"helpers/dom/element":47,"helpers/mixed":51,"helpers/number":52,"helpers/object":53}],130:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Interval: {get: function() {
@@ -22947,7 +23113,7 @@ function parseDelay(delay) {
 Handsontable.utils.Interval = Interval;
 
 //# 
-},{"browser":24,"helpers/feature":49}],130:[function(_dereq_,module,exports){
+},{"browser":24,"helpers/feature":49}],131:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   registerIdentity: {get: function() {
@@ -23031,7 +23197,7 @@ Handsontable.utils.RecordTranslatorUtils = {
 };
 
 //# 
-},{"browser":24,"helpers/object":53}],131:[function(_dereq_,module,exports){
+},{"browser":24,"helpers/object":53}],132:[function(_dereq_,module,exports){
 "use strict";
 var $__8;
 Object.defineProperties(exports, {
@@ -23183,7 +23349,7 @@ var $SamplesGenerator = SamplesGenerator;
 Handsontable.utils.SamplesGenerator = SamplesGenerator;
 
 //# 
-},{"browser":24,"helpers/array":43,"helpers/dom/element":47,"helpers/mixed":51,"helpers/number":52,"helpers/object":53}],132:[function(_dereq_,module,exports){
+},{"browser":24,"helpers/array":43,"helpers/dom/element":47,"helpers/mixed":51,"helpers/number":52,"helpers/object":53}],133:[function(_dereq_,module,exports){
 "use strict";
 var $___46__46__47_browser__,
     $___46__46__47_helpers_47_mixed__;
@@ -23209,15 +23375,11 @@ Handsontable.AutocompleteValidator = function(value, callback) {
 };
 function process(value, callback) {
   var originalVal = value;
-  var lowercaseVal = typeof originalVal === 'string' ? originalVal.toLowerCase() : null;
   return function(source) {
     var found = false;
     for (var s = 0,
         slen = source.length; s < slen; s++) {
       if (originalVal === source[s]) {
-        found = true;
-        break;
-      } else if (lowercaseVal === stringify(source[s]).toLowerCase()) {
         found = true;
         break;
       }
@@ -23227,7 +23389,7 @@ function process(value, callback) {
 }
 
 //# 
-},{"browser":24,"helpers/mixed":51}],133:[function(_dereq_,module,exports){
+},{"browser":24,"helpers/mixed":51}],134:[function(_dereq_,module,exports){
 "use strict";
 var $___46__46__47_browser__,
     $__moment__,
@@ -23258,7 +23420,9 @@ Handsontable.DateValidator = function(value, callback) {
   if (isValidDate && !isValidFormat) {
     if (this.correctFormat === true) {
       var correctedValue = correctFormat(value, this.dateFormat);
-      this.instance.setDataAtCell(this.row, this.col, correctedValue, 'dateValidator');
+      var row = this.instance.runHooks('unmodifyRow', this.row);
+      var column = this.instance.runHooks('unmodifyCol', this.col);
+      this.instance.setDataAtCell(row, column, correctedValue, 'dateValidator');
       valid = true;
     } else {
       valid = false;
@@ -23280,7 +23444,7 @@ var correctFormat = function correctFormat(value, dateFormat) {
 };
 
 //# 
-},{"../helpers/date":46,"browser":24,"editors":30,"moment":"moment"}],134:[function(_dereq_,module,exports){
+},{"../helpers/date":46,"browser":24,"editors":30,"moment":"moment"}],135:[function(_dereq_,module,exports){
 "use strict";
 var $___46__46__47_browser__;
 var Handsontable = ($___46__46__47_browser__ = _dereq_("browser"), $___46__46__47_browser__ && $___46__46__47_browser__.__esModule && $___46__46__47_browser__ || {default: $___46__46__47_browser__}).default;
@@ -23298,7 +23462,7 @@ Handsontable.NumericValidator = function(value, callback) {
 };
 
 //# 
-},{"browser":24}],135:[function(_dereq_,module,exports){
+},{"browser":24}],136:[function(_dereq_,module,exports){
 "use strict";
 var $___46__46__47_browser__,
     $__moment__;
@@ -23332,7 +23496,9 @@ Handsontable.TimeValidator = function(value, callback) {
   if (isValidTime && !isValidFormat) {
     if (this.correctFormat === true) {
       var correctedValue = date.format(timeFormat);
-      this.instance.setDataAtCell(this.row, this.col, correctedValue, 'timeValidator');
+      var row = this.instance.runHooks('unmodifyRow', this.row);
+      var column = this.instance.runHooks('unmodifyCol', this.col);
+      this.instance.setDataAtCell(row, column, correctedValue, 'timeValidator');
       valid = true;
     } else {
       valid = false;
@@ -23342,7 +23508,7 @@ Handsontable.TimeValidator = function(value, callback) {
 };
 
 //# 
-},{"browser":24,"moment":"moment"}],136:[function(_dereq_,module,exports){
+},{"browser":24,"moment":"moment"}],137:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableBottomOverlay: {get: function() {
@@ -23546,7 +23712,7 @@ window.WalkontableBottomOverlay = WalkontableBottomOverlay;
 WalkontableOverlay.registerOverlay(WalkontableOverlay.CLONE_BOTTOM, WalkontableBottomOverlay);
 
 //# 
-},{"../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js":12,"../../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47}],137:[function(_dereq_,module,exports){
+},{"../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js":12,"../../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47}],138:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   WalkontableBottomLeftCornerOverlay: {get: function() {
@@ -23625,7 +23791,7 @@ window.WalkontableBottomLeftCornerOverlay = WalkontableBottomLeftCornerOverlay;
 WalkontableOverlay.registerOverlay(WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER, WalkontableBottomLeftCornerOverlay);
 
 //# 
-},{"../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js":12,"../../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47}],138:[function(_dereq_,module,exports){
+},{"../../../../../node_modules/hot-builder/node_modules/handsontable/src/3rdparty/walkontable/src/overlay/_base.js":12,"../../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47}],139:[function(_dereq_,module,exports){
 "use strict";
 var $__handsontable_47_browser__,
     $__3rdparty_47_walkontable_47_src_47_overlay_47_bottom__,
@@ -23636,7 +23802,7 @@ var WalkontableBottomLeftCornerOverlay = ($__3rdparty_47_walkontable_47_src_47_o
 module.exports = Handsontable;
 
 //# 
-},{"../node_modules/hot-builder/node_modules/handsontable/src/browser":24,"3rdparty/walkontable/src/overlay/bottom":136,"3rdparty/walkontable/src/overlay/bottomLeftCorner":137}],139:[function(_dereq_,module,exports){
+},{"../node_modules/hot-builder/node_modules/handsontable/src/browser":24,"3rdparty/walkontable/src/overlay/bottom":137,"3rdparty/walkontable/src/overlay/bottomLeftCorner":138}],140:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BindRowsWithHeaders: {get: function() {
@@ -23732,7 +23898,7 @@ var $BindRowsWithHeaders = BindRowsWithHeaders;
 registerPlugin('bindRowsWithHeaders', BindRowsWithHeaders);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63,"bindStrategy":140}],140:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63,"bindStrategy":141}],141:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BindStrategy: {get: function() {
@@ -23807,7 +23973,7 @@ var BindStrategy = function BindStrategy() {
 Handsontable.utils.BindStrategy = BindStrategy;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":57,"../../browser":138}],141:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":57,"../../browser":139}],142:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   LooseBindStrategy: {get: function() {
@@ -23840,7 +24006,7 @@ BindStrategy.registerStrategy(LooseBindStrategy.STRATEGY_NAME, LooseBindStrategy
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":57,"bindStrategy":140}],142:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":57,"bindStrategy":141}],143:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   StrictBindStrategy: {get: function() {
@@ -23873,7 +24039,7 @@ BindStrategy.registerStrategy(StrictBindStrategy.STRATEGY_NAME, StrictBindStrate
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":57,"bindStrategy":140}],143:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":57,"bindStrategy":141}],144:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   CollapsibleColumns: {get: function() {
@@ -24181,7 +24347,7 @@ var $CollapsibleColumns = CollapsibleColumns;
 registerPlugin('collapsibleColumns', CollapsibleColumns);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":48,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63}],144:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":48,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63}],145:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ColumnSummary: {get: function() {
@@ -24220,18 +24386,18 @@ var $ColumnSummary = ColumnSummary;
     this.settings = this.hot.getSettings().columnSummary;
     this.endpoints = new Endpoints(this, this.settings);
     this.addHook('afterInit', (function() {
-      var $__13;
+      var $__15;
       for (var args = [],
           $__7 = 0; $__7 < arguments.length; $__7++)
         args[$__7] = arguments[$__7];
-      return ($__13 = $__5).onAfterInit.apply($__13, $traceurRuntime.spread(args));
+      return ($__15 = $__5).onAfterInit.apply($__15, $traceurRuntime.spread(args));
     }));
     this.addHook('afterChange', (function() {
-      var $__13;
+      var $__15;
       for (var args = [],
           $__8 = 0; $__8 < arguments.length; $__8++)
         args[$__8] = arguments[$__8];
-      return ($__13 = $__5).onAfterChange.apply($__13, $traceurRuntime.spread(args));
+      return ($__15 = $__5).onAfterChange.apply($__15, $traceurRuntime.spread(args));
     }));
     this.addHook('beforeCreateRow', (function(index, amount, source) {
       return $__5.endpoints.resetSetupBeforeStructureAlteration('insert_row', index, amount, null, source);
@@ -24240,18 +24406,25 @@ var $ColumnSummary = ColumnSummary;
       return $__5.endpoints.resetSetupBeforeStructureAlteration('insert_col', index, amount, null, source);
     }));
     this.addHook('beforeRemoveRow', (function() {
-      var $__13;
+      var $__15;
       for (var args = [],
           $__9 = 0; $__9 < arguments.length; $__9++)
         args[$__9] = arguments[$__9];
-      return ($__13 = $__5.endpoints).resetSetupBeforeStructureAlteration.apply($__13, $traceurRuntime.spread(['remove_row'], args));
+      return ($__15 = $__5.endpoints).resetSetupBeforeStructureAlteration.apply($__15, $traceurRuntime.spread(['remove_row'], args));
     }));
     this.addHook('beforeRemoveCol', (function() {
-      var $__13;
+      var $__15;
       for (var args = [],
           $__10 = 0; $__10 < arguments.length; $__10++)
         args[$__10] = arguments[$__10];
-      return ($__13 = $__5.endpoints).resetSetupBeforeStructureAlteration.apply($__13, $traceurRuntime.spread(['remove_col'], args));
+      return ($__15 = $__5.endpoints).resetSetupBeforeStructureAlteration.apply($__15, $traceurRuntime.spread(['remove_col'], args));
+    }));
+    this.addHook('beforeRowMove', (function() {
+      var $__15;
+      for (var args = [],
+          $__11 = 0; $__11 < arguments.length; $__11++)
+        args[$__11] = arguments[$__11];
+      return ($__15 = $__5).onBeforeRowMove.apply($__15, $traceurRuntime.spread(args));
     }));
     this.addHook('afterCreateRow', (function(index, amount, source) {
       return $__5.endpoints.resetSetupAfterStructureAlteration('insert_row', index, amount, null, source);
@@ -24260,18 +24433,25 @@ var $ColumnSummary = ColumnSummary;
       return $__5.endpoints.resetSetupAfterStructureAlteration('insert_col', index, amount, null, source);
     }));
     this.addHook('afterRemoveRow', (function() {
-      var $__13;
-      for (var args = [],
-          $__11 = 0; $__11 < arguments.length; $__11++)
-        args[$__11] = arguments[$__11];
-      return ($__13 = $__5.endpoints).resetSetupAfterStructureAlteration.apply($__13, $traceurRuntime.spread(['remove_row'], args));
-    }));
-    this.addHook('afterRemoveCol', (function() {
-      var $__13;
+      var $__15;
       for (var args = [],
           $__12 = 0; $__12 < arguments.length; $__12++)
         args[$__12] = arguments[$__12];
-      return ($__13 = $__5.endpoints).resetSetupAfterStructureAlteration.apply($__13, $traceurRuntime.spread(['remove_col'], args));
+      return ($__15 = $__5.endpoints).resetSetupAfterStructureAlteration.apply($__15, $traceurRuntime.spread(['remove_row'], args));
+    }));
+    this.addHook('afterRemoveCol', (function() {
+      var $__15;
+      for (var args = [],
+          $__13 = 0; $__13 < arguments.length; $__13++)
+        args[$__13] = arguments[$__13];
+      return ($__15 = $__5.endpoints).resetSetupAfterStructureAlteration.apply($__15, $traceurRuntime.spread(['remove_col'], args));
+    }));
+    this.addHook('afterRowMove', (function() {
+      var $__15;
+      for (var args = [],
+          $__14 = 0; $__14 < arguments.length; $__14++)
+        args[$__14] = arguments[$__14];
+      return ($__15 = $__5).onAfterRowMove.apply($__15, $traceurRuntime.spread(args));
     }));
     $traceurRuntime.superGet(this, $ColumnSummary.prototype, "enablePlugin").call(this);
   },
@@ -24279,15 +24459,6 @@ var $ColumnSummary = ColumnSummary;
     this.endpoints = null;
     this.settings = null;
     this.currentEndpoint = null;
-  },
-  onAfterInit: function() {
-    this.endpoints.endpoints = this.endpoints.parseSettings();
-    this.endpoints.refreshAllEndpoints(true);
-  },
-  onAfterChange: function(changes, source) {
-    if (changes && source !== 'columnSummary' && source !== 'loadData') {
-      this.endpoints.refreshChangedEndpoints(changes);
-    }
   },
   calculate: function(endpoint) {
     switch (endpoint.type.toLowerCase()) {
@@ -24334,7 +24505,7 @@ var $ColumnSummary = ColumnSummary;
       sum += cellValue || 0;
       i--;
     } while (i >= rowRange[0]);
-    return Math.round(sum * 10 * biggestDecimalPlacesCount) / 10 * biggestDecimalPlacesCount;
+    return Math.round(sum * Math.pow(10, biggestDecimalPlacesCount)) / Math.pow(10, biggestDecimalPlacesCount);
   },
   calculateMinMax: function(endpoint, type) {
     var result = null;
@@ -24412,9 +24583,10 @@ var $ColumnSummary = ColumnSummary;
     return sum / entriesCount;
   },
   getCellValue: function(row, col) {
-    var cellValue = this.hot.getSourceDataAtCell(row, col);
     var visualRowIndex = this.endpoints.getVisualRowIndex(row);
-    var cellClassName = this.hot.getCellMeta(visualRowIndex, col).className || '';
+    var visualColumnIndex = this.endpoints.getVisualColumnIndex(col);
+    var cellValue = this.hot.getSourceDataAtCell(row, col);
+    var cellClassName = this.hot.getCellMeta(visualRowIndex, visualColumnIndex).className || '';
     if (cellClassName.indexOf('columnSummaryResult') > -1) {
       return null;
     }
@@ -24422,7 +24594,7 @@ var $ColumnSummary = ColumnSummary;
       if (typeof cellValue === 'string') {
         cellValue = cellValue.replace(/,/, '.');
       }
-      cellValue = parseFloat(cellValue, 10);
+      cellValue = parseFloat(cellValue);
     }
     if (isNaN(cellValue)) {
       if (!this.endpoints.currentEndpoint.suppressDataTypeErrors) {
@@ -24430,13 +24602,28 @@ var $ColumnSummary = ColumnSummary;
       }
     }
     return cellValue;
+  },
+  onAfterInit: function() {
+    this.endpoints.endpoints = this.endpoints.parseSettings();
+    this.endpoints.refreshAllEndpoints(true);
+  },
+  onAfterChange: function(changes, source) {
+    if (changes && source !== 'columnSummary' && source !== 'loadData') {
+      this.endpoints.refreshChangedEndpoints(changes);
+    }
+  },
+  onBeforeRowMove: function(rows, target) {
+    this.endpoints.resetSetupBeforeStructureAlteration('move_row', rows[0], rows.length, rows, this.pluginName);
+  },
+  onAfterRowMove: function(rows, target) {
+    this.endpoints.resetSetupAfterStructureAlteration('move_row', target, rows.length, rows, this.pluginName);
   }
 }, {}, BasePlugin);
 ;
 registerPlugin('columnSummary', ColumnSummary);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":63,"endpoints":145}],145:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":63,"endpoints":146}],146:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Endpoints: {get: function() {
@@ -24445,9 +24632,11 @@ Object.defineProperties(exports, {
   __esModule: {value: true}
 });
 var $__handsontable_47_helpers_47_array__,
-    $__handsontable_47_helpers_47_object__;
+    $__handsontable_47_helpers_47_object__,
+    $__handsontable_47_utils_47_recordTranslator__;
 var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
 var deepClone = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).deepClone;
+var getTranslator = ($__handsontable_47_utils_47_recordTranslator__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/utils/recordTranslator"), $__handsontable_47_utils_47_recordTranslator__ && $__handsontable_47_utils_47_recordTranslator__.__esModule && $__handsontable_47_utils_47_recordTranslator__ || {default: $__handsontable_47_utils_47_recordTranslator__}).getTranslator;
 var Endpoints = function Endpoints(plugin, settings) {
   this.plugin = plugin;
   this.hot = this.plugin.hot;
@@ -24456,6 +24645,7 @@ var Endpoints = function Endpoints(plugin, settings) {
   this.settingsType = 'array';
   this.currentEndpoint = null;
   this.cellsToSetCache = [];
+  this.recordTranslator = getTranslator(this.hot);
 };
 ($traceurRuntime.createClass)(Endpoints, {
   getEndpoint: function(index) {
@@ -24476,7 +24666,7 @@ var Endpoints = function Endpoints(plugin, settings) {
     return this.parseSettings(func.call(this));
   },
   parseSettings: function(settings) {
-    var $__2 = this;
+    var $__3 = this;
     var endpointsArray = [];
     if (!settings && typeof this.settings === 'function') {
       this.settingsType = 'function';
@@ -24487,18 +24677,18 @@ var Endpoints = function Endpoints(plugin, settings) {
     }
     arrayEach(settings, (function(val) {
       var newEndpoint = {};
-      $__2.assignSetting(val, newEndpoint, 'ranges', [[0, $__2.hot.countRows() - 1]]);
-      $__2.assignSetting(val, newEndpoint, 'reversedRowCoords', false);
-      $__2.assignSetting(val, newEndpoint, 'destinationRow', new Error('You must provide a destination row for the Column Summary plugin in order to work properly!'));
-      $__2.assignSetting(val, newEndpoint, 'destinationColumn', new Error('You must provide a destination column for the Column Summary plugin in order to work properly!'));
-      $__2.assignSetting(val, newEndpoint, 'sourceColumn', val.destinationColumn);
-      $__2.assignSetting(val, newEndpoint, 'type', 'sum');
-      $__2.assignSetting(val, newEndpoint, 'forceNumeric', false);
-      $__2.assignSetting(val, newEndpoint, 'suppressDataTypeErrors', true);
-      $__2.assignSetting(val, newEndpoint, 'suppressDataTypeErrors', true);
-      $__2.assignSetting(val, newEndpoint, 'customFunction', null);
-      $__2.assignSetting(val, newEndpoint, 'readOnly', true);
-      $__2.assignSetting(val, newEndpoint, 'roundFloat', false);
+      $__3.assignSetting(val, newEndpoint, 'ranges', [[0, $__3.hot.countRows() - 1]]);
+      $__3.assignSetting(val, newEndpoint, 'reversedRowCoords', false);
+      $__3.assignSetting(val, newEndpoint, 'destinationRow', new Error('You must provide a destination row for the Column Summary plugin in order to work properly!'));
+      $__3.assignSetting(val, newEndpoint, 'destinationColumn', new Error('You must provide a destination column for the Column Summary plugin in order to work properly!'));
+      $__3.assignSetting(val, newEndpoint, 'sourceColumn', val.destinationColumn);
+      $__3.assignSetting(val, newEndpoint, 'type', 'sum');
+      $__3.assignSetting(val, newEndpoint, 'forceNumeric', false);
+      $__3.assignSetting(val, newEndpoint, 'suppressDataTypeErrors', true);
+      $__3.assignSetting(val, newEndpoint, 'suppressDataTypeErrors', true);
+      $__3.assignSetting(val, newEndpoint, 'customFunction', null);
+      $__3.assignSetting(val, newEndpoint, 'readOnly', true);
+      $__3.assignSetting(val, newEndpoint, 'roundFloat', false);
       endpointsArray.push(newEndpoint);
     }));
     return endpointsArray;
@@ -24548,38 +24738,104 @@ var Endpoints = function Endpoints(plugin, settings) {
     this.resetAllEndpoints(endpoints, false);
   },
   resetSetupAfterStructureAlteration: function(action, index, number, logicRows, source) {
-    var $__2 = this;
+    var forceRefresh = arguments[5] !== (void 0) ? arguments[5] : true;
+    var $__3 = this;
     if (this.settingsType === 'function') {
       var beforeRenderCallback = (function() {
-        $__2.hot.removeHook('beforeRender', beforeRenderCallback);
-        return $__2.refreshAllEndpoints(true);
+        $__3.hot.removeHook('beforeRender', beforeRenderCallback);
+        return $__3.refreshAllEndpoints(true);
       });
       this.hot.addHookOnce('beforeRender', beforeRenderCallback);
       return;
     }
     var type = action.indexOf('row') > -1 ? 'row' : 'col';
-    var multiplier = action.indexOf('insert') > -1 ? 1 : -1;
+    var multiplier = action.indexOf('remove') > -1 ? -1 : 1;
     var endpoints = this.getAllEndpoints();
-    var rowOffset = 0;
-    var columnOffset = 0;
-    if (type === 'row') {
-      rowOffset = multiplier * number;
-    } else if (type === 'col') {
-      columnOffset = multiplier * number;
-    }
+    var rowMoving = action.indexOf('move_row') === 0;
+    var placeOfAlteration = index;
     arrayEach(endpoints, (function(val, key, obj) {
-      if (type === 'row' && val.destinationRow >= index) {
+      if (type === 'row' && val.destinationRow >= placeOfAlteration) {
         val.alterRowOffset = multiplier * number;
       }
-      if (type === 'col' && val.destinationColumn >= index) {
+      if (type === 'col' && val.destinationColumn >= placeOfAlteration) {
         val.alterColumnOffset = multiplier * number;
       }
     }));
-    this.resetAllEndpoints(endpoints);
-    arrayEach(endpoints, (function(val, key, obj) {
-      $__2.shiftEndpointCoordinates(val, index, rowOffset, columnOffset);
+    this.resetAllEndpoints(endpoints, !rowMoving);
+    if (rowMoving) {
+      arrayEach(endpoints, (function(endpoint, key, obj) {
+        $__3.extendEndpointRanges(endpoint, placeOfAlteration, logicRows[0], logicRows.length);
+        $__3.recreatePhysicalRanges(endpoint);
+        $__3.clearOffsetInformation(endpoint);
+      }));
+    } else {
+      arrayEach(endpoints, (function(endpoint, key, obj) {
+        $__3.shiftEndpointCoordinates(endpoint, placeOfAlteration);
+      }));
+    }
+    if (forceRefresh) {
+      this.refreshAllEndpoints(true);
+    }
+  },
+  clearOffsetInformation: function(endpoint) {
+    endpoint.alterRowOffset = void 0;
+    endpoint.alterColumnOffset = void 0;
+  },
+  extendEndpointRanges: function(endpoint, placeOfAlteration, previousPosition, offset) {
+    arrayEach(endpoint.ranges, (function(range, i) {
+      if (range[1]) {
+        if (placeOfAlteration >= range[0] && placeOfAlteration <= range[1]) {
+          if (previousPosition > range[1]) {
+            range[1] += offset;
+          } else if (previousPosition < range[0]) {
+            range[0] -= offset;
+          }
+        } else if (previousPosition >= range[0] && previousPosition <= range[1]) {
+          range[1] -= offset;
+          if (placeOfAlteration <= range[0]) {
+            range[0]++;
+            range[1]++;
+          }
+        }
+      }
     }));
-    this.refreshAllEndpoints(true);
+  },
+  recreatePhysicalRanges: function(endpoint) {
+    var $__3 = this;
+    var ranges = endpoint.ranges;
+    var newRanges = [];
+    var allIndexes = [];
+    arrayEach(ranges, (function(range) {
+      var newRange = [];
+      if (range[1]) {
+        for (var i = range[0]; i <= range[1]; i++) {
+          newRange.push($__3.recordTranslator.toPhysicalRow(i));
+        }
+      } else {
+        newRange.push($__3.recordTranslator.toPhysicalRow(range[0]));
+      }
+      allIndexes.push(newRange);
+    }));
+    arrayEach(allIndexes, (function(range) {
+      var newRange = [];
+      arrayEach(range, (function(coord, index) {
+        if (index === 0) {
+          newRange.push(coord);
+        } else {
+          if (range[index] !== range[index - 1] + 1) {
+            newRange.push(range[index - 1]);
+            newRanges.push(newRange);
+            newRange = [];
+            newRange.push(coord);
+          }
+        }
+        if (index === range.length - 1) {
+          newRange.push(coord);
+          newRanges.push(newRange);
+        }
+      }));
+    }));
+    endpoint.ranges = newRanges;
   },
   shiftEndpointCoordinates: function(endpoint, offsetStartIndex) {
     if (endpoint.alterRowOffset && endpoint.alterRowOffset !== 0) {
@@ -24598,45 +24854,45 @@ var Endpoints = function Endpoints(plugin, settings) {
   },
   resetAllEndpoints: function(endpoints) {
     var useOffset = arguments[1] !== (void 0) ? arguments[1] : true;
-    var $__2 = this;
+    var $__3 = this;
     this.cellsToSetCache = [];
     if (!endpoints) {
       endpoints = this.getAllEndpoints();
     }
     arrayEach(endpoints, (function(value) {
-      $__2.resetEndpointValue(value, useOffset);
+      $__3.resetEndpointValue(value, useOffset);
     }));
     this.hot.setDataAtCell(this.cellsToSetCache, 'columnSummary');
     this.cellsToSetCache = [];
   },
   refreshAllEndpoints: function(init) {
-    var $__2 = this;
+    var $__3 = this;
     this.cellsToSetCache = [];
     arrayEach(this.getAllEndpoints(), (function(value) {
-      $__2.currentEndpoint = value;
-      $__2.plugin.calculate(value);
-      $__2.setEndpointValue(value, 'init');
+      $__3.currentEndpoint = value;
+      $__3.plugin.calculate(value);
+      $__3.setEndpointValue(value, 'init');
     }));
     this.currentEndpoint = null;
     this.hot.setDataAtCell(this.cellsToSetCache, 'columnSummary');
     this.cellsToSetCache = [];
   },
   refreshChangedEndpoints: function(changes) {
-    var $__2 = this;
+    var $__3 = this;
     var needToRefresh = [];
     this.cellsToSetCache = [];
     arrayEach(changes, (function(value, key, changes) {
       if ((value[2] || '') + '' === value[3] + '') {
         return;
       }
-      arrayEach($__2.getAllEndpoints(), (function(value, j) {
-        if ($__2.hot.propToCol(changes[key][1]) === value.sourceColumn && needToRefresh.indexOf(j) === -1) {
+      arrayEach($__3.getAllEndpoints(), (function(value, j) {
+        if ($__3.hot.propToCol(changes[key][1]) === value.sourceColumn && needToRefresh.indexOf(j) === -1) {
           needToRefresh.push(j);
         }
       }));
     }));
     arrayEach(needToRefresh, (function(value) {
-      $__2.refreshEndpoint($__2.getEndpoint(value));
+      $__3.refreshEndpoint($__3.getEndpoint(value));
     }));
     this.hot.setDataAtCell(this.cellsToSetCache, 'columnSummary');
     this.cellsToSetCache = [];
@@ -24648,13 +24904,17 @@ var Endpoints = function Endpoints(plugin, settings) {
     this.currentEndpoint = null;
   },
   resetEndpointValue: function(endpoint) {
+    var $__5;
     var useOffset = arguments[1] !== (void 0) ? arguments[1] : true;
     var alterRowOffset = endpoint.alterRowOffset || 0;
     var alterColOffset = endpoint.alterColumnOffset || 0;
-    var visualEndpointRowIndex = this.getVisualRowIndex(endpoint.destinationRow);
-    this.hot.setCellMeta(visualEndpointRowIndex, endpoint.destinationColumn, 'readOnly', false);
-    this.hot.setCellMeta(visualEndpointRowIndex, endpoint.destinationColumn, 'className', '');
-    this.cellsToSetCache.push([this.getVisualRowIndex(endpoint.destinationRow + (useOffset ? alterRowOffset : 0)), endpoint.destinationColumn + (useOffset ? alterColOffset : 0), '']);
+    var visualRowIndex,
+        visualColumnIndex;
+    ($__5 = this.recordTranslator.toVisual(endpoint.destinationRow, endpoint.destinationColumn), visualRowIndex = $__5[0], visualColumnIndex = $__5[1], $__5);
+    var cellMeta = this.hot.getCellMeta(visualRowIndex, visualColumnIndex);
+    cellMeta.readOnly = false;
+    cellMeta.className = '';
+    this.cellsToSetCache.push([this.recordTranslator.toVisualRow(endpoint.destinationRow + (useOffset ? alterRowOffset : 0)), this.recordTranslator.toVisualColumn(endpoint.destinationColumn + (useOffset ? alterColOffset : 0)), '']);
   },
   setEndpointValue: function(endpoint, source) {
     var render = arguments[2] !== (void 0) ? arguments[2] : false;
@@ -24684,6 +24944,9 @@ var Endpoints = function Endpoints(plugin, settings) {
   getVisualRowIndex: function(row) {
     return this.hot.runHooks('unmodifyRow', row, 'columnSummary');
   },
+  getVisualColumnIndex: function(column) {
+    return this.hot.runHooks('unmodifyCol', column, 'columnSummary');
+  },
   throwOutOfBoundsWarning: function() {
     console.warn('One of the  Column Summary plugins\' destination points you provided is beyond the table boundaries!');
   }
@@ -24691,7 +24954,7 @@ var Endpoints = function Endpoints(plugin, settings) {
 ;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53}],146:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/utils/recordTranslator":131}],147:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DropdownMenu: {get: function() {
@@ -24898,7 +25161,7 @@ Handsontable.hooks.register('afterDropdownMenuExecute');
 registerPlugin('dropdownMenu', DropdownMenu);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":48,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/commandExecutor":70,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/itemsFactory":73,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":74,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":75,"../../browser":138}],147:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":48,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/commandExecutor":71,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/itemsFactory":74,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":75,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":76,"../../browser":139}],148:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DataProvider: {get: function() {
@@ -25013,7 +25276,7 @@ var DataProvider = function DataProvider(hotInstance) {
 ;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53}],148:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53}],149:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ExportFile: {get: function() {
@@ -25093,7 +25356,7 @@ var $ExportFile = ExportFile;
 registerPlugin('exportFile', ExportFile);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63,"dataProvider":147,"typeFactory":149}],149:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63,"dataProvider":148,"typeFactory":150}],150:[function(_dereq_,module,exports){
 "use strict";
 var $__1;
 Object.defineProperties(exports, {
@@ -25133,7 +25396,7 @@ function typeFactory(type, dataProvider, options) {
 }
 
 //# 
-},{"types/csv.js":151}],150:[function(_dereq_,module,exports){
+},{"types/csv.js":152}],151:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BaseType: {get: function() {
@@ -25186,7 +25449,7 @@ var $BaseType = BaseType;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":55}],151:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":55}],152:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Csv: {get: function() {
@@ -25262,7 +25525,7 @@ var $Csv = Csv;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":51,"_base.js":150}],152:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":51,"_base.js":151}],153:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BaseComponent: {get: function() {
@@ -25312,7 +25575,7 @@ mixin(BaseComponent, stateSaver);
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":58,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/stateSaver":59}],153:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":58,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/stateSaver":59}],154:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ActionBarComponent: {get: function() {
@@ -25399,7 +25662,7 @@ var $ActionBarComponent = ActionBarComponent;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"_base":152,"ui/input":184,"ui/select":186}],154:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"_base":153,"ui/input":185,"ui/select":187}],155:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ConditionComponent: {get: function() {
@@ -25568,7 +25831,7 @@ var $ConditionComponent = ConditionComponent;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":48,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode":56,"_base":152,"constants":156,"formulaRegisterer":181,"ui/input":184,"ui/select":186}],155:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":48,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode":56,"_base":153,"constants":157,"formulaRegisterer":182,"ui/input":185,"ui/select":187}],156:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ValueComponent: {get: function() {
@@ -25724,7 +25987,7 @@ var $ValueComponent = ValueComponent;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":48,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":55,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode":56,"_base":152,"constants":156,"formulaRegisterer":181,"ui/multipleSelect":185,"utils":187}],156:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":48,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":55,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode":56,"_base":153,"constants":157,"formulaRegisterer":182,"ui/multipleSelect":186,"utils":188}],157:[function(_dereq_,module,exports){
 "use strict";
 var $__25;
 Object.defineProperties(exports, {
@@ -25896,7 +26159,7 @@ function getOptionsList(type) {
 }
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":75,"formula/beginsWith":159,"formula/between":160,"formula/byValue":161,"formula/contains":162,"formula/date/after":163,"formula/date/before":164,"formula/date/today":165,"formula/date/tomorrow":166,"formula/date/yesterday":167,"formula/empty":168,"formula/endsWith":169,"formula/equal":170,"formula/greaterThan":171,"formula/greaterThanOrEqual":172,"formula/lessThan":173,"formula/lessThanOrEqual":174,"formula/none":175,"formula/notBetween":176,"formula/notContains":177,"formula/notEmpty":178,"formula/notEqual":179,"formulaRegisterer":181}],157:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":76,"formula/beginsWith":160,"formula/between":161,"formula/byValue":162,"formula/contains":163,"formula/date/after":164,"formula/date/before":165,"formula/date/today":166,"formula/date/tomorrow":167,"formula/date/yesterday":168,"formula/empty":169,"formula/endsWith":170,"formula/equal":171,"formula/greaterThan":172,"formula/greaterThanOrEqual":173,"formula/lessThan":174,"formula/lessThanOrEqual":175,"formula/none":176,"formula/notBetween":177,"formula/notContains":178,"formula/notEmpty":179,"formula/notEqual":180,"formulaRegisterer":182}],158:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DataFilter: {get: function() {
@@ -25956,7 +26219,7 @@ var DataFilter = function DataFilter(formulaCollection) {
 Handsontable.utils.FiltersDataFilter = DataFilter;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../browser":138}],158:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../browser":139}],159:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Filters: {get: function() {
@@ -26282,7 +26545,7 @@ var $Filters = Filters;
 registerPlugin('filters', Filters);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":75,"component/actionBar":153,"component/condition":154,"component/value":155,"constants":156,"dataFilter":157,"formulaCollection":180,"formulaUpdateObserver":182,"utils":187}],159:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":76,"component/actionBar":154,"component/condition":155,"component/value":156,"constants":157,"dataFilter":158,"formulaCollection":181,"formulaUpdateObserver":183,"utils":188}],160:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26307,7 +26570,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":51,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":55,"formulaRegisterer":181}],160:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":51,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":55,"formulaRegisterer":182}],161:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26346,7 +26609,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"date/after":163,"date/before":164,"formulaRegisterer":181}],161:[function(_dereq_,module,exports){
+},{"date/after":164,"date/before":165,"formulaRegisterer":182}],162:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26373,7 +26636,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"formulaRegisterer":181,"utils":187}],162:[function(_dereq_,module,exports){
+},{"formulaRegisterer":182,"utils":188}],163:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26396,7 +26659,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":51,"formulaRegisterer":181}],163:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":51,"formulaRegisterer":182}],164:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26424,7 +26687,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"formulaRegisterer":181,"moment":"moment"}],164:[function(_dereq_,module,exports){
+},{"formulaRegisterer":182,"moment":"moment"}],165:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26452,7 +26715,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"formulaRegisterer":181,"moment":"moment"}],165:[function(_dereq_,module,exports){
+},{"formulaRegisterer":182,"moment":"moment"}],166:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26478,7 +26741,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"formulaRegisterer":181,"moment":"moment"}],166:[function(_dereq_,module,exports){
+},{"formulaRegisterer":182,"moment":"moment"}],167:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26504,7 +26767,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"formulaRegisterer":181,"moment":"moment"}],167:[function(_dereq_,module,exports){
+},{"formulaRegisterer":182,"moment":"moment"}],168:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26530,7 +26793,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"formulaRegisterer":181,"moment":"moment"}],168:[function(_dereq_,module,exports){
+},{"formulaRegisterer":182,"moment":"moment"}],169:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26550,7 +26813,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"formulaRegisterer":181}],169:[function(_dereq_,module,exports){
+},{"formulaRegisterer":182}],170:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26575,7 +26838,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":51,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":55,"formulaRegisterer":181}],170:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":51,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":55,"formulaRegisterer":182}],171:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26598,7 +26861,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":51,"formulaRegisterer":181}],171:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/mixed":51,"formulaRegisterer":182}],172:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26622,7 +26885,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"formulaRegisterer":181}],172:[function(_dereq_,module,exports){
+},{"formulaRegisterer":182}],173:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26646,7 +26909,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"formulaRegisterer":181}],173:[function(_dereq_,module,exports){
+},{"formulaRegisterer":182}],174:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26670,7 +26933,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"formulaRegisterer":181}],174:[function(_dereq_,module,exports){
+},{"formulaRegisterer":182}],175:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26694,7 +26957,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"formulaRegisterer":181}],175:[function(_dereq_,module,exports){
+},{"formulaRegisterer":182}],176:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26714,7 +26977,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"formulaRegisterer":181}],176:[function(_dereq_,module,exports){
+},{"formulaRegisterer":182}],177:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26738,7 +27001,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"between":160,"formulaRegisterer":181}],177:[function(_dereq_,module,exports){
+},{"between":161,"formulaRegisterer":182}],178:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26762,7 +27025,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"contains":162,"formulaRegisterer":181}],178:[function(_dereq_,module,exports){
+},{"contains":163,"formulaRegisterer":182}],179:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26786,7 +27049,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"empty":168,"formulaRegisterer":181}],179:[function(_dereq_,module,exports){
+},{"empty":169,"formulaRegisterer":182}],180:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FORMULA_NAME: {get: function() {
@@ -26810,7 +27073,7 @@ registerFormula(FORMULA_NAME, formula, {
 });
 
 //# 
-},{"equal":170,"formulaRegisterer":181}],180:[function(_dereq_,module,exports){
+},{"equal":171,"formulaRegisterer":182}],181:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FormulaCollection: {get: function() {
@@ -26966,7 +27229,7 @@ mixin(FormulaCollection, localHooks);
 ;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":58,"formulaRegisterer":181}],181:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":58,"formulaRegisterer":182}],182:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   getFormula: {get: function() {
@@ -27018,7 +27281,7 @@ Handsontable.utils.FiltersFormulaRegisterer = {
 };
 
 //# 
-},{"../../browser":138}],182:[function(_dereq_,module,exports){
+},{"../../browser":139}],183:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   FormulaUpdateObserver: {get: function() {
@@ -27156,7 +27419,7 @@ mixin(FormulaUpdateObserver, localHooks);
 ;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/function":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":58,"dataFilter":157,"formulaCollection":180,"utils":187}],183:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/function":50,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":58,"dataFilter":158,"formulaCollection":181,"utils":188}],184:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BaseUI: {get: function() {
@@ -27282,7 +27545,7 @@ mixin(BaseUI, localHooks);
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":58}],184:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":42,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":58}],185:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   InputUI: {get: function() {
@@ -27354,7 +27617,7 @@ var $InputUI = InputUI;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"_base":183}],185:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"_base":184}],186:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   MultipleSelectUI: {get: function() {
@@ -27589,7 +27852,7 @@ function itemsToValue(availableItems) {
 }
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":48,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/function":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":55,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode":56,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":74,"../../../browser":138,"_base":183,"input":184,"utils":187}],186:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":48,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/function":50,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":55,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode":56,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":75,"../../../browser":139,"_base":184,"input":185,"utils":188}],187:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   SelectUI: {get: function() {
@@ -27707,7 +27970,7 @@ var $SelectUI = SelectUI;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":74,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":75,"_base":183}],187:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/menu":75,"../../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":76,"_base":184}],188:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   sortComparison: {get: function() {
@@ -27812,7 +28075,7 @@ function intersectValues(base, selected, callback) {
 }
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/feature":49}],188:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/feature":49}],189:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   AlterManager: {get: function() {
@@ -27892,7 +28155,7 @@ function registerOperation(name, descriptor) {
 ;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":58,"alterOperation/columnSorting":189,"alterOperation/insertColumn":190,"alterOperation/insertRow":191,"alterOperation/removeColumn":192,"alterOperation/removeRow":193}],189:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":58,"alterOperation/columnSorting":190,"alterOperation/insertColumn":191,"alterOperation/insertRow":192,"alterOperation/removeColumn":193,"alterOperation/removeRow":194}],190:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   OPERATION_NAME: {get: function() {
@@ -27948,7 +28211,7 @@ function operate() {
 }
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"cell/value":196,"expressionModifier":198,"utils":203}],190:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"cell/value":197,"expressionModifier":199,"utils":204}],191:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   OPERATION_NAME: {get: function() {
@@ -28027,7 +28290,7 @@ function customTranslateModifier(cell, axis, delta, startFromIndex) {
 }
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"cell/value":196,"expressionModifier":198,"utils":203}],191:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"cell/value":197,"expressionModifier":199,"utils":204}],192:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   OPERATION_NAME: {get: function() {
@@ -28106,7 +28369,7 @@ function customTranslateModifier(cell, axis, delta, startFromIndex) {
 }
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"cell/value":196,"expressionModifier":198,"utils":203}],192:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"cell/value":197,"expressionModifier":199,"utils":204}],193:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   OPERATION_NAME: {get: function() {
@@ -28225,7 +28488,7 @@ function customTranslateModifier(cell, axis, delta, startFromIndex) {
 }
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"cell/value":196,"expressionModifier":198,"utils":203}],193:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"cell/value":197,"expressionModifier":199,"utils":204}],194:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   OPERATION_NAME: {get: function() {
@@ -28344,7 +28607,7 @@ function customTranslateModifier(cell, axis, delta, startFromIndex) {
 }
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"cell/value":196,"expressionModifier":198,"utils":203}],194:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"cell/value":197,"expressionModifier":199,"utils":204}],195:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BaseCell: {get: function() {
@@ -28407,7 +28670,7 @@ var BaseCell = function BaseCell(row, column) {
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"hot-formula-parser":"hot-formula-parser"}],195:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"hot-formula-parser":"hot-formula-parser"}],196:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   CellReference: {get: function() {
@@ -28435,7 +28698,7 @@ var $CellReference = CellReference;
 ;
 
 //# 
-},{"_base":194,"hot-formula-parser":"hot-formula-parser"}],196:[function(_dereq_,module,exports){
+},{"_base":195,"hot-formula-parser":"hot-formula-parser"}],197:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   CellValue: {get: function() {
@@ -28530,7 +28793,7 @@ var $CellValue = CellValue;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"_base":194,"hot-formula-parser":"hot-formula-parser"}],197:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"_base":195,"hot-formula-parser":"hot-formula-parser"}],198:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DataProvider: {get: function() {
@@ -28618,7 +28881,7 @@ var DataProvider = function DataProvider(hot) {
 ;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/utils/recordTranslator":130,"utils":203}],198:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/utils/recordTranslator":131,"utils":204}],199:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ExpressionModifier: {get: function() {
@@ -28827,7 +29090,7 @@ Handsontable.utils.FormulasUtils = Handsontable.utils.FormulasUtils || {};
 Handsontable.utils.FormulasUtils.ExpressionModifier = ExpressionModifier;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":55,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":58,"../../browser":138,"hot-formula-parser":"hot-formula-parser","utils":203}],199:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":55,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":58,"../../browser":139,"hot-formula-parser":"hot-formula-parser","utils":204}],200:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Formulas: {get: function() {
@@ -29135,7 +29398,7 @@ var $Formulas = Formulas;
 registerPlugin('formulas', Formulas);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63,"dataProvider":197,"sheet":201,"undoRedoSnapshot":202,"utils":203}],200:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager":42,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63,"dataProvider":198,"sheet":202,"undoRedoSnapshot":203,"utils":204}],201:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Matrix: {get: function() {
@@ -29259,7 +29522,7 @@ var Matrix = function Matrix(recordTranslator) {
 ;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"cell/value":196}],201:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"cell/value":197}],202:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   Sheet: {get: function() {
@@ -29459,7 +29722,7 @@ mixin(Sheet, localHooks);
 ;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":58,"../../../node_modules/hot-builder/node_modules/handsontable/src/utils/recordTranslator":130,"alterManager":188,"cell/reference":195,"cell/value":196,"hot-formula-parser":"hot-formula-parser","matrix":200,"utils":203}],202:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/localHooks":58,"../../../node_modules/hot-builder/node_modules/handsontable/src/utils/recordTranslator":131,"alterManager":189,"cell/reference":196,"cell/value":197,"hot-formula-parser":"hot-formula-parser","matrix":201,"utils":204}],203:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   UndoRedoSnapshot: {get: function() {
@@ -29539,7 +29802,7 @@ var UndoRedoSnapshot = function UndoRedoSnapshot(sheet) {
 ;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/utils/dataStructures/stack":127,"cell/value":196}],203:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/utils/dataStructures/stack":128,"cell/value":197}],204:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   isFormulaExpression: {get: function() {
@@ -29595,7 +29858,7 @@ Handsontable.utils.FormulasUtils.unescapeFormulaExpression = unescapeFormulaExpr
 Handsontable.utils.FormulasUtils.toUpperCaseFormula = toUpperCaseFormula;
 
 //# 
-},{"../../browser":138}],204:[function(_dereq_,module,exports){
+},{"../../browser":139}],205:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DateCalculator: {get: function() {
@@ -29788,7 +30051,7 @@ var DateCalculator = function DateCalculator(year) {
 ;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53}],205:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53}],206:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   GanttChart: {get: function() {
@@ -30198,7 +30461,7 @@ var $GanttChart = GanttChart;
 registerPlugin('ganttChart', GanttChart);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/data":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":63,"dateCalculator":204,"ganttChartDataFeed":206}],206:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/data":45,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":63,"dateCalculator":205,"ganttChartDataFeed":207}],207:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   GanttChartDataFeed: {get: function() {
@@ -30412,7 +30675,7 @@ var GanttChartDataFeed = function GanttChartDataFeed(chartInstance, data, startD
 ;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"dateCalculator":204}],207:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"dateCalculator":205}],208:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   HeaderTooltips: {get: function() {
@@ -30508,7 +30771,7 @@ var $HeaderTooltips = HeaderTooltips;
 registerPlugin('headerTooltips', HeaderTooltips);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element.js":47,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":63}],208:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element.js":47,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins.js":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base.js":63}],209:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   hideColumnItem: {get: function() {
@@ -30542,7 +30805,7 @@ function hideColumnItem(hiddenColumnsPlugin) {
 }
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52}],209:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52}],210:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   showColumnItem: {get: function() {
@@ -30625,7 +30888,7 @@ function showColumnItem(hiddenColumnsPlugin) {
 }
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52}],210:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52}],211:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   HiddenColumns: {get: function() {
@@ -30989,7 +31252,7 @@ function hiddenRenderer(hotInstance, td) {
 registerPlugin('hiddenColumns', HiddenColumns);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":75,"contextMenuItem/hideColumn":208,"contextMenuItem/showColumn":209}],211:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems":76,"contextMenuItem/hideColumn":209,"contextMenuItem/showColumn":210}],212:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   hideRowItem: {get: function() {
@@ -31023,7 +31286,7 @@ function hideRowItem(hiddenRowsPlugin) {
 }
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52}],212:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52}],213:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   showRowItem: {get: function() {
@@ -31110,7 +31373,7 @@ function showRowItem(hiddenRowsPlugin) {
 }
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52}],213:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52}],214:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   HiddenRows: {get: function() {
@@ -31473,7 +31736,7 @@ var $HiddenRows = HiddenRows;
 registerPlugin('hiddenRows', HiddenRows);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63,"contextMenuItem/hideRow":211,"contextMenuItem/showRow":212}],214:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63,"contextMenuItem/hideRow":212,"contextMenuItem/showRow":213}],215:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   NestedHeaders: {get: function() {
@@ -31882,7 +32145,7 @@ var $NestedHeaders = NestedHeaders;
 registerPlugin('nestedHeaders', NestedHeaders);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63,"utils/ghostTable":215}],215:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63,"utils/ghostTable":216}],216:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   GhostTable: {get: function() {
@@ -31963,7 +32226,7 @@ var GhostTable = function GhostTable(plugin) {
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47}],216:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47}],217:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DataManager: {get: function() {
@@ -31973,10 +32236,14 @@ Object.defineProperties(exports, {
 });
 var $__handsontable_47_helpers_47_number__,
     $__handsontable_47_helpers_47_object__,
-    $__handsontable_47_helpers_47_array__;
+    $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_utils_47_recordTranslator__;
 var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
-var objectEach = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).objectEach;
+var $__1 = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}),
+    objectEach = $__1.objectEach,
+    extend = $__1.extend;
 var arrayEach = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}).arrayEach;
+var getTranslator = ($__handsontable_47_utils_47_recordTranslator__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/utils/recordTranslator"), $__handsontable_47_utils_47_recordTranslator__ && $__handsontable_47_utils_47_recordTranslator__.__esModule && $__handsontable_47_utils_47_recordTranslator__ || {default: $__handsontable_47_utils_47_recordTranslator__}).getTranslator;
 var DataManager = function DataManager(nestedRowsPlugin, hotInstance, sourceData) {
   this.hot = hotInstance;
   this.data = sourceData;
@@ -31988,10 +32255,11 @@ var DataManager = function DataManager(nestedRowsPlugin, hotInstance, sourceData
     rows: [],
     nodeInfo: new WeakMap()
   };
+  this.recordTranslator = getTranslator(this.hot);
 };
 ($traceurRuntime.createClass)(DataManager, {
   rewriteCache: function() {
-    var $__3 = this;
+    var $__4 = this;
     this.cache = {
       levels: [],
       levelCount: 0,
@@ -31999,11 +32267,11 @@ var DataManager = function DataManager(nestedRowsPlugin, hotInstance, sourceData
       nodeInfo: new WeakMap()
     };
     rangeEach(0, this.data.length - 1, (function(i) {
-      $__3.cacheNode($__3.data[i], 0, null);
+      $__4.cacheNode($__4.data[i], 0, null);
     }));
   },
   cacheNode: function(node, level, parent) {
-    var $__3 = this;
+    var $__4 = this;
     if (!this.cache.levels[level]) {
       this.cache.levels[level] = [];
       this.cache.levelCount++;
@@ -32017,7 +32285,7 @@ var DataManager = function DataManager(nestedRowsPlugin, hotInstance, sourceData
     });
     if (this.hasChildren(node)) {
       arrayEach(node.__children, (function(elem, i) {
-        $__3.cacheNode(elem, level + 1, node);
+        $__4.cacheNode(elem, level + 1, node);
       }));
     }
   },
@@ -32025,7 +32293,7 @@ var DataManager = function DataManager(nestedRowsPlugin, hotInstance, sourceData
     return row == null ? null : this.cache.rows[row];
   },
   readTreeNodes: function(parent, readCount, neededIndex, neededObject) {
-    var $__3 = this;
+    var $__4 = this;
     var rootLevel = false;
     if (isNaN(readCount) && readCount.end) {
       return readCount;
@@ -32050,8 +32318,8 @@ var DataManager = function DataManager(nestedRowsPlugin, hotInstance, sourceData
     readCount++;
     if (parent.__children) {
       arrayEach(parent.__children, (function(val, i) {
-        $__3.parentReference.set(val, rootLevel ? null : parent);
-        readCount = $__3.readTreeNodes(val, readCount, neededIndex, neededObject);
+        $__4.parentReference.set(val, rootLevel ? null : parent);
+        readCount = $__4.readTreeNodes(val, readCount, neededIndex, neededObject);
         if (isNaN(readCount) && readCount.end) {
           return false;
         }
@@ -32096,7 +32364,7 @@ var DataManager = function DataManager(nestedRowsPlugin, hotInstance, sourceData
     return this.countChildren(rootNodeMock);
   },
   countChildren: function(parent) {
-    var $__3 = this;
+    var $__4 = this;
     var rowCount = 0;
     if (!isNaN(parent)) {
       parent = this.getDataObject(parent);
@@ -32107,7 +32375,7 @@ var DataManager = function DataManager(nestedRowsPlugin, hotInstance, sourceData
     arrayEach(parent.__children, (function(elem, i) {
       rowCount++;
       if (elem.__children) {
-        rowCount += $__3.countChildren(elem);
+        rowCount += $__4.countChildren(elem);
       }
     }));
     return rowCount;
@@ -32208,16 +32476,16 @@ var DataManager = function DataManager(nestedRowsPlugin, hotInstance, sourceData
   },
   detachFromParent: function(elements) {
     var forceRender = arguments[1] !== (void 0) ? arguments[1] : true;
-    var $__3 = this;
+    var $__4 = this;
     var element = null;
     var rowObjects = [];
     if (Array.isArray(elements)) {
       rangeEach(elements[0], elements[2], (function(i) {
-        var translatedIndex = $__3.translateTrimmedRow(i);
-        rowObjects.push($__3.getDataObject(translatedIndex));
+        var translatedIndex = $__4.translateTrimmedRow(i);
+        rowObjects.push($__4.getDataObject(translatedIndex));
       }));
       rangeEach(0, rowObjects.length - 2, (function(i) {
-        $__3.detachFromParent(rowObjects[i], false);
+        $__4.detachFromParent(rowObjects[i], false);
       }));
       element = rowObjects[rowObjects.length - 1];
     } else {
@@ -32253,16 +32521,16 @@ var DataManager = function DataManager(nestedRowsPlugin, hotInstance, sourceData
     this.hot.runHooks('afterDetachChild', parent, element);
   },
   filterData: function(index, amount, logicRows) {
-    var $__3 = this;
+    var $__4 = this;
     var elementsToRemove = [];
     arrayEach(logicRows, (function(elem, ind) {
-      elementsToRemove.push($__3.getDataObject(elem));
+      elementsToRemove.push($__4.getDataObject(elem));
     }));
     arrayEach(elementsToRemove, (function(elem, ind) {
-      var indexWithinParent = $__3.getRowIndexWithinParent(elem);
-      var tempParent = $__3.getRowParent(elem);
+      var indexWithinParent = $__4.getRowIndexWithinParent(elem);
+      var tempParent = $__4.getRowParent(elem);
       if (tempParent === null) {
-        $__3.data.splice(indexWithinParent, 1);
+        $__4.data.splice(indexWithinParent, 1);
       } else {
         tempParent.__children.splice(indexWithinParent, 1);
       }
@@ -32322,6 +32590,11 @@ var DataManager = function DataManager(nestedRowsPlugin, hotInstance, sourceData
     fromParent.__children.splice(indexInFromParent, 1);
     toParent.__children.splice(indexInToParent, 0, elemToMove[0]);
   },
+  moveCellMeta: function(fromIndex, toIndex) {
+    var rowOfMeta = this.hot.getCellMetaAtRow(fromIndex);
+    this.hot.spliceCellsMeta(toIndex, 0, rowOfMeta);
+    this.hot.spliceCellsMeta(fromIndex + (fromIndex < toIndex ? 0 : 1), 1);
+  },
   translateTrimmedRow: function(row) {
     if (this.plugin.collapsingUI) {
       return this.plugin.collapsingUI.translateTrimmedRow(row);
@@ -32333,7 +32606,7 @@ var DataManager = function DataManager(nestedRowsPlugin, hotInstance, sourceData
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53}],217:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../../node_modules/hot-builder/node_modules/handsontable/src/utils/recordTranslator":131}],218:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   NestedRows: {get: function() {
@@ -32590,6 +32863,16 @@ var $NestedRows = NestedRows;
     for (i = 0; i < rowsLen; i++) {
       this.dataManager.moveRow(translatedStartIndexes[i], translatedTargetIndex);
     }
+    var movingDown = translatedStartIndexes[translatedStartIndexes.length - 1] < translatedTargetIndex;
+    if (movingDown) {
+      for (i = rowsLen - 1; i >= 0; i--) {
+        this.dataManager.moveCellMeta(translatedStartIndexes[i], translatedTargetIndex);
+      }
+    } else {
+      for (i = 0; i < rowsLen; i++) {
+        this.dataManager.moveCellMeta(translatedStartIndexes[i], translatedTargetIndex);
+      }
+    }
     if ((translatedStartIndexes[rowsLen - 1] <= translatedTargetIndex && sameParent) || this.dataManager.isParent(translatedTargetIndex)) {
       rows.reverse();
     }
@@ -32765,7 +33048,7 @@ var $NestedRows = NestedRows;
 registerPlugin('nestedRows', NestedRows);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63,"data/dataManager":216,"ui/collapsing":219,"ui/contextMenu":220,"ui/headers":221}],218:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63,"data/dataManager":217,"ui/collapsing":220,"ui/contextMenu":221,"ui/headers":222}],219:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   BaseUI: {get: function() {
@@ -32781,7 +33064,7 @@ var BaseUI = function BaseUI(pluginInstance, hotInstance) {
 ;
 
 //# 
-},{}],219:[function(_dereq_,module,exports){
+},{}],220:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   CollapsingUI: {get: function() {
@@ -33087,7 +33370,7 @@ var $CollapsingUI = CollapsingUI;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":48,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"_base":218,"headers":221}],220:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":48,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"_base":219,"headers":222}],221:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   ContextMenuUI: {get: function() {
@@ -33174,7 +33457,7 @@ var $ContextMenuUI = ContextMenuUI;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"_base":218}],221:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"_base":219}],222:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   HeadersUI: {get: function() {
@@ -33254,7 +33537,7 @@ var $HeadersUI = HeadersUI;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"_base":218}],222:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"_base":219}],223:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   RowsMapper: {get: function() {
@@ -33296,7 +33579,7 @@ mixin(RowsMapper, arrayMapper);
 Handsontable.utils.TrimRowsRowsMapper = RowsMapper;
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":57,"../../browser":138}],223:[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../node_modules/hot-builder/node_modules/handsontable/src/mixins/arrayMapper":57,"../../browser":139}],224:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   TrimRows: {get: function() {
@@ -33447,7 +33730,7 @@ var $TrimRows = TrimRows;
 registerPlugin('trimRows', TrimRows);
 
 //# 
-},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63,"rowsMapper":222}],"SheetClip":[function(_dereq_,module,exports){
+},{"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number":52,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins":62,"../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base":63,"rowsMapper":223}],"SheetClip":[function(_dereq_,module,exports){
 /**
  * SheetClip - Spreadsheet Clipboard Parser
  * version 0.2
@@ -60315,5 +60598,5 @@ return hooks;
 })(function() {
   return this || window;
 }());
-},{}]},{},[138,64,66,65,67,110,111,112,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,99,100,101,102,103,105,106,107,108,109,113,114,115,116,132,133,134,135,119,120,121,122,123,124,32,36,33,34,41,35,37,38,39,40,139,140,141,142,143,214,215,208,209,210,144,145,146,147,148,149,151,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,184,185,186,187,188,189,190,191,192,193,195,196,197,198,199,200,201,202,203,204,205,206,207,211,212,213,216,217,219,220,221,222,223])(138)
+},{}]},{},[139,64,66,67,65,68,111,112,113,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,100,101,102,103,104,106,107,108,109,110,114,115,116,117,133,134,135,136,120,121,122,123,124,125,32,36,33,34,41,35,37,38,39,40,140,141,142,143,144,215,216,209,210,211,145,146,147,148,149,150,152,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,185,186,187,188,189,190,191,192,193,194,196,197,198,199,200,201,202,203,204,205,206,207,208,212,213,214,217,218,220,221,222,223,224])(139)
 });
