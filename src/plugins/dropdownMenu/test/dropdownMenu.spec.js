@@ -251,7 +251,7 @@ describe('DropdownMenu', function () {
       // Insert col left
       $('.htDropdownMenu .ht_master .htCore').find('tbody td').not('.htSeparator').eq(0).simulate('mousedown');
 
-      expect(afterCreateColCallback).toHaveBeenCalledWith(2, 1, undefined, undefined, undefined, undefined);
+      expect(afterCreateColCallback).toHaveBeenCalledWith(2, 1, 'ContextMenu.columnLeft', undefined, undefined, undefined);
       expect(countCols()).toEqual(5);
     });
 
@@ -273,7 +273,7 @@ describe('DropdownMenu', function () {
       // Insert col right
       $('.htDropdownMenu .ht_master .htCore').find('tbody td').not('.htSeparator').eq(1).simulate('mousedown');
 
-      expect(afterCreateColCallback).toHaveBeenCalledWith(3, 1, undefined, undefined, undefined, undefined);
+      expect(afterCreateColCallback).toHaveBeenCalledWith(3, 1, 'ContextMenu.columnRight', undefined, undefined, undefined);
       expect(countCols()).toEqual(5);
     });
 

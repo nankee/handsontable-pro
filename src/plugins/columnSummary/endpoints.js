@@ -411,7 +411,7 @@ class Endpoints {
       this.resetEndpointValue(value, useOffset);
     });
 
-    this.hot.setDataAtCell(this.cellsToSetCache, 'columnSummary');
+    this.hot.setDataAtCell(this.cellsToSetCache, 'ColumnSummary.reset');
 
     this.cellsToSetCache = [];
   }
@@ -431,7 +431,7 @@ class Endpoints {
     });
     this.currentEndpoint = null;
 
-    this.hot.setDataAtCell(this.cellsToSetCache, 'columnSummary');
+    this.hot.setDataAtCell(this.cellsToSetCache, 'ColumnSummary.reset');
 
     this.cellsToSetCache = [];
   }
@@ -462,7 +462,7 @@ class Endpoints {
       this.refreshEndpoint(this.getEndpoint(value));
     });
 
-    this.hot.setDataAtCell(this.cellsToSetCache, 'columnSummary');
+    this.hot.setDataAtCell(this.cellsToSetCache, 'ColumnSummary.reset');
     this.cellsToSetCache = [];
   }
 
@@ -533,7 +533,7 @@ class Endpoints {
     }
 
     if (render) {
-      this.hot.setDataAtCell(visualEndpointRowIndex, endpoint.destinationColumn, endpoint.result, 'columnSummary');
+      this.hot.setDataAtCell(visualEndpointRowIndex, endpoint.destinationColumn, endpoint.result, 'ColumnSummary.set');
     } else {
       this.cellsToSetCache.push([visualEndpointRowIndex, endpoint.destinationColumn, endpoint.result]);
     }

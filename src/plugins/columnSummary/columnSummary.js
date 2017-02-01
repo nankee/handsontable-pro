@@ -329,7 +329,7 @@ class ColumnSummary extends BasePlugin {
    * @param {String} source
    */
   onAfterChange(changes, source) {
-    if (changes && source !== 'columnSummary' && source !== 'loadData') {
+    if (changes && source !== 'ColumnSummary.reset' && source !== 'ColumnSummary.set' && source !== 'loadData') {
       this.endpoints.refreshChangedEndpoints(changes);
     }
   }
