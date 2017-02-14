@@ -198,14 +198,12 @@ module.exports = function(grunt) {
   grunt.registerTask('build', ['hotBuilder:handsontablePro']);
   grunt.registerTask('build-dev', ['hotBuilder:handsontableProDev']);
   grunt.registerTask('build-custom', ['hotBuilder:handsontableProCustom']);
-  grunt.registerTask('test-free', ['jasmine:free']);
-  grunt.registerTask('test-pro', ['jasmine:proStandalone']);
-  grunt.registerTask('test-pro-full', ['jasmine:proFull']);
+  grunt.registerTask('test-free', ['_prepareHandsontablePath', 'jasmine:free']);
+  grunt.registerTask('test-pro', ['_prepareHandsontablePath', 'jasmine:proStandalone']);
+  grunt.registerTask('test-pro-full', ['_prepareHandsontablePath', 'jasmine:proFull']);
   grunt.registerTask('test', ['default', '_prepareHandsontablePath', 'jasmine:free', 'jasmine:proStandalone', 'jasmine:proFull']);
 
   grunt.registerTask('_prepareHandsontablePath', '', function() {
-    grunt.task.requires('build');
-
     // handsontable path for npm 2.*
     var nodeHandsontablePath = 'node_modules/hot-builder/node_modules/handsontable/';
 
@@ -215,6 +213,7 @@ module.exports = function(grunt) {
       // handsontable path for npm >=3.10.*
       nodeHandsontablePath = 'node_modules/handsontable/';
     }
+    grunt.log.ok('Using Handsontable from \033[32m' + nodeHandsontablePath + '\033[0m');
     grunt.config.set('meta.handsontablePath', nodeHandsontablePath);
   });
 
