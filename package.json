@@ -7,8 +7,8 @@
     "url": "https://my.handsontable.com/handsontable/handsontable-pro.git"
   },
   "author": "Handsoncode <hello@handsontable.com>",
-  "version": "1.9.1",
-  "compatibleHotVersion": "develop",
+  "version": "1.10.0",
+  "compatibleHotVersion": "0.31.0",
   "main": "./dist/handsontable.js",
   "keywords": [
     "data",
