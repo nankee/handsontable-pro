@@ -39,7 +39,19 @@ describe('NestedHeaders', function() {
 
         expect(ghostTable.widthsCache.length).toBeGreaterThan(0);
       });
+      it('should properly prepare widths cache, even if container is smaller than needed', function() {
+        var hot = handsontable({
+          data: Handsontable.helper.createSpreadsheetData(7, 7),
+          width: 300,
+          nestedHeaders: [
+            ['a', {label: 'b', colspan: 3}, 'c', 'd', 'e'],
+            ['Very Long Title', 'Very Long Title', 'Very Long Title', 'Very Long Title', 'Very Long Title', 'Very Long Title', 'Very Long Title']
+          ]
+        });
+        var ghostTable = hot.getPlugin('nestedHeaders').ghostTable;
 
+        expect(ghostTable.widthsCache[ghostTable.widthsCache.length - 1]).toBeGreaterThan(50);
+      });
       it('should container be removed after ', function() {
         var hot = handsontable({
           data: Handsontable.helper.createSpreadsheetData(10, 10),
