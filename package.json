@@ -8,7 +8,7 @@
   },
   "author": "Handsoncode <hello@handsontable.com>",
   "version": "1.10.0",
-  "compatibleHotVersion": "0.31.0",
+  "compatibleHotVersion": "feature/skippingDataMapCache",
   "main": "./dist/handsontable.js",
   "keywords": [
     "data",
