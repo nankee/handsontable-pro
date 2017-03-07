@@ -1347,6 +1347,19 @@ function WalkontableEvent(instance) {
       }
     }
   };
+  var onMouseOut = function(event) {
+    var table,
+        lastTD,
+        nextTD;
+    if (that.instance.hasSetting('onCellMouseOut')) {
+      table = that.instance.wtTable.TABLE;
+      lastTD = closestDown(event.realTarget, ['TD', 'TH'], table);
+      nextTD = closestDown(event.relatedTarget, ['TD', 'TH'], table);
+      if (lastTD && lastTD !== nextTD && isChildOf(lastTD, table)) {
+        that.instance.getSetting('onCellMouseOut', event, that.instance.wtTable.getCoords(lastTD), lastTD, that.instance);
+      }
+    }
+  };
   var onMouseUp = function(event) {
     if (event.button !== 2) {
       var cell = that.parentCell(event.realTarget);
@@ -1377,6 +1390,7 @@ function WalkontableEvent(instance) {
   };
   eventManager.addEventListener(this.instance.wtTable.holder, 'mousedown', onMouseDown);
   eventManager.addEventListener(this.instance.wtTable.TABLE, 'mouseover', onMouseOver);
+  eventManager.addEventListener(this.instance.wtTable.TABLE, 'mouseout', onMouseOut);
   eventManager.addEventListener(this.instance.wtTable.holder, 'mouseup', onMouseUp);
   if (this.instance.wtTable.holder.parentNode.parentNode && isMobileBrowser() && !that.instance.wtTable.isWorkingOnClone()) {
     var classSelector = '.' + this.instance.wtTable.holder.parentNode.className.split(' ').join('.');
@@ -2075,6 +2089,23 @@ var $WalkontableTopOverlay = WalkontableTopOverlay;
   getScrollPosition: function() {
     return getScrollTop(this.mainTableScrollableElement);
   },
+  redrawSelectionBorders: function(selection) {
+    if (selection && selection.cellRange) {
+      var border = selection.getBorder(this.wot);
+      if (border) {
+        var corners = selection.getCorners();
+        border.disappear();
+        border.appear(corners);
+      }
+    }
+  },
+  redrawAllSelectionsBorders: function() {
+    var selections = this.wot.selections;
+    this.redrawSelectionBorders(selections.current);
+    this.redrawSelectionBorders(selections.area);
+    this.redrawSelectionBorders(selections.fill);
+    this.wot.wtTable.wot.wtOverlays.leftOverlay.refresh();
+  },
   adjustHeaderBordersPosition: function(position) {
     var masterParent = this.wot.wtTable.holder.parentNode;
     var totalColumns = this.wot.getSetting('totalColumns');
@@ -2092,6 +2123,7 @@ var $WalkontableTopOverlay = WalkontableTopOverlay;
       }
       if (!previousState && position || previousState && !position) {
         this.wot.wtOverlays.adjustElementsSize();
+        this.redrawAllSelectionsBorders();
       }
     }
     if (this.wot.getSetting('rowHeaders').length === 0) {
@@ -3130,6 +3162,7 @@ var WalkontableSettings = function WalkontableSettings(wotInstance, settings) {
     viewportColumnCalculatorOverride: null,
     onCellMouseDown: null,
     onCellMouseOver: null,
+    onCellMouseOut: null,
     onCellMouseUp: null,
     onCellDblClick: null,
     onCellCornerMouseDown: null,
@@ -4472,10 +4505,10 @@ var domHelpers = ($__helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"
 var domEventHelpers = ($__helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $__helpers_47_dom_47_event__ && $__helpers_47_dom_47_event__.__esModule && $__helpers_47_dom_47_event__ || {default: $__helpers_47_dom_47_event__});
 var HELPERS = [arrayHelpers, browserHelpers, dataHelpers, dateHelpers, featureHelpers, functionHelpers, mixedHelpers, numberHelpers, objectHelpers, settingHelpers, stringHelpers, unicodeHelpers];
 var DOM = [domHelpers, domEventHelpers];
-Handsontable.buildDate = 'Tue Feb 14 2017 11:18:55 GMT+0100 (CET)';
+Handsontable.buildDate = 'Tue Mar 07 2017 13:43:38 GMT+0100 (CET)';
 Handsontable.packageName = 'handsontable-pro';
-Handsontable.version = '1.10.0';
-var baseVersion = '0.31.0';
+Handsontable.version = '1.10.1';
+var baseVersion = '0.31.1';
 if (!/^@@/.test(baseVersion)) {
   Handsontable.baseVersion = baseVersion;
 }
@@ -4658,7 +4691,8 @@ var $__10 = ($__helpers_47_object__ = _dereq_("helpers/object"), $__helpers_47_o
     extend = $__10.extend,
     isObject = $__10.isObject,
     isObjectEquals = $__10.isObjectEquals,
-    deepObjectSize = $__10.deepObjectSize;
+    deepObjectSize = $__10.deepObjectSize,
+    createObjectPropListener = $__10.createObjectPropListener;
 var $__11 = ($__helpers_47_array__ = _dereq_("helpers/array"), $__helpers_47_array__ && $__helpers_47_array__.__esModule && $__helpers_47_array__ || {default: $__helpers_47_array__}),
     arrayFlatten = $__11.arrayFlatten,
     arrayMap = $__11.arrayMap;
@@ -5126,13 +5160,17 @@ Handsontable.Core = function Core(rootElement, userSettings) {
         instance.view.wt.selections.highlight.add(priv.selRange.from);
         instance.view.wt.selections.highlight.add(priv.selRange.to);
       }
-      Handsontable.hooks.run(instance, 'afterSelection', priv.selRange.from.row, priv.selRange.from.col, priv.selRange.to.row, priv.selRange.to.col);
-      Handsontable.hooks.run(instance, 'afterSelectionByProp', priv.selRange.from.row, datamap.colToProp(priv.selRange.from.col), priv.selRange.to.row, datamap.colToProp(priv.selRange.to.col));
+      var preventScrolling = createObjectPropListener('value');
+      Handsontable.hooks.run(instance, 'afterSelection', priv.selRange.from.row, priv.selRange.from.col, priv.selRange.to.row, priv.selRange.to.col, preventScrolling);
+      Handsontable.hooks.run(instance, 'afterSelectionByProp', priv.selRange.from.row, datamap.colToProp(priv.selRange.from.col), priv.selRange.to.row, datamap.colToProp(priv.selRange.to.col), preventScrolling);
       if ((priv.selRange.from.row === 0 && priv.selRange.to.row === instance.countRows() - 1 && instance.countRows() > 1) || (priv.selRange.from.col === 0 && priv.selRange.to.col === instance.countCols() - 1 && instance.countCols() > 1)) {
         isHeaderSelected = true;
       }
       if (coords.row < 0 || coords.col < 0) {
         areCoordsPositive = false;
+      }
+      if (preventScrolling.isTouched()) {
+        scrollToCell = !preventScrolling.value;
       }
       if (scrollToCell !== false && !isHeaderSelected && areCoordsPositive) {
         if (priv.selRange.from && !selection.isMultiple()) {
@@ -5140,6 +5178,17 @@ Handsontable.Core = function Core(rootElement, userSettings) {
         } else {
           instance.view.scrollViewport(coords);
         }
+      }
+      if (selection.selectedHeader.rows && selection.selectedHeader.cols) {
+        addClass(instance.rootElement, ['ht__selection--rows', 'ht__selection--columns']);
+      } else if (selection.selectedHeader.rows) {
+        removeClass(instance.rootElement, 'ht__selection--columns');
+        addClass(instance.rootElement, 'ht__selection--rows');
+      } else if (selection.selectedHeader.cols) {
+        removeClass(instance.rootElement, 'ht__selection--rows');
+        addClass(instance.rootElement, 'ht__selection--columns');
+      } else {
+        removeClass(instance.rootElement, ['ht__selection--rows', 'ht__selection--columns']);
       }
       selection.refreshBorders(null, keepEditorOpened);
     },
@@ -5270,6 +5319,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       if (!priv.settings.multiSelect) {
         return;
       }
+      selection.setSelectedHeaders(true, true, true);
       selection.setRangeStart(new WalkontableCellCoords(0, 0));
       selection.setRangeEnd(new WalkontableCellCoords(instance.countRows() - 1, instance.countCols() - 1), false);
     },
@@ -5661,6 +5711,7 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       } else {
         if (Handsontable.hooks.getRegistered().indexOf(i) > -1) {
           if (isFunction(settings[i]) || Array.isArray(settings[i])) {
+            settings[i].initialHook = true;
             instance.addHook(i, settings[i]);
           }
         } else {
@@ -5678,7 +5729,8 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       datamap.createMap();
     }
     clen = instance.countCols();
-    if (settings.columns && isFunction(settings.columns)) {
+    var columnSetting = settings.columns || GridSettings.prototype.columns;
+    if (columnSetting && isFunction(columnSetting)) {
       clen = instance.countSourceCols();
       columnsAsFunc = true;
     }
@@ -5689,16 +5741,16 @@ Handsontable.Core = function Core(rootElement, userSettings) {
       var proto;
       var column;
       for (i = 0, j = 0; i < clen; i++) {
-        if (columnsAsFunc && !settings.columns(i)) {
+        if (columnsAsFunc && !columnSetting(i)) {
           continue;
         }
         priv.columnSettings[j] = columnFactory(GridSettings, priv.columnsSettingConflicts);
         proto = priv.columnSettings[j].prototype;
-        if (GridSettings.prototype.columns) {
+        if (columnSetting) {
           if (columnsAsFunc) {
-            column = GridSettings.prototype.columns(i);
+            column = columnSetting(i);
           } else {
-            column = GridSettings.prototype.columns[j];
+            column = columnSetting[j];
           }
           if (column) {
             extend(proto, column);
@@ -7279,6 +7331,7 @@ function EditorManager(instance, priv, selection) {
       activeEditor;
   eventManager = eventManagerObject(instance);
   function moveSelectionAfterEnter(shiftKey) {
+    selection.setSelectedHeaders(false, false, false);
     var enterMoves = typeof priv.settings.enterMoves === 'function' ? priv.settings.enterMoves(event) : priv.settings.enterMoves;
     if (shiftKey) {
       selection.transformStart(-enterMoves.row, -enterMoves.col);
@@ -7288,8 +7341,12 @@ function EditorManager(instance, priv, selection) {
   }
   function moveSelectionUp(shiftKey) {
     if (shiftKey) {
+      if (selection.selectedHeader.cols) {
+        selection.setSelectedHeaders(selection.selectedHeader.rows, false, false);
+      }
       selection.transformEnd(-1, 0);
     } else {
+      selection.setSelectedHeaders(false, false, false);
       selection.transformStart(-1, 0);
     }
   }
@@ -7297,6 +7354,7 @@ function EditorManager(instance, priv, selection) {
     if (shiftKey) {
       selection.transformEnd(1, 0);
     } else {
+      selection.setSelectedHeaders(false, false, false);
       selection.transformStart(1, 0);
     }
   }
@@ -7304,13 +7362,18 @@ function EditorManager(instance, priv, selection) {
     if (shiftKey) {
       selection.transformEnd(0, 1);
     } else {
+      selection.setSelectedHeaders(false, false, false);
       selection.transformStart(0, 1);
     }
   }
   function moveSelectionLeft(shiftKey) {
     if (shiftKey) {
+      if (selection.selectedHeader.rows) {
+        selection.setSelectedHeaders(false, selection.selectedHeader.cols, false);
+      }
       selection.transformEnd(0, -1);
     } else {
+      selection.setSelectedHeaders(false, false, false);
       selection.transformStart(0, -1);
     }
   }
@@ -7380,6 +7443,7 @@ function EditorManager(instance, priv, selection) {
         stopPropagation(event);
         break;
       case KEY_CODES.TAB:
+        selection.setSelectedHeaders(false, false, false);
         var tabMoves = typeof priv.settings.tabMoves === 'function' ? priv.settings.tabMoves(event) : priv.settings.tabMoves;
         if (event.shiftKey) {
           selection.transformStart(-tabMoves.row, -tabMoves.col);
@@ -7428,6 +7492,7 @@ function EditorManager(instance, priv, selection) {
         event.preventDefault();
         break;
       case KEY_CODES.HOME:
+        selection.setSelectedHeaders(false, false, false);
         if (event.ctrlKey || event.metaKey) {
           rangeModifier(new WalkontableCellCoords(0, priv.selRange.from.col));
         } else {
@@ -7437,6 +7502,7 @@ function EditorManager(instance, priv, selection) {
         stopPropagation(event);
         break;
       case KEY_CODES.END:
+        selection.setSelectedHeaders(false, false, false);
         if (event.ctrlKey || event.metaKey) {
           rangeModifier(new WalkontableCellCoords(instance.countRows() - 1, priv.selRange.from.col));
         } else {
@@ -7446,11 +7512,13 @@ function EditorManager(instance, priv, selection) {
         stopPropagation(event);
         break;
       case KEY_CODES.PAGE_UP:
+        selection.setSelectedHeaders(false, false, false);
         selection.transformStart(-instance.countVisibleRows(), 0);
         event.preventDefault();
         stopPropagation(event);
         break;
       case KEY_CODES.PAGE_DOWN:
+        selection.setSelectedHeaders(false, false, false);
         selection.transformStart(instance.countVisibleRows(), 0);
         event.preventDefault();
         stopPropagation(event);
@@ -7585,6 +7653,9 @@ function RegisteredEditor(editorClass) {
     }
     return instances[hotInstance.guid];
   };
+  Handsontable.hooks.add('afterDestroy', function() {
+    instances = {};
+  });
 }
 function registerEditor(editorName, editorClass) {
   var editor = new RegisteredEditor(editorClass);
@@ -12075,7 +12146,7 @@ Object.defineProperties(exports, {
 });
 var $__helpers_47_array__,
     $__helpers_47_object__;
-var REGISTERED_HOOKS = ['afterCellMetaReset', 'afterChange', 'afterChangesObserved', 'afterContextMenuDefaultOptions', 'beforeContextMenuSetItems', 'afterDropdownMenuDefaultOptions', 'beforeDropdownMenuSetItems', 'afterContextMenuHide', 'afterContextMenuShow', 'afterCopyLimit', 'beforeCreateCol', 'afterCreateCol', 'beforeCreateRow', 'afterCreateRow', 'afterDeselect', 'afterDestroy', 'afterDocumentKeyDown', 'afterGetCellMeta', 'afterGetColHeader', 'afterGetRowHeader', 'afterInit', 'afterLoadData', 'afterMomentumScroll', 'afterOnCellCornerMouseDown', 'afterOnCellCornerDblClick', 'afterOnCellMouseDown', 'afterOnCellMouseOver', 'afterRemoveCol', 'afterRemoveRow', 'afterRender', 'beforeRenderer', 'afterRenderer', 'afterScrollHorizontally', 'afterScrollVertically', 'afterSelection', 'afterSelectionByProp', 'afterSelectionEnd', 'afterSelectionEndByProp', 'afterSetCellMeta', 'afterSetDataAtCell', 'afterSetDataAtRowProp', 'afterUpdateSettings', 'afterValidate', 'beforeAutofill', 'beforeCellAlignment', 'beforeChange', 'beforeChangeRender', 'beforeDrawBorders', 'beforeGetCellMeta', 'beforeInit', 'beforeInitWalkontable', 'beforeKeyDown', 'beforeOnCellMouseDown', 'beforeOnCellMouseOver', 'beforeRemoveCol', 'beforeRemoveRow', 'beforeRender', 'beforeSetRangeStart', 'beforeSetRangeEnd', 'beforeTouchScroll', 'beforeValidate', 'beforeValueRender', 'construct', 'init', 'modifyCol', 'unmodifyCol', 'unmodifyRow', 'modifyColHeader', 'modifyColWidth', 'modifyRow', 'modifyRowHeader', 'modifyRowHeight', 'modifyData', 'modifyRowData', 'persistentStateLoad', 'persistentStateReset', 'persistentStateSave', 'beforeColumnSort', 'afterColumnSort', 'modifyAutofillRange', 'modifyCopyableRange', 'beforeColumnMove', 'afterColumnMove', 'beforeRowMove', 'afterRowMove', 'beforeColumnResize', 'afterColumnResize', 'beforeRowResize', 'afterRowResize', 'afterGetColumnHeaderRenderers', 'afterGetRowHeaderRenderers', 'beforeStretchingColumnWidth', 'beforeFilter', 'afterFilter', 'modifyColumnHeaderHeight', 'beforeUndo', 'afterUndo', 'beforeRedo', 'afterRedo', 'modifyRowHeaderWidth', 'beforeAutofillInsidePopulate', 'modifyTransformStart', 'modifyTransformEnd', 'afterModifyTransformStart', 'afterModifyTransformEnd', 'beforeValueRender', 'afterViewportRowCalculatorOverride', 'afterViewportColumnCalculatorOverride', 'afterPluginsInitialized', 'manualRowHeights', 'skipLengthCache', 'afterTrimRow', 'afterUntrimRow', 'afterDropdownMenuShow', 'afterDropdownMenuHide', 'hiddenRow', 'hiddenColumn', 'beforeAddChild', 'afterAddChild', 'beforeDetachChild', 'afterDetachChild', 'afterBeginEditing'];
+var REGISTERED_HOOKS = ['afterCellMetaReset', 'afterChange', 'afterChangesObserved', 'afterContextMenuDefaultOptions', 'beforeContextMenuSetItems', 'afterDropdownMenuDefaultOptions', 'beforeDropdownMenuSetItems', 'afterContextMenuHide', 'afterContextMenuShow', 'afterCopyLimit', 'beforeCreateCol', 'afterCreateCol', 'beforeCreateRow', 'afterCreateRow', 'afterDeselect', 'afterDestroy', 'afterDocumentKeyDown', 'afterGetCellMeta', 'afterGetColHeader', 'afterGetRowHeader', 'afterInit', 'afterLoadData', 'afterMomentumScroll', 'afterOnCellCornerMouseDown', 'afterOnCellCornerDblClick', 'afterOnCellMouseDown', 'afterOnCellMouseOver', 'afterOnCellMouseOut', 'afterRemoveCol', 'afterRemoveRow', 'afterRender', 'beforeRenderer', 'afterRenderer', 'afterScrollHorizontally', 'afterScrollVertically', 'afterSelection', 'afterSelectionByProp', 'afterSelectionEnd', 'afterSelectionEndByProp', 'afterSetCellMeta', 'afterSetDataAtCell', 'afterSetDataAtRowProp', 'afterUpdateSettings', 'afterValidate', 'beforeAutofill', 'beforeCellAlignment', 'beforeChange', 'beforeChangeRender', 'beforeDrawBorders', 'beforeGetCellMeta', 'beforeInit', 'beforeInitWalkontable', 'beforeKeyDown', 'beforeOnCellMouseDown', 'beforeOnCellMouseOver', 'beforeOnCellMouseOut', 'beforeRemoveCol', 'beforeRemoveRow', 'beforeRender', 'beforeSetRangeStart', 'beforeSetRangeEnd', 'beforeTouchScroll', 'beforeValidate', 'beforeValueRender', 'construct', 'init', 'modifyCol', 'unmodifyCol', 'unmodifyRow', 'modifyColHeader', 'modifyColWidth', 'modifyRow', 'modifyRowHeader', 'modifyRowHeight', 'modifyData', 'modifyRowData', 'persistentStateLoad', 'persistentStateReset', 'persistentStateSave', 'beforeColumnSort', 'afterColumnSort', 'modifyAutofillRange', 'modifyCopyableRange', 'beforeCut', 'afterCut', 'beforeCopy', 'afterCopy', 'beforePaste', 'afterPaste', 'beforeColumnMove', 'afterColumnMove', 'beforeRowMove', 'afterRowMove', 'beforeColumnResize', 'afterColumnResize', 'beforeRowResize', 'afterRowResize', 'afterGetColumnHeaderRenderers', 'afterGetRowHeaderRenderers', 'beforeStretchingColumnWidth', 'beforeFilter', 'afterFilter', 'modifyColumnHeaderHeight', 'beforeUndo', 'afterUndo', 'beforeRedo', 'afterRedo', 'modifyRowHeaderWidth', 'beforeAutofillInsidePopulate', 'modifyTransformStart', 'modifyTransformEnd', 'afterModifyTransformStart', 'afterModifyTransformEnd', 'beforeValueRender', 'afterViewportRowCalculatorOverride', 'afterViewportColumnCalculatorOverride', 'afterPluginsInitialized', 'manualRowHeights', 'skipLengthCache', 'afterTrimRow', 'afterUntrimRow', 'afterDropdownMenuShow', 'afterDropdownMenuHide', 'hiddenRow', 'hiddenColumn', 'beforeAddChild', 'afterAddChild', 'beforeDetachChild', 'afterDetachChild', 'afterBeginEditing'];
 var arrayEach = ($__helpers_47_array__ = _dereq_("helpers/array"), $__helpers_47_array__ && $__helpers_47_array__.__esModule && $__helpers_47_array__ || {default: $__helpers_47_array__}).arrayEach;
 var objectEach = ($__helpers_47_object__ = _dereq_("helpers/object"), $__helpers_47_object__ && $__helpers_47_object__.__esModule && $__helpers_47_object__ || {default: $__helpers_47_object__}).objectEach;
 var Hooks = function Hooks() {
@@ -12114,7 +12185,19 @@ var Hooks = function Hooks() {
       }
       callback.skip = false;
       if (bucket[key].indexOf(callback) === -1) {
-        bucket[key].push(callback);
+        var foundInitialHook = false;
+        if (callback.initialHook) {
+          arrayEach(bucket[key], (function(cb, i) {
+            if (cb.initialHook) {
+              bucket[key][i] = callback;
+              foundInitialHook = true;
+              return false;
+            }
+          }));
+        }
+        if (!foundInitialHook) {
+          bucket[key].push(callback);
+        }
       }
     }
     return this;
@@ -15149,6 +15232,7 @@ var Menu = function Menu(hotInstance, options) {
   this.parentMenu = this.options.parent || null;
   this.menuItems = null;
   this.origOutsideClickDeselects = null;
+  this.keyEvent = false;
   this.offset = {
     above: 0,
     below: 0,
@@ -15212,6 +15296,9 @@ var $Menu = Menu;
         } else {
           $__12.openSubMenu(coords.row);
         }
+      }),
+      rowHeights: (function(row) {
+        return filteredItems[row].name === SEPARATOR ? 1 : 23;
       })
     };
     this.origOutsideClickDeselects = this.hot.getSettings().outsideClickDeselects;
@@ -15219,6 +15306,9 @@ var $Menu = Menu;
     this.hotMenu = new Handsontable.Core(this.container, settings);
     this.hotMenu.addHook('afterInit', (function() {
       return $__12.onAfterInit();
+    }));
+    this.hotMenu.addHook('afterSelection', (function(r, c, r2, c2, preventScrolling) {
+      return $__12.onAfterSelection(r, c, r2, c2, preventScrolling);
     }));
     this.hotMenu.init();
     this.hotMenu.listen();
@@ -15506,6 +15596,7 @@ var $Menu = Menu;
   onBeforeKeyDown: function(event) {
     var selection = this.hotMenu.getSelected();
     var stopEvent = false;
+    this.keyEvent = true;
     switch (event.keyCode) {
       case KEY_CODES.ESCAPE:
         this.close();
@@ -15560,6 +15651,7 @@ var $Menu = Menu;
       event.preventDefault();
       stopImmediatePropagation(event);
     }
+    this.keyEvent = false;
   },
   onAfterInit: function() {
     var data = this.hotMenu.getSettings().data;
@@ -15572,6 +15664,11 @@ var $Menu = Menu;
     holderStyle.width = currentHiderWidth + 22 + 'px';
     holderStyle.height = realHeight + 4 + 'px';
     hiderStyle.height = holderStyle.height;
+  },
+  onAfterSelection: function(r, c, r2, c2, preventScrolling) {
+    if (this.keyEvent === false) {
+      preventScrolling.value = true;
+    }
   },
   onDocumentMouseDown: function(event) {
     if (!this.isOpened()) {
@@ -15846,6 +15943,8 @@ function alignmentItem() {
           this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
           align(range, type, alignment, (function(row, col) {
             return $__2.getCellMeta(row, col);
+          }), (function(row, col, key, value) {
+            return $__2.setCellMeta(row, col, key, value);
           }));
           this.render();
         },
@@ -15877,6 +15976,8 @@ function alignmentItem() {
           this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
           align(range, type, alignment, (function(row, col) {
             return $__2.getCellMeta(row, col);
+          }), (function(row, col, key, value) {
+            return $__2.setCellMeta(row, col, key, value);
           }));
           this.render();
         },
@@ -15908,6 +16009,8 @@ function alignmentItem() {
           this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
           align(range, type, alignment, (function(row, col) {
             return $__2.getCellMeta(row, col);
+          }), (function(row, col, key, value) {
+            return $__2.setCellMeta(row, col, key, value);
           }));
           this.render();
         },
@@ -15939,6 +16042,8 @@ function alignmentItem() {
           this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
           align(range, type, alignment, (function(row, col) {
             return $__2.getCellMeta(row, col);
+          }), (function(row, col, key, value) {
+            return $__2.setCellMeta(row, col, key, value);
           }));
           this.render();
         },
@@ -15970,6 +16075,8 @@ function alignmentItem() {
           this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
           align(range, type, alignment, (function(row, col) {
             return $__2.getCellMeta(row, col);
+          }), (function(row, col, key, value) {
+            return $__2.setCellMeta(row, col, key, value);
           }));
           this.render();
         },
@@ -16001,6 +16108,8 @@ function alignmentItem() {
           this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
           align(range, type, alignment, (function(row, col) {
             return $__2.getCellMeta(row, col);
+          }), (function(row, col, key, value) {
+            return $__2.setCellMeta(row, col, key, value);
           }));
           this.render();
         },
@@ -16032,6 +16141,8 @@ function alignmentItem() {
           this.runHooks('beforeCellAlignment', stateBefore, range, type, alignment);
           align(range, type, alignment, (function(row, col) {
             return $__2.getCellMeta(row, col);
+          }), (function(row, col, key, value) {
+            return $__2.setCellMeta(row, col, key, value);
           }));
           this.render();
         },
@@ -16518,18 +16629,18 @@ function getAlignmentClasses(range, callback) {
   }
   return classes;
 }
-function align(range, type, alignment, cellDescriptor) {
+function align(range, type, alignment, cellDescriptor, propertySetter) {
   if (range.from.row == range.to.row && range.from.col == range.to.col) {
-    applyAlignClassName(range.from.row, range.from.col, type, alignment, cellDescriptor);
+    applyAlignClassName(range.from.row, range.from.col, type, alignment, cellDescriptor, propertySetter);
   } else {
     for (var row = range.from.row; row <= range.to.row; row++) {
       for (var col = range.from.col; col <= range.to.col; col++) {
-        applyAlignClassName(row, col, type, alignment, cellDescriptor);
+        applyAlignClassName(row, col, type, alignment, cellDescriptor, propertySetter);
       }
     }
   }
 }
-function applyAlignClassName(row, col, type, alignment, cellDescriptor) {
+function applyAlignClassName(row, col, type, alignment, cellDescriptor, propertySetter) {
   var cellMeta = cellDescriptor(row, col);
   var className = alignment;
   if (cellMeta.className) {
@@ -16539,7 +16650,7 @@ function applyAlignClassName(row, col, type, alignment, cellDescriptor) {
       className = prepareHorizontalAlignClass(cellMeta.className, alignment);
     }
   }
-  cellMeta.className = className;
+  propertySetter(row, col, 'className', className);
 }
 function checkSelectionConsistency(range, comparator) {
   var result = false;
@@ -16677,6 +16788,7 @@ var $ContextMenuCopyPaste = ContextMenuCopyPaste;
   },
   getCopyValue: function() {
     this.hot.copyPaste.setCopyableText();
+    this.hot.copyPaste.copyPasteInstance.triggerCopy();
     return this.hot.copyPaste.copyPasteInstance.elTextarea.value;
   },
   onAfterContextMenuDefaultOptions: function(defaultOptions) {
@@ -16763,7 +16875,6 @@ var $___46__46__47__46__46__47_browser__,
     $___46__46__47__46__46__47_helpers_47_dom_47_event__,
     $___46__46__47__46__46__47_helpers_47_dom_47_element__,
     $___46__46__47__46__46__47_helpers_47_function__,
-    $___46__46__47__46__46__47_plugins__,
     $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__,
     $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_range__;
 var Handsontable = ($___46__46__47__46__46__47_browser__ = _dereq_("browser"), $___46__46__47__46__46__47_browser__ && $___46__46__47__46__46__47_browser__.__esModule && $___46__46__47__46__46__47_browser__ || {default: $___46__46__47__46__46__47_browser__}).default;
@@ -16779,21 +16890,51 @@ var $__6 = ($___46__46__47__46__46__47_helpers_47_dom_47_event__ = _dereq_("help
     isImmediatePropagationStopped = $__6.isImmediatePropagationStopped;
 var getSelectionText = ($___46__46__47__46__46__47_helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"), $___46__46__47__46__46__47_helpers_47_dom_47_element__ && $___46__46__47__46__46__47_helpers_47_dom_47_element__.__esModule && $___46__46__47__46__46__47_helpers_47_dom_47_element__ || {default: $___46__46__47__46__46__47_helpers_47_dom_47_element__}).getSelectionText;
 var proxy = ($___46__46__47__46__46__47_helpers_47_function__ = _dereq_("helpers/function"), $___46__46__47__46__46__47_helpers_47_function__ && $___46__46__47__46__46__47_helpers_47_function__.__esModule && $___46__46__47__46__46__47_helpers_47_function__ || {default: $___46__46__47__46__46__47_helpers_47_function__}).proxy;
-var registerPlugin = ($___46__46__47__46__46__47_plugins__ = _dereq_("plugins"), $___46__46__47__46__46__47_plugins__ && $___46__46__47__46__46__47_plugins__.__esModule && $___46__46__47__46__46__47_plugins__ || {default: $___46__46__47__46__46__47_plugins__}).registerPlugin;
 var WalkontableCellCoords = ($___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__ = _dereq_("3rdparty/walkontable/src/cell/coords"), $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__ && $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__.__esModule && $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__ || {default: $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_coords__}).WalkontableCellCoords;
 var WalkontableCellRange = ($___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_range__ = _dereq_("3rdparty/walkontable/src/cell/range"), $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_range__ && $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_range__.__esModule && $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_range__ || {default: $___46__46__47__46__46__47_3rdparty_47_walkontable_47_src_47_cell_47_range__}).WalkontableCellRange;
 function CopyPastePlugin(instance) {
   var _this = this;
   this.copyPasteInstance = copyPaste();
   this.copyPasteInstance.onCut(onCut);
+  this.copyPasteInstance.triggerCopy = callCopyAction;
   this.copyPasteInstance.onPaste(onPaste);
   this.onPaste = onPaste;
+  this.copyableRanges = [];
   instance.addHook('beforeKeyDown', onBeforeKeyDown);
   function onCut() {
     if (!instance.isListening()) {
       return;
     }
-    instance.selection.empty();
+  }
+  function callCutAction() {
+    var rangedData = _this.getRangedData(_this.copyableRanges);
+    if (instance.getSettings().fragmentSelection && (SheetClip.stringify(rangedData) != getSelectionText())) {
+      return;
+    }
+    var allowCuttingOut = !!instance.runHooks('beforeCut', rangedData, _this.copyableRanges);
+    if (allowCuttingOut) {
+      instance.copyPaste.copyPasteInstance.copyable(SheetClip.stringify(rangedData));
+      instance.selection.empty();
+      instance.runHooks('afterCut', rangedData, _this.copyableRanges);
+    } else {
+      instance.copyPaste.copyPasteInstance.copyable('');
+    }
+  }
+  function callCopyAction() {
+    if (!instance.isListening()) {
+      return;
+    }
+    var rangedData = _this.getRangedData(_this.copyableRanges);
+    if (instance.getSettings().fragmentSelection && (SheetClip.stringify(rangedData) != getSelectionText())) {
+      return;
+    }
+    var allowCopying = !!instance.runHooks('beforeCopy', rangedData, _this.copyableRanges);
+    if (allowCopying) {
+      instance.copyPaste.copyPasteInstance.copyable(SheetClip.stringify(rangedData));
+      instance.runHooks('afterCopy', rangedData, _this.copyableRanges);
+    } else {
+      instance.copyPaste.copyPasteInstance.copyable('');
+    }
   }
   function onPaste(str) {
     var input,
@@ -16844,7 +16985,11 @@ function CopyPastePlugin(instance) {
         instance.selectCell(areaStart.row, areaStart.col, areaEnd.row + offset.row, areaEnd.col + offset.col);
       }
     }));
-    instance.populateFromArray(areaStart.row, areaStart.col, inputArray, areaEnd.row, areaEnd.col, 'CopyPaste.paste', instance.getSettings().pasteMode);
+    var allowPasting = !!instance.runHooks('beforePaste', inputArray, _this.copyableRanges);
+    if (allowPasting) {
+      instance.populateFromArray(areaStart.row, areaStart.col, inputArray, areaEnd.row, areaEnd.col, 'CopyPaste.paste', instance.getSettings().pasteMode);
+      instance.runHooks('afterPaste', inputArray, _this.copyableRanges);
+    }
   }
   function onBeforeKeyDown(event) {
     if (!instance.getSelected()) {
@@ -16865,8 +17010,16 @@ function CopyPastePlugin(instance) {
       return;
     }
     var ctrlDown = (event.ctrlKey || event.metaKey) && !event.altKey;
-    if (event.keyCode == KEY_CODES.A && ctrlDown) {
-      instance._registerTimeout(setTimeout(proxy(_this.setCopyableText, _this), 0));
+    if (ctrlDown) {
+      if (event.keyCode == KEY_CODES.A) {
+        instance._registerTimeout(setTimeout(proxy(_this.setCopyableText, _this), 0));
+      }
+      if (event.keyCode == KEY_CODES.X) {
+        callCutAction();
+      }
+      if (event.keyCode == KEY_CODES.C) {
+        callCopyAction();
+      }
     }
   }
   this.destroy = function() {
@@ -16894,15 +17047,15 @@ function CopyPastePlugin(instance) {
     var endCol = bottomRight.col;
     var finalEndRow = Math.min(endRow, startRow + copyRowsLimit - 1);
     var finalEndCol = Math.min(endCol, startCol + copyColsLimit - 1);
-    var copyableRanges = [];
-    copyableRanges.push({
+    this.copyableRanges.length = 0;
+    this.copyableRanges.push({
       startRow: startRow,
       startCol: startCol,
       endRow: finalEndRow,
       endCol: finalEndCol
     });
-    copyableRanges = Handsontable.hooks.run(instance, 'modifyCopyableRange', copyableRanges);
-    var copyableData = this.getRangedCopyableData(copyableRanges);
+    this.copyableRanges = instance.runHooks('modifyCopyableRange', this.copyableRanges);
+    var copyableData = this.getRangedCopyableData(this.copyableRanges);
     instance.copyPaste.copyPasteInstance.copyable(copyableData);
     if (endRow !== finalEndRow || endCol !== finalEndCol) {
       Handsontable.hooks.run(instance, 'afterCopyLimit', endRow - startRow + 1, endCol - startCol + 1, copyRowsLimit, copyColsLimit);
@@ -16933,6 +17086,31 @@ function CopyPastePlugin(instance) {
     }));
     return SheetClip.stringify(dataSet);
   };
+  this.getRangedData = function(ranges) {
+    var dataSet = [];
+    var copyableRows = [];
+    var copyableColumns = [];
+    arrayEach(ranges, (function(range) {
+      rangeEach(range.startRow, range.endRow, (function(row) {
+        if (copyableRows.indexOf(row) === -1) {
+          copyableRows.push(row);
+        }
+      }));
+      rangeEach(range.startCol, range.endCol, (function(column) {
+        if (copyableColumns.indexOf(column) === -1) {
+          copyableColumns.push(column);
+        }
+      }));
+    }));
+    arrayEach(copyableRows, (function(row) {
+      var rowSet = [];
+      arrayEach(copyableColumns, (function(column) {
+        rowSet.push(instance.getCopyableData(row, column));
+      }));
+      dataSet.push(rowSet);
+    }));
+    return dataSet;
+  };
 }
 function init() {
   var instance = this,
@@ -16948,10 +17126,16 @@ Handsontable.hooks.add('afterInit', init);
 Handsontable.hooks.add('afterUpdateSettings', init);
 Handsontable.hooks.register('afterCopyLimit');
 Handsontable.hooks.register('modifyCopyableRange');
+Handsontable.hooks.register('beforeCut');
+Handsontable.hooks.register('afterCut');
+Handsontable.hooks.register('beforePaste');
+Handsontable.hooks.register('afterPaste');
+Handsontable.hooks.register('beforeCopy');
+Handsontable.hooks.register('afterCopy');
 ;
 
 //# 
-},{"3rdparty/walkontable/src/cell/coords":5,"3rdparty/walkontable/src/cell/range":6,"SheetClip":"SheetClip","browser":23,"copyPaste":"copyPaste","helpers/array":42,"helpers/dom/element":46,"helpers/dom/event":47,"helpers/function":49,"helpers/number":51,"helpers/unicode":55,"plugins":61}],91:[function(_dereq_,module,exports){
+},{"3rdparty/walkontable/src/cell/coords":5,"3rdparty/walkontable/src/cell/range":6,"SheetClip":"SheetClip","browser":23,"copyPaste":"copyPaste","helpers/array":42,"helpers/dom/element":46,"helpers/dom/event":47,"helpers/function":49,"helpers/number":51,"helpers/unicode":55}],91:[function(_dereq_,module,exports){
 "use strict";
 var $___46__46__47__46__46__47_browser__,
     $___46__46__47__46__46__47_plugins__,
@@ -17737,6 +17921,9 @@ var $ManualColumnMove = ManualColumnMove;
     this.addHook('afterCreateCol', (function(index, amount) {
       return $__10.onAfterCreateCol(index, amount);
     }));
+    this.addHook('afterLoadData', (function(firstTime) {
+      return $__10.onAfterLoadData(firstTime);
+    }));
     this.addHook('unmodifyCol', (function(column) {
       return $__10.onUnmodifyCol(column);
     }));
@@ -17895,6 +18082,25 @@ var $ManualColumnMove = ManualColumnMove;
     this.backlight.setPosition(null, backlightLeft);
     this.guideline.setPosition(null, guidelineLeft);
   },
+  updateColumnsMapper: function() {
+    var countCols = this.hot.countSourceCols();
+    var columnsMapperLen = this.columnsMapper._arrayMap.length;
+    if (columnsMapperLen === 0) {
+      this.columnsMapper.createMap(countCols || this.hot.getSettings().startCols);
+    } else if (columnsMapperLen < countCols) {
+      var diff = countCols - columnsMapperLen;
+      this.columnsMapper.insertItems(columnsMapperLen, diff);
+    } else if (columnsMapperLen > countCols) {
+      var maxIndex = countCols - 1;
+      var columnsToRemove = [];
+      arrayEach(this.columnsMapper._arrayMap, (function(value, index, array) {
+        if (value > maxIndex) {
+          columnsToRemove.push(index);
+        }
+      }));
+      this.columnsMapper.removeItems(columnsToRemove);
+    }
+  },
   registerEvents: function() {
     var $__10 = this;
     this.eventManager.addEventListener(document.documentElement, 'mousemove', (function(event) {
@@ -18037,6 +18243,9 @@ var $ManualColumnMove = ManualColumnMove;
   onAfterRemoveCol: function(index, amount) {
     this.columnsMapper.unshiftItems(this.removedColumns);
   },
+  onAfterLoadData: function(firstTime) {
+    this.updateColumnsMapper();
+  },
   onModifyCol: function(column, source) {
     if (source !== this.pluginName) {
       var columnInMapper = this.columnsMapper.getValueByIndex(column);
@@ -18046,27 +18255,10 @@ var $ManualColumnMove = ManualColumnMove;
   },
   onUnmodifyCol: function(column) {
     var indexInMapper = this.columnsMapper.getIndexByValue(column);
-    column = indexInMapper === null ? column : indexInMapper;
-    return column;
+    return indexInMapper === null ? column : indexInMapper;
   },
   onAfterPluginsInitialized: function() {
-    var countCols = this.hot.countCols();
-    var columnsMapperLen = this.columnsMapper._arrayMap.length;
-    if (columnsMapperLen === 0) {
-      this.columnsMapper.createMap(this.hot.countSourceCols() || this.hot.getSettings().startCols);
-    } else if (columnsMapperLen < countCols) {
-      var diff = countCols - columnsMapperLen;
-      this.columnsMapper.insertItems(columnsMapperLen, diff);
-    } else if (columnsMapperLen > countCols) {
-      var maxIndex = countCols - 1;
-      var columnsToRemove = [];
-      arrayEach(this.columnsMapper._arrayMap, (function(value, index, array) {
-        if (value > maxIndex) {
-          columnsToRemove.push(index);
-        }
-      }));
-      this.columnsMapper.removeItems(columnsToRemove);
-    }
+    this.updateColumnsMapper();
     this.initialSettings();
     this.backlight.build();
     this.guideline.build();
@@ -22595,16 +22787,16 @@ function TableView(instance) {
           selection.setRangeStart(coords);
         }
       }
-      if (selection.selectedHeader.rows) {
-        removeClass(instance.rootElement, 'ht__selection--columns');
-        addClass(instance.rootElement, 'ht__selection--rows');
-      } else if (selection.selectedHeader.cols) {
-        removeClass(instance.rootElement, 'ht__selection--rows');
-        addClass(instance.rootElement, 'ht__selection--columns');
-      } else {
-        removeClass(instance.rootElement, ['ht__selection--rows', 'ht__selection--columns']);
-      }
       Handsontable.hooks.run(instance, 'afterOnCellMouseDown', event, coords, TD);
+      that.activeWt = that.wt;
+    },
+    onCellMouseOut: function(event, coords, TD, wt) {
+      that.activeWt = wt;
+      Handsontable.hooks.run(instance, 'beforeOnCellMouseOut', event, coords, TD);
+      if (isImmediatePropagationStopped(event)) {
+        return;
+      }
+      Handsontable.hooks.run(instance, 'afterOnCellMouseOut', event, coords, TD);
       that.activeWt = that.wt;
     },
     onCellMouseOver: function(event, coords, TD, wt) {
@@ -24618,6 +24810,8 @@ var $CollapsibleColumns = CollapsibleColumns;
       arrayEach(nestedHeadersColspanArray, (function(headerLevel, i) {
         arrayEach(headerLevel, (function(header, j) {
           if (header.colspan > 1) {
+            i = parseInt(i, 10);
+            j = parseInt(j, 10);
             var row = $__9.nestedHeadersPlugin.levelToRowCoords(i);
             var col = j;
             $__9.markSectionAs(action === 'collapse' ? 'collapsed' : 'expanded', row, col, true);
@@ -24631,6 +24825,8 @@ var $CollapsibleColumns = CollapsibleColumns;
     } else {
       objectEach(this.buttonEnabledList, (function(headerRow, i) {
         objectEach(headerRow, (function(header, j) {
+          i = parseInt(i, 10);
+          j = parseInt(j, 10);
           $__9.markSectionAs(action === 'collapse' ? 'collapsed' : 'expanded', i, j, true);
           $__9.toggleCollapsibleSection({
             row: i,
@@ -32550,7 +32746,7 @@ var GhostTable = function GhostTable(plugin) {
     this.container = document.createElement('div');
     this.buildGhostTable(this.container);
     this.nestedHeaders.hot.rootElement.appendChild(this.container);
-    var columns = this.container.querySelectorAll('tr:last-of-type td');
+    var columns = this.container.querySelectorAll('tr:last-of-type th');
     var maxColumns = columns.length;
     for (var i = 0; i < maxColumns; i++) {
       this.widthsCache.push(columns[i].offsetWidth);
@@ -32572,7 +32768,7 @@ var GhostTable = function GhostTable(plugin) {
       var tr = d.createElement('tr');
       lastRowColspan = false;
       for (var col = 0; col < maxCols; col++) {
-        var td = d.createElement('td');
+        var td = d.createElement('th');
         var headerObj = this.nestedHeaders.colspanArray[row][col];
         if (headerObj && !headerObj.hidden) {
           if (row === lastRowIndex) {
@@ -32594,7 +32790,7 @@ var GhostTable = function GhostTable(plugin) {
       {
         var tr$__2 = d.createElement('tr');
         for (var col$__3 = 0; col$__3 < maxCols; col$__3++) {
-          var td$__4 = d.createElement('td');
+          var td$__4 = d.createElement('th');
           tr$__2.appendChild(td$__4);
         }
         table.appendChild(tr$__2);
