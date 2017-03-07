@@ -1,8 +1,6 @@
 import BasePlugin from 'handsontable/plugins/_base';
 import {arrayEach, arrayMap, arrayIncludes} from 'handsontable/helpers/array';
-import {deepClone} from 'handsontable/helpers/object';
 import {rangeEach} from 'handsontable/helpers/number';
-import {mergeSort} from 'handsontable/utils/sortingAlgorithms/mergeSort';
 import {EventManager} from 'handsontable/eventManager';
 import {addClass, removeClass, closest} from 'handsontable/helpers/dom/element';
 import {registerPlugin} from 'handsontable/plugins';
@@ -12,7 +10,7 @@ import {ActionBarComponent} from './component/actionBar';
 import {FormulaCollection} from './formulaCollection';
 import {DataFilter} from './dataFilter';
 import {FormulaUpdateObserver} from './formulaUpdateObserver';
-import {createArrayAssertion, toEmptyString, unifyColumnValues} from './utils';
+import {createArrayAssertion, toEmptyString} from './utils';
 import {FORMULA_NONE} from './constants';
 import {SEPARATOR} from 'handsontable/plugins/contextMenu/predefinedItems';
 
@@ -331,117 +329,6 @@ class Filters extends BasePlugin {
   }
 
   /**
-   * Add new value to ValueComponent cache
-   *
-   * @private
-   * @param {*} cachedState Cached state of ValueComponent
-   * @param newValue Value which will be added to ValueComponent cache
-   */
-  addNewValueToValueComponentCache(cachedState, newValue) {
-    cachedState.itemsSnapshot.push({
-      checked: true,
-      value: newValue,
-      visualValue: newValue
-    });
-  }
-
-  /**
-   * Change value inside ValueComponent cache
-   *
-   * @private
-   * @param {*} cachedState Cached state of ValueComponent
-   * @param {Array} valuesArray Array containing all cached values of ValueComponent
-   * @param {*} originalValue Original value inside ValueComponent cache
-   * @param {*} newValue New value which will change original value of ValueComponent cache
-   */
-  changeValueInsideValueComponentCache(cachedState, valuesArray, originalValue, newValue) {
-    const indexOf = valuesArray.indexOf(originalValue);
-
-    cachedState.itemsSnapshot[indexOf].value = newValue;
-    cachedState.itemsSnapshot[indexOf].visualValue = newValue;
-  }
-
-  /**
-   * Remove value from ValueComponent cache
-   *
-   * @private
-   * @param {*} cachedState Cached state of ValueComponent
-   * @param {*} removedValue Value which will be removed from cache
-   */
-  removeValueFromValueComponentCache(cachedState, removedValue) {
-    const valuesArray = cachedState.itemsSnapshot.map((item) => { return item.value; });
-
-    if (arrayIncludes(valuesArray, removedValue)) {
-      cachedState.itemsSnapshot.splice(valuesArray.indexOf(removedValue));
-    }
-  }
-
-  /**
-   * Sort values of ValueComponent cache
-   *
-   * @private
-   * @param {*} cachedState Cached state of ValueComponent
-   */
-  sortValuesOfValueComponentCache(cachedState) {
-    mergeSort(cachedState.itemsSnapshot, function(a, b) {
-      if (typeof a.value === 'number' && typeof b.value === 'number') {
-        return a.value - b.value;
-      }
-
-      if (a.value === b.value) {
-        return 0;
-      }
-
-      return a.value > b.value ? 1 : -1;
-    });
-  }
-
-  /**
-   * Update cache of Value Component based on handled changes
-   *
-   * @private
-   * @param {Number} row Row of changed cell
-   * @param {String|Number} column Column of changed cell
-   * @param {*} originalValue Original value of changed cell
-   * @param {*} changedValue Changed value of the cell
-   */
-  updateValueComponentCache(row, column, originalValue, changedValue) {
-    const columnIndex = this.hot.propToCol(column);
-    const cachedState = this.valueComponent && this.valueComponent.getCachedState(columnIndex);
-
-    if (cachedState && cachedState.args) {
-      const dataAtCol = this.hot.getDataAtCol(columnIndex);
-      dataAtCol[row] = changedValue;
-      const unifiedDataAtCol = unifyColumnValues(dataAtCol);
-      const args = cachedState.args[0] || [];
-      let newCachedState = deepClone(cachedState);
-      newCachedState.args[0] = unifiedDataAtCol;
-
-      if (unifiedDataAtCol.length === args.length) {
-        const valuesArray = newCachedState.itemsSnapshot.map((item) => { return item.value; });
-
-        if (arrayIncludes(valuesArray, originalValue)) {
-          if (arrayIncludes(valuesArray, changedValue)) {
-            this.removeValueFromValueComponentCache(newCachedState, originalValue);
-
-          } else {
-            this.changeValueInsideValueComponentCache(newCachedState, valuesArray, originalValue, changedValue);
-          }
-        }
-
-      } else if (unifiedDataAtCol.length > args.length) {
-        this.addNewValueToValueComponentCache(newCachedState, changedValue);
-
-      } else {
-        this.removeValueFromValueComponentCache(newCachedState, originalValue);
-      }
-
-      this.sortValuesOfValueComponentCache(newCachedState);
-      this.valueComponent.setCachedState(columnIndex, newCachedState);
-    }
-  }
-
-  /**
    * `afterSetDataAtCell` listener.
    *
    * @private
@@ -449,9 +336,27 @@ class Filters extends BasePlugin {
    */
   onAfterSetDataAtCell(changes) {
     for (let i = 0; i < changes.length; i += 1) {
-      let [row, column, originalValue, changedValue] = changes[i];
+      const [row, column, originalValue, changedValue] = changes[i];
+      const columnIndex = this.hot.propToCol(column);
+      const dataAtCol = this.hot.getDataAtCol(columnIndex);
+      dataAtCol[row] = changedValue;
 
-      this.updateValueComponentCache(row, column, originalValue, changedValue);
+      this.updateValueComponentCache(columnIndex, dataAtCol, originalValue, changedValue);
+    }
+  }
+
+  /**
+   * Update cache of ValueComponent basing on handled changes
+   *
+   * @private
+   * @param columnIndex {Number} columnIndex Column index of changed cell
+   * @param {Array} dataAtCol Array of column values from the data source. `col` is the __visible__ index of the column
+   * @param {*} originalValue Original value of changed cell
+   * @param {*} changedValue Changed value of the cell
+   */
+  updateValueComponentCache(columnIndex, dataAtCol, originalValue, changedValue) {
+    if (this.valueComponent) {
+      this.valueComponent.updateComponentCache(columnIndex, dataAtCol, originalValue, changedValue);
     }
   }
 
