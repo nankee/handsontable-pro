@@ -155,7 +155,8 @@ class ValueComponent extends BaseComponent {
     const valuesArray = cachedState.itemsSnapshot.map((item) => { return item.value; });
 
     if (arrayIncludes(valuesArray, removedValue)) {
-      cachedState.itemsSnapshot.splice(valuesArray.indexOf(removedValue));
+
+
     }
   }
 
@@ -192,8 +193,8 @@ class ValueComponent extends BaseComponent {
     const cachedState = this.getCachedState(columnIndex);
 
     if (cachedState && cachedState.args) {
-      const unifiedDataAtCol = unifyColumnValues(dataAtCol);
       const args = cachedState.args[0] || [];
+      const unifiedDataAtCol = unifyColumnValues(dataAtCol);
       const newCachedState = deepClone(cachedState);
       newCachedState.args[0] = unifiedDataAtCol;
 
