@@ -337,11 +337,10 @@ class Filters extends BasePlugin {
   onAfterSetDataAtCell(changes) {
     for (let i = 0; i < changes.length; i += 1) {
       const [row, column, originalValue, changedValue] = changes[i];
-      const columnIndex = this.hot.propToCol(column);
-      const dataAtCol = this.hot.getDataAtCol(columnIndex);
-      dataAtCol[row] = changedValue;
 
-      this.updateValueComponentCache(columnIndex, dataAtCol, originalValue, changedValue);
+      if (this.valueComponent) {
+        this.updateValueComponentCache(row, column, originalValue, changedValue);
+      }
     }
   }
 
@@ -349,15 +348,17 @@ class Filters extends BasePlugin {
    * Update cache of ValueComponent basing on handled changes
    *
    * @private
-   * @param columnIndex {Number} columnIndex Column index of changed cell
-   * @param {Array} dataAtCol Array of column values from the data source. `col` is the __visible__ index of the column
+   * @param {Number} row Row index of changed cell
+   * @param {String|Number} column Column of changed cell
    * @param {*} originalValue Original value of changed cell
    * @param {*} changedValue Changed value of the cell
    */
-  updateValueComponentCache(columnIndex, dataAtCol, originalValue, changedValue) {
-    if (this.valueComponent) {
-      this.valueComponent.updateComponentCache(columnIndex, dataAtCol, originalValue, changedValue);
-    }
+  updateValueComponentCache(row, column, originalValue, changedValue) {
+    const columnIndex = this.hot.propToCol(column);
+    const dataAtCol = this.hot.getDataAtCol(columnIndex);
+    dataAtCol[row] = changedValue;
+
+    this.valueComponent.updateComponentCache(columnIndex, dataAtCol, originalValue, changedValue);
   }
 
   /**
