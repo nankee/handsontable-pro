@@ -155,8 +155,7 @@ class ValueComponent extends BaseComponent {
     const valuesArray = cachedState.itemsSnapshot.map((item) => { return item.value; });
 
     if (arrayIncludes(valuesArray, removedValue)) {
-
-
+      cachedState.itemsSnapshot.splice(valuesArray.indexOf(removedValue), 1);
     }
   }
 
