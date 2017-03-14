@@ -2,10 +2,10 @@ import {addClass} from 'handsontable/helpers/dom/element';
 import {stopImmediatePropagation} from 'handsontable/helpers/dom/event';
 import {arrayEach, arrayUnique, arrayFilter, arrayMap} from 'handsontable/helpers/array';
 import {stringify} from 'handsontable/helpers/string';
-import {unifyColumnValues, intersectValues, toEmptyString} from './../utils';
-import {BaseComponent} from './_base';
 import {isKey} from 'handsontable/helpers/unicode';
-import {MultipleSelectUI} from './../ui/multipleSelect';
+import {unifyColumnValues, intersectValues, toEmptyString} from './../utils';
+import BaseComponent from './_base';
+import MultipleSelectUI from './../ui/multipleSelect';
 import {FORMULA_BY_VALUE, FORMULA_NONE} from './../constants';
 import {getFormulaDescriptor} from './../formulaRegisterer';
 
@@ -74,7 +74,7 @@ class ValueComponent extends BaseComponent {
     const {column, formulas} = editedFormulaStack;
 
     const updateColumnState = (column, formulas, formulasStack) => {
-      const [formula] = arrayFilter(formulas, formula => formula.name === FORMULA_BY_VALUE);
+      const [formula] = arrayFilter(formulas, (formula) => formula.name === FORMULA_BY_VALUE);
       const state = {};
 
       if (formula) {
@@ -186,4 +186,4 @@ class ValueComponent extends BaseComponent {
   }
 }
 
-export {ValueComponent};
+export default ValueComponent;

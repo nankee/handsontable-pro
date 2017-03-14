@@ -1,10 +1,9 @@
-import Handsontable from '../../browser';
+import {toLabel, extractLabel, error, ERROR_REF} from 'hot-formula-parser';
 import {arrayEach, arrayFilter} from 'handsontable/helpers/array';
 import {startsWith} from 'handsontable/helpers/string';
 import {mixin} from 'handsontable/helpers/object';
-import {localHooks} from 'handsontable/mixins/localHooks';
+import localHooks from 'handsontable/mixins/localHooks';
 import {toUpperCaseFormula} from './utils';
-import {toLabel, extractLabel, error, ERROR_REF} from 'hot-formula-parser';
 
 const BARE_CELL_STRICT_REGEX = /^\$?[A-Z]+\$?\d+$/;
 const BARE_CELL_REGEX = /\$?[A-Z]+\$?\d+/;
@@ -266,8 +265,4 @@ class ExpressionModifier {
 
 mixin(ExpressionModifier, localHooks);
 
-export {ExpressionModifier};
-
-// temp for tests only!
-Handsontable.utils.FormulasUtils = Handsontable.utils.FormulasUtils || {};
-Handsontable.utils.FormulasUtils.ExpressionModifier = ExpressionModifier;
+export default ExpressionModifier;

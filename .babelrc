@@ -1,0 +1,27 @@
+{
+  "presets": [
+    ["env", {
+      "targets": {
+        "browsers": ["last 3 versions", "Chrome >= 41", "Firefox >= 34", "Explorer >= 9", "Safari >= 9"]
+      },
+      "modules": false,
+      "useBuiltIns": false
+    }]
+  ],
+  "env": {
+    "commonjs": {
+      "plugins": [
+        ["transform-es2015-modules-commonjs", {"loose": true}]
+      ]
+    },
+    "es": {
+      "plugins": [
+        ["./.config/babel/transform-ignore-import", {"extensions": [".css"]}]
+      ]
+    }
+  },
+  "ignore": [
+    "src/3rdparty/walkontable/dist/*",
+    "src/3rdparty/walkontable/test/dist/*"
+  ]
+}

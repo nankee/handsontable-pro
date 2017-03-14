@@ -1,13 +1,13 @@
-import Handsontable from '../../browser';
 import BasePlugin from 'handsontable/plugins/_base';
 import {arrayEach} from 'handsontable/helpers/array';
 import {objectEach} from 'handsontable/helpers/object';
-import {CommandExecutor} from 'handsontable/plugins/contextMenu/commandExecutor';
-import {EventManager} from 'handsontable/eventManager';
+import CommandExecutor from 'handsontable/plugins/contextMenu/commandExecutor';
+import EventManager from 'handsontable/eventManager';
 import {getWindowScrollTop, getWindowScrollLeft, hasClass, closest} from 'handsontable/helpers/dom/element';
-import {ItemsFactory} from 'handsontable/plugins/contextMenu/itemsFactory';
-import {Menu} from 'handsontable/plugins/contextMenu/menu';
+import ItemsFactory from 'handsontable/plugins/contextMenu/itemsFactory';
+import Menu from 'handsontable/plugins/contextMenu/menu';
 import {registerPlugin} from 'handsontable/plugins';
+import Hooks from 'handsontable/pluginHooks';
 import {stopPropagation} from 'handsontable/helpers/dom/event';
 import {
   COLUMN_LEFT,
@@ -18,6 +18,13 @@ import {
   ALIGNMENT,
   SEPARATOR
 } from 'handsontable/plugins/contextMenu/predefinedItems';
+
+import './dropdownMenu.css';
+
+Hooks.getSingleton().register('afterDropdownMenuDefaultOptions');
+Hooks.getSingleton().register('afterDropdownMenuShow');
+Hooks.getSingleton().register('afterDropdownMenuHide');
+Hooks.getSingleton().register('afterDropdownMenuExecute');
 
 const BUTTON_CLASS_NAME = 'changeType';
 
@@ -178,7 +185,7 @@ class DropdownMenu extends BasePlugin {
 
     // ContextMenu is not detected HotTableEnv correctly because is injected outside hot-table
     this.menu.hotMenu.isHotTableEnv = this.hot.isHotTableEnv;
-    Handsontable.eventManager.isHotTableEnv = this.hot.isHotTableEnv;
+    // Handsontable.eventManager.isHotTableEnv = this.hot.isHotTableEnv;
   }
 
   /**
@@ -325,11 +332,6 @@ DropdownMenu.SEPARATOR = {
   name: SEPARATOR
 };
 
-Handsontable.hooks.register('afterDropdownMenuDefaultOptions');
-Handsontable.hooks.register('afterDropdownMenuShow');
-Handsontable.hooks.register('afterDropdownMenuHide');
-Handsontable.hooks.register('afterDropdownMenuExecute');
-
-export {DropdownMenu};
-
 registerPlugin('dropdownMenu', DropdownMenu);
+
+export default DropdownMenu;

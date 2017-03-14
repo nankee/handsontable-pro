@@ -2,10 +2,13 @@ import BasePlugin from 'handsontable/plugins/_base';
 import {registerPlugin} from 'handsontable/plugins';
 import {rangeEach, rangeEachReverse} from 'handsontable/helpers/number';
 import {arrayEach} from 'handsontable/helpers/array';
-import {DataManager} from './data/dataManager';
-import {CollapsingUI} from './ui/collapsing';
-import {HeadersUI} from './ui/headers';
-import {ContextMenuUI} from './ui/contextMenu';
+import {CellCoords} from 'handsontable/3rdparty/walkontable/src';
+import DataManager from './data/dataManager';
+import CollapsingUI from './ui/collapsing';
+import HeadersUI from './ui/headers';
+import ContextMenuUI from './ui/contextMenu';
+
+import './nestedRows.css';
 
 const privatePool = new WeakMap();
 
@@ -21,13 +24,7 @@ const privatePool = new WeakMap();
 class NestedRows extends BasePlugin {
 
   constructor(hotInstance) {
-    privatePool.set(this, {
-      changeSelection: false,
-      movedToFirstChild: false,
-      movedToCollapsed: false,
-      skipRender: null,
-    });
-
+    super(hotInstance);
     /**
      * Source data object.
      *
@@ -61,7 +58,12 @@ class NestedRows extends BasePlugin {
      */
     this.headersUI = null;
 
-    super(hotInstance);
+    privatePool.set(this, {
+      changeSelection: false,
+      movedToFirstChild: false,
+      movedToCollapsed: false,
+      skipRender: null,
+    });
   }
 
   /**
@@ -275,22 +277,20 @@ class NestedRows extends BasePlugin {
       startRow = parentIndex;
       endRow = startRow;
 
-    } else {
-      if (rows[rowsLen - 1] < target) {
-        endRow = target - 1;
-        startRow = endRow - rowsLen + 1;
+    } else if (rows[rowsLen - 1] < target) {
+      endRow = target - 1;
+      startRow = endRow - rowsLen + 1;
 
-      } else {
-        startRow = target;
-        endRow = startRow + rowsLen - 1;
-      }
+    } else {
+      startRow = target;
+      endRow = startRow + rowsLen - 1;
     }
 
     selection = this.hot.selection;
     lastColIndex = this.hot.countCols() - 1;
 
-    selection.setRangeStart(new WalkontableCellCoords(startRow, 0));
-    selection.setRangeEnd(new WalkontableCellCoords(endRow, lastColIndex), true);
+    selection.setRangeStart(new CellCoords(startRow, 0));
+    selection.setRangeEnd(new CellCoords(endRow, lastColIndex), true);
 
     priv.changeSelection = false;
   }
@@ -570,6 +570,6 @@ class NestedRows extends BasePlugin {
   }
 }
 
-export {NestedRows};
-
 registerPlugin('nestedRows', NestedRows);
+
+export default NestedRows;

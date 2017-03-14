@@ -12,8 +12,11 @@ import {
   registerPlugin,
   getPlugin
 } from 'handsontable/plugins';
-import {GhostTable} from './utils/ghostTable';
 import BasePlugin from 'handsontable/plugins/_base';
+import {CellCoords} from 'handsontable/3rdparty/walkontable/src';
+import GhostTable from './utils/ghostTable';
+
+import './nestedHeaders.css';
 
 /**
  * @plugin NestedHeaders
@@ -372,19 +375,18 @@ class NestedHeaders extends BasePlugin {
     if (colspan > 1 || (colspan === 1 && hidden === false)) {
       return column;
 
-    } else {
-      let parentCol = column - 1;
-
-      do {
-        if (this.colspanArray[level][parentCol].colspan > 1) {
-          break;
-        }
-
-        parentCol--;
-      } while (column >= 0);
-
-      return parentCol;
     }
+    let parentCol = column - 1;
+
+    do {
+      if (this.colspanArray[level][parentCol].colspan > 1) {
+        break;
+      }
+
+      parentCol--;
+    } while (column >= 0);
+
+    return parentCol;
   }
 
   /**
@@ -463,7 +465,6 @@ class NestedHeaders extends BasePlugin {
         let colspanLen = this.getColspan(level - this.columnHeaderLevelCount, visibleColumnIndex);
         let isInSelection = visibleColumnIndex >= from && (visibleColumnIndex + colspanLen - 1) <= to;
 
-        /*jshint loopfunc: true */
         arrayEach(listTH, (TH, index, array) => {
           if (TH === void 0) {
             return false;
@@ -520,7 +521,7 @@ class NestedHeaders extends BasePlugin {
 
       if (colspan > 1) {
         let lastRowIndex = this.hot.countRows() - 1;
-        this.hot.selection.setRangeEnd(new WalkontableCellCoords(lastRowIndex, lastColIndex));
+        this.hot.selection.setRangeEnd(new CellCoords(lastRowIndex, lastColIndex));
       }
     }
   }
@@ -546,13 +547,11 @@ class NestedHeaders extends BasePlugin {
             (coords.col < from.col && lastColIndex >= from.col && lastColIndex < to.col)) {
           changeDirection = true;
         }
-      } else {
-        if ((coords.col < to.col && lastColIndex > from.col) ||
-            (coords.col > from.col) ||
-            (coords.col <= to.col && lastColIndex > from.col) ||
-            (coords.col > to.col && lastColIndex > from.col)) {
-          changeDirection = true;
-        }
+      } else if ((coords.col < to.col && lastColIndex > from.col) ||
+                 (coords.col > from.col) ||
+                 (coords.col <= to.col && lastColIndex > from.col) ||
+                 (coords.col > to.col && lastColIndex > from.col)) {
+        changeDirection = true;
       }
 
       if (changeDirection) {
@@ -567,21 +566,21 @@ class NestedHeaders extends BasePlugin {
 
         if (from.col === to.col) {
           if (lastColIndex <= from.col && coords.col < from.col) {
-            this.hot.selection.setRangeStartOnly(new WalkontableCellCoords(from.row, to.col));
-            this.hot.selection.setRangeEnd(new WalkontableCellCoords(to.row, coords.col));
+            this.hot.selection.setRangeStartOnly(new CellCoords(from.row, to.col));
+            this.hot.selection.setRangeEnd(new CellCoords(to.row, coords.col));
           } else {
-            this.hot.selection.setRangeStartOnly(new WalkontableCellCoords(from.row, coords.col < from.col ? coords.col : from.col));
-            this.hot.selection.setRangeEnd(new WalkontableCellCoords(to.row, lastColIndex > to.col ? lastColIndex : to.col));
+            this.hot.selection.setRangeStartOnly(new CellCoords(from.row, coords.col < from.col ? coords.col : from.col));
+            this.hot.selection.setRangeEnd(new CellCoords(to.row, lastColIndex > to.col ? lastColIndex : to.col));
           }
         }
         if (from.col < to.col) {
-          this.hot.selection.setRangeStartOnly(new WalkontableCellCoords(from.row, coords.col < from.col ? coords.col : from.col));
-          this.hot.selection.setRangeEnd(new WalkontableCellCoords(to.row, lastColIndex));
+          this.hot.selection.setRangeStartOnly(new CellCoords(from.row, coords.col < from.col ? coords.col : from.col));
+          this.hot.selection.setRangeEnd(new CellCoords(to.row, lastColIndex));
 
         }
         if (from.col > to.col) {
-          this.hot.selection.setRangeStartOnly(new WalkontableCellCoords(from.row, from.col));
-          this.hot.selection.setRangeEnd(new WalkontableCellCoords(to.row, coords.col));
+          this.hot.selection.setRangeStartOnly(new CellCoords(from.row, from.col));
+          this.hot.selection.setRangeEnd(new CellCoords(to.row, coords.col));
         }
       }
     }
@@ -648,6 +647,6 @@ class NestedHeaders extends BasePlugin {
 
 }
 
-export {NestedHeaders};
-
 registerPlugin('nestedHeaders', NestedHeaders);
+
+export default NestedHeaders;

@@ -3,9 +3,10 @@ import {addClass, removeClass} from 'handsontable/helpers/dom/element';
 import {rangeEach} from 'handsontable/helpers/number';
 import {arrayEach, arrayFilter} from 'handsontable/helpers/array';
 import {registerPlugin, getPlugin} from 'handsontable/plugins';
+import hideRowItem from './contextMenuItem/hideRow';
+import showRowItem from './contextMenuItem/showRow';
 
-import {hideRowItem} from './contextMenuItem/hideRow';
-import {showRowItem} from './contextMenuItem/showRow';
+import './hiddenRows.css';
 
 /**
  * @plugin HiddenRows
@@ -561,6 +562,6 @@ class HiddenRows extends BasePlugin {
   }
 }
 
-export {HiddenRows};
-
 registerPlugin('hiddenRows', HiddenRows);
+
+export default HiddenRows;

@@ -1,6 +1,6 @@
 import {rangeEach} from 'handsontable/helpers/number';
 
-export function showColumnItem(hiddenColumnsPlugin) {
+export default function showColumnItem(hiddenColumnsPlugin) {
   const beforeHiddenColumns = [];
   const afterHiddenColumns = [];
 
@@ -61,7 +61,7 @@ export function showColumnItem(hiddenColumnsPlugin) {
           }
         });
 
-        totalColumnLength = totalColumnLength - 1;
+        totalColumnLength -= 1;
 
         if ((beforeHiddenColumns.length === start && start > 0) ||
           (afterHiddenColumns.length === totalColumnLength - start && start < totalColumnLength)) {

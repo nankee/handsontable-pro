@@ -66,4 +66,4 @@ class BaseType {
   }
 }
 
-export {BaseType};
+export default BaseType;

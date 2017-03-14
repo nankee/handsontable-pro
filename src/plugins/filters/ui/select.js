@@ -1,9 +1,9 @@
-import {BaseUI} from './_base';
 import {addClass, getWindowScrollTop, getWindowScrollLeft} from 'handsontable/helpers/dom/element';
-import {Menu} from 'handsontable/plugins/contextMenu/menu';
+import Menu from 'handsontable/plugins/contextMenu/menu';
 import {clone, extend} from 'handsontable/helpers/object';
 import {arrayEach} from 'handsontable/helpers/array';
 import {SEPARATOR} from 'handsontable/plugins/contextMenu/predefinedItems';
+import BaseUI from './_base';
 
 const privatePool = new WeakMap();
 
@@ -20,8 +20,9 @@ class SelectUI extends BaseUI {
   }
 
   constructor(hotInstance, options) {
-    privatePool.set(this, {});
     super(hotInstance, extend(SelectUI.DEFAULTS, options));
+
+    privatePool.set(this, {});
     /**
      * Instance of {@link Menu}.
      *
@@ -158,4 +159,4 @@ class SelectUI extends BaseUI {
   }
 }
 
-export {SelectUI};
+export default SelectUI;

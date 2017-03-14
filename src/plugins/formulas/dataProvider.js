@@ -1,5 +1,6 @@
 import {arrayEach} from 'handsontable/helpers/array';
 import {rangeEach} from 'handsontable/helpers/number';
+import {hasOwnProperty} from 'handsontable/helpers/object';
 import {getTranslator} from 'handsontable/utils/recordTranslator';
 import {isFormulaExpression} from './utils';
 
@@ -71,7 +72,7 @@ class DataProvider {
     const id = this._coordId(...this.t.toPhysical(row, column));
     let result;
 
-    if (this.changes.hasOwnProperty(id)) {
+    if (hasOwnProperty(this.changes, id)) {
       result = this.changes[id];
     } else {
       result = this.hot.getDataAtCell(row, column);
@@ -96,7 +97,7 @@ class DataProvider {
       arrayEach(rowData, (value, columnIndex) => {
         const id = this._coordId(...this.t.toPhysical(rowIndex + row1, columnIndex + column1));
 
-        if (this.changes.hasOwnProperty(id)) {
+        if (hasOwnProperty(this.changes, id)) {
           result[rowIndex][columnIndex] = this.changes[id];
         }
       });
@@ -188,4 +189,4 @@ class DataProvider {
   }
 }
 
-export {DataProvider};
+export default DataProvider;

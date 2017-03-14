@@ -1,6 +1,6 @@
 import {objectEach, deepClone} from 'handsontable/helpers/object';
 import {arrayEach} from 'handsontable/helpers/array';
-import {DateCalculator} from './dateCalculator';
+import DateCalculator from './dateCalculator';
 
 /**
  * This class handles the data-related calculations for the GanttChart plugin.
@@ -163,10 +163,11 @@ class GanttChartDataFeed {
       let currentRow = sourceHotRows[i];
 
       if (currentRow[hotSource.startColumn] === null || currentRow[hotSource.startColumn] === '') {
+        /* eslint-disable no-continue */
         continue;
       }
 
-      /*jshint loopfunc: true */
+      /* eslint-disable no-loop-func */
       objectEach(hotSource.additionalData, (prop, j) => {
         additionalObjectData[j] = currentRow[prop];
       });
@@ -335,4 +336,4 @@ class GanttChartDataFeed {
   }
 }
 
-export {GanttChartDataFeed};
+export default GanttChartDataFeed;

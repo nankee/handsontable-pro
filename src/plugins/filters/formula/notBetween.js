@@ -3,7 +3,7 @@ import {FORMULA_NAME as FORMULA_BETWEEN} from './between';
 
 export const FORMULA_NAME = 'not_between';
 
-function formula(dataRow, inputValues) {
+export function formula(dataRow, inputValues) {
   return !getFormula(FORMULA_BETWEEN, inputValues)(dataRow);
 }
 

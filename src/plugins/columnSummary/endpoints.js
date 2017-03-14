@@ -74,9 +74,9 @@ class Endpoints {
   getEndpoint(index) {
     if (this.settingsType === 'function') {
       return this.fillMissingEndpointData(this.settings)[index];
-    } else {
-      return this.endpoints[index];
     }
+
+    return this.endpoints[index];
   }
 
   /**
@@ -87,9 +87,9 @@ class Endpoints {
   getAllEndpoints() {
     if (this.settingsType === 'function') {
       return this.fillMissingEndpointData(this.settings);
-    } else {
-      return this.endpoints;
     }
+
+    return this.endpoints;
   }
 
   /**
@@ -126,8 +126,12 @@ class Endpoints {
 
       this.assignSetting(val, newEndpoint, 'ranges', [[0, this.hot.countRows() - 1]]);
       this.assignSetting(val, newEndpoint, 'reversedRowCoords', false);
-      this.assignSetting(val, newEndpoint, 'destinationRow', new Error('You must provide a destination row for the Column Summary plugin in order to work properly!'));
-      this.assignSetting(val, newEndpoint, 'destinationColumn', new Error('You must provide a destination column for the Column Summary plugin in order to work properly!'));
+      this.assignSetting(val, newEndpoint, 'destinationRow', new Error(`
+        You must provide a destination row for the Column Summary plugin in order to work properly!
+      `));
+      this.assignSetting(val, newEndpoint, 'destinationColumn', new Error(`
+        You must provide a destination column for the Column Summary plugin in order to work properly!
+      `));
       this.assignSetting(val, newEndpoint, 'sourceColumn', val.destinationColumn);
       this.assignSetting(val, newEndpoint, 'type', 'sum');
       this.assignSetting(val, newEndpoint, 'forceNumeric', false);
@@ -168,6 +172,7 @@ class Endpoints {
       endpoint[name] = defaultValue;
 
     } else {
+      /* eslint-disable no-lonely-if */
       if (name === 'destinationRow' && endpoint.reversedRowCoords) {
         endpoint[name] = this.hot.countRows() - settings[name] - 1;
 
@@ -299,7 +304,7 @@ class Endpoints {
    */
   extendEndpointRanges(endpoint, placeOfAlteration, previousPosition, offset) {
     arrayEach(endpoint.ranges, (range, i) => {
-      //is a range, not a single row
+      // is a range, not a single row
       if (range[1]) {
 
         if (placeOfAlteration >= range[0] && placeOfAlteration <= range[1]) {
@@ -350,13 +355,11 @@ class Endpoints {
         if (index === 0) {
           newRange.push(coord);
 
-        } else {
-          if (range[index] !== range[index - 1] + 1) {
-            newRange.push(range[index - 1]);
-            newRanges.push(newRange);
-            newRange = [];
-            newRange.push(coord);
-          }
+        } else if (range[index] !== range[index - 1] + 1) {
+          newRange.push(range[index - 1]);
+          newRanges.push(newRange);
+          newRange = [];
+          newRange.push(coord);
         }
 
         if (index === range.length - 1) {
@@ -487,8 +490,7 @@ class Endpoints {
   resetEndpointValue(endpoint, useOffset = true) {
     let alterRowOffset = endpoint.alterRowOffset || 0;
     let alterColOffset = endpoint.alterColumnOffset || 0;
-    let visualRowIndex, visualColumnIndex;
-    [visualRowIndex, visualColumnIndex] = this.recordTranslator.toVisual(endpoint.destinationRow, endpoint.destinationColumn);
+    let [visualRowIndex, visualColumnIndex] = this.recordTranslator.toVisual(endpoint.destinationRow, endpoint.destinationColumn);
 
     // Clear the meta on the "old" indexes
     const cellMeta = this.hot.getCellMeta(visualRowIndex, visualColumnIndex);
@@ -574,4 +576,4 @@ class Endpoints {
   }
 }
 
-export {Endpoints};
+export default Endpoints;

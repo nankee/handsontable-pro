@@ -1,5 +1,5 @@
 import {arrayEach, arrayFilter, arrayReduce} from 'handsontable/helpers/array';
-import {CellValue} from './cell/value';
+import CellValue from './cell/value';
 
 /**
  * @class Matrix
@@ -101,6 +101,7 @@ class Matrix {
    * @param {Object} cellCoord Visual cell coordinates object.
    */
   getDependencies(cellCoord) {
+    /* eslint-disable arrow-body-style */
     const getDependencies = (cell) => {
       return arrayReduce(this.data, (acc, cellValue) => {
         if (cellValue.hasPrecedent(cell) && acc.indexOf(cellValue) === -1) {
@@ -149,12 +150,8 @@ class Matrix {
   removeCellRefsAtRange({row: startRow, column: startColumn}, {row: endRow, column: endColumn}) {
     const removed = [];
 
-    const rowMatch = (cell) => {
-      return startRow === void 0 ? true : cell.row >= startRow && cell.row <= endRow;
-    };
-    const colMatch = (cell) => {
-      return startColumn === void 0 ? true : cell.column >= startColumn && cell.column <= endColumn;
-    };
+    const rowMatch = (cell) => (startRow === void 0 ? true : cell.row >= startRow && cell.row <= endRow);
+    const colMatch = (cell) => (startColumn === void 0 ? true : cell.column >= startColumn && cell.column <= endColumn);
 
     this.cellReferences = arrayFilter(this.cellReferences, (cell) => {
       if (rowMatch(cell) && colMatch(cell)) {
@@ -178,4 +175,4 @@ class Matrix {
   }
 }
 
-export {Matrix};
+export default Matrix;

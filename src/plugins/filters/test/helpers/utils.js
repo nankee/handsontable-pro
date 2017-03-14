@@ -1,5 +1,4 @@
-
-function conditionMenuRootElement() {
+export function conditionMenuRootElement() {
   var plugin = hot().getPlugin('filters');
   var root;
 
@@ -10,7 +9,7 @@ function conditionMenuRootElement() {
   return root;
 }
 
-function conditionSelectRootElement() {
+export function conditionSelectRootElement() {
   var plugin = hot().getPlugin('filters');
   var root;
 
@@ -21,7 +20,7 @@ function conditionSelectRootElement() {
   return root;
 }
 
-function byValueBoxRootElement() {
+export function byValueBoxRootElement() {
   var plugin = hot().getPlugin('filters');
   var root;
 
@@ -32,7 +31,7 @@ function byValueBoxRootElement() {
   return root;
 }
 
-function byValueMultipleSelect() {
+export function byValueMultipleSelect() {
   var plugin = hot().getPlugin('filters');
   var root;
 
@@ -43,11 +42,7 @@ function byValueMultipleSelect() {
   return root;
 }
 
-function getFilterFormula(name) {
-  return Handsontable.utils.FiltersFormulaRegisterer.formulas[name].formula;
-}
-
-function dateRowFactory(meta) {
+export function dateRowFactory(meta) {
   var options = {meta: meta || {}};
 
   return function(value) {

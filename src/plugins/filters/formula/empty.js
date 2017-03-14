@@ -2,7 +2,7 @@ import {registerFormula} from './../formulaRegisterer';
 
 export const FORMULA_NAME = 'empty';
 
-function formula(dataRow) {
+export function formula(dataRow) {
   return dataRow.value === '' || dataRow.value === null || dataRow.value === void 0;
 }
 

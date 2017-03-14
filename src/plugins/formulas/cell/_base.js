@@ -74,4 +74,4 @@ class BaseCell {
   }
 }
 
-export {BaseCell};
+export default BaseCell;

@@ -10,18 +10,18 @@ import {
   setOverlayPosition,
   resetCssTransform
 } from 'handsontable/helpers/dom/element';
-import {WalkontableOverlay} from 'handsontable/3rdparty/walkontable/src/overlay/_base.js';
+import Overlay from 'handsontable/3rdparty/walkontable/src/overlay/_base';
 
 /**
- * @class WalkontableBottomOverlay
+ * @class BottomOverlay
  */
-class WalkontableBottomOverlay extends WalkontableOverlay {
+class BottomOverlay extends Overlay {
   /**
    * @param {Walkontable} wotInstance
    */
   constructor(wotInstance) {
     super(wotInstance);
-    this.clone = this.makeClone(WalkontableOverlay.CLONE_BOTTOM);
+    this.clone = this.makeClone(Overlay.CLONE_BOTTOM);
   }
 
   /**
@@ -45,6 +45,7 @@ class WalkontableBottomOverlay extends WalkontableOverlay {
    * @returns {Boolean}
    */
   shouldBeRendered() {
+    /* eslint-disable no-unneeded-ternary */
     return this.wot.getSetting('fixedRowsBottom') ? true : false;
   }
 
@@ -77,7 +78,7 @@ class WalkontableBottomOverlay extends WalkontableOverlay {
         finalBottom = 0;
       }
       headerPosition = finalBottom;
-      finalBottom = finalBottom + 'px';
+      finalBottom += 'px';
 
       overlayRoot.style.top = '';
       overlayRoot.style.left = finalLeft;
@@ -309,8 +310,6 @@ class WalkontableBottomOverlay extends WalkontableOverlay {
   }
 }
 
-export {WalkontableBottomOverlay};
+Overlay.registerOverlay(Overlay.CLONE_BOTTOM, BottomOverlay);
 
-window.WalkontableBottomOverlay = WalkontableBottomOverlay;
-
-WalkontableOverlay.registerOverlay(WalkontableOverlay.CLONE_BOTTOM, WalkontableBottomOverlay);
+export default BottomOverlay;

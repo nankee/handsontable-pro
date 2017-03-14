@@ -6,13 +6,12 @@ import {
   hasClass,
   fastInnerText
 } from 'handsontable/helpers/dom/element';
-import {EventManager} from 'handsontable/eventManager';
+import EventManager from 'handsontable/eventManager';
 import {
   registerPlugin,
   getPlugin
 } from 'handsontable/plugins';
 import {stopImmediatePropagation} from 'handsontable/helpers/dom/event';
-import {eventManager} from 'handsontable/eventManager';
 import BasePlugin from 'handsontable/plugins/_base';
 
 /**
@@ -92,7 +91,6 @@ class CollapsibleColumns extends BasePlugin {
      * @type {EventManager}
      */
     this.eventManager = null;
-
   }
 
   /**
@@ -128,7 +126,7 @@ class CollapsibleColumns extends BasePlugin {
     this.addHook('afterGetColHeader', (col, TH) => this.onAfterGetColHeader(col, TH));
     this.addHook('beforeOnCellMouseDown', (event, coords, TD) => this.onBeforeOnCellMouseDown(event, coords, TD));
 
-    this.eventManager = eventManager(this.hot);
+    this.eventManager = new EventManager(this.hot);
 
     super.enablePlugin();
   }
@@ -248,7 +246,7 @@ class CollapsibleColumns extends BasePlugin {
   generateIndicator(col, TH) {
     let TR = TH.parentNode;
     let THEAD = TR.parentNode;
-    let row = (-1) * THEAD.childNodes.length + Array.prototype.indexOf.call(THEAD.childNodes, TR);
+    let row = ((-1) * THEAD.childNodes.length) + Array.prototype.indexOf.call(THEAD.childNodes, TR);
 
     if (Object.keys(this.buttonEnabledList).length > 0 && (!this.buttonEnabledList[row] || !this.buttonEnabledList[row][col])) {
       return null;
@@ -290,6 +288,8 @@ class CollapsibleColumns extends BasePlugin {
       case 'expanded':
         this.collapsedSections[row][column] = void 0;
 
+        break;
+      default:
         break;
     }
 
@@ -427,6 +427,8 @@ class CollapsibleColumns extends BasePlugin {
           }
 
           break;
+        default:
+          break;
       }
     });
 
@@ -517,6 +519,6 @@ class CollapsibleColumns extends BasePlugin {
 
 }
 
-export {CollapsibleColumns};
-
 registerPlugin('collapsibleColumns', CollapsibleColumns);
+
+export default CollapsibleColumns;
