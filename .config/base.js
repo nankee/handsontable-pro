@@ -55,7 +55,7 @@ module.exports.create = function create() {
           test: /\.js$/,
           loader: 'babel-loader',
           exclude: [
-            /node_modules\/(?!handsontable)\\w+/,
+            /node_modules\/(?!handsontable)/,
           ],
           options: {
             cacheDirectory: true,
