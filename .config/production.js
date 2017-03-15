@@ -5,10 +5,10 @@
  *  - handsontable.full.min.js
  *  - handsontable.full.min.css
  */
-var configFactory = require('./development');
+var webpack = require('webpack');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-var webpack = require('webpack');
+var configFactory = require('./development');
 
 var env = process.env.NODE_ENV;
 var PACKAGE_NAME = configFactory.PACKAGE_NAME;
@@ -22,6 +22,7 @@ module.exports.create = function create() {
   config.forEach(function(c) {
     var isFullBuild = /\.full\.js$/.test(c.output.filename);
 
+    c.devtool = false;
     c.output.filename = c.output.filename.replace(/\.js$/, '.min.js');
 
     // Remove all 'ExtractTextPlugin' instances

@@ -5,11 +5,11 @@
  *  - handsontable.full.js
  *  - handsontable.full.css
  */
-var configFactory = require('./base');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 var path = require('path');
 var webpack = require('webpack');
+var configFactory = require('./base');
 
 var env = process.env.NODE_ENV;
 var PACKAGE_NAME = configFactory.PACKAGE_NAME;
@@ -51,7 +51,7 @@ module.exports.create = function create() {
     };
     c.module.rules.unshift({
       test: [
-         // Disable loading css files from pikaday module
+        // Disable loading css files from pikaday module
         /pikaday\/css/,
       ],
       loader: path.resolve(__dirname, 'loader/empty-loader.js'),
@@ -63,6 +63,29 @@ module.exports.create = function create() {
 
   configFull.forEach(function(c) {
     c.output.filename = PACKAGE_NAME + '.full.js';
+    c.module.rules.unshift({
+      test: /numbro/,
+      use: [
+        {
+          loader: path.resolve(__dirname, 'loader/export-to-window-loader.js'),
+          options: {
+            numbro: 'numbro',
+          }
+        }
+      ]
+    });
+    c.module.rules.unshift({
+      test: /moment/,
+      use: [
+        {
+          loader: path.resolve(__dirname, 'loader/export-to-window-loader.js'),
+          options: {
+            moment: 'moment',
+          }
+        }
+      ]
+    });
+
     c.plugins.push(
       new ExtractTextPlugin(PACKAGE_NAME + '.full.css')
     );

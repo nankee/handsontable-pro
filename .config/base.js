@@ -1,6 +1,6 @@
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
-var path = require('path');
 var fs = require('fs');
+var path = require('path');
 var webpack = require('webpack');
 
 var licenseBody = fs.readFileSync(path.resolve(__dirname, '../LICENSE'), 'utf8');
@@ -20,8 +20,6 @@ licenseBody += '\nVersion: ' + PACKAGE_VERSION;
 
 module.exports.create = function create() {
   var config = {
-    // target: 'node',
-    target: 'web',
     devtool: false,
     output: {
       library: 'Handsontable',

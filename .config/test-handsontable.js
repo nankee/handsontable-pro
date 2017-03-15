@@ -3,10 +3,10 @@
  *  - e2e.entry.js
  *  - helpers.entry.js
  */
-var JasmineHtml = require('./plugin/jasmine-html');
-var configFactory = require('./base');
 var path = require('path');
 var webpack = require('webpack');
+var JasmineHtml = require('./plugin/jasmine-html');
+var configFactory = require('./base');
 
 var env = process.env.NODE_ENV;
 var PACKAGE_NAME = configFactory.PACKAGE_NAME;

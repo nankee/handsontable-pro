@@ -44,6 +44,12 @@ module.exports.create = function create() {
         commonjs2: 'zeroclipboard',
         commonjs: 'zeroclipboard',
         amd: 'zeroclipboard',
+      },
+      'hot-formula-parser': {
+        root: 'formulaParser',
+        commonjs2: 'hot-formula-parser',
+        commonjs: 'hot-formula-parser',
+        amd: 'hot-formula-parser',
       }
     };
     c.module.rules.unshift({
