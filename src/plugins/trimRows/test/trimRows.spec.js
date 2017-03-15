@@ -401,4 +401,18 @@ describe('TrimRows', function() {
       }, 100);
     });
   });
+
+  it('should clear cache after loading new data by `loadData` function, when plugin `trimRows` is enabled #92', function (done) {
+    var hot = handsontable({
+      data: Handsontable.helper.createSpreadsheetData(5, 5),
+      trimRows: true
+    });
+
+    hot.loadData(Handsontable.helper.createSpreadsheetData(10, 10));
+
+    setTimeout(function () {
+      expect(this.$container.find('td').length).toEqual(100);
+      done();
+    }.bind(this), 100);
+  });
 });
