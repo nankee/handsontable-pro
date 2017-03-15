@@ -84,9 +84,14 @@ class ConditionComponent extends BaseComponent {
   /**
    * Update state of component.
    *
-   * @param {Object} editedFormulaStack Formula stack for edited column.
+   * @param {Object} formulaInfo Information about formula containing stack of edited column,
+   * stack of dependent formulas, data factory and optional formula change. It's described by object containing keys:
+   * `editedFormulaStack`, `dependentFormulaStacks`, `visibleDataFactory` and `formulaChange`.
    */
-  updateState({column, formulas: currentFormulas}) {
+  updateState(formulaInfo) {
+    const column = formulaInfo.editedFormulaStack.column;
+    const currentFormulas = formulaInfo.editedFormulaStack.formulas;
+
     const [formula] = arrayFilter(currentFormulas, formula => formula.name !== FORMULA_BY_VALUE);
 
     // Ignore formulas by_value

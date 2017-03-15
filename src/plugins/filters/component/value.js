@@ -68,21 +68,25 @@ class ValueComponent extends BaseComponent {
   /**
    * Update state of component.
    *
-   * @param {Object} editedFormulaStack Formula stack for edited column.
-   * @param {Object} dependentFormulaStacks Formula stacks of dependent formulas.
-   * @param {Function} filteredRowsFactory Data factory
+   * @param {Object} formulaInfo Information about formula containing stack of edited column,
+   * stack of dependent formulas, data factory and optional formula change. It's described by object containing keys:
+   * `editedFormulaStack`, `dependentFormulaStacks`, `visibleDataFactory` and `formulaChange`.
    */
-  updateState(editedFormulaStack, dependentFormulaStacks, filteredRowsFactory) {
-    const {column, formulas} = editedFormulaStack;
+  updateState(formulaInfo) {
+    const {column, formulas} = formulaInfo.editedFormulaStack;
 
     const updateColumnState = (column, formulas, formulasStack) => {
       const [formula] = arrayFilter(formulas, formula => formula.name === FORMULA_BY_VALUE);
       const state = {};
 
       if (formula) {
-        let rowValues = arrayMap(filteredRowsFactory(column, formulasStack), (row) => row.value);
+        let rowValues = arrayMap(formulaInfo.filteredRowsFactory(column, formulasStack), (row) => row.value);
 
         rowValues = unifyColumnValues(rowValues);
+
+        if (formulaInfo.formulaChange) {
+          formula[formulaInfo.formulaChange.formulaKey] = formulaInfo.formulaChange.formulaValue;
+        }
 
         const selectedValues = [];
         const itemsSnapshot = intersectValues(rowValues, formula.args[0], (item) => {
@@ -106,118 +110,10 @@ class ValueComponent extends BaseComponent {
     updateColumnState(column, formulas);
 
     // Shallow deep update of component state
-    if (dependentFormulaStacks.length) {
-      const {column, formulas} = dependentFormulaStacks[0];
+    if (formulaInfo.dependentFormulaStacks.length) {
+      const {column, formulas} = formulaInfo.dependentFormulaStacks[0];
 
-      updateColumnState(column, formulas, editedFormulaStack);
-    }
-  }
-
-  /**
-   * Add new value to component cache
-   *
-   * @private
-   * @param {*} cachedState Cached state of ValueComponent
-   * @param newValue Value which will be added to ValueComponent cache
-   */
-  addNewValueToComponentCache(cachedState, newValue) {
-    cachedState.itemsSnapshot.push({
-      checked: true,
-      value: newValue,
-      visualValue: newValue
-    });
-  }
-
-  /**
-   * Change value inside component cache
-   *
-   * @private
-   * @param {*} cachedState Cached state of ValueComponent
-   * @param {Array} valuesArray Array containing all cached values of ValueComponent
-   * @param {*} originalValue Original value inside ValueComponent cache
-   * @param {*} newValue New value which will change original value of ValueComponent cache
-   */
-  changeValueInsideComponentCache(cachedState, valuesArray, originalValue, newValue) {
-    const indexOf = valuesArray.indexOf(originalValue);
-
-    cachedState.itemsSnapshot[indexOf].value = newValue;
-    cachedState.itemsSnapshot[indexOf].visualValue = newValue;
-  }
-
-  /**
-   * Remove value from component cache
-   *
-   * @private
-   * @param {*} cachedState Cached state of ValueComponent
-   * @param {*} removedValue Value which will be removed from cache
-   */
-  removeValueFromComponentCache(cachedState, removedValue) {
-    const valuesArray = cachedState.itemsSnapshot.map((item) => { return item.value; });
-
-    if (arrayIncludes(valuesArray, removedValue)) {
-      cachedState.itemsSnapshot.splice(valuesArray.indexOf(removedValue), 1);
-    }
-  }
-
-  /**
-   * Sort values of component cache
-   *
-   * @private
-   * @param {*} cachedState Cached state of ValueComponent
-   */
-  sortValuesOfComponentCache(cachedState) {
-    mergeSort(cachedState.itemsSnapshot, function(a, b) {
-      if (typeof a.value === 'number' && typeof b.value === 'number') {
-        return a.value - b.value;
-      }
-
-      if (a.value === b.value) {
-        return 0;
-      }
-
-      return a.value > b.value ? 1 : -1;
-    });
-  }
-
-  /**
-   * Update cache of component basing on handled changes
-   *
-   * @private
-   * @param columnIndex {Number} columnIndex Column index of changed cell
-   * @param {Array} dataAtCol Array of column values from the data source. `col` is the __visible__ index of the column
-   * @param {*} originalValue Original value of changed cell
-   * @param {*} changedValue Changed value of the cell
-   */
-  updateComponentCache(columnIndex, dataAtCol, originalValue, changedValue) {
-    const cachedState = this.getCachedState(columnIndex);
-
-    if (cachedState && cachedState.args) {
-      const args = cachedState.args[0] || [];
-      const unifiedDataAtCol = unifyColumnValues(dataAtCol);
-      const newCachedState = deepClone(cachedState);
-      newCachedState.args[0] = unifiedDataAtCol;
-
-      if (unifiedDataAtCol.length === args.length) {
-        const valuesArray = newCachedState.itemsSnapshot.map((item) => { return item.value; });
-
-        if (arrayIncludes(valuesArray, originalValue)) {
-          if (arrayIncludes(valuesArray, changedValue)) {
-            this.removeValueFromComponentCache(newCachedState, originalValue);
-
-          } else {
-            this.changeValueInsideComponentCache(newCachedState, valuesArray, originalValue, changedValue);
-          }
-        }
-
-      } else if (unifiedDataAtCol.length > args.length) {
-        this.addNewValueToComponentCache(newCachedState, changedValue);
-
-      } else {
-        this.removeValueFromComponentCache(newCachedState, originalValue);
-      }
-
-      this.sortValuesOfComponentCache(newCachedState);
-      this.setCachedState(columnIndex, newCachedState);
+      updateColumnState(column, formulas, formulaInfo.editedFormulaStack);
     }
   }
 

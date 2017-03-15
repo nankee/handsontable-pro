@@ -683,6 +683,11 @@ describe('Filters UI', function() {
 
         dropdownMenu(2);
         expect($(byValueBoxRootElement()).find('tr:contains("BBB City - modified")').length).toEqual(1);
+
+        var checkboxes = $(byValueBoxRootElement()).find(':checkbox').toArray();
+        var checkedArray = checkboxes.map((element) => { return element.checked });
+
+        expect(checkedArray).toEqual([false, true, true]);
       });
 
       it('should show proper number of values after refreshing cache ' +

@@ -10,7 +10,7 @@ import {ActionBarComponent} from './component/actionBar';
 import {FormulaCollection} from './formulaCollection';
 import {DataFilter} from './dataFilter';
 import {FormulaUpdateObserver} from './formulaUpdateObserver';
-import {createArrayAssertion, toEmptyString} from './utils';
+import {createArrayAssertion, toEmptyString, unifyColumnValues} from './utils';
 import {FORMULA_NONE} from './constants';
 import {SEPARATOR} from 'handsontable/plugins/contextMenu/predefinedItems';
 
@@ -82,7 +82,6 @@ class Filters extends BasePlugin {
 
     // One listener for the enable/disable functionality
     this.hot.addHook('afterGetColHeader', (col, TH) => this.onAfterGetColHeader(col, TH));
-    this.hot.addHook('afterSetDataAtCell', (changes, source) => this.onAfterSetDataAtCell(changes));
   }
 
   /**
@@ -137,6 +136,7 @@ class Filters extends BasePlugin {
     this.addHook('afterDropdownMenuDefaultOptions', (defaultOptions) => this.onAfterDropdownMenuDefaultOptions(defaultOptions));
     this.addHook('afterDropdownMenuShow', () => this.onAfterDropdownMenuShow());
     this.addHook('afterDropdownMenuHide', () => this.onAfterDropdownMenuHide());
+    this.addHook('afterChange', (changes, source) => this.onAfterChange(changes));
 
     // force to enable dependent plugins
     this.hot.getSettings().trimRows = true;
@@ -329,36 +329,33 @@ class Filters extends BasePlugin {
   }
 
   /**
-   * `afterSetDataAtCell` listener.
+   * `afterChange` listener.
    *
    * @private
    * @param {Array} changes Array of changes.
    */
-  onAfterSetDataAtCell(changes) {
-    for (let i = 0; i < changes.length; i += 1) {
-      const [row, column, originalValue, changedValue] = changes[i];
+  onAfterChange(changes) {
+    if (changes) {
+      arrayEach(changes, (change) => {
+        const [, prop] = change;
+        const columnIndex = this.hot.propToCol(prop);
 
-      if (this.valueComponent) {
-        this.updateValueComponentCache(row, column, originalValue, changedValue);
-      }
+        this.updateValueComponentFormula(columnIndex);
+      });
     }
   }
 
   /**
-   * Update cache of ValueComponent basing on handled changes
+   * Update formula of ValueComponent basing on handled changes
    *
    * @private
-   * @param {Number} row Row index of changed cell
-   * @param {String|Number} column Column of changed cell
-   * @param {*} originalValue Original value of changed cell
-   * @param {*} changedValue Changed value of the cell
+   * @param {Number} columnIndex Column index of handled ValueComponent formula
    */
-  updateValueComponentCache(row, column, originalValue, changedValue) {
-    const columnIndex = this.hot.propToCol(column);
+  updateValueComponentFormula(columnIndex) {
     const dataAtCol = this.hot.getDataAtCol(columnIndex);
-    dataAtCol[row] = changedValue;
+    const selectedValues = unifyColumnValues(dataAtCol);
 
-    this.valueComponent.updateComponentCache(columnIndex, dataAtCol, originalValue, changedValue);
+    this.formulaUpdateObserver.updateStatesAtCol(columnIndex, { formulaKey: 'args', formulaValue: [selectedValues] });
   }
 
   /**
