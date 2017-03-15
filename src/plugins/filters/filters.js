@@ -1,5 +1,5 @@
 import BasePlugin from 'handsontable/plugins/_base';
-import {arrayEach, arrayMap} from 'handsontable/helpers/array';
+import {arrayEach, arrayMap, arrayIncludes} from 'handsontable/helpers/array';
 import {rangeEach} from 'handsontable/helpers/number';
 import {EventManager} from 'handsontable/eventManager';
 import {addClass, removeClass, closest} from 'handsontable/helpers/dom/element';
@@ -10,7 +10,7 @@ import {ActionBarComponent} from './component/actionBar';
 import {FormulaCollection} from './formulaCollection';
 import {DataFilter} from './dataFilter';
 import {FormulaUpdateObserver} from './formulaUpdateObserver';
-import {createArrayAssertion, toEmptyString} from './utils';
+import {createArrayAssertion, toEmptyString, unifyColumnValues} from './utils';
 import {FORMULA_NONE} from './constants';
 import {SEPARATOR} from 'handsontable/plugins/contextMenu/predefinedItems';
 
@@ -136,6 +136,7 @@ class Filters extends BasePlugin {
     this.addHook('afterDropdownMenuDefaultOptions', (defaultOptions) => this.onAfterDropdownMenuDefaultOptions(defaultOptions));
     this.addHook('afterDropdownMenuShow', () => this.onAfterDropdownMenuShow());
     this.addHook('afterDropdownMenuHide', () => this.onAfterDropdownMenuHide());
+    this.addHook('afterChange', (changes, source) => this.onAfterChange(changes));
 
     // force to enable dependent plugins
     this.hot.getSettings().trimRows = true;
@@ -325,6 +326,36 @@ class Filters extends BasePlugin {
     });
 
     return data;
+  }
+
+  /**
+   * `afterChange` listener.
+   *
+   * @private
+   * @param {Array} changes Array of changes.
+   */
+  onAfterChange(changes) {
+    if (changes) {
+      arrayEach(changes, (change) => {
+        const [, prop] = change;
+        const columnIndex = this.hot.propToCol(prop);
+
+        this.updateValueComponentFormula(columnIndex);
+      });
+    }
+  }
+
+  /**
+   * Update formula of ValueComponent basing on handled changes
+   *
+   * @private
+   * @param {Number} columnIndex Column index of handled ValueComponent formula
+   */
+  updateValueComponentFormula(columnIndex) {
+    const dataAtCol = this.hot.getDataAtCol(columnIndex);
+    const selectedValues = unifyColumnValues(dataAtCol);
+
+    this.formulaUpdateObserver.updateStatesAtColumn(columnIndex, selectedValues);
   }
 
   /**

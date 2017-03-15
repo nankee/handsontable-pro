@@ -643,6 +643,257 @@ describe('Filters UI', function() {
         done();
       }, 100);
     });
+
+    describe('Updating "by value" component cache #87', function () {
+      it('should update component view after applying filtering and changing cell value', function() {
+        var hot = handsontable({
+          data: [
+            {
+              id: 1,
+              name: 'Nannie Patel',
+              address: 'AAA City'
+            },
+            {
+              id: 2,
+              name: 'Leanne Ware',
+              address: 'BBB City'
+            },
+            {
+              id: 3,
+              name: 'Mathis Boone',
+              address: 'CCC City'
+            },
+          ],
+          columns: [
+            {data: 'id', type: 'numeric', title: 'ID'},
+            {data: 'name', type: 'text', title: 'Full name'},
+            {data: 'address', type: 'text', title: 'Address'}
+          ],
+          dropdownMenu: true,
+          filters: true,
+          width: 500,
+          height: 300
+        });
+
+        dropdownMenu(2);
+
+        $(byValueBoxRootElement()).find('tr:nth-child(1) :checkbox').simulate('click');
+        $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
+        setDataAtCell(0, 2, 'BBB City - modified');
+
+        dropdownMenu(2);
+        expect($(byValueBoxRootElement()).find('tr:contains("BBB City - modified")').length).toEqual(1);
+
+        var checkboxes = $(byValueBoxRootElement()).find(':checkbox').toArray();
+        var checkedArray = checkboxes.map((element) => { return element.checked });
+
+        expect(checkedArray).toEqual([false, true, true]);
+      });
+
+      it('should show proper number of values after refreshing cache ' +
+        '(should remove the value from component), case nr 1 (changing value to match unfiltered value)', function() {
+        var hot = handsontable({
+          data: [
+            {
+              id: 1,
+              name: 'Nannie Patel',
+              address: 'AAA City'
+            },
+            {
+              id: 2,
+              name: 'Leanne Ware',
+              address: 'BBB City'
+            },
+            {
+              id: 3,
+              name: 'Mathis Boone',
+              address: 'CCC City'
+            },
+            {
+              id: 4,
+              name: 'Heather Mcdaniel',
+              address: 'DDD City'
+            }
+          ],
+          columns: getColumnsForFilters(),
+          dropdownMenu: true,
+          filters: true,
+          width: 500,
+          height: 300
+        });
+
+        dropdownMenu(2);
+
+        $(byValueBoxRootElement()).find('tr:nth-child(1) :checkbox').simulate('click');
+        $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
+
+        setDataAtCell(0, 2, 'CCC City'); // BBB City -> CCC City
+        dropdownMenu(2);
+
+        var elements = $(byValueBoxRootElement()).find('label').toArray();
+        var text = elements.map((element) => { return $(element).text() });
+
+        expect(text).toEqual(["AAA City", "CCC City", "DDD City"]);
+
+        var checkboxes = $(byValueBoxRootElement()).find(':checkbox').toArray();
+        var checkedArray = checkboxes.map((element) => { return element.checked });
+
+        expect(checkedArray).toEqual([false, true, true]);
+      });
+
+
+      it('should show proper number of values after refreshing cache ' +
+        '(should remove the value from component), case nr 2 (changing value to match filtered value)', function(done) {
+        var hot = handsontable({
+          data: [
+            {
+              id: 1,
+              name: 'Nannie Patel',
+              address: 'AAA City'
+            },
+            {
+              id: 2,
+              name: 'Leanne Ware',
+              address: 'AAAA City'
+            },
+            {
+              id: 3,
+              name: 'Mathis Boone',
+              address: 'CCC City'
+            },
+            {
+              id: 4,
+              name: 'Heather Mcdaniel',
+              address: 'DDD City'
+            }
+          ],
+          columns: [
+            {data: 'id', type: 'numeric', title: 'ID'},
+            {data: 'name', type: 'text', title: 'Full name'},
+            {data: 'address', type: 'text', title: 'Address'}
+          ],
+          dropdownMenu: true,
+          filters: true,
+          width: 500,
+          height: 300
+        });
+
+        dropdownMenu(2);
+
+        $(byValueBoxRootElement()).find('tr:nth-child(1) :checkbox').simulate('click');
+        $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
+
+        setDataAtCell(0, 2, 'AAA City');  // AAAA City -> AAA City
+
+        dropdownMenu(2);
+        var elements = $(byValueBoxRootElement()).find('label').toArray();
+        var text = elements.map((element) => { return $(element).text() });
+
+        expect(text).toEqual(["AAA City", "CCC City", "DDD City"]);
+        done();
+      });
+
+      it('should show proper number of values after refreshing cache (should add new value to component)', function() {
+        var hot = handsontable({
+          data: [
+            {
+              id: 1,
+              name: 'Nannie Patel',
+              address: 'AAA City'
+            },
+            {
+              id: 2,
+              name: 'Leanne Ware',
+              address: 'BBB City'
+            },
+            {
+              id: 3,
+              name: 'Mathis Boone',
+              address: 'BBB City'
+            },
+            {
+              id: 4,
+              name: 'Heather Mcdaniel',
+              address: 'DDD City'
+            }
+          ],
+          columns: [
+            {data: 'id', type: 'numeric', title: 'ID'},
+            {data: 'name', type: 'text', title: 'Full name'},
+            {data: 'address', type: 'text', title: 'Address'}
+          ],
+          dropdownMenu: true,
+          filters: true,
+          width: 500,
+          height: 300
+        });
+
+        dropdownMenu(2);
+
+        $(byValueBoxRootElement()).find('tr:nth-child(1) :checkbox').simulate('click');
+        $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
+
+        setDataAtCell(1, 2, 'CCC City');
+        dropdownMenu(2);
+
+        var elements = $(byValueBoxRootElement()).find('label').toArray();
+        var text = elements.map((element) => { return $(element).text() });
+
+        expect(text).toEqual(["AAA City", "BBB City", "CCC City", "DDD City"]);
+
+        var checkboxes = $(byValueBoxRootElement()).find(':checkbox').toArray();
+        var checkedArray = checkboxes.map((element) => { return element.checked });
+
+        expect(checkedArray).toEqual([false, true, true, true]);
+      });
+
+
+      it('should sort updated values', function() {
+        var hot = handsontable({
+          data: [
+            {
+              id: 1,
+              name: 'Nannie Patel',
+              address: 'BBB City'
+            },
+            {
+              id: 2,
+              name: 'Leanne Ware',
+              address: 'ZZZ City'
+            },
+            {
+              id: 3,
+              name: 'Mathis Boone',
+              address: 'CCC City'
+            },
+            {
+              id: 4,
+              name: 'Heather Mcdaniel',
+              address: 'DDD City'
+            }
+          ],
+          columns: [
+            {data: 'id', type: 'numeric', title: 'ID'},
+            {data: 'name', type: 'text', title: 'Full name'},
+            {data: 'address', type: 'text', title: 'Address'}
+          ],
+          dropdownMenu: true,
+          filters: true,
+          width: 500,
+          height: 300
+        });
+
+        dropdownMenu(2);
+
+        $(byValueBoxRootElement()).find('tr:nth-child(1) :checkbox').simulate('click');
+        $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
+
+        setDataAtCell(0, 2, 'AAA City');
+
+        dropdownMenu(2);
+        expect($(byValueBoxRootElement()).find('tr:nth-child(1)').text()).toEqual('AAA City');
+      });
+    });
   });
 
   it('should deselect all values in "Filter by value" after clicking "Clear" link', function(done) {
