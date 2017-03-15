@@ -67,7 +67,7 @@ module.exports.create = function create() {
       test: /numbro/,
       use: [
         {
-          loader: path.resolve(__dirname, 'loader/export-to-window-loader.js'),
+          loader: path.resolve(__dirname, 'loader/exports-to-window-loader.js'),
           options: {
             numbro: 'numbro',
           }
@@ -78,7 +78,7 @@ module.exports.create = function create() {
       test: /moment/,
       use: [
         {
-          loader: path.resolve(__dirname, 'loader/export-to-window-loader.js'),
+          loader: path.resolve(__dirname, 'loader/exports-to-window-loader.js'),
           options: {
             moment: 'moment',
           }
