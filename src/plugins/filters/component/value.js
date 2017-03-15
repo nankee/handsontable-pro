@@ -68,24 +68,22 @@ class ValueComponent extends BaseComponent {
   /**
    * Update state of component.
    *
-   * @param {Object} formulaInfo Information about formula containing stack of edited column,
-   * stack of dependent formulas, data factory and optional formula change. It's described by object containing keys:
-   * `editedFormulaStack`, `dependentFormulaStacks`, `visibleDataFactory` and `formulaChange`.
+   * @param {Object} stateInfo Information about state containing stack of edited column,
+   * stack of dependent formulas, data factory and optional formula arguments change. It's described by object containing keys:
+   * `editedFormulaStack`, `dependentFormulaStacks`, `visibleDataFactory` and `formulaArgsChange`.
    */
-  updateState(formulaInfo) {
-    const {column, formulas} = formulaInfo.editedFormulaStack;
-
+  updateState(stateInfo) {
     const updateColumnState = (column, formulas, formulasStack) => {
       const [formula] = arrayFilter(formulas, formula => formula.name === FORMULA_BY_VALUE);
       const state = {};
 
       if (formula) {
-        let rowValues = arrayMap(formulaInfo.filteredRowsFactory(column, formulasStack), (row) => row.value);
+        let rowValues = arrayMap(stateInfo.filteredRowsFactory(column, formulasStack), (row) => row.value);
 
         rowValues = unifyColumnValues(rowValues);
 
-        if (formulaInfo.formulaChange) {
-          formula[formulaInfo.formulaChange.formulaKey] = formulaInfo.formulaChange.formulaValue;
+        if (stateInfo.formulaArgsChange) {
+          formula.args[0] = stateInfo.formulaArgsChange;
         }
 
         const selectedValues = [];
@@ -107,13 +105,13 @@ class ValueComponent extends BaseComponent {
       this.setCachedState(column, state);
     };
 
-    updateColumnState(column, formulas);
+    updateColumnState(stateInfo.editedFormulaStack.column, stateInfo.editedFormulaStack.formulas);
 
     // Shallow deep update of component state
-    if (formulaInfo.dependentFormulaStacks.length) {
-      const {column, formulas} = formulaInfo.dependentFormulaStacks[0];
+    if (stateInfo.dependentFormulaStacks.length) {
+      const {column, formulas} = stateInfo.dependentFormulaStacks[0];
 
-      updateColumnState(column, formulas, formulaInfo.editedFormulaStack);
+      updateColumnState(column, formulas, stateInfo.editedFormulaStack);
     }
   }
 

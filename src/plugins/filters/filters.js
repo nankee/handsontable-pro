@@ -355,7 +355,7 @@ class Filters extends BasePlugin {
     const dataAtCol = this.hot.getDataAtCol(columnIndex);
     const selectedValues = unifyColumnValues(dataAtCol);
 
-    this.formulaUpdateObserver.updateStatesAtCol(columnIndex, { formulaKey: 'args', formulaValue: [selectedValues] });
+    this.formulaUpdateObserver.updateStatesAtColumn(columnIndex, selectedValues);
   }
 
   /**
