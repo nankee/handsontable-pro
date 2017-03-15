@@ -73,17 +73,17 @@ class ValueComponent extends BaseComponent {
    * `editedFormulaStack`, `dependentFormulaStacks`, `visibleDataFactory` and `formulaArgsChange`.
    */
   updateState(stateInfo) {
-    const updateColumnState = (column, formulas, formulasStack) => {
+    const updateColumnState = (column, formulas, formulaArgsChange, filteredRowsFactory, formulasStack) => {
       const [formula] = arrayFilter(formulas, formula => formula.name === FORMULA_BY_VALUE);
       const state = {};
 
       if (formula) {
-        let rowValues = arrayMap(stateInfo.filteredRowsFactory(column, formulasStack), (row) => row.value);
+        let rowValues = arrayMap(filteredRowsFactory(column, formulasStack), (row) => row.value);
 
         rowValues = unifyColumnValues(rowValues);
 
-        if (stateInfo.formulaArgsChange) {
-          formula.args[0] = stateInfo.formulaArgsChange;
+        if (formulaArgsChange) {
+          formula.args[0] = formulaArgsChange;
         }
 
         const selectedValues = [];
@@ -105,13 +105,22 @@ class ValueComponent extends BaseComponent {
       this.setCachedState(column, state);
     };
 
-    updateColumnState(stateInfo.editedFormulaStack.column, stateInfo.editedFormulaStack.formulas);
+    updateColumnState(
+      stateInfo.editedFormulaStack.column,
+      stateInfo.editedFormulaStack.formulas,
+      stateInfo.formulaArgsChange,
+      stateInfo.filteredRowsFactory
+    );
 
     // Shallow deep update of component state
     if (stateInfo.dependentFormulaStacks.length) {
-      const {column, formulas} = stateInfo.dependentFormulaStacks[0];
-
-      updateColumnState(column, formulas, stateInfo.editedFormulaStack);
+      updateColumnState(
+        stateInfo.dependentFormulaStacks[0].column,
+        stateInfo.dependentFormulaStacks[0].formulas,
+        stateInfo.formulaArgsChange,
+        stateInfo.filteredRowsFactory,
+        stateInfo.editedFormulaStack
+      );
     }
   }
 
