@@ -453,9 +453,10 @@ class Filters extends BasePlugin {
    */
   destroy() {
     if (this.enabled) {
+      this.actionBarComponent.destroy();
       this.conditionComponent.destroy();
       this.valueComponent.destroy();
-      this.actionBarComponent.destroy();
+
       this.formulaCollection.destroy();
       this.formulaUpdateObserver.destroy();
     }

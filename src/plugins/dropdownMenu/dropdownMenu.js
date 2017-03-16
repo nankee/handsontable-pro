@@ -120,6 +120,9 @@ class DropdownMenu extends BasePlugin {
       this.itemsFactory.setPredefinedItems(predefinedItems.items);
       let menuItems = this.itemsFactory.getItems(settings);
 
+      if (this.menu) {
+        this.menu.destroy();
+      }
       this.menu = new Menu(this.hot, {
         className: 'htDropdownMenu',
         keepInViewport: true

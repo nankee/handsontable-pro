@@ -112,7 +112,7 @@
   "jest": {
     "roots": [
       "./test/unit",
-      "./src/plugins/filters"
+      "./src/plugins"
     ],
     "testRegex": "(\\.spec\\.js)|(\\.unit\\.js)$",
     "testPathIgnorePatterns": [

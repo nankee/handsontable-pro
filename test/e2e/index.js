@@ -7,4 +7,4 @@
   });
 });
 
-// require('./MemoryLeakTest');
+require('./MemoryLeakTest');

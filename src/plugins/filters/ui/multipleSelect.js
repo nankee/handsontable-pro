@@ -196,8 +196,14 @@ class MultipleSelectUI extends BaseUI {
     if (this.itemsBox) {
       this.itemsBox.destroy();
     }
-    this.itemsBox = null;
+    this.searchInput.destroy();
+    this.clearAllUI.destroy();
+    this.selectAllUI.destroy();
+
     this.searchInput = null;
+    this.clearAllUI = null;
+    this.selectAllUI = null;
+    this.itemsBox = null;
     this.items = null;
     super.destroy();
   }
