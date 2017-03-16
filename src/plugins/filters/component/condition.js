@@ -178,13 +178,19 @@ class ConditionComponent extends BaseComponent {
    * @param {Object} command Menu item object (command).
    */
   onConditionSelect(command) {
-    arrayEach(this.getInputElements(), (element, index) => {
-      element[command.inputsCount > index ? 'show' : 'hide']();
+    const inputsCount = command.inputsCount;
 
-      if (!index) {
-        setTimeout(() => element.focus(), 10);
-      }
-    });
+    if (inputsCount > 0) {
+      arrayEach(this.getInputElements(), (element, index) => {
+        element[command.inputsCount > index ? 'show' : 'hide']();
+
+        if (!index) {
+          setTimeout(() => element.focus(), 10);
+        }
+      });
+    }
+
+    this.runLocalHooks('change', {from: this.constructor, runAction: !inputsCount});
   }
 
   /**

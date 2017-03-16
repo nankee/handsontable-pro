@@ -314,7 +314,8 @@ describe('Filters UI', function() {
       expect($(dropdownMenuRootElement()).is(':visible')).toBe(false);
     });
 
-    it('should disappear dropdown menu after hitting ESC key in conditional component', function(done) {
+    it('should disappear dropdown menu after hitting ESC key in conditional component ' +
+      'which show other input and focus the element', function(done) {
       var hot = handsontable({
         data: getDataForFilters(),
         columns: getColumnsForFilters(),
@@ -326,7 +327,31 @@ describe('Filters UI', function() {
 
       dropdownMenu(1);
       $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
-      $(conditionMenuRootElement().querySelector('tbody :nth-child(6) td')).simulate('mousedown');
+      $(conditionMenuRootElement()).find('tbody td:contains("Is equal to")').simulate('mousedown');
+
+      setTimeout(function () {
+        keyDownUp('esc');
+
+        expect($(conditionMenuRootElement()).is(':visible')).toBe(false);
+        expect($(dropdownMenuRootElement()).is(':visible')).toBe(false);
+        done();
+      }, 200);
+    });
+
+    it('should disappear dropdown menu after hitting ESC key in conditional component ' +
+      'which don\'t show other input and focus is loosen #86', function(done) {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
+
+      dropdownMenu(1);
+      $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
+      $(conditionMenuRootElement()).find('tbody td:contains("Is empty")').simulate('mousedown');
 
       setTimeout(function () {
         keyDownUp('esc');
