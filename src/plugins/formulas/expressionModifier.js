@@ -1,6 +1,5 @@
 import {toLabel, extractLabel, error, ERROR_REF} from 'hot-formula-parser';
 import {arrayEach, arrayFilter} from 'handsontable/helpers/array';
-import {startsWith} from 'handsontable/helpers/string';
 import {mixin} from 'handsontable/helpers/object';
 import localHooks from 'handsontable/mixins/localHooks';
 import {toUpperCaseFormula} from './utils';
@@ -116,7 +115,7 @@ class ExpressionModifier {
       return result;
     });
 
-    if (!startsWith(expression, '=')) {
+    if (!expression.startsWith('=')) {
       expression = '=' + expression;
     }
 

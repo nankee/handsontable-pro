@@ -1,7 +1,7 @@
 import {arrayEach} from 'handsontable/helpers/array';
 import {extend, clone} from 'handsontable/helpers/object';
 import {rangeEach} from 'handsontable/helpers/number';
-import {substitute, padStart} from 'handsontable/helpers/string';
+import {substitute} from 'handsontable/helpers/string';
 
 /**
  * @plugin ExportFile
@@ -58,8 +58,8 @@ class BaseType {
 
     _options.filename = substitute(_options.filename, {
       YYYY: date.getFullYear(),
-      MM: padStart(date.getMonth() + 1, 2, '0'),
-      DD: padStart(date.getDate(), 2, '0'),
+      MM: ((date.getMonth() + 1) + '').padStart(2, '0'),
+      DD: (date.getDate() + '').padStart(2, '0'),
     });
 
     return _options;
