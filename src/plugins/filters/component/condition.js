@@ -190,7 +190,7 @@ class ConditionComponent extends BaseComponent {
       });
     }
 
-    this.runLocalHooks('change', {from: this.constructor, runAction: !inputsCount});
+    this.runLocalHooks('change', command);
   }
 
   /**

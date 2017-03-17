@@ -106,7 +106,7 @@ class Filters extends BasePlugin {
     let addConfirmationHooks = (component) => {
       component.addLocalHook('accept', () => this.onActionBarSubmit('accept'));
       component.addLocalHook('cancel', () => this.onActionBarSubmit('cancel'));
-      component.addLocalHook('change', (componentInformation) => this.onChange(componentInformation));
+      component.addLocalHook('change', (command) => this.onChange(component, command));
 
       return component;
     };
@@ -420,10 +420,11 @@ class Filters extends BasePlugin {
   /**
    * On component change listener.
    *
-   * @param {Object} componentInfo Information about component
+   * @param {BaseComponent} component Component inheriting BaseComponent
+   * @param {Object} command Menu item object (command).
    */
-  onChange(componentInfo) {
-    if (componentInfo.from === ConditionComponent && componentInfo.runAction) {
+  onChange(component, command) {
+    if (component.constructor === ConditionComponent && !command.inputsCount) {
       this.dropdownMenuPlugin.setListening();
     }
   }
