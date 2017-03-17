@@ -190,6 +190,8 @@ class ConditionComponent extends BaseComponent {
         setTimeout(() => element.focus(), 10);
       }
     });
+
+    this.runLocalHooks('change', command);
   }
 
   /**
