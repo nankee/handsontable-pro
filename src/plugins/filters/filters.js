@@ -294,7 +294,7 @@ class Filters extends BasePlugin {
   }
 
   /**
-   * Get last selected visual column index.
+   * Get last selected physical column index.
    *
    * @returns {Number|null}
    */
@@ -305,7 +305,7 @@ class Filters extends BasePlugin {
   }
 
   /**
-   * Get last selected physical column index.
+   * Get last selected visual column index.
    *
    * @returns {Number|null}
    */
