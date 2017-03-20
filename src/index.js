@@ -1,7 +1,7 @@
 import 'babel-polyfill';
 import Handsontable from 'handsontable';
 
-import * as plugins from './plugins/index'; // <---- TODO: Move plugins to webpack as import from external (autodetect)
+import * as plugins from './plugins/index';
 
 import BottomOverlay from './3rdparty/walkontable/src/overlay/bottom';
 import BottomLeftCornerOverlay from './3rdparty/walkontable/src/overlay/bottomLeftCorner';
