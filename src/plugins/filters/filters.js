@@ -73,7 +73,7 @@ class Filters extends BasePlugin {
      */
     this.actionBarComponent = null;
     /**
-     * Last selected column index for added filter formulas.
+     * Last selected column physical index for added filter formulas.
      *
      * @type {Number}
      * @default null
@@ -212,34 +212,40 @@ class Filters extends BasePlugin {
    * hot.getPlugin('filters').filter();
    * // In this case all value's that don't match will be filtered.
    * ```
-   * @param {Number} column Column index.
+   * @param {Number} column Visual column index.
    * @param {String} name Formula short name.
    * @param {Array} args Formula arguments.
    */
   addFormula(column, name, args) {
-    this.formulaCollection.addFormula(column, {command: {key: name}, args});
+    const physicalColumn = this.t.toPhysicalColumn(column);
+
+    this.formulaCollection.addFormula(physicalColumn, {command: {key: name}, args});
   }
 
   /**
    * Remove formulas at specified column index.
    *
-   * @param {Number} column Column index.
+   * @param {Number} column Visual column index.
    */
   removeFormulas(column) {
-    this.formulaCollection.removeFormulas(column);
+    const physicalColumn = this.t.toPhysicalColumn(column);
+
+    this.formulaCollection.removeFormulas(physicalColumn);
   }
 
   /**
    * Clear all formulas previously added to the collection for the specified column index or, if the column index
    * was not passed, clear the formulas for all columns.
    *
-   * @param {Number} [column] Column index.
+   * @param {Number} [column] Visual column index.
    */
   clearFormulas(column) {
+    const physicalColumn = this.t.toPhysicalColumn(column);
+
     if (column === void 0) {
       this.formulaCollection.clean();
     } else {
-      this.formulaCollection.clearFormulas(column);
+      this.formulaCollection.clearFormulas(physicalColumn);
     }
   }
 
@@ -288,11 +294,22 @@ class Filters extends BasePlugin {
   }
 
   /**
-   * Get last selected column index.
+   * Get last selected visual column index.
    *
    * @returns {Number|null}
    */
-  getSelectedColumn() {
+  getSelectedPhysicalColumn() {
+    const selectedPhysicalColumn = this.t.toPhysicalColumn(this.lastSelectedColumn);
+
+    return selectedPhysicalColumn;
+  }
+
+  /**
+   * Get last selected physical column index.
+   *
+   * @returns {Number|null}
+   */
+  getSelectedVisualColumn() {
     return this.lastSelectedColumn;
   }
 
@@ -364,15 +381,15 @@ class Filters extends BasePlugin {
    * @private
    */
   onAfterDropdownMenuShow() {
-    const column = this.getSelectedColumn();
+    const selectedPhysicalColumn = this.getSelectedPhysicalColumn();
     const conditionComponent = this.conditionComponent;
     const valueComponent = this.valueComponent;
 
     if (!conditionComponent.isHidden()) {
-      conditionComponent.restoreState(column);
+      conditionComponent.restoreState(selectedPhysicalColumn);
     }
     if (!valueComponent.isHidden()) {
-      valueComponent.restoreState(column);
+      valueComponent.restoreState(selectedPhysicalColumn);
     }
   }
 
@@ -421,26 +438,26 @@ class Filters extends BasePlugin {
    */
   onActionBarSubmit(submitType) {
     if (submitType === 'accept') {
-      let column = this.getSelectedColumn();
-      let byConditionState = this.conditionComponent.getState();
-      let byValueState = this.valueComponent.getState();
+      const selectedPhysicalColumn = this.getSelectedPhysicalColumn();
+      const byConditionState = this.conditionComponent.getState();
+      const byValueState = this.valueComponent.getState();
 
       this.formulaUpdateObserver.groupChanges();
-      this.formulaCollection.clearFormulas(column);
+      this.formulaCollection.clearFormulas(selectedPhysicalColumn);
 
       if (byConditionState.command.key === FORMULA_NONE && byValueState.command.key === FORMULA_NONE) {
-        this.formulaCollection.removeFormulas(column);
+        this.formulaCollection.removeFormulas(selectedPhysicalColumn);
       }
       if (byConditionState.command.key !== FORMULA_NONE) {
-        this.formulaCollection.addFormula(column, byConditionState);
+        this.formulaCollection.addFormula(selectedPhysicalColumn, byConditionState);
       }
       if (byValueState.command.key !== FORMULA_NONE) {
-        this.formulaCollection.addFormula(column, byValueState);
+        this.formulaCollection.addFormula(selectedPhysicalColumn, byValueState);
       }
       this.formulaUpdateObserver.flush();
 
-      this.conditionComponent.saveState(column);
-      this.valueComponent.saveState(column);
+      this.conditionComponent.saveState(selectedPhysicalColumn);
+      this.valueComponent.saveState(selectedPhysicalColumn);
 
       this.filter();
     }
@@ -455,7 +472,9 @@ class Filters extends BasePlugin {
    * @param {HTMLTableCellElement} TH
    */
   onAfterGetColHeader(col, TH) {
-    if (this.enabled && this.formulaCollection.hasFormulas(col)) {
+    const physicalColumn = this.t.toPhysicalColumn(col);
+
+    if (this.enabled && this.formulaCollection.hasFormulas(physicalColumn)) {
       addClass(TH, 'htFiltersActive');
     } else {
       removeClass(TH, 'htFiltersActive');

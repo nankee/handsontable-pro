@@ -216,6 +216,105 @@ describe('Filters', function() {
       expect(getData()[4][6]).toBe(false);
       expect(getDataAtCol(6).join()).toBe('false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false');
     });
+
+    describe('should display filters properly when changing columns sequence #32', function () {
+      it('should show indicator at proper position when column order was changed ' +
+        'by Manual Column Move plugin - test no. 1', function () {
+        var hot = handsontable({
+          data: getDataForFilters(),
+          columns: getColumnsForFilters(),
+          dropdownMenu: true,
+          filters: true,
+          width: 500,
+          height: 300,
+          manualColumnMove: true
+        });
+
+        var filters = hot.getPlugin('filters');
+        var manualColumnMove = hot.getPlugin('manualColumnMove');
+
+        filters.addFormula(0, 'not_empty', []);
+        filters.filter();
+
+        manualColumnMove.moveColumn(0, 3);
+        hot.render();
+
+        expect(this.$container.find('th:eq(2)').hasClass('htFiltersActive')).toEqual(true);
+      });
+
+      it('should show indicator at proper position when column order was changed ' +
+        'by Manual Column Move plugin - test no. 2', function () {
+        var hot = handsontable({
+          data: getDataForFilters(),
+          columns: getColumnsForFilters(),
+          dropdownMenu: true,
+          filters: true,
+          width: 500,
+          height: 300,
+          manualColumnMove: true
+        });
+
+        var filters = hot.getPlugin('filters');
+        var manualColumnMove = hot.getPlugin('manualColumnMove');
+
+        manualColumnMove.moveColumn(0, 2);
+        hot.render();
+
+        filters.addFormula(1, 'not_empty', []);
+        filters.filter();
+
+        expect(this.$container.find('th:eq(1)').hasClass('htFiltersActive')).toEqual(true);
+      });
+
+      it('should display conditional menu with proper filter selected when column order was changed ' +
+        'by Manual Column Move plugin', function () {
+        var hot = handsontable({
+          data: getDataForFilters(),
+          columns: getColumnsForFilters(),
+          dropdownMenu: true,
+          filters: true,
+          width: 500,
+          height: 300,
+          manualColumnMove: true
+        });
+
+        var filters = hot.getPlugin('filters');
+        var manualColumnMove = hot.getPlugin('manualColumnMove');
+
+        filters.addFormula(0, 'not_empty', []);
+        filters.filter();
+
+        manualColumnMove.moveColumn(0, 3);
+        hot.render();
+
+        dropdownMenu(2);
+
+        expect($(conditionSelectRootElement()).find('.htUISelectCaption').text()).toBe('Is not empty');
+      });
+
+      it('should display value box with proper items when column order was changed ' +
+        'by Manual Column Move plugin', function () {
+        var hot = handsontable({
+          data: getDataForFilters(),
+          columns: getColumnsForFilters(),
+          dropdownMenu: true,
+          filters: true,
+          width: 500,
+          height: 300,
+          manualColumnMove: true
+        });
+
+        var filters = hot.getPlugin('filters');
+        var manualColumnMove = hot.getPlugin('manualColumnMove');
+
+        manualColumnMove.moveColumn(0, 3);
+        hot.render();
+
+        dropdownMenu(2);
+
+        expect($(byValueBoxRootElement()).find('label:eq(0)').text()).toEqual('1');
+      });
+    });
   });
 
   describe('Advanced filtering (multiple columns)', function() {
