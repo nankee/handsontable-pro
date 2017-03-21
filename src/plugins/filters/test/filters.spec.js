@@ -452,4 +452,23 @@ describe('Filters', function() {
       });
     });
   });
+
+  it('should work properly with updateSettings #32', function () {
+    var hot = handsontable({
+      data: getDataForFilters(),
+      columns: getColumnsForFilters(),
+      filters: true,
+      width: 500,
+      height: 300
+    });
+
+    hot.getPlugin('filters').addFormula(0, 'contains', ['0']);
+    hot.getPlugin('filters').filter();
+
+    hot.updateSettings({
+      fillHandle: true
+    });
+
+    expect(getData().length).toEqual(3);
+  });
 });
