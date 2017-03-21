@@ -294,22 +294,12 @@ class Filters extends BasePlugin {
   }
 
   /**
-   * Get last selected physical column index.
+   * Get last selected column index.
    *
-   * @returns {Number|null}
+   * @returns {Object|null} Return `null` when column isn't selected otherwise
+   * object containing information about selected column with keys `visualIndex` and `physicalIndex`
    */
-  getSelectedPhysicalColumn() {
-    const selectedPhysicalColumn = this.t.toPhysicalColumn(this.lastSelectedColumn);
-
-    return selectedPhysicalColumn;
-  }
-
-  /**
-   * Get last selected visual column index.
-   *
-   * @returns {Number|null}
-   */
-  getSelectedVisualColumn() {
+  getSelectedColumn() {
     return this.lastSelectedColumn;
   }
 
@@ -381,15 +371,16 @@ class Filters extends BasePlugin {
    * @private
    */
   onAfterDropdownMenuShow() {
-    const selectedPhysicalColumn = this.getSelectedPhysicalColumn();
+    const selectedColumn = this.getSelectedColumn();
+    const physicalIndex = selectedColumn && selectedColumn.physicalIndex;
     const conditionComponent = this.conditionComponent;
     const valueComponent = this.valueComponent;
 
     if (!conditionComponent.isHidden()) {
-      conditionComponent.restoreState(selectedPhysicalColumn);
+      conditionComponent.restoreState(physicalIndex);
     }
     if (!valueComponent.isHidden()) {
-      valueComponent.restoreState(selectedPhysicalColumn);
+      valueComponent.restoreState(physicalIndex);
     }
   }
 
@@ -438,26 +429,27 @@ class Filters extends BasePlugin {
    */
   onActionBarSubmit(submitType) {
     if (submitType === 'accept') {
-      const selectedPhysicalColumn = this.getSelectedPhysicalColumn();
+      const selectedColumn = this.getSelectedColumn();
+      const physicalIndex = selectedColumn && selectedColumn.physicalIndex;
       const byConditionState = this.conditionComponent.getState();
       const byValueState = this.valueComponent.getState();
 
       this.formulaUpdateObserver.groupChanges();
-      this.formulaCollection.clearFormulas(selectedPhysicalColumn);
+      this.formulaCollection.clearFormulas(physicalIndex);
 
       if (byConditionState.command.key === FORMULA_NONE && byValueState.command.key === FORMULA_NONE) {
-        this.formulaCollection.removeFormulas(selectedPhysicalColumn);
+        this.formulaCollection.removeFormulas(physicalIndex);
       }
       if (byConditionState.command.key !== FORMULA_NONE) {
-        this.formulaCollection.addFormula(selectedPhysicalColumn, byConditionState);
+        this.formulaCollection.addFormula(physicalIndex, byConditionState);
       }
       if (byValueState.command.key !== FORMULA_NONE) {
-        this.formulaCollection.addFormula(selectedPhysicalColumn, byValueState);
+        this.formulaCollection.addFormula(physicalIndex, byValueState);
       }
       this.formulaUpdateObserver.flush();
 
-      this.conditionComponent.saveState(selectedPhysicalColumn);
-      this.valueComponent.saveState(selectedPhysicalColumn);
+      this.conditionComponent.saveState(physicalIndex);
+      this.valueComponent.saveState(physicalIndex);
 
       this.filter();
     }
@@ -491,7 +483,13 @@ class Filters extends BasePlugin {
     let th = closest(event.target, 'TH');
 
     if (th) {
-      this.lastSelectedColumn = this.hot.getCoords(th).col;
+      const visualIndex = this.hot.getCoords(th).col;
+      const physicalIndex = this.t.toPhysicalColumn(visualIndex);
+
+      this.lastSelectedColumn = {
+        visualIndex,
+        physicalIndex
+      };
     }
   }
 
