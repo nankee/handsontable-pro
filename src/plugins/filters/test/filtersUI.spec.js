@@ -896,6 +896,132 @@ describe('Filters UI', function() {
     });
   });
 
+  describe('should display filters properly when changing columns sequence by Manual Column Move plugin #32', function () {
+    it('should work as expected after actions sequence: filtering column by value -> moving the column -> ' +
+      'filtering any other column by value', function () {
+      var hot = handsontable({
+        data: [
+          {
+            id: 1,
+            name: 'Nannie Patel',
+            address: 'BBB City'
+          },
+          {
+            id: 2,
+            name: 'Leanne Ware',
+            address: 'ZZZ City'
+          },
+          {
+            id: 3,
+            name: 'Mathis Boone',
+            address: 'CCC City'
+          },
+          {
+            id: 4,
+            name: 'Heather Mcdaniel',
+            address: 'DDD City'
+          }
+        ],
+        columns: [
+          {data: 'id', type: 'numeric', title: 'ID'},
+          {data: 'name', type: 'text', title: 'Full name'},
+          {data: 'address', type: 'text', title: 'Address'}
+        ],
+        dropdownMenu: true,
+        manualColumnMove: true,
+        filters: true,
+        width: 500,
+        height: 300
+      });
+
+      var filters = hot.getPlugin('filters');
+      var manualColumnMove = hot.getPlugin('manualColumnMove');
+
+      // filtering first value of column (deselecting checkbox)
+
+      dropdownMenu(0);
+
+      $(byValueBoxRootElement()).find('tr:nth-child(1) :checkbox').simulate('click');
+      $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
+
+      // moving column
+
+      manualColumnMove.moveColumn(0, 2);
+      hot.render();
+
+      // filtering first value of column (deselecting checkbox)
+
+      dropdownMenu(2);
+
+      $(byValueBoxRootElement()).find('tr:nth-child(1) :checkbox').simulate('click');
+      $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
+
+      expect(getData().length).toEqual(2);
+    });
+
+    it('should work as expected after actions sequence: filtering column by value -> moving the column -> ' +
+      'filtering the column by value ', function () {
+      var hot = handsontable({
+        data: [
+          {
+            id: 1,
+            name: 'Nannie Patel',
+            address: 'BBB City'
+          },
+          {
+            id: 2,
+            name: 'Leanne Ware',
+            address: 'ZZZ City'
+          },
+          {
+            id: 3,
+            name: 'Mathis Boone',
+            address: 'CCC City'
+          },
+          {
+            id: 4,
+            name: 'Heather Mcdaniel',
+            address: 'DDD City'
+          }
+        ],
+        columns: [
+          {data: 'id', type: 'numeric', title: 'ID'},
+          {data: 'name', type: 'text', title: 'Full name'},
+          {data: 'address', type: 'text', title: 'Address'}
+        ],
+        dropdownMenu: true,
+        manualColumnMove: true,
+        filters: true,
+        width: 500,
+        height: 300
+      });
+
+      var filters = hot.getPlugin('filters');
+      var manualColumnMove = hot.getPlugin('manualColumnMove');
+
+      // filtering first value of column (deselecting checkbox)
+
+      dropdownMenu(0);
+
+      $(byValueBoxRootElement()).find('tr:nth-child(1) :checkbox').simulate('click');
+      $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
+
+      // moving column
+
+      manualColumnMove.moveColumn(0, 2);
+      hot.render();
+
+      // filtering second value of column (deselecting checkbox)
+
+      dropdownMenu(1);
+
+      $(byValueBoxRootElement()).find('tr:nth-child(2) :checkbox').simulate('click');
+      $(dropdownMenuRootElement().querySelector('.htUIButton.htUIButtonOK input')).simulate('click');
+
+      expect(getData().length).toEqual(2);
+    });
+  });
+
   it('should deselect all values in "Filter by value" after clicking "Clear" link', function(done) {
     var hot = handsontable({
       data: getDataForFilters(),

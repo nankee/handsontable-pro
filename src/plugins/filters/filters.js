@@ -321,10 +321,11 @@ class Filters extends BasePlugin {
    * @returns {Array} Returns array of objects where keys as row index.
    */
   getDataMapAtColumn(column) {
-    let data = [];
+    const visualIndex = this.t.toVisualColumn(column);
+    const data = [];
 
-    arrayEach(this.hot.getSourceDataAtCol(column), (value, rowIndex) => {
-      let {row, col, visualCol, visualRow, type, instance, dateFormat} = this.hot.getCellMeta(rowIndex, column);
+    arrayEach(this.hot.getSourceDataAtCol(visualIndex), (value, rowIndex) => {
+      let {row, col, visualCol, visualRow, type, instance, dateFormat} = this.hot.getCellMeta(rowIndex, visualIndex);
 
       data.push({
         meta: {row, col, visualCol, visualRow, type, instance, dateFormat},

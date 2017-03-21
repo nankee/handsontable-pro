@@ -217,9 +217,8 @@ describe('Filters', function() {
       expect(getDataAtCol(6).join()).toBe('false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false');
     });
 
-    describe('should display filters properly when changing columns sequence #32', function () {
-      it('should show indicator at proper position when column order was changed ' +
-        'by Manual Column Move plugin - test no. 1', function () {
+    describe('should display filters properly when changing columns sequence by Manual Column Move plugin #32', function () {
+      it('should show indicator at proper position when column order was changed - test no. 1', function () {
         var hot = handsontable({
           data: getDataForFilters(),
           columns: getColumnsForFilters(),
@@ -242,8 +241,7 @@ describe('Filters', function() {
         expect(this.$container.find('th:eq(2)').hasClass('htFiltersActive')).toEqual(true);
       });
 
-      it('should show indicator at proper position when column order was changed ' +
-        'by Manual Column Move plugin - test no. 2', function () {
+      it('should show indicator at proper position when column order was changed - test no. 2', function () {
         var hot = handsontable({
           data: getDataForFilters(),
           columns: getColumnsForFilters(),
@@ -266,8 +264,7 @@ describe('Filters', function() {
         expect(this.$container.find('th:eq(1)').hasClass('htFiltersActive')).toEqual(true);
       });
 
-      it('should display conditional menu with proper filter selected when column order was changed ' +
-        'by Manual Column Move plugin', function () {
+      it('should display conditional menu with proper filter selected when column order was changed', function () {
         var hot = handsontable({
           data: getDataForFilters(),
           columns: getColumnsForFilters(),
@@ -292,8 +289,7 @@ describe('Filters', function() {
         expect($(conditionSelectRootElement()).find('.htUISelectCaption').text()).toBe('Is not empty');
       });
 
-      it('should display value box with proper items when column order was changed ' +
-        'by Manual Column Move plugin', function () {
+      it('should display value box with proper items when column order was changed', function () {
         var hot = handsontable({
           data: getDataForFilters(),
           columns: getColumnsForFilters(),
