@@ -1,4 +1,5 @@
 import {fastInnerHTML} from 'handsontable/helpers/dom/element';
+import {clone} from 'handsontable/helpers/object';
 
 class GhostTable {
   constructor(plugin) {
@@ -69,7 +70,7 @@ class GhostTable {
 
       for (let col = 0; col < maxCols; col++) {
         let td = d.createElement('th');
-        let headerObj = this.nestedHeaders.colspanArray[row][col];
+        let headerObj = clone(this.nestedHeaders.colspanArray[row][col]);
 
         if (headerObj && !headerObj.hidden) {
           if (row === lastRowIndex) {
