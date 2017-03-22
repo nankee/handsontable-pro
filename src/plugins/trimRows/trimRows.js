@@ -100,8 +100,12 @@ class TrimRows extends BasePlugin {
    * Updates the plugin to use the latest options you have specified.
    */
   updatePlugin() {
-    this.disablePlugin();
-    this.enablePlugin();
+    const settings = this.hot.getSettings().trimRows;
+
+    if (Array.isArray(settings)) {
+      this.disablePlugin();
+      this.enablePlugin();
+    }
 
     super.updatePlugin();
   }
