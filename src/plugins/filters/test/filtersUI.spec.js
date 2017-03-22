@@ -896,7 +896,7 @@ describe('Filters UI', function() {
     });
   });
 
-  describe('should display filters properly when changing columns sequence by Manual Column Move plugin #32', function () {
+  describe('Cooperation with Manual Column Move plugin #32', function () {
     it('should work as expected after actions sequence: filtering column by value -> moving the column -> ' +
       'filtering any other column by value', function () {
       var hot = handsontable({

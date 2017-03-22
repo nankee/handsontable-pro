@@ -217,7 +217,7 @@ describe('Filters', function() {
       expect(getDataAtCol(6).join()).toBe('false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false');
     });
 
-    describe('should display filters properly when changing columns sequence by Manual Column Move plugin #32', function () {
+    describe('Cooperation with Manual Column Move plugin #32', function () {
       it('should show indicator at proper position when column order was changed - test no. 1', function () {
         var hot = handsontable({
           data: getDataForFilters(),
