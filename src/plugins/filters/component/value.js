@@ -193,9 +193,10 @@ class ValueComponent extends BaseComponent {
    * @private
    */
   _getColumnVisibleValues() {
-    let lastSelectedColumn = this.hot.getPlugin('filters').getSelectedColumn();
+    const lastSelectedColumn = this.hot.getPlugin('filters').getSelectedColumn();
+    const visualIndex = lastSelectedColumn && lastSelectedColumn.visualIndex;
 
-    return arrayMap(this.hot.getDataAtCol(lastSelectedColumn), (v) => toEmptyString(v));
+    return arrayMap(this.hot.getDataAtCol(visualIndex), (v) => toEmptyString(v));
   }
 }
 

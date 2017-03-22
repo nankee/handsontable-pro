@@ -73,7 +73,7 @@ class Filters extends BasePlugin {
      */
     this.actionBarComponent = null;
     /**
-     * Last selected column index for added filter formulas.
+     * Last selected column physical index for added filter formulas.
      *
      * @type {Number}
      * @default null
@@ -213,34 +213,40 @@ class Filters extends BasePlugin {
    * hot.getPlugin('filters').filter();
    * // In this case all value's that don't match will be filtered.
    * ```
-   * @param {Number} column Column index.
+   * @param {Number} column Visual column index.
    * @param {String} name Formula short name.
    * @param {Array} args Formula arguments.
    */
   addFormula(column, name, args) {
-    this.formulaCollection.addFormula(column, {command: {key: name}, args});
+    const physicalColumn = this.t.toPhysicalColumn(column);
+
+    this.formulaCollection.addFormula(physicalColumn, {command: {key: name}, args});
   }
 
   /**
    * Remove formulas at specified column index.
    *
-   * @param {Number} column Column index.
+   * @param {Number} column Visual column index.
    */
   removeFormulas(column) {
-    this.formulaCollection.removeFormulas(column);
+    const physicalColumn = this.t.toPhysicalColumn(column);
+
+    this.formulaCollection.removeFormulas(physicalColumn);
   }
 
   /**
    * Clear all formulas previously added to the collection for the specified column index or, if the column index
    * was not passed, clear the formulas for all columns.
    *
-   * @param {Number} [column] Column index.
+   * @param {Number} [column] Visual column index.
    */
   clearFormulas(column) {
+    const physicalColumn = this.t.toPhysicalColumn(column);
+
     if (column === void 0) {
       this.formulaCollection.clean();
     } else {
-      this.formulaCollection.clearFormulas(column);
+      this.formulaCollection.clearFormulas(physicalColumn);
     }
   }
 
@@ -291,7 +297,8 @@ class Filters extends BasePlugin {
   /**
    * Get last selected column index.
    *
-   * @returns {Number|null}
+   * @returns {Object|null} Return `null` when column isn't selected otherwise
+   * object containing information about selected column with keys `visualIndex` and `physicalIndex`
    */
   getSelectedColumn() {
     return this.lastSelectedColumn;
@@ -315,10 +322,11 @@ class Filters extends BasePlugin {
    * @returns {Array} Returns array of objects where keys as row index.
    */
   getDataMapAtColumn(column) {
-    let data = [];
+    const visualIndex = this.t.toVisualColumn(column);
+    const data = [];
 
-    arrayEach(this.hot.getSourceDataAtCol(column), (value, rowIndex) => {
-      let {row, col, visualCol, visualRow, type, instance, dateFormat} = this.hot.getCellMeta(rowIndex, column);
+    arrayEach(this.hot.getSourceDataAtCol(visualIndex), (value, rowIndex) => {
+      let {row, col, visualCol, visualRow, type, instance, dateFormat} = this.hot.getCellMeta(rowIndex, visualIndex);
 
       data.push({
         meta: {row, col, visualCol, visualRow, type, instance, dateFormat},
@@ -365,15 +373,16 @@ class Filters extends BasePlugin {
    * @private
    */
   onAfterDropdownMenuShow() {
-    const column = this.getSelectedColumn();
+    const selectedColumn = this.getSelectedColumn();
+    const physicalIndex = selectedColumn && selectedColumn.physicalIndex;
     const conditionComponent = this.conditionComponent;
     const valueComponent = this.valueComponent;
 
     if (!conditionComponent.isHidden()) {
-      conditionComponent.restoreState(column);
+      conditionComponent.restoreState(physicalIndex);
     }
     if (!valueComponent.isHidden()) {
-      valueComponent.restoreState(column);
+      valueComponent.restoreState(physicalIndex);
     }
   }
 
@@ -422,26 +431,27 @@ class Filters extends BasePlugin {
    */
   onActionBarSubmit(submitType) {
     if (submitType === 'accept') {
-      let column = this.getSelectedColumn();
-      let byConditionState = this.conditionComponent.getState();
-      let byValueState = this.valueComponent.getState();
+      const selectedColumn = this.getSelectedColumn();
+      const physicalIndex = selectedColumn && selectedColumn.physicalIndex;
+      const byConditionState = this.conditionComponent.getState();
+      const byValueState = this.valueComponent.getState();
 
       this.formulaUpdateObserver.groupChanges();
-      this.formulaCollection.clearFormulas(column);
+      this.formulaCollection.clearFormulas(physicalIndex);
 
       if (byConditionState.command.key === FORMULA_NONE && byValueState.command.key === FORMULA_NONE) {
-        this.formulaCollection.removeFormulas(column);
+        this.formulaCollection.removeFormulas(physicalIndex);
       }
       if (byConditionState.command.key !== FORMULA_NONE) {
-        this.formulaCollection.addFormula(column, byConditionState);
+        this.formulaCollection.addFormula(physicalIndex, byConditionState);
       }
       if (byValueState.command.key !== FORMULA_NONE) {
-        this.formulaCollection.addFormula(column, byValueState);
+        this.formulaCollection.addFormula(physicalIndex, byValueState);
       }
       this.formulaUpdateObserver.flush();
 
-      this.conditionComponent.saveState(column);
-      this.valueComponent.saveState(column);
+      this.conditionComponent.saveState(physicalIndex);
+      this.valueComponent.saveState(physicalIndex);
 
       this.filter();
     }
@@ -468,7 +478,9 @@ class Filters extends BasePlugin {
    * @param {HTMLTableCellElement} TH
    */
   onAfterGetColHeader(col, TH) {
-    if (this.enabled && this.formulaCollection.hasFormulas(col)) {
+    const physicalColumn = this.t.toPhysicalColumn(col);
+
+    if (this.enabled && this.formulaCollection.hasFormulas(physicalColumn)) {
       addClass(TH, 'htFiltersActive');
     } else {
       removeClass(TH, 'htFiltersActive');
@@ -485,7 +497,13 @@ class Filters extends BasePlugin {
     let th = closest(event.target, 'TH');
 
     if (th) {
-      this.lastSelectedColumn = this.hot.getCoords(th).col;
+      const visualIndex = this.hot.getCoords(th).col;
+      const physicalIndex = this.t.toPhysicalColumn(visualIndex);
+
+      this.lastSelectedColumn = {
+        visualIndex,
+        physicalIndex
+      };
     }
   }
 
