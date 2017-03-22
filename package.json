@@ -20,10 +20,10 @@
     "test:handsontable": "npm run build:umd && npm run test:handsontable.dump && grunt test-handsontable",
     "test:production": "npm run build:umd.min && npm run test:production.dump && grunt test-handsontable",
     "test:e2e": "npm run build:umd && npm run test:e2e.dump && grunt test-handsontable",
-    "test:unit": "cross-env BABEL_ENV=commonjs jest",
+    "test:unit": "cross-env BABEL_ENV=commonjs jest --testPathPattern=$npm_config_testPathPattern",
     "test:handsontable.dump": "cross-env BABEL_ENV=commonjs NODE_ENV=test-handsontable webpack helpers=./node_modules/handsontable/test/helpers/index.js specs=./node_modules/handsontable/test/e2e/index.js",
     "test:production.dump": "cross-env BABEL_ENV=commonjs NODE_ENV=test-production webpack helpers=./test/helpers/index.js e2e=./test/e2e/index.js",
-    "test:e2e.dump": "cross-env BABEL_ENV=commonjs_e2e NODE_ENV=test-e2e webpack helpers=./test/helpers/index.js e2e=./test/e2e/index.js",
+    "test:e2e.dump": "cross-env BABEL_ENV=commonjs_e2e NODE_ENV=test-e2e webpack --env.testPathPattern=$npm_config_testpathpattern helpers=./test/helpers/index.js e2e=./test/e2e/index.js",
     "test:unit.dump": "cross-env BABEL_ENV=commonjs NODE_ENV=test-unit webpack helpers=./test/helpers/index.js unit=./test/unit/index.js",
     "build": "npm run build:commonjs && npm run build:es && npm run build:umd && npm run build:umd.min",
     "build:commonjs": "cross-env BABEL_ENV=commonjs_dist babel src --out-dir commonjs",
@@ -31,7 +31,6 @@
     "build:umd": "cross-env BABEL_ENV=commonjs NODE_ENV=development webpack ./src/index.js",
     "build:umd.min": "cross-env BABEL_ENV=commonjs NODE_ENV=production webpack ./src/index.js",
     "watch": "cross-env BABEL_ENV=commonjs NODE_ENV=watch webpack src/index.js --watch",
-    "release": "generate-release",
     "prepublish": "npm run clean && npm run build:commonjs && npm run build:es"
   },
   "keywords": [

@@ -18,7 +18,7 @@ module.exports.BASE_VERSION = BASE_VERSION;
 
 licenseBody += '\nVersion: ' + PACKAGE_VERSION;
 
-module.exports.create = function create() {
+module.exports.create = function create(envArgs) {
   var config = {
     devtool: false,
     output: {
@@ -70,6 +70,7 @@ module.exports.create = function create() {
         '__HOT_PACKAGE_NAME__': JSON.stringify('handsontable-pro'),
         '__HOT_BUILD_DATE__': JSON.stringify(BUILD_DATE),
         '__HOT_BASE_VERSION__': JSON.stringify(BASE_VERSION),
+        '__ENV_ARGS__': JSON.stringify(envArgs),
         'global': {}, // babelPolyfill workaround(?)
       })
     ],

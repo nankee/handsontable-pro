@@ -51,6 +51,7 @@
         "web.timers"
       ],
       "modules": false,
+      "debug": false,
       "useBuiltIns": true
     }]
   ],
