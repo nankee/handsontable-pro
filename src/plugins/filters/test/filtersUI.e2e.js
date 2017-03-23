@@ -867,7 +867,7 @@ describe('Filters UI', function() {
         expect(text).toEqual(['AAA City', 'BBB City', 'CCC City', 'DDD City']);
 
         var checkboxes = $(byValueBoxRootElement()).find(':checkbox').toArray();
-        var checkedArray = checkboxes.map((element) => element.checked);git
+        var checkedArray = checkboxes.map((element) => element.checked);
 
         expect(checkedArray).toEqual([false, true, true, true]);
       });
