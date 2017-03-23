@@ -113,7 +113,7 @@ export const TYPES = {
  *
  * @returns {Object}
  */
-export function getOptionsList(type) {
+export default function getOptionsList(type) {
   const items = [];
 
   if (!TYPES[type]) {

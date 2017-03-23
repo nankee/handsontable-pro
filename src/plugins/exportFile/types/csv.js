@@ -1,6 +1,6 @@
-import {BaseType} from './_base.js';
 import {arrayEach, arrayMap} from 'handsontable/helpers/array';
 import {stringify} from 'handsontable/helpers/mixed';
+import BaseType from './_base.js';
 
 const CHAR_CARRIAGE_RETURN = String.fromCharCode(13);
 const CHAR_DOUBLE_QUOTES = String.fromCharCode(34);
@@ -23,10 +23,6 @@ class Csv extends BaseType {
       columnDelimiter: ',',
       rowDelimiter: '\r\n',
     };
-  }
-
-  constructor(dataProvider, options) {
-    super(dataProvider, options);
   }
 
   /**
@@ -92,4 +88,4 @@ class Csv extends BaseType {
   }
 }
 
-export {Csv};
+export default Csv;

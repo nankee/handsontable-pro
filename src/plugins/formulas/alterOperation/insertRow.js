@@ -1,7 +1,7 @@
 import {arrayEach} from 'handsontable/helpers/array';
 import {cellCoordFactory, isFormulaExpression} from './../utils';
-import {CellValue} from './../cell/value';
-import {ExpressionModifier} from './../expressionModifier';
+import CellValue from './../cell/value';
+import ExpressionModifier from './../expressionModifier';
 
 export const OPERATION_NAME = 'insert_row';
 

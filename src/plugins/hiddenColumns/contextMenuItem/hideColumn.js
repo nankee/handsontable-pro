@@ -1,6 +1,6 @@
 import {rangeEach} from 'handsontable/helpers/number';
 
-export function hideColumnItem(hiddenColumnsPlugin) {
+export default function hideColumnItem(hiddenColumnsPlugin) {
   return {
     key: 'hidden_columns_hide',
     name: 'Hide column',

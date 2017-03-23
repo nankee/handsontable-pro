@@ -1,15 +1,11 @@
-import {BaseCell} from './_base';
 import {toLabel} from 'hot-formula-parser';
+import BaseCell from './_base';
 
 /**
  * @class CellReference
  * @util
  */
 class CellReference extends BaseCell {
-  constructor(row, column) {
-    super(row, column);
-  }
-
   /**
    * Stringify object.
    *
@@ -23,4 +19,4 @@ class CellReference extends BaseCell {
   }
 }
 
-export {CellReference};
+export default CellReference;

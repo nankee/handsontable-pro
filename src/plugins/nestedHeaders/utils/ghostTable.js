@@ -119,4 +119,4 @@ class GhostTable {
 
 }
 
-export {GhostTable};
+export default GhostTable;

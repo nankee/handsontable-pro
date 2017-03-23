@@ -1,6 +1,6 @@
-var globalDateFormat = 'YYYY-MM-DD';
+export const FORMULAS_DATE_FORMAT = 'YYYY-MM-DD';
 
-function getDataSimpleExampleFormulas() {
+export function getDataSimpleExampleFormulas() {
   return [
     ['=$B$2', 'Maserati', 'Mazda', 'Mercedes', 'Mini', '=A$1'],
     [2009, 0, 2941, 4303, 354, 5814],
@@ -10,9 +10,8 @@ function getDataSimpleExampleFormulas() {
   ];
 }
 
-function getDataAdvancedExampleFormulas() {
-  // jscs:disable
-  /* jshint ignore:start */
+export function getDataAdvancedExampleFormulas() {
+  /* eslint-disable */
   return [
     ['Example #1', '', '', '', '', '', '', ''],
     ['Text', 'yellow', 'red', 'blue', 'green', 'pink', 'gray', ''],
@@ -32,10 +31,9 @@ function getDataAdvancedExampleFormulas() {
     ['Ken Siuk', 'ken@gmail.com', '=RIGHT(B16, LEN(B16) - FIND("@", B16))', '', '', '', '', '', ''],
     ['Marcin Kowalski', 'ken@syndex.pl', '=RIGHT(B17, LEN(B17) - FIND("@", B17))', '', '', '', '', '', ''],
   ];
-  /* jshint ignore:end */
 }
 
-function getDataForFormulas(row, column, value) {
+export function getDataForFormulas(row, column, value) {
   var data = [
     {
       id: 1,
@@ -248,7 +246,7 @@ function getDataForFormulas(row, column, value) {
       id: 24,
       name: 'Greta Patterson',
       address: 'Bartonsville',
-      registered: moment().add(-2, 'days').format(globalDateFormat),
+      registered: moment().add(-2, 'days').format(FORMULAS_DATE_FORMAT),
       eyeColor: {color: 'green'},
       balance: 2437.58,
       active: false,
@@ -266,7 +264,7 @@ function getDataForFormulas(row, column, value) {
       id: 26,
       name: 'Stanton Britt',
       address: 'Nipinnawasee',
-      registered: moment().add(-1, 'days').format(globalDateFormat),
+      registered: moment().add(-1, 'days').format(FORMULAS_DATE_FORMAT),
       eyeColor: {color: 'green'},
       balance: 3592.18,
       active: false,
@@ -275,7 +273,7 @@ function getDataForFormulas(row, column, value) {
       id: 27,
       name: 'Peterson Bowers',
       address: 'Nelson',
-      registered: moment().add(-1, 'days').format(globalDateFormat),
+      registered: moment().add(-1, 'days').format(FORMULAS_DATE_FORMAT),
       eyeColor: {color: 'green'},
       balance: 3710.07,
       active: false,
@@ -320,7 +318,7 @@ function getDataForFormulas(row, column, value) {
       id: 32,
       name: 'Long Mathews',
       address: 'Masthope',
-      registered: moment().add(-1, 'days').format(globalDateFormat),
+      registered: moment().add(-1, 'days').format(FORMULAS_DATE_FORMAT),
       eyeColor: {color: 'green'},
       balance: 3379.52,
       active: false,
@@ -338,7 +336,7 @@ function getDataForFormulas(row, column, value) {
       id: 34,
       name: 'Rocha Maddox',
       address: 'Machias',
-      registered: moment().add(1, 'days').format(globalDateFormat),
+      registered: moment().add(1, 'days').format(FORMULAS_DATE_FORMAT),
       eyeColor: {color: 'green'},
       balance: 3365.53,
       active: false,
@@ -347,7 +345,7 @@ function getDataForFormulas(row, column, value) {
       id: 35,
       name: 'Craft Keith',
       address: 'Summerfield',
-      registered: moment().add(-3, 'days').format(globalDateFormat),
+      registered: moment().add(-3, 'days').format(FORMULAS_DATE_FORMAT),
       eyeColor: {color: 'blue'},
       balance: 3468.15,
       active: false,
@@ -356,7 +354,7 @@ function getDataForFormulas(row, column, value) {
       id: 36,
       name: 'Alyssa Francis',
       address: 'Nord',
-      registered: moment().add(-2, 'days').format(globalDateFormat),
+      registered: moment().add(-2, 'days').format(FORMULAS_DATE_FORMAT),
       eyeColor: {color: 'blue'},
       balance: 3414.37,
       active: true,
@@ -365,7 +363,7 @@ function getDataForFormulas(row, column, value) {
       id: 37,
       name: 'Milagros Parsons',
       address: 'Dunlo',
-      registered: moment().add(2, 'days').format(globalDateFormat),
+      registered: moment().add(2, 'days').format(FORMULAS_DATE_FORMAT),
       eyeColor: {color: 'brown'},
       balance: 1230.63,
       active: false,
@@ -383,7 +381,7 @@ function getDataForFormulas(row, column, value) {
       id: 39,
       name: 'Everett James',
       address: 'Manitou',
-      registered: moment().add(1, 'days').format(globalDateFormat),
+      registered: moment().add(1, 'days').format(FORMULAS_DATE_FORMAT),
       eyeColor: {color: 'blue'},
       balance: 3347,
       active: false,
@@ -402,13 +400,13 @@ function getDataForFormulas(row, column, value) {
   return data;
 }
 
-function getColumnsForFormulas() {
+export function getColumnsForFormulas() {
   return [
     {data: 'id', type: 'numeric', title: 'ID'},
     {data: 'name', type: 'text', title: 'Full name'},
     {data: 'address', type: 'text', title: 'Address'},
-    {data: 'registered', type: 'date', title: 'Registered', dateFormat: globalDateFormat},
-    {data: 'eyeColor.color', type: 'dropdown', title: 'Eye color', source: ['blue','brown','green']},
+    {data: 'registered', type: 'date', title: 'Registered', dateFormat: FORMULAS_DATE_FORMAT},
+    {data: 'eyeColor.color', type: 'dropdown', title: 'Eye color', source: ['blue', 'brown', 'green']},
     {data: 'balance', type: 'numeric', title: 'Balance', format: '0,00.00 $'},
     {data: 'active', type: 'checkbox', title: 'Active'},
   ];

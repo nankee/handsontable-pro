@@ -1,7 +1,7 @@
-import {BaseUI} from './_base';
 import {addClass} from 'handsontable/helpers/dom/element';
 import {clone, extend} from 'handsontable/helpers/object';
 import {arrayEach} from 'handsontable/helpers/array';
+import BaseUI from './_base';
 
 const privatePool = new WeakMap();
 
@@ -19,8 +19,9 @@ class InputUI extends BaseUI {
   }
 
   constructor(hotInstance, options) {
-    privatePool.set(this, {});
     super(hotInstance, extend(InputUI.DEFAULTS, options));
+
+    privatePool.set(this, {});
     this.registerHooks();
   }
 
@@ -91,4 +92,4 @@ class InputUI extends BaseUI {
   }
 }
 
-export {InputUI};
+export default InputUI;

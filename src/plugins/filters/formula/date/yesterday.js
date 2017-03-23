@@ -1,9 +1,9 @@
-import {registerFormula} from './../../formulaRegisterer';
 import moment from 'moment';
+import {registerFormula} from './../../formulaRegisterer';
 
 export const FORMULA_NAME = 'date_yesterday';
 
-function formula(dataRow) {
+export function formula(dataRow) {
   let date = moment(dataRow.value, dataRow.meta.dateFormat);
 
   if (!date.isValid()) {

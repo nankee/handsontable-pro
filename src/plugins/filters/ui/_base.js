@@ -1,13 +1,12 @@
-import {clone, extend, mixin} from 'handsontable/helpers/object';
-import {localHooks} from 'handsontable/mixins/localHooks';
-import {EventManager} from 'handsontable/eventManager';
+import {clone, extend, mixin, objectEach} from 'handsontable/helpers/object';
+import localHooks from 'handsontable/mixins/localHooks';
+import EventManager from 'handsontable/eventManager';
 import {addClass} from 'handsontable/helpers/dom/element';
 import {arrayEach} from 'handsontable/helpers/array';
-import {objectEach} from 'handsontable/helpers/object';
 
 const STATE_BUILT = 'built';
 const STATE_BUILDING = 'building';
-const EVENTS_TO_REGISTER = ['click', 'input', 'keydown', 'keypress', 'keyup', 'focus',  'blur'];
+const EVENTS_TO_REGISTER = ['click', 'input', 'keydown', 'keypress', 'keyup', 'focus', 'blur'];
 
 /**
  * @class
@@ -192,4 +191,4 @@ class BaseUI {
 
 mixin(BaseUI, localHooks);
 
-export {BaseUI};
+export default BaseUI;

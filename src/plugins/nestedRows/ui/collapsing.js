@@ -1,9 +1,9 @@
-import {BaseUI} from './_base';
 import {stopImmediatePropagation} from 'handsontable/helpers/dom/event';
 import {arrayEach} from 'handsontable/helpers/array';
 import {rangeEach} from 'handsontable/helpers/number';
 import {hasClass} from 'handsontable/helpers/dom/element';
-import {HeadersUI} from './headers';
+import BaseUI from './_base';
+import HeadersUI from './headers';
 
 /**
  * Class responsible for the UI for collapsing and expanding groups.
@@ -26,7 +26,7 @@ class CollapsingUI extends BaseUI {
       stash: () => {
         this.lastCollapsedRows = this.collapsedRows.slice(0);
 
-        //Workaround for wrong indexes being set in the trimRows plugin
+        // Workaround for wrong indexes being set in the trimRows plugin
         this.expandMultipleChildren(this.lastCollapsedRows, false);
       },
       shiftStash: (elementIndex, delta = 1) => {
@@ -38,7 +38,7 @@ class CollapsingUI extends BaseUI {
         });
       },
       applyStash: () => {
-        //Workaround for wrong indexes being set in the trimRows plugin
+        // Workaround for wrong indexes being set in the trimRows plugin
         this.hot.runHooks('skipLengthCache', 100);
         this.collapseMultipleChildren(this.lastCollapsedRows, true);
         this.lastCollapsedRows = void 0;
@@ -445,4 +445,4 @@ class CollapsingUI extends BaseUI {
   }
 }
 
-export {CollapsingUI};
+export default CollapsingUI;

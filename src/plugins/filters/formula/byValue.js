@@ -3,7 +3,7 @@ import {createArrayAssertion} from './../utils';
 
 export const FORMULA_NAME = 'by_value';
 
-function formula(dataRow, [value] = inputValues) {
+export function formula(dataRow, [value] = inputValues) {
   return value(dataRow.value);
 }
 

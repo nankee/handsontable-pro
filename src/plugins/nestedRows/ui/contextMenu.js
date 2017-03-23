@@ -1,6 +1,6 @@
-import {BaseUI} from './_base';
 import {rangeEach} from 'handsontable/helpers/number';
 import {arrayEach} from 'handsontable/helpers/array';
+import BaseUI from './_base';
 
 const privatePool = new WeakMap();
 
@@ -13,8 +13,8 @@ const privatePool = new WeakMap();
  */
 class ContextMenuUI extends BaseUI {
   constructor(nestedRowsPlugin, hotInstance) {
-    /* jshint ignore:start */
-    // jscs:disable
+    super(nestedRowsPlugin, hotInstance);
+
     privatePool.set(this, {
       row_above: (key, selection) => {
         this.dataManager.addSibling(selection.start.row, 'above');
@@ -23,10 +23,6 @@ class ContextMenuUI extends BaseUI {
         this.dataManager.addSibling(selection.start.row, 'below');
       }
     });
-    // jscs:enable
-    /* jshint ignore:end */
-    super(nestedRowsPlugin, hotInstance);
-
     /**
      * Reference to the DataManager instance connected with the Nested Rows plugin.
      *
@@ -46,9 +42,7 @@ class ContextMenuUI extends BaseUI {
     const newEntries = [
       {
         key: 'add_child',
-        name: () => {
-          return 'Insert child row';
-        },
+        name: () => 'Insert child row',
         callback: () => {
           const translatedRowIndex = this.dataManager.translateTrimmedRow(this.hot.getSelected()[0]);
           const parent = this.dataManager.getDataObject(translatedRowIndex);
@@ -62,9 +56,7 @@ class ContextMenuUI extends BaseUI {
       },
       {
         key: 'detach_from_parent',
-        name: () => {
-          return 'Detach from parent';
-        },
+        name: () => 'Detach from parent',
         callback: () => {
           const translatedRowIndex = this.dataManager.translateTrimmedRow(this.hot.getSelected()[0]);
           const element = this.dataManager.getDataObject(translatedRowIndex);
@@ -118,4 +110,4 @@ class ContextMenuUI extends BaseUI {
   }
 }
 
-export {ContextMenuUI};
+export default ContextMenuUI;
