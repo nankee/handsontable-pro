@@ -6,3 +6,11 @@ _SpecRunner.html
 .DS_Store
 cars.sqlite
 dev.html
+test/dist/
+test/E2ERunner.html
+test/UnitRunner.html
+
+!dist/README.md
+node_modules/
+commonjs/
+es/

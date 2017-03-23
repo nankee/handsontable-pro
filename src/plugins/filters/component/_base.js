@@ -1,7 +1,7 @@
 import {arrayEach} from 'handsontable/helpers/array';
 import {mixin} from 'handsontable/helpers/object';
-import {localHooks} from 'handsontable/mixins/localHooks';
-import {stateSaver} from 'handsontable/mixins/stateSaver';
+import localHooks from 'handsontable/mixins/localHooks';
+import stateSaver from 'handsontable/mixins/stateSaver';
 
 /**
  * @plugin Filters
@@ -68,4 +68,4 @@ class BaseComponent {
 mixin(BaseComponent, localHooks);
 mixin(BaseComponent, stateSaver);
 
-export {BaseComponent};
+export default BaseComponent;

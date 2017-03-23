@@ -1,6 +1,6 @@
 import {rangeEach} from 'handsontable/helpers/number';
 
-export function showRowItem(hiddenRowsPlugin) {
+export default function showRowItem(hiddenRowsPlugin) {
   const beforeHiddenRows = [];
   const afterHiddenRows = [];
 
@@ -58,14 +58,12 @@ export function showRowItem(hiddenRowsPlugin) {
             if (hiddenRowsPlugin.isHidden(i)) {
               beforeHiddenRows.push(i);
             }
-          } else {
-            if (hiddenRowsPlugin.isHidden(i)) {
-              afterHiddenRows.push(i);
-            }
+          } else if (hiddenRowsPlugin.isHidden(i)) {
+            afterHiddenRows.push(i);
           }
         });
 
-        totalRowsLength = totalRowsLength - 1;
+        totalRowsLength -= 1;
 
         if ((beforeHiddenRows.length === start && start > 0) ||
           (afterHiddenRows.length === totalRowsLength - start && start < totalRowsLength)) {

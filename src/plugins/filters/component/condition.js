@@ -3,10 +3,10 @@ import {stopImmediatePropagation} from 'handsontable/helpers/dom/event';
 import {arrayEach, arrayFilter} from 'handsontable/helpers/array';
 import {extend} from 'handsontable/helpers/object';
 import {isKey} from 'handsontable/helpers/unicode';
-import {BaseComponent} from './_base';
-import {getOptionsList, FORMULA_NONE, FORMULA_BY_VALUE} from './../constants';
-import {InputUI} from './../ui/input';
-import {SelectUI} from './../ui/select';
+import BaseComponent from './_base';
+import getOptionsList, {FORMULA_NONE, FORMULA_BY_VALUE} from './../constants';
+import InputUI from './../ui/input';
+import SelectUI from './../ui/select';
 import {getFormulaDescriptor} from './../formulaRegisterer';
 
 /**
@@ -92,7 +92,7 @@ class ConditionComponent extends BaseComponent {
     const column = stateInfo.editedFormulaStack.column;
     const currentFormulas = stateInfo.editedFormulaStack.formulas;
 
-    const [formula] = arrayFilter(currentFormulas, formula => formula.name !== FORMULA_BY_VALUE);
+    const [formula] = arrayFilter(currentFormulas, (formula) => formula.name !== FORMULA_BY_VALUE);
 
     // Ignore formulas by_value
     if (formula && formula.name === FORMULA_BY_VALUE) {
@@ -213,4 +213,4 @@ class ConditionComponent extends BaseComponent {
   }
 }
 
-export {ConditionComponent};
+export default ConditionComponent;

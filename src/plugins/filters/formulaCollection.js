@@ -1,7 +1,7 @@
 import {arrayEach, arrayMap, arrayFilter} from 'handsontable/helpers/array';
 import {objectEach, mixin} from 'handsontable/helpers/object';
+import localHooks from 'handsontable/mixins/localHooks';
 import {getFormula} from './formulaRegisterer';
-import {localHooks} from 'handsontable/mixins/localHooks';
 
 /**
  * @class FormulaCollection
@@ -67,7 +67,11 @@ class FormulaCollection {
     let result = false;
 
     if (formulas.length) {
-      arrayEach(formulas, (formula) => result = formula.func(value));
+      arrayEach(formulas, (formula) => {
+        result = formula.func(value);
+
+        return result;
+      });
 
     } else {
       result = true;
@@ -87,7 +91,7 @@ class FormulaCollection {
    * @fires FormulaCollection#afterAdd
    */
   addFormula(column, formulaDefinition) {
-    let args = arrayMap(formulaDefinition.args, (v) => typeof v === 'string' ? v.toLowerCase() : v);
+    let args = arrayMap(formulaDefinition.args, (v) => (typeof v === 'string' ? v.toLowerCase() : v));
     let name = formulaDefinition.name || formulaDefinition.command.key;
 
     this.runLocalHooks('beforeAdd', column);
@@ -139,11 +143,7 @@ class FormulaCollection {
     let result = [];
 
     arrayEach(this.orderStack, (column) => {
-      const formulas = arrayMap(this.getFormulas(column), ({name, args} = formula) => {
-        return {
-          name, args
-        };
-      });
+      const formulas = arrayMap(this.getFormulas(column), ({name, args} = formula) => ({name, args}));
 
       result.push({
         column,
@@ -243,4 +243,4 @@ class FormulaCollection {
 
 mixin(FormulaCollection, localHooks);
 
-export {FormulaCollection};
+export default FormulaCollection;

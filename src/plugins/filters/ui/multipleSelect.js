@@ -1,14 +1,13 @@
-import Handsontable from '../../../browser';
-import {BaseUI} from './_base';
 import {addClass} from 'handsontable/helpers/dom/element';
-import {Menu} from 'handsontable/plugins/contextMenu/menu';
+import Menu from 'handsontable/plugins/contextMenu/menu';
 import {clone, extend} from 'handsontable/helpers/object';
 import {arrayFilter, arrayMap, arrayEach} from 'handsontable/helpers/array';
 import {startsWith} from 'handsontable/helpers/string';
 import {isKey} from 'handsontable/helpers/unicode';
 import {partial} from 'handsontable/helpers/function';
 import {stopImmediatePropagation} from 'handsontable/helpers/dom/event';
-import {InputUI} from './input';
+import BaseUI from './_base';
+import InputUI from './input';
 import {createArrayAssertion} from './../utils';
 
 const privatePool = new WeakMap();
@@ -26,8 +25,9 @@ class MultipleSelectUI extends BaseUI {
   }
 
   constructor(hotInstance, options) {
-    privatePool.set(this, {});
     super(hotInstance, extend(MultipleSelectUI.DEFAULTS, options));
+
+    privatePool.set(this, {});
     /**
      * Input element.
      *
@@ -196,8 +196,14 @@ class MultipleSelectUI extends BaseUI {
     if (this.itemsBox) {
       this.itemsBox.destroy();
     }
-    this.itemsBox = null;
+    this.searchInput.destroy();
+    this.clearAllUI.destroy();
+    this.selectAllUI.destroy();
+
     this.searchInput = null;
+    this.clearAllUI = null;
+    this.selectAllUI = null;
+    this.itemsBox = null;
     this.items = null;
     super.destroy();
   }
@@ -267,7 +273,7 @@ class MultipleSelectUI extends BaseUI {
    */
   onSelectAllClick(event) {
     event.preventDefault();
-    arrayEach(this.itemsBox.getSourceData(), row => {
+    arrayEach(this.itemsBox.getSourceData(), (row) => {
       row.checked = true;
     });
     this.itemsBox.render();
@@ -281,14 +287,14 @@ class MultipleSelectUI extends BaseUI {
    */
   onClearAllClick(event) {
     event.preventDefault();
-    arrayEach(this.itemsBox.getSourceData(), row => {
+    arrayEach(this.itemsBox.getSourceData(), (row) => {
       row.checked = false;
     });
     this.itemsBox.render();
   }
 }
 
-export {MultipleSelectUI};
+export default MultipleSelectUI;
 
 /**
  * Pick up object items based on selected values.

@@ -1,9 +1,9 @@
-import {registerFormula} from './../formulaRegisterer';
 import {stringify} from 'handsontable/helpers/mixed';
+import {registerFormula} from './../formulaRegisterer';
 
 export const FORMULA_NAME = 'contains';
 
-function formula(dataRow, [value] = inputValues) {
+export function formula(dataRow, [value] = inputValues) {
   return stringify(dataRow.value).toLowerCase().indexOf(stringify(value)) >= 0;
 }
 
