@@ -59,7 +59,7 @@
   "devDependencies": {
     "babel-cli": "^6.23.0",
     "babel-core": "^6.23.0",
-    "babel-eslint": "^7.2.0",
+    "babel-eslint": "^7.2.1",
     "babel-jest": "^19.0.0",
     "babel-loader": "^6.3.2",
     "babel-plugin-transform-object-rest-spread": "^6.23.0",
@@ -70,9 +70,9 @@
     "check-es3-syntax-cli": "^0.2.0",
     "copy-webpack-plugin": "^4.0.1",
     "cross-env": "^3.1.4",
-    "css-loader": "^0.27.3",
+    "css-loader": "^0.28.0",
     "eslint": "^3.18.0",
-    "eslint-config-airbnb-base": "^11.1.0",
+    "eslint-config-airbnb-base": "^11.1.2",
     "eslint-plugin-import": "^2.2.0",
     "extract-text-webpack-plugin": "^2.0.0",
     "glob": "^7.1.1",
@@ -85,8 +85,8 @@
     "loader-utils": "^1.0.4",
     "optimize-css-assets-webpack-plugin": "^1.3.0",
     "rimraf": "^2.5.4",
-    "style-loader": "^0.15.0",
-    "webpack": "^2.2.1"
+    "style-loader": "^0.16.1",
+    "webpack": "^2.3.2"
   },
   "license": "SEE LICENSE IN LICENSE",
   "jest": {
