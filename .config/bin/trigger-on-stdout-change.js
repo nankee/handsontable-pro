@@ -6,8 +6,13 @@ var CMD = process.argv[2];
 var CMD_TO_TRIGGER = process.argv[3];
 
 var IS_WINDOWS = /^win/.test(process.platform);
+var waitForFirstBuild = true;
 var triggeredChild;
 var delayedTrigger;
+
+setTimeout(function() {
+  waitForFirstBuild = false;
+}, 10000);
 
 run(CMD, CMD_TO_TRIGGER);
 
@@ -30,6 +35,9 @@ function run(commands, commandToTrigger, spawnOpts) {
 
   if (commandToTrigger) {
     child.stdout.on('data', function(data) {
+      if (waitForFirstBuild) {
+        return;
+      }
       if (triggeredChild) {
         treeKill(triggeredChild.pid);
       }
