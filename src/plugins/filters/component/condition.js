@@ -84,9 +84,14 @@ class ConditionComponent extends BaseComponent {
   /**
    * Update state of component.
    *
-   * @param {Object} editedFormulaStack Formula stack for edited column.
+   * @param {Object} stateInfo Information about state containing stack of edited column,
+   * stack of dependent formulas, data factory and optional formula arguments change. It's described by object containing keys:
+   * `editedFormulaStack`, `dependentFormulaStacks`, `visibleDataFactory` and `formulaArgsChange`.
    */
-  updateState({column, formulas: currentFormulas}) {
+  updateState(stateInfo) {
+    const column = stateInfo.editedFormulaStack.column;
+    const currentFormulas = stateInfo.editedFormulaStack.formulas;
+
     const [formula] = arrayFilter(currentFormulas, formula => formula.name !== FORMULA_BY_VALUE);
 
     // Ignore formulas by_value
@@ -160,9 +165,10 @@ class ConditionComponent extends BaseComponent {
    * Reset elements to their initial state.
    */
   reset() {
-    let lastSelectedColumn = this.hot.getPlugin('filters').getSelectedColumn();
-    let columnType = this.hot.getDataType.apply(this.hot, this.hot.getSelected() || [0, lastSelectedColumn]);
-    let items = getOptionsList(columnType);
+    const lastSelectedColumn = this.hot.getPlugin('filters').getSelectedColumn();
+    const visualIndex = lastSelectedColumn && lastSelectedColumn.visualIndex;
+    const columnType = this.hot.getDataType.apply(this.hot, this.hot.getSelected() || [0, visualIndex]);
+    const items = getOptionsList(columnType);
 
     arrayEach(this.getInputElements(), (element) => element.hide());
     this.getSelectElement().setItems(items);
@@ -185,6 +191,8 @@ class ConditionComponent extends BaseComponent {
         setTimeout(() => element.focus(), 10);
       }
     });
+
+    this.runLocalHooks('change', command);
   }
 
   /**
