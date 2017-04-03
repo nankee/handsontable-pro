@@ -12,7 +12,7 @@ var delayedTrigger;
 
 setTimeout(function() {
   waitForFirstBuild = false;
-}, 10000);
+}, 5000);
 
 run(CMD, CMD_TO_TRIGGER);
 

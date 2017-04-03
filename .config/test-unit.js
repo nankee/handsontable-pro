@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Config responsible for building unit test files (bundled into `test/dist/`):
  *  - unit.entry.js

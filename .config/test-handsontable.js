@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Config responsible for building End-to-End test files grabbed from Handsontable CE (bundled into `test/dist/`):
  *  - e2e.entry.js

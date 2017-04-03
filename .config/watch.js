@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Config responsible for building Handsontable `dist/` files with enabled watching mode:
  *  - handsontable.js
