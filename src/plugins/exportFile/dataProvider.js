@@ -151,4 +151,4 @@ class DataProvider {
   }
 }
 
-export {DataProvider};
+export default DataProvider;

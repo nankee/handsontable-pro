@@ -4,7 +4,7 @@ import {FORMULA_NAME as FORMULA_DATE_BEFORE} from './date/before';
 
 export const FORMULA_NAME = 'between';
 
-function formula(dataRow, [from, to] = inputValues) {
+export function formula(dataRow, [from, to] = inputValues) {
   if (dataRow.meta.type === 'numeric') {
     let _from = parseFloat(from, 10);
     let _to = parseFloat(to, 10);

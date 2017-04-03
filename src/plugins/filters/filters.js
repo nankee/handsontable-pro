@@ -1,18 +1,20 @@
 import BasePlugin from 'handsontable/plugins/_base';
-import {arrayEach, arrayMap, arrayIncludes} from 'handsontable/helpers/array';
+import {arrayEach, arrayMap} from 'handsontable/helpers/array';
 import {rangeEach} from 'handsontable/helpers/number';
-import {EventManager} from 'handsontable/eventManager';
+import EventManager from 'handsontable/eventManager';
 import {addClass, removeClass, closest} from 'handsontable/helpers/dom/element';
 import {registerPlugin} from 'handsontable/plugins';
-import {ConditionComponent} from './component/condition';
-import {ValueComponent} from './component/value';
-import {ActionBarComponent} from './component/actionBar';
-import {FormulaCollection} from './formulaCollection';
-import {DataFilter} from './dataFilter';
-import {FormulaUpdateObserver} from './formulaUpdateObserver';
+import {SEPARATOR} from 'handsontable/plugins/contextMenu/predefinedItems';
+import ConditionComponent from './component/condition';
+import ValueComponent from './component/value';
+import ActionBarComponent from './component/actionBar';
+import FormulaCollection from './formulaCollection';
+import DataFilter from './dataFilter';
+import FormulaUpdateObserver from './formulaUpdateObserver';
 import {createArrayAssertion, toEmptyString, unifyColumnValues} from './utils';
 import {FORMULA_NONE} from './constants';
-import {SEPARATOR} from 'handsontable/plugins/contextMenu/predefinedItems';
+
+import './filters.css';
 
 /**
  * This plugin allows filtering the table data either by the built-in component or with the API.
@@ -90,6 +92,7 @@ class Filters extends BasePlugin {
    * @returns {Boolean}
    */
   isEnabled() {
+    /* eslint-disable no-unneeded-ternary */
     return this.hot.getSettings().filters ? true : false;
   }
 
@@ -124,7 +127,7 @@ class Filters extends BasePlugin {
       this.formulaCollection = new FormulaCollection();
     }
     if (!this.formulaUpdateObserver) {
-      this.formulaUpdateObserver = new FormulaUpdateObserver(this.formulaCollection, column => this.getDataMapAtColumn(column));
+      this.formulaUpdateObserver = new FormulaUpdateObserver(this.formulaCollection, (column) => this.getDataMapAtColumn(column));
       this.formulaUpdateObserver.addLocalHook('update', (...params) => this.conditionComponent.updateState(...params));
       this.formulaUpdateObserver.addLocalHook('update', (...params) => this.valueComponent.updateState(...params));
     }
@@ -512,9 +515,10 @@ class Filters extends BasePlugin {
    */
   destroy() {
     if (this.enabled) {
+      this.actionBarComponent.destroy();
       this.conditionComponent.destroy();
       this.valueComponent.destroy();
-      this.actionBarComponent.destroy();
+
       this.formulaCollection.destroy();
       this.formulaUpdateObserver.destroy();
     }
@@ -533,6 +537,6 @@ class Filters extends BasePlugin {
   }
 }
 
-export {Filters};
-
 registerPlugin('filters', Filters);
+
+export default Filters;

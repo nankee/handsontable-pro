@@ -1,4 +1,3 @@
-import Handsontable from '../../browser';
 import {arrayEach} from 'handsontable/helpers/array';
 
 /**
@@ -87,7 +86,4 @@ class DataFilter {
   }
 }
 
-export {DataFilter};
-
-// For tests only! TEMP solution!
-Handsontable.utils.FiltersDataFilter = DataFilter;
+export default DataFilter;

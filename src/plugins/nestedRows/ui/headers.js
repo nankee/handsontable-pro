@@ -1,7 +1,7 @@
-import {BaseUI} from './_base';
 import {arrayEach} from 'handsontable/helpers/array';
 import {rangeEach} from 'handsontable/helpers/number';
 import {addClass} from 'handsontable/helpers/dom/element';
+import BaseUI from './_base';
 
 /**
  * Class responsible for the UI in the Nested Rows' row headers.
@@ -125,10 +125,10 @@ class HeadersUI extends BaseUI {
       deepestLevel = this.dataManager.cache.levelCount;
     }
 
-    this.rowHeaderWidthCache = Math.max(50, 11 + 10 * deepestLevel + 25);
+    this.rowHeaderWidthCache = Math.max(50, 11 + (10 * deepestLevel) + 25);
 
     this.hot.render();
   }
 }
 
-export {HeadersUI};
+export default HeadersUI;

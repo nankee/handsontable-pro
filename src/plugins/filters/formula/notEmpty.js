@@ -3,7 +3,7 @@ import {FORMULA_NAME as FORMULA_EMPTY} from './empty';
 
 export const FORMULA_NAME = 'not_empty';
 
-function formula(dataRow, inputValues) {
+export function formula(dataRow, inputValues) {
   return !getFormula(FORMULA_EMPTY, inputValues)(dataRow);
 }
 

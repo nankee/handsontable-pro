@@ -1,14 +1,14 @@
+import {Parser, ERROR_REF} from 'hot-formula-parser';
 import {arrayEach, arrayMap} from 'handsontable/helpers/array';
 import {rangeEach} from 'handsontable/helpers/number';
-import {CellValue} from './cell/value';
-import {CellReference} from './cell/reference';
-import {isFormulaExpression, toUpperCaseFormula} from './utils';
-import {Matrix} from './matrix';
-import {AlterManager} from './alterManager';
-import {localHooks} from 'handsontable/mixins/localHooks';
+import localHooks from 'handsontable/mixins/localHooks';
 import {getTranslator} from 'handsontable/utils/recordTranslator';
 import {objectEach, mixin} from 'handsontable/helpers/object';
-import {Parser, ERROR_REF} from 'hot-formula-parser';
+import CellValue from './cell/value';
+import CellReference from './cell/reference';
+import {isFormulaExpression, toUpperCaseFormula} from './utils';
+import Matrix from './matrix';
+import AlterManager from './alterManager';
 
 const STATE_UP_TO_DATE = 1;
 const STATE_NEED_REBUILD = 2;
@@ -86,6 +86,8 @@ class Sheet {
         break;
       case STATE_NEED_REBUILD:
         this.recalculateOptimized();
+        break;
+      default:
         break;
     }
   }
@@ -285,4 +287,4 @@ class Sheet {
 
 mixin(Sheet, localHooks);
 
-export {Sheet};
+export default Sheet;

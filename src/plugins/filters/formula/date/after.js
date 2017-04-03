@@ -1,9 +1,9 @@
-import {registerFormula} from './../../formulaRegisterer';
 import moment from 'moment';
+import {registerFormula} from './../../formulaRegisterer';
 
 export const FORMULA_NAME = 'date_after';
 
-function formula(dataRow, [value] = inputValues) {
+export function formula(dataRow, [value] = inputValues) {
   let date = moment(dataRow.value, dataRow.meta.dateFormat);
   let inputDate = moment(value, dataRow.meta.dateFormat);
 

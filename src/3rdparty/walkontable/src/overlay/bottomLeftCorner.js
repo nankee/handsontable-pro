@@ -5,18 +5,18 @@ import {
   setOverlayPosition,
   resetCssTransform
 } from 'handsontable/helpers/dom/element';
-import {WalkontableOverlay} from 'handsontable/3rdparty/walkontable/src/overlay/_base.js';
+import Overlay from 'handsontable/3rdparty/walkontable/src/overlay/_base';
 
 /**
- * @class WalkontableTopLeftCornerOverlay
+ * @class TopLeftCornerOverlay
  */
-class WalkontableBottomLeftCornerOverlay extends WalkontableOverlay {
+class BottomLeftCornerOverlay extends Overlay {
   /**
    * @param {Walkontable} wotInstance
    */
   constructor(wotInstance) {
     super(wotInstance);
-    this.clone = this.makeClone(WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER);
+    this.clone = this.makeClone(Overlay.CLONE_BOTTOM_LEFT_CORNER);
   }
 
   /**
@@ -25,6 +25,7 @@ class WalkontableBottomLeftCornerOverlay extends WalkontableOverlay {
    * @returns {Boolean}
    */
   shouldBeRendered() {
+    /* eslint-disable no-unneeded-ternary */
     return this.wot.getSetting('fixedRowsBottom') &&
       (this.wot.getSetting('fixedColumnsLeft') || this.wot.getSetting('rowHeaders').length) ? true : false;
   }
@@ -79,8 +80,8 @@ class WalkontableBottomLeftCornerOverlay extends WalkontableOverlay {
       } else {
         finalBottom = 0;
       }
-      finalBottom = finalBottom + 'px';
-      finalLeft = finalLeft + 'px';
+      finalBottom += 'px';
+      finalLeft += 'px';
 
       overlayRoot.style.top = '';
       overlayRoot.style.left = finalLeft;
@@ -95,8 +96,6 @@ class WalkontableBottomLeftCornerOverlay extends WalkontableOverlay {
   }
 }
 
-export {WalkontableBottomLeftCornerOverlay};
+Overlay.registerOverlay(Overlay.CLONE_BOTTOM_LEFT_CORNER, BottomLeftCornerOverlay);
 
-window.WalkontableBottomLeftCornerOverlay = WalkontableBottomLeftCornerOverlay;
-
-WalkontableOverlay.registerOverlay(WalkontableOverlay.CLONE_BOTTOM_LEFT_CORNER, WalkontableBottomLeftCornerOverlay);
+export default BottomLeftCornerOverlay;

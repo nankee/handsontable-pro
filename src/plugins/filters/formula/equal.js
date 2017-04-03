@@ -3,7 +3,7 @@ import {registerFormula} from './../formulaRegisterer';
 
 export const FORMULA_NAME = 'eq';
 
-function formula(dataRow, [value] = inputValues) {
+export function formula(dataRow, [value] = inputValues) {
   return stringify(dataRow.value).toLowerCase() === stringify(value);
 }
 

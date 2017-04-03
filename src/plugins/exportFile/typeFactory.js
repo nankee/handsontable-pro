@@ -1,4 +1,4 @@
-import {Csv} from './types/csv.js';
+import Csv from './types/csv.js';
 
 export const TYPE_CSV = 'csv';
 export const TYPE_EXCEL = 'excel'; // TODO
@@ -8,7 +8,7 @@ export const EXPORT_TYPES = {
   [TYPE_CSV]: Csv,
 };
 
-export function typeFactory(type, dataProvider, options) {
+export default function typeFactory(type, dataProvider, options) {
   if (typeof EXPORT_TYPES[type] === 'function') {
     return new EXPORT_TYPES[type](dataProvider, options);
   }

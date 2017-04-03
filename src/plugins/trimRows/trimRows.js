@@ -2,7 +2,7 @@ import BasePlugin from 'handsontable/plugins/_base';
 import {arrayEach} from 'handsontable/helpers/array';
 import {rangeEach} from 'handsontable/helpers/number';
 import {registerPlugin} from 'handsontable/plugins';
-import {RowsMapper} from './rowsMapper';
+import RowsMapper from './rowsMapper';
 
 /**
  * @plugin TrimRows
@@ -283,6 +283,6 @@ class TrimRows extends BasePlugin {
   }
 }
 
-export {TrimRows};
-
 registerPlugin('trimRows', TrimRows);
+
+export default TrimRows;

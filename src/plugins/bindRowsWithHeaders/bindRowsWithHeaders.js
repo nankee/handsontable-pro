@@ -2,7 +2,7 @@ import BasePlugin from 'handsontable/plugins/_base';
 import {arrayEach} from 'handsontable/helpers/array';
 import {rangeEach} from 'handsontable/helpers/number';
 import {registerPlugin} from 'handsontable/plugins';
-import {BindStrategy} from './bindStrategy';
+import BindStrategy from './bindStrategy';
 
 /**
  * @plugin BindRowsWithHeaders
@@ -162,6 +162,6 @@ class BindRowsWithHeaders extends BasePlugin {
   }
 }
 
-export {BindRowsWithHeaders};
-
 registerPlugin('bindRowsWithHeaders', BindRowsWithHeaders);
+
+export default BindRowsWithHeaders;
