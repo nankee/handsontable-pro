@@ -4507,10 +4507,10 @@ var domHelpers = ($__helpers_47_dom_47_element__ = _dereq_("helpers/dom/element"
 var domEventHelpers = ($__helpers_47_dom_47_event__ = _dereq_("helpers/dom/event"), $__helpers_47_dom_47_event__ && $__helpers_47_dom_47_event__.__esModule && $__helpers_47_dom_47_event__ || {default: $__helpers_47_dom_47_event__});
 var HELPERS = [arrayHelpers, browserHelpers, dataHelpers, dateHelpers, featureHelpers, functionHelpers, mixedHelpers, numberHelpers, objectHelpers, settingHelpers, stringHelpers, unicodeHelpers];
 var DOM = [domHelpers, domEventHelpers];
-Handsontable.buildDate = 'Tue Mar 07 2017 13:43:38 GMT+0100 (CET)';
+Handsontable.buildDate = 'Mon Apr 03 2017 15:02:25 GMT+0200 (CEST)';
 Handsontable.packageName = 'handsontable-pro';
-Handsontable.version = '1.10.1';
-var baseVersion = '0.31.1';
+Handsontable.version = '1.10.2';
+var baseVersion = '0.31.2';
 if (!/^@@/.test(baseVersion)) {
   Handsontable.baseVersion = baseVersion;
 }
@@ -6673,6 +6673,7 @@ function DataMap(instance, priv, GridSettings) {
   this.instance.addHook('skipLengthCache', (function(delay) {
     return $__9.onSkipLengthCache(delay);
   }));
+  this.onSkipLengthCache(500);
 }
 DataMap.prototype.DESTINATION_RENDERER = 1;
 DataMap.prototype.DESTINATION_CLIPBOARD_GENERATOR = 2;
@@ -15564,7 +15565,7 @@ var $Menu = Menu;
   createContainer: function() {
     var name = arguments[0] !== (void 0) ? arguments[0] : null;
     if (name) {
-      name = name.replace(/ /g, '_');
+      name = name.replace(/[^A-z0-9]/g, '_');
       name = this.options.className + 'Sub_' + name;
     }
     var container;
@@ -25679,6 +25680,14 @@ var $DropdownMenu = DropdownMenu;
       params[$__14] = arguments[$__14];
     this.commandExecutor.execute.apply(this.commandExecutor, params);
   },
+  setListening: function() {
+    var listen = arguments[0] !== (void 0) ? arguments[0] : true;
+    if (listen) {
+      this.menu.hotMenu.listen();
+    } else {
+      this.menu.hotMenu.unlisten();
+    }
+  },
   onTableClick: function(event) {
     stopPropagation(event);
     if (hasClass(event.target, BUTTON_CLASS_NAME) && !this.menu.isOpened()) {
@@ -26328,10 +26337,9 @@ var $ConditionComponent = ConditionComponent;
       args: args
     };
   },
-  updateState: function($__12) {
-    var $__13 = $__12,
-        column = $__13.column,
-        currentFormulas = $__13.formulas;
+  updateState: function(stateInfo) {
+    var column = stateInfo.editedFormulaStack.column;
+    var currentFormulas = stateInfo.editedFormulaStack.formulas;
     var formula = arrayFilter(currentFormulas, (function(formula) {
       return formula.name !== FORMULA_BY_VALUE;
     }))[0];
@@ -26382,7 +26390,8 @@ var $ConditionComponent = ConditionComponent;
   },
   reset: function() {
     var lastSelectedColumn = this.hot.getPlugin('filters').getSelectedColumn();
-    var columnType = this.hot.getDataType.apply(this.hot, this.hot.getSelected() || [0, lastSelectedColumn]);
+    var visualIndex = lastSelectedColumn && lastSelectedColumn.visualIndex;
+    var columnType = this.hot.getDataType.apply(this.hot, this.hot.getSelected() || [0, visualIndex]);
     var items = getOptionsList(columnType);
     arrayEach(this.getInputElements(), (function(element) {
       return element.hide();
@@ -26400,6 +26409,7 @@ var $ConditionComponent = ConditionComponent;
         }), 10);
       }
     }));
+    this.runLocalHooks('change', command);
   },
   onInputKeyDown: function(event) {
     if (isKey(event.keyCode, 'ENTER')) {
@@ -26425,6 +26435,8 @@ Object.defineProperties(exports, {
 var $__handsontable_47_helpers_47_dom_47_element__,
     $__handsontable_47_helpers_47_dom_47_event__,
     $__handsontable_47_helpers_47_array__,
+    $__handsontable_47_utils_47_sortingAlgorithms_47_mergeSort__,
+    $__handsontable_47_helpers_47_object__,
     $__handsontable_47_helpers_47_string__,
     $___46__46__47_utils__,
     $___95_base__,
@@ -26438,18 +26450,21 @@ var $__2 = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../../node_mo
     arrayEach = $__2.arrayEach,
     arrayUnique = $__2.arrayUnique,
     arrayFilter = $__2.arrayFilter,
-    arrayMap = $__2.arrayMap;
+    arrayMap = $__2.arrayMap,
+    arrayIncludes = $__2.arrayIncludes;
+var mergeSort = ($__handsontable_47_utils_47_sortingAlgorithms_47_mergeSort__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/utils/sortingAlgorithms/mergeSort"), $__handsontable_47_utils_47_sortingAlgorithms_47_mergeSort__ && $__handsontable_47_utils_47_sortingAlgorithms_47_mergeSort__.__esModule && $__handsontable_47_utils_47_sortingAlgorithms_47_mergeSort__ || {default: $__handsontable_47_utils_47_sortingAlgorithms_47_mergeSort__}).mergeSort;
+var deepClone = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).deepClone;
 var stringify = ($__handsontable_47_helpers_47_string__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string"), $__handsontable_47_helpers_47_string__ && $__handsontable_47_helpers_47_string__.__esModule && $__handsontable_47_helpers_47_string__ || {default: $__handsontable_47_helpers_47_string__}).stringify;
-var $__4 = ($___46__46__47_utils__ = _dereq_("utils"), $___46__46__47_utils__ && $___46__46__47_utils__.__esModule && $___46__46__47_utils__ || {default: $___46__46__47_utils__}),
-    unifyColumnValues = $__4.unifyColumnValues,
-    intersectValues = $__4.intersectValues,
-    toEmptyString = $__4.toEmptyString;
+var $__6 = ($___46__46__47_utils__ = _dereq_("utils"), $___46__46__47_utils__ && $___46__46__47_utils__.__esModule && $___46__46__47_utils__ || {default: $___46__46__47_utils__}),
+    unifyColumnValues = $__6.unifyColumnValues,
+    intersectValues = $__6.intersectValues,
+    toEmptyString = $__6.toEmptyString;
 var BaseComponent = ($___95_base__ = _dereq_("_base"), $___95_base__ && $___95_base__.__esModule && $___95_base__ || {default: $___95_base__}).BaseComponent;
 var isKey = ($__handsontable_47_helpers_47_unicode__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode"), $__handsontable_47_helpers_47_unicode__ && $__handsontable_47_helpers_47_unicode__.__esModule && $__handsontable_47_helpers_47_unicode__ || {default: $__handsontable_47_helpers_47_unicode__}).isKey;
 var MultipleSelectUI = ($___46__46__47_ui_47_multipleSelect__ = _dereq_("ui/multipleSelect"), $___46__46__47_ui_47_multipleSelect__ && $___46__46__47_ui_47_multipleSelect__.__esModule && $___46__46__47_ui_47_multipleSelect__ || {default: $___46__46__47_ui_47_multipleSelect__}).MultipleSelectUI;
-var $__8 = ($___46__46__47_constants__ = _dereq_("constants"), $___46__46__47_constants__ && $___46__46__47_constants__.__esModule && $___46__46__47_constants__ || {default: $___46__46__47_constants__}),
-    FORMULA_BY_VALUE = $__8.FORMULA_BY_VALUE,
-    FORMULA_NONE = $__8.FORMULA_NONE;
+var $__10 = ($___46__46__47_constants__ = _dereq_("constants"), $___46__46__47_constants__ && $___46__46__47_constants__.__esModule && $___46__46__47_constants__ || {default: $___46__46__47_constants__}),
+    FORMULA_BY_VALUE = $__10.FORMULA_BY_VALUE,
+    FORMULA_NONE = $__10.FORMULA_NONE;
 var getFormulaDescriptor = ($___46__46__47_formulaRegisterer__ = _dereq_("formulaRegisterer"), $___46__46__47_formulaRegisterer__ && $___46__46__47_formulaRegisterer__.__esModule && $___46__46__47_formulaRegisterer__ || {default: $___46__46__47_formulaRegisterer__}).getFormulaDescriptor;
 var ValueComponent = function ValueComponent(hotInstance) {
   $traceurRuntime.superConstructor($ValueComponent).call(this, hotInstance);
@@ -26459,9 +26474,9 @@ var ValueComponent = function ValueComponent(hotInstance) {
 var $ValueComponent = ValueComponent;
 ($traceurRuntime.createClass)(ValueComponent, {
   registerHooks: function() {
-    var $__10 = this;
+    var $__12 = this;
     this.getMultipleSelectElement().addLocalHook('keydown', (function(event) {
-      return $__10.onInputKeyDown(event);
+      return $__12.onInputKeyDown(event);
     }));
   },
   setState: function(value) {
@@ -26481,12 +26496,9 @@ var $ValueComponent = ValueComponent;
       itemsSnapshot: availableItems
     };
   },
-  updateState: function(editedFormulaStack, dependentFormulaStacks, filteredRowsFactory) {
-    var $__10 = this;
-    var $__12 = editedFormulaStack,
-        column = $__12.column,
-        formulas = $__12.formulas;
-    var updateColumnState = (function(column, formulas, formulasStack) {
+  updateState: function(stateInfo) {
+    var $__12 = this;
+    var updateColumnState = (function(column, formulas, formulaArgsChange, filteredRowsFactory, formulasStack) {
       var formula = arrayFilter(formulas, (function(formula) {
         return formula.name === FORMULA_BY_VALUE;
       }))[0];
@@ -26496,6 +26508,9 @@ var $ValueComponent = ValueComponent;
           return row.value;
         }));
         rowValues = unifyColumnValues(rowValues);
+        if (formulaArgsChange) {
+          formula.args[0] = formulaArgsChange;
+        }
         var selectedValues = [];
         var itemsSnapshot = intersectValues(rowValues, formula.args[0], (function(item) {
           if (item.checked) {
@@ -26509,14 +26524,11 @@ var $ValueComponent = ValueComponent;
         state.args = [];
         state.command = getFormulaDescriptor(FORMULA_NONE);
       }
-      $__10.setCachedState(column, state);
+      $__12.setCachedState(column, state);
     });
-    updateColumnState(column, formulas);
-    if (dependentFormulaStacks.length) {
-      var $__13 = dependentFormulaStacks[0],
-          column$__14 = $__13.column,
-          formulas$__15 = $__13.formulas;
-      updateColumnState(column$__14, formulas$__15, editedFormulaStack);
+    updateColumnState(stateInfo.editedFormulaStack.column, stateInfo.editedFormulaStack.formulas, stateInfo.formulaArgsChange, stateInfo.filteredRowsFactory);
+    if (stateInfo.dependentFormulaStacks.length) {
+      updateColumnState(stateInfo.dependentFormulaStacks[0].column, stateInfo.dependentFormulaStacks[0].formulas, stateInfo.formulaArgsChange, stateInfo.filteredRowsFactory, stateInfo.editedFormulaStack);
     }
   },
   getMultipleSelectElement: function() {
@@ -26525,14 +26537,14 @@ var $ValueComponent = ValueComponent;
     }))[0];
   },
   getMenuItemDescriptor: function() {
-    var $__10 = this;
+    var $__12 = this;
     return {
       key: 'filter_by_value',
       name: 'Filter by value',
       isCommand: false,
       disableSelection: true,
       hidden: (function() {
-        return $__10.isHidden();
+        return $__12.isHidden();
       }),
       renderer: (function(hot, wrapper, row, col, prop, value) {
         addClass(wrapper.parentNode, 'htFiltersMenuValue');
@@ -26540,7 +26552,7 @@ var $ValueComponent = ValueComponent;
         addClass(label, 'htFiltersMenuLabel');
         label.textContent = 'Filter by value:';
         wrapper.appendChild(label);
-        arrayEach($__10.elements, (function(ui) {
+        arrayEach($__12.elements, (function(ui) {
           return wrapper.appendChild(ui.element);
         }));
         return wrapper;
@@ -26562,7 +26574,8 @@ var $ValueComponent = ValueComponent;
   },
   _getColumnVisibleValues: function() {
     var lastSelectedColumn = this.hot.getPlugin('filters').getSelectedColumn();
-    return arrayMap(this.hot.getDataAtCol(lastSelectedColumn), (function(v) {
+    var visualIndex = lastSelectedColumn && lastSelectedColumn.visualIndex;
+    return arrayMap(this.hot.getDataAtCol(visualIndex), (function(v) {
       return toEmptyString(v);
     }));
   }
@@ -26570,7 +26583,7 @@ var $ValueComponent = ValueComponent;
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":48,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":55,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode":56,"_base":155,"constants":159,"formulaRegisterer":184,"ui/multipleSelect":188,"utils":190}],159:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array":43,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/event":48,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/string":55,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/unicode":56,"../../../../node_modules/hot-builder/node_modules/handsontable/src/utils/sortingAlgorithms/mergeSort":134,"_base":155,"constants":159,"formulaRegisterer":184,"ui/multipleSelect":188,"utils":190}],159:[function(_dereq_,module,exports){
 "use strict";
 var $__25;
 Object.defineProperties(exports, {
@@ -26828,7 +26841,8 @@ var $__handsontable_47_plugins_47__95_base__,
 var BasePlugin = ($__handsontable_47_plugins_47__95_base__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/_base"), $__handsontable_47_plugins_47__95_base__ && $__handsontable_47_plugins_47__95_base__.__esModule && $__handsontable_47_plugins_47__95_base__ || {default: $__handsontable_47_plugins_47__95_base__}).default;
 var $__1 = ($__handsontable_47_helpers_47_array__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/array"), $__handsontable_47_helpers_47_array__ && $__handsontable_47_helpers_47_array__.__esModule && $__handsontable_47_helpers_47_array__ || {default: $__handsontable_47_helpers_47_array__}),
     arrayEach = $__1.arrayEach,
-    arrayMap = $__1.arrayMap;
+    arrayMap = $__1.arrayMap,
+    arrayIncludes = $__1.arrayIncludes;
 var rangeEach = ($__handsontable_47_helpers_47_number__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/number"), $__handsontable_47_helpers_47_number__ && $__handsontable_47_helpers_47_number__.__esModule && $__handsontable_47_helpers_47_number__ || {default: $__handsontable_47_helpers_47_number__}).rangeEach;
 var EventManager = ($__handsontable_47_eventManager__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/eventManager"), $__handsontable_47_eventManager__ && $__handsontable_47_eventManager__.__esModule && $__handsontable_47_eventManager__ || {default: $__handsontable_47_eventManager__}).EventManager;
 var $__4 = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}),
@@ -26844,7 +26858,8 @@ var DataFilter = ($__dataFilter__ = _dereq_("dataFilter"), $__dataFilter__ && $_
 var FormulaUpdateObserver = ($__formulaUpdateObserver__ = _dereq_("formulaUpdateObserver"), $__formulaUpdateObserver__ && $__formulaUpdateObserver__.__esModule && $__formulaUpdateObserver__ || {default: $__formulaUpdateObserver__}).FormulaUpdateObserver;
 var $__12 = ($__utils__ = _dereq_("utils"), $__utils__ && $__utils__.__esModule && $__utils__ || {default: $__utils__}),
     createArrayAssertion = $__12.createArrayAssertion,
-    toEmptyString = $__12.toEmptyString;
+    toEmptyString = $__12.toEmptyString,
+    unifyColumnValues = $__12.unifyColumnValues;
 var FORMULA_NONE = ($__constants__ = _dereq_("constants"), $__constants__ && $__constants__.__esModule && $__constants__ || {default: $__constants__}).FORMULA_NONE;
 var SEPARATOR = ($__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ = _dereq_("../../../node_modules/hot-builder/node_modules/handsontable/src/plugins/contextMenu/predefinedItems"), $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__.__esModule && $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__ || {default: $__handsontable_47_plugins_47_contextMenu_47_predefinedItems__}).SEPARATOR;
 var Filters = function Filters(hotInstance) {
@@ -26881,6 +26896,9 @@ var $Filters = Filters;
       }));
       component.addLocalHook('cancel', (function() {
         return $__15.onActionBarSubmit('cancel');
+      }));
+      component.addLocalHook('change', (function(command) {
+        return $__15.onComponentChange(component, command);
       }));
       return component;
     });
@@ -26931,6 +26949,9 @@ var $Filters = Filters;
     this.addHook('afterDropdownMenuHide', (function() {
       return $__15.onAfterDropdownMenuHide();
     }));
+    this.addHook('afterChange', (function(changes, source) {
+      return $__15.onAfterChange(changes);
+    }));
     this.hot.getSettings().trimRows = true;
     this.trimRowsPlugin.enablePlugin();
     if (this.hot.getSettings().dropdownMenu) {
@@ -26956,19 +26977,22 @@ var $Filters = Filters;
     $traceurRuntime.superGet(this, $Filters.prototype, "disablePlugin").call(this);
   },
   addFormula: function(column, name, args) {
-    this.formulaCollection.addFormula(column, {
+    var physicalColumn = this.t.toPhysicalColumn(column);
+    this.formulaCollection.addFormula(physicalColumn, {
       command: {key: name},
       args: args
     });
   },
   removeFormulas: function(column) {
-    this.formulaCollection.removeFormulas(column);
+    var physicalColumn = this.t.toPhysicalColumn(column);
+    this.formulaCollection.removeFormulas(physicalColumn);
   },
   clearFormulas: function(column) {
+    var physicalColumn = this.t.toPhysicalColumn(column);
     if (column === void 0) {
       this.formulaCollection.clean();
     } else {
-      this.formulaCollection.clearFormulas(column);
+      this.formulaCollection.clearFormulas(physicalColumn);
     }
   },
   filter: function() {
@@ -27016,9 +27040,10 @@ var $Filters = Filters;
   },
   getDataMapAtColumn: function(column) {
     var $__15 = this;
+    var visualIndex = this.t.toVisualColumn(column);
     var data = [];
-    arrayEach(this.hot.getSourceDataAtCol(column), (function(value, rowIndex) {
-      var $__19 = $__15.hot.getCellMeta(rowIndex, column),
+    arrayEach(this.hot.getSourceDataAtCol(visualIndex), (function(value, rowIndex) {
+      var $__19 = $__15.hot.getCellMeta(rowIndex, visualIndex),
           row = $__19.row,
           col = $__19.col,
           visualCol = $__19.visualCol,
@@ -27041,15 +27066,31 @@ var $Filters = Filters;
     }));
     return data;
   },
+  onAfterChange: function(changes) {
+    var $__15 = this;
+    if (changes) {
+      arrayEach(changes, (function(change) {
+        var prop = change[1];
+        var columnIndex = $__15.hot.propToCol(prop);
+        $__15.updateValueComponentFormula(columnIndex);
+      }));
+    }
+  },
+  updateValueComponentFormula: function(columnIndex) {
+    var dataAtCol = this.hot.getDataAtCol(columnIndex);
+    var selectedValues = unifyColumnValues(dataAtCol);
+    this.formulaUpdateObserver.updateStatesAtColumn(columnIndex, selectedValues);
+  },
   onAfterDropdownMenuShow: function() {
-    var column = this.getSelectedColumn();
+    var selectedColumn = this.getSelectedColumn();
+    var physicalIndex = selectedColumn && selectedColumn.physicalIndex;
     var conditionComponent = this.conditionComponent;
     var valueComponent = this.valueComponent;
     if (!conditionComponent.isHidden()) {
-      conditionComponent.restoreState(column);
+      conditionComponent.restoreState(physicalIndex);
     }
     if (!valueComponent.isHidden()) {
-      valueComponent.restoreState(column);
+      valueComponent.restoreState(physicalIndex);
     }
   },
   onAfterDropdownMenuHide: function() {
@@ -27072,29 +27113,36 @@ var $Filters = Filters;
   },
   onActionBarSubmit: function(submitType) {
     if (submitType === 'accept') {
-      var column = this.getSelectedColumn();
+      var selectedColumn = this.getSelectedColumn();
+      var physicalIndex = selectedColumn && selectedColumn.physicalIndex;
       var byConditionState = this.conditionComponent.getState();
       var byValueState = this.valueComponent.getState();
       this.formulaUpdateObserver.groupChanges();
-      this.formulaCollection.clearFormulas(column);
+      this.formulaCollection.clearFormulas(physicalIndex);
       if (byConditionState.command.key === FORMULA_NONE && byValueState.command.key === FORMULA_NONE) {
-        this.formulaCollection.removeFormulas(column);
+        this.formulaCollection.removeFormulas(physicalIndex);
       }
       if (byConditionState.command.key !== FORMULA_NONE) {
-        this.formulaCollection.addFormula(column, byConditionState);
+        this.formulaCollection.addFormula(physicalIndex, byConditionState);
       }
       if (byValueState.command.key !== FORMULA_NONE) {
-        this.formulaCollection.addFormula(column, byValueState);
+        this.formulaCollection.addFormula(physicalIndex, byValueState);
       }
       this.formulaUpdateObserver.flush();
-      this.conditionComponent.saveState(column);
-      this.valueComponent.saveState(column);
+      this.conditionComponent.saveState(physicalIndex);
+      this.valueComponent.saveState(physicalIndex);
       this.filter();
     }
     this.dropdownMenuPlugin.close();
   },
+  onComponentChange: function(component, command) {
+    if (component === this.conditionComponent && !command.inputsCount) {
+      this.dropdownMenuPlugin.setListening();
+    }
+  },
   onAfterGetColHeader: function(col, TH) {
-    if (this.enabled && this.formulaCollection.hasFormulas(col)) {
+    var physicalColumn = this.t.toPhysicalColumn(col);
+    if (this.enabled && this.formulaCollection.hasFormulas(physicalColumn)) {
       addClass(TH, 'htFiltersActive');
     } else {
       removeClass(TH, 'htFiltersActive');
@@ -27103,7 +27151,12 @@ var $Filters = Filters;
   onTableClick: function(event) {
     var th = closest(event.target, 'TH');
     if (th) {
-      this.lastSelectedColumn = this.hot.getCoords(th).col;
+      var visualIndex = this.hot.getCoords(th).col;
+      var physicalIndex = this.t.toPhysicalColumn(visualIndex);
+      this.lastSelectedColumn = {
+        visualIndex: visualIndex,
+        physicalIndex: physicalIndex
+      };
     }
   },
   destroy: function() {
@@ -27908,10 +27961,10 @@ var FormulaUpdateObserver = function FormulaUpdateObserver(formulaCollection) {
     return $__7._onFormulaBeforeModify(column);
   }));
   this.formulaCollection.addLocalHook('afterAdd', (function(column) {
-    return $__7._onFormulaAfterModify(column);
+    return $__7.updateStatesAtColumn(column);
   }));
   this.formulaCollection.addLocalHook('afterClear', (function(column) {
-    return $__7._onFormulaAfterModify(column);
+    return $__7.updateStatesAtColumn(column);
   }));
   this.formulaCollection.addLocalHook('beforeClean', (function() {
     return $__7._onFormulaBeforeClean();
@@ -27928,14 +27981,14 @@ var FormulaUpdateObserver = function FormulaUpdateObserver(formulaCollection) {
     var $__7 = this;
     this.grouping = false;
     arrayEach(this.changes, (function(column) {
-      return $__7._onFormulaAfterModify(column);
+      return $__7.updateStatesAtColumn(column);
     }));
     this.changes.length = 0;
   },
   _onFormulaBeforeModify: function(column) {
     this.latestEditedColumnPosition = this.formulaCollection.orderStack.indexOf(column);
   },
-  _onFormulaAfterModify: function(column) {
+  updateStatesAtColumn: function(column, formulaArgsChange) {
     var $__7 = this;
     if (this.grouping) {
       if (this.changes.indexOf(column) === -1) {
@@ -27977,9 +28030,14 @@ var FormulaUpdateObserver = function FormulaUpdateObserver(formulaCollection) {
     }))(formulasBefore);
     var editedFormulas = [].concat(this.formulaCollection.getFormulas(column));
     this.runLocalHooks('update', {
-      column: column,
-      formulas: editedFormulas
-    }, formulasAfter, visibleDataFactory);
+      editedFormulaStack: {
+        column: column,
+        formulas: editedFormulas
+      },
+      dependentFormulaStacks: formulasAfter,
+      filteredRowsFactory: visibleDataFactory,
+      formulaArgsChange: formulaArgsChange
+    });
   },
   _onFormulaBeforeClean: function() {
     this.latestOrderStack = [].concat(this.formulaCollection.orderStack);
@@ -27987,7 +28045,7 @@ var FormulaUpdateObserver = function FormulaUpdateObserver(formulaCollection) {
   _onFormulaAfterClean: function() {
     var $__7 = this;
     arrayEach(this.latestOrderStack, (function(column) {
-      return $__7._onFormulaAfterModify(column);
+      return $__7.updateStatesAtColumn(column);
     }));
   },
   destroy: function() {
@@ -32736,8 +32794,10 @@ Object.defineProperties(exports, {
     }},
   __esModule: {value: true}
 });
-var $__handsontable_47_helpers_47_dom_47_element__;
+var $__handsontable_47_helpers_47_dom_47_element__,
+    $__handsontable_47_helpers_47_object__;
 var fastInnerHTML = ($__handsontable_47_helpers_47_dom_47_element__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element"), $__handsontable_47_helpers_47_dom_47_element__ && $__handsontable_47_helpers_47_dom_47_element__.__esModule && $__handsontable_47_helpers_47_dom_47_element__ || {default: $__handsontable_47_helpers_47_dom_47_element__}).fastInnerHTML;
+var clone = ($__handsontable_47_helpers_47_object__ = _dereq_("../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object"), $__handsontable_47_helpers_47_object__ && $__handsontable_47_helpers_47_object__.__esModule && $__handsontable_47_helpers_47_object__ || {default: $__handsontable_47_helpers_47_object__}).clone;
 var GhostTable = function GhostTable(plugin) {
   this.nestedHeaders = plugin;
   this.container = void 0;
@@ -32771,7 +32831,7 @@ var GhostTable = function GhostTable(plugin) {
       lastRowColspan = false;
       for (var col = 0; col < maxCols; col++) {
         var td = d.createElement('th');
-        var headerObj = this.nestedHeaders.colspanArray[row][col];
+        var headerObj = clone(this.nestedHeaders.colspanArray[row][col]);
         if (headerObj && !headerObj.hidden) {
           if (row === lastRowIndex) {
             if (headerObj.colspan > 1) {
@@ -32790,12 +32850,12 @@ var GhostTable = function GhostTable(plugin) {
     }
     if (lastRowColspan) {
       {
-        var tr$__2 = d.createElement('tr');
-        for (var col$__3 = 0; col$__3 < maxCols; col$__3++) {
-          var td$__4 = d.createElement('th');
-          tr$__2.appendChild(td$__4);
+        var tr$__3 = d.createElement('tr');
+        for (var col$__4 = 0; col$__4 < maxCols; col$__4++) {
+          var td$__5 = d.createElement('th');
+          tr$__3.appendChild(td$__5);
         }
-        table.appendChild(tr$__2);
+        table.appendChild(tr$__3);
       }
     }
     fragment.appendChild(table);
@@ -32809,7 +32869,7 @@ var GhostTable = function GhostTable(plugin) {
 ;
 
 //# 
-},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47}],219:[function(_dereq_,module,exports){
+},{"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/dom/element":47,"../../../../node_modules/hot-builder/node_modules/handsontable/src/helpers/object":53}],219:[function(_dereq_,module,exports){
 "use strict";
 Object.defineProperties(exports, {
   DataManager: {get: function() {
@@ -34222,8 +34282,11 @@ var $TrimRows = TrimRows;
     $traceurRuntime.superGet(this, $TrimRows.prototype, "enablePlugin").call(this);
   },
   updatePlugin: function() {
-    this.disablePlugin();
-    this.enablePlugin();
+    var settings = this.hot.getSettings().trimRows;
+    if (Array.isArray(settings)) {
+      this.disablePlugin();
+      this.enablePlugin();
+    }
     $traceurRuntime.superGet(this, $TrimRows.prototype, "updatePlugin").call(this);
   },
   disablePlugin: function() {
@@ -35202,41 +35265,41 @@ CopyPasteClass.prototype.hasBeenDestroyed = function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
-
+/******/
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
-
+/******/
 /******/ 		// Check if module is in cache
 /******/ 		if(installedModules[moduleId])
 /******/ 			return installedModules[moduleId].exports;
-
+/******/
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			i: moduleId,
 /******/ 			l: false,
 /******/ 			exports: {}
 /******/ 		};
-
+/******/
 /******/ 		// Execute the module function
 /******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-
+/******/
 /******/ 		// Flag the module as loaded
 /******/ 		module.l = true;
-
+/******/
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-
-
+/******/
+/******/
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
-
+/******/
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
-
+/******/
 /******/ 	// identity function for calling harmony imports with the correct context
 /******/ 	__webpack_require__.i = function(value) { return value; };
-
+/******/
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
@@ -35247,7 +35310,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 			});
 /******/ 		}
 /******/ 	};
-
+/******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
 /******/ 	__webpack_require__.n = function(module) {
 /******/ 		var getter = module && module.__esModule ?
@@ -35256,13 +35319,13 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 		__webpack_require__.d(getter, 'a', getter);
 /******/ 		return getter;
 /******/ 	};
-
+/******/
 /******/ 	// Object.prototype.hasOwnProperty.call
 /******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-
+/******/
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
-
+/******/
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(__webpack_require__.s = 81);
 /******/ })
@@ -35313,15 +35376,15 @@ var errors = (_errors = {}, _errors[ERROR] = '#ERROR!', _errors[ERROR_DIV_ZERO] 
  * @returns {String|null} Returns error id.
  */
 function error(type) {
-  var error = void 0;
+  var result = void 0;
 
   type = (type + '').replace(/#|!|\?/g, '');
 
   if (errors[type]) {
-    error = errors[type];
+    result = errors[type];
   }
 
-  return error ? error : null;
+  return result ? result : null;
 }
 
 /**
@@ -35334,7 +35397,7 @@ function isValidStrict(type) {
   var valid = false;
 
   for (var i in errors) {
-    if (errors.hasOwnProperty(i) && errors[i] === type) {
+    if (Object.prototype.hasOwnProperty.call(errors, i) && errors[i] === type) {
       valid = true;
       break;
     }
@@ -39643,54 +39706,44 @@ exports.VALUE = function(text) {
 
 
 exports.__esModule = true;
-exports.extractLabel = extractLabel;
-exports.toLabel = toLabel;
-exports.columnLabelToIndex = columnLabelToIndex;
-exports.columnIndexToLabel = columnIndexToLabel;
 exports.rowLabelToIndex = rowLabelToIndex;
 exports.rowIndexToLabel = rowIndexToLabel;
-var LABEL_EXTRACT_REGEXP = /^([$])?([A-Za-z]+)([$])?([0-9]+)$/;
-
+exports.columnLabelToIndex = columnLabelToIndex;
+exports.columnIndexToLabel = columnIndexToLabel;
+exports.extractLabel = extractLabel;
+exports.toLabel = toLabel;
 /**
- * Extract cell coordinates.
+ * Convert row label to index.
  *
- * @param {String} label Cell coordinates (eq. 'A1', '$B6', '$N$98').
- * @returns {Array} Returns an array of objects.
+ * @param {String} label Row label (eq. '1', '5')
+ * @returns {Number} Returns -1 if label is not recognized otherwise proper row index.
  */
-function extractLabel(label) {
-  if (typeof label !== 'string' || !LABEL_EXTRACT_REGEXP.test(label)) {
-    return [];
+function rowLabelToIndex(label) {
+  var result = parseInt(label, 10);
+
+  if (isNaN(result)) {
+    result = -1;
+  } else {
+    result = Math.max(result - 1, -1);
   }
 
-  var _label$toUpperCase$ma = label.toUpperCase().match(LABEL_EXTRACT_REGEXP),
-      columnAbs = _label$toUpperCase$ma[1],
-      column = _label$toUpperCase$ma[2],
-      rowAbs = _label$toUpperCase$ma[3],
-      row = _label$toUpperCase$ma[4];
-
-  return [{
-    index: rowLabelToIndex(row),
-    label: row,
-    isAbsolute: rowAbs === '$'
-  }, {
-    index: columnLabelToIndex(column),
-    label: column,
-    isAbsolute: columnAbs === '$'
-  }];
+  return result;
 }
 
 /**
- * Convert row and column indexes into cell label.
+ * Convert row index to label.
  *
- * @param {Object} row Object with `index` and `isAbsolute` properties.
- * @param {Object} column Object with `index` and `isAbsolute` properties.
- * @returns {String} Returns cell label.
+ * @param {Number} row Row index.
+ * @returns {String} Returns row label (eq. '1', '7').
  */
-function toLabel(row, column) {
-  var rowLabel = (row.isAbsolute ? '$' : '') + rowIndexToLabel(row.index);
-  var columnLabel = (column.isAbsolute ? '$' : '') + columnIndexToLabel(column.index);
+function rowIndexToLabel(row) {
+  var result = '';
 
-  return columnLabel + rowLabel;
+  if (row >= 0) {
+    result = '' + (row + 1);
+  }
+
+  return result;
 }
 
 var COLUMN_LABEL_BASE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -39734,38 +39787,48 @@ function columnIndexToLabel(column) {
   return result.toUpperCase();
 }
 
-/**
- * Convert row label to index.
- *
- * @param {String} label Row label (eq. '1', '5')
- * @returns {Number} Returns -1 if label is not recognized otherwise proper row index.
- */
-function rowLabelToIndex(label) {
-  var result = parseInt(label, 10);
+var LABEL_EXTRACT_REGEXP = /^([$])?([A-Za-z]+)([$])?([0-9]+)$/;
 
-  if (isNaN(result)) {
-    result = -1;
-  } else {
-    result = Math.max(result - 1, -1);
+/**
+ * Extract cell coordinates.
+ *
+ * @param {String} label Cell coordinates (eq. 'A1', '$B6', '$N$98').
+ * @returns {Array} Returns an array of objects.
+ */
+function extractLabel(label) {
+  if (typeof label !== 'string' || !LABEL_EXTRACT_REGEXP.test(label)) {
+    return [];
   }
 
-  return result;
+  var _label$toUpperCase$ma = label.toUpperCase().match(LABEL_EXTRACT_REGEXP),
+      columnAbs = _label$toUpperCase$ma[1],
+      column = _label$toUpperCase$ma[2],
+      rowAbs = _label$toUpperCase$ma[3],
+      row = _label$toUpperCase$ma[4];
+
+  return [{
+    index: rowLabelToIndex(row),
+    label: row,
+    isAbsolute: rowAbs === '$'
+  }, {
+    index: columnLabelToIndex(column),
+    label: column,
+    isAbsolute: columnAbs === '$'
+  }];
 }
 
 /**
- * Convert row index to label.
+ * Convert row and column indexes into cell label.
  *
- * @param {Number} row Row index.
- * @returns {String} Returns row label (eq. '1', '7').
+ * @param {Object} row Object with `index` and `isAbsolute` properties.
+ * @param {Object} column Object with `index` and `isAbsolute` properties.
+ * @returns {String} Returns cell label.
  */
-function rowIndexToLabel(row) {
-  var result = '';
+function toLabel(row, column) {
+  var rowLabel = (row.isAbsolute ? '$' : '') + rowIndexToLabel(row.index);
+  var columnLabel = (column.isAbsolute ? '$' : '') + columnIndexToLabel(column.index);
 
-  if (row >= 0) {
-    result = '' + (row + 1);
-  }
-
-  return result;
+  return columnLabel + rowLabel;
 }
 
 /***/ }),
@@ -47399,21 +47462,8 @@ var _error = __webpack_require__(1);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
+/* eslint-disable import/no-named-as-default-member */
 var availableOperators = Object.create(null);
-
-registerOperation(_add2['default'].SYMBOL, _add2['default']);
-registerOperation(_ampersand2['default'].SYMBOL, _ampersand2['default']);
-registerOperation(_divide2['default'].SYMBOL, _divide2['default']);
-registerOperation(_equal2['default'].SYMBOL, _equal2['default']);
-registerOperation(_power2['default'].SYMBOL, _power2['default']);
-registerOperation(_formulaFunction2['default'].SYMBOL, _formulaFunction2['default']);
-registerOperation(_greaterThan2['default'].SYMBOL, _greaterThan2['default']);
-registerOperation(_greaterThanOrEqual2['default'].SYMBOL, _greaterThanOrEqual2['default']);
-registerOperation(_lessThan2['default'].SYMBOL, _lessThan2['default']);
-registerOperation(_lessThanOrEqual2['default'].SYMBOL, _lessThanOrEqual2['default']);
-registerOperation(_multiply2['default'].SYMBOL, _multiply2['default']);
-registerOperation(_notEqual2['default'].SYMBOL, _notEqual2['default']);
-registerOperation(_minus2['default'].SYMBOL, _minus2['default']);
 
 /**
  * Evaluate values by operator id.git
@@ -47453,6 +47503,20 @@ function registerOperation(symbol, func) {
   });
 }
 
+registerOperation(_add2['default'].SYMBOL, _add2['default']);
+registerOperation(_ampersand2['default'].SYMBOL, _ampersand2['default']);
+registerOperation(_divide2['default'].SYMBOL, _divide2['default']);
+registerOperation(_equal2['default'].SYMBOL, _equal2['default']);
+registerOperation(_power2['default'].SYMBOL, _power2['default']);
+registerOperation(_formulaFunction2['default'].SYMBOL, _formulaFunction2['default']);
+registerOperation(_greaterThan2['default'].SYMBOL, _greaterThan2['default']);
+registerOperation(_greaterThanOrEqual2['default'].SYMBOL, _greaterThanOrEqual2['default']);
+registerOperation(_lessThan2['default'].SYMBOL, _lessThan2['default']);
+registerOperation(_lessThanOrEqual2['default'].SYMBOL, _lessThanOrEqual2['default']);
+registerOperation(_multiply2['default'].SYMBOL, _multiply2['default']);
+registerOperation(_notEqual2['default'].SYMBOL, _notEqual2['default']);
+registerOperation(_minus2['default'].SYMBOL, _minus2['default']);
+
 /***/ }),
 /* 18 */
 /***/ (function(module, exports, __webpack_require__) {
@@ -47484,7 +47548,7 @@ function func(first) {
   }
 
   return result;
-};
+}
 
 func.SYMBOL = SYMBOL;
 
@@ -47507,7 +47571,7 @@ function func() {
   return params.reduce(function (acc, value) {
     return acc + value.toString();
   }, '');
-};
+}
 
 func.SYMBOL = SYMBOL;
 
@@ -47545,7 +47609,7 @@ function func(first) {
   }
 
   return result;
-};
+}
 
 func.SYMBOL = SYMBOL;
 
@@ -47562,7 +47626,7 @@ var SYMBOL = exports.SYMBOL = '=';
 
 function func(exp1, exp2) {
   return exp1 === exp2;
-};
+}
 
 func.SYMBOL = SYMBOL;
 
@@ -47577,24 +47641,24 @@ exports.__esModule = true;
 exports.SYMBOL = undefined;
 exports['default'] = func;
 
+var _formulajs = __webpack_require__(33);
+
+var formulajs = _interopRequireWildcard(_formulajs);
+
 var _supportedFormulas = __webpack_require__(10);
 
 var _supportedFormulas2 = _interopRequireDefault(_supportedFormulas);
 
 var _error = __webpack_require__(1);
 
-var _formulajs = __webpack_require__(33);
-
-var formulajs = _interopRequireWildcard(_formulajs);
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var SYMBOL = exports.SYMBOL = _supportedFormulas2['default'];
 
 function func(symbol) {
-  return function () {
+  return function __formulaFunction() {
     symbol = symbol.toUpperCase();
 
     var symbolParts = symbol.split('.');
@@ -47632,7 +47696,7 @@ function func(symbol) {
 
     return result;
   };
-};
+}
 
 func.isFactory = true;
 func.SYMBOL = SYMBOL;
@@ -47650,7 +47714,7 @@ var SYMBOL = exports.SYMBOL = '>=';
 
 function func(exp1, exp2) {
   return exp1 >= exp2;
-};
+}
 
 func.SYMBOL = SYMBOL;
 
@@ -47667,7 +47731,7 @@ var SYMBOL = exports.SYMBOL = '>';
 
 function func(exp1, exp2) {
   return exp1 > exp2;
-};
+}
 
 func.SYMBOL = SYMBOL;
 
@@ -47684,7 +47748,7 @@ var SYMBOL = exports.SYMBOL = '<=';
 
 function func(exp1, exp2) {
   return exp1 <= exp2;
-};
+}
 
 func.SYMBOL = SYMBOL;
 
@@ -47701,7 +47765,7 @@ var SYMBOL = exports.SYMBOL = '<';
 
 function func(exp1, exp2) {
   return exp1 < exp2;
-};
+}
 
 func.SYMBOL = SYMBOL;
 
@@ -47736,7 +47800,7 @@ function func(first) {
   }
 
   return result;
-};
+}
 
 func.SYMBOL = SYMBOL;
 
@@ -47771,7 +47835,7 @@ function func(first) {
   }
 
   return result;
-};
+}
 
 func.SYMBOL = SYMBOL;
 
@@ -47788,7 +47852,7 @@ var SYMBOL = exports.SYMBOL = '<>';
 
 function func(exp1, exp2) {
   return exp1 !== exp2;
-};
+}
 
 func.SYMBOL = SYMBOL;
 
@@ -47817,7 +47881,7 @@ function func(exp1, exp2) {
   }
 
   return result;
-};
+}
 
 func.SYMBOL = SYMBOL;
 
@@ -47830,6 +47894,7 @@ func.SYMBOL = SYMBOL;
 
 exports.__esModule = true;
 exports.trimEdges = trimEdges;
+/* eslint-disable import/prefer-default-export */
 /**
  * Trim value by cutting character starting from the beginning and ending at the same time.
  *
@@ -53750,7 +53815,7 @@ if (typeof exports !== "undefined") {
 
 },{}],"moment":[function(_dereq_,module,exports){
 //! moment.js
-//! version : 2.17.1
+//! version : 2.18.1
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
 //! license : MIT
 //! momentjs.com
@@ -53790,6 +53855,10 @@ function isObjectEmpty(obj) {
         return false;
     }
     return true;
+}
+
+function isUndefined(input) {
+    return input === void 0;
 }
 
 function isNumber(input) {
@@ -53848,7 +53917,9 @@ function defaultParsingFlags() {
         userInvalidated : false,
         iso             : false,
         parsedDateParts : [],
-        meridiem        : null
+        meridiem        : null,
+        rfc2822         : false,
+        weekdayMismatch : false
     };
 }
 
@@ -53924,10 +53995,6 @@ function createInvalid (flags) {
     return m;
 }
 
-function isUndefined(input) {
-    return input === void 0;
-}
-
 // Plugins that add properties should also add the key here (null value),
 // so we can properly clone ourselves.
 var momentProperties = hooks.momentProperties = [];
@@ -53967,7 +54034,7 @@ function copyConfig(to, from) {
     }
 
     if (momentProperties.length > 0) {
-        for (i in momentProperties) {
+        for (i = 0; i < momentProperties.length; i++) {
             prop = momentProperties[i];
             val = from[prop];
             if (!isUndefined(val)) {
@@ -54104,8 +54171,11 @@ function set (config) {
     }
     this._config = config;
     // Lenient ordinal parsing accepts just a number in addition to
-    // number + (possibly) stuff coming from _ordinalParseLenient.
-    this._ordinalParseLenient = new RegExp(this._ordinalParse.source + '|' + (/\d{1,2}/).source);
+    // number + (possibly) stuff coming from _dayOfMonthOrdinalParse.
+    // TODO: Remove "ordinalParse" fallback in next major release.
+    this._dayOfMonthOrdinalParseLenient = new RegExp(
+        (this._dayOfMonthOrdinalParse.source || this._ordinalParse.source) +
+            '|' + (/\d{1,2}/).source);
 }
 
 function mergeConfigs(parentConfig, childConfig) {
@@ -54203,7 +54273,7 @@ function invalidDate () {
 }
 
 var defaultOrdinal = '%d';
-var defaultOrdinalParse = /\d{1,2}/;
+var defaultDayOfMonthOrdinalParse = /\d{1,2}/;
 
 function ordinal (number) {
     return this._ordinal.replace('%d', number);
@@ -54213,6 +54283,7 @@ var defaultRelativeTime = {
     future : 'in %s',
     past   : '%s ago',
     s  : 'a few seconds',
+    ss : '%d seconds',
     m  : 'a minute',
     mm : '%d minutes',
     h  : 'an hour',
@@ -54395,7 +54466,7 @@ function makeFormatFunction(format) {
     return function (mom) {
         var output = '', i;
         for (i = 0; i < length; i++) {
-            output += array[i] instanceof Function ? array[i].call(mom, format) : array[i];
+            output += isFunction(array[i]) ? array[i].call(mom, format) : array[i];
         }
         return output;
     };
@@ -54598,7 +54669,8 @@ var MONTHS_IN_FORMAT = /D[oD]?(\[[^\[\]]*\]|\s)+MMMM?/;
 var defaultLocaleMonths = 'January_February_March_April_May_June_July_August_September_October_November_December'.split('_');
 function localeMonths (m, format) {
     if (!m) {
-        return this._months;
+        return isArray(this._months) ? this._months :
+            this._months['standalone'];
     }
     return isArray(this._months) ? this._months[m.month()] :
         this._months[(this._months.isFormat || MONTHS_IN_FORMAT).test(format) ? 'format' : 'standalone'][m.month()];
@@ -54607,7 +54679,8 @@ function localeMonths (m, format) {
 var defaultLocaleMonthsShort = 'Jan_Feb_Mar_Apr_May_Jun_Jul_Aug_Sep_Oct_Nov_Dec'.split('_');
 function localeMonthsShort (m, format) {
     if (!m) {
-        return this._monthsShort;
+        return isArray(this._monthsShort) ? this._monthsShort :
+            this._monthsShort['standalone'];
     }
     return isArray(this._monthsShort) ? this._monthsShort[m.month()] :
         this._monthsShort[MONTHS_IN_FORMAT.test(format) ? 'format' : 'standalone'][m.month()];
@@ -54874,11 +54947,11 @@ function getIsLeapYear () {
 }
 
 function createDate (y, m, d, h, M, s, ms) {
-    //can't just apply() to create a date:
-    //http://stackoverflow.com/questions/181348/instantiating-a-javascript-object-by-calling-prototype-constructor-apply
+    // can't just apply() to create a date:
+    // https://stackoverflow.com/q/181348
     var date = new Date(y, m, d, h, M, s, ms);
 
-    //the date constructor remaps years 0-99 to 1900-1999
+    // the date constructor remaps years 0-99 to 1900-1999
     if (y < 100 && y >= 0 && isFinite(date.getFullYear())) {
         date.setFullYear(y);
     }
@@ -54888,7 +54961,7 @@ function createDate (y, m, d, h, M, s, ms) {
 function createUTCDate (y) {
     var date = new Date(Date.UTC.apply(null, arguments));
 
-    //the Date.UTC function remaps years 0-99 to 1900-1999
+    // the Date.UTC function remaps years 0-99 to 1900-1999
     if (y < 100 && y >= 0 && isFinite(date.getUTCFullYear())) {
         date.setUTCFullYear(y);
     }
@@ -54905,7 +54978,7 @@ function firstWeekOffset(year, dow, doy) {
     return -fwdlw + fwd - 1;
 }
 
-//http://en.wikipedia.org/wiki/ISO_week_date#Calculating_a_date_given_the_year.2C_week_number_and_weekday
+// https://en.wikipedia.org/wiki/ISO_week_date#Calculating_a_date_given_the_year.2C_week_number_and_weekday
 function dayOfYearFromWeeks(year, week, weekday, dow, doy) {
     var localWeekday = (7 + weekday - dow) % 7,
         weekOffset = firstWeekOffset(year, dow, doy),
@@ -55106,7 +55179,8 @@ function parseIsoWeekday(input, locale) {
 var defaultLocaleWeekdays = 'Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday'.split('_');
 function localeWeekdays (m, format) {
     if (!m) {
-        return this._weekdays;
+        return isArray(this._weekdays) ? this._weekdays :
+            this._weekdays['standalone'];
     }
     return isArray(this._weekdays) ? this._weekdays[m.day()] :
         this._weekdays[this._weekdays.isFormat.test(format) ? 'format' : 'standalone'][m.day()];
@@ -55426,8 +55500,10 @@ addRegexToken('a',  matchMeridiem);
 addRegexToken('A',  matchMeridiem);
 addRegexToken('H',  match1to2);
 addRegexToken('h',  match1to2);
+addRegexToken('k',  match1to2);
 addRegexToken('HH', match1to2, match2);
 addRegexToken('hh', match1to2, match2);
+addRegexToken('kk', match1to2, match2);
 
 addRegexToken('hmm', match3to4);
 addRegexToken('hmmss', match5to6);
@@ -55435,6 +55511,10 @@ addRegexToken('Hmm', match3to4);
 addRegexToken('Hmmss', match5to6);
 
 addParseToken(['H', 'HH'], HOUR);
+addParseToken(['k', 'kk'], function (input, array, config) {
+    var kInput = toInt(input);
+    array[HOUR] = kInput === 24 ? 0 : kInput;
+});
 addParseToken(['a', 'A'], function (input, array, config) {
     config._isPm = config._locale.isPM(input);
     config._meridiem = input;
@@ -55505,7 +55585,7 @@ var baseConfig = {
     longDateFormat: defaultLongDateFormat,
     invalidDate: defaultInvalidDate,
     ordinal: defaultOrdinal,
-    ordinalParse: defaultOrdinalParse,
+    dayOfMonthOrdinalParse: defaultDayOfMonthOrdinalParse,
     relativeTime: defaultRelativeTime,
 
     months: defaultLocaleMonths,
@@ -55816,6 +55896,77 @@ function configFromISO(config) {
     }
 }
 
+// RFC 2822 regex: For details see https://tools.ietf.org/html/rfc2822#section-3.3
+var basicRfcRegex = /^((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun),?\s)?(\d?\d\s(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s(?:\d\d)?\d\d\s)(\d\d:\d\d)(\:\d\d)?(\s(?:UT|GMT|[ECMP][SD]T|[A-IK-Za-ik-z]|[+-]\d{4}))$/;
+
+// date and time from ref 2822 format
+function configFromRFC2822(config) {
+    var string, match, dayFormat,
+        dateFormat, timeFormat, tzFormat;
+    var timezones = {
+        ' GMT': ' +0000',
+        ' EDT': ' -0400',
+        ' EST': ' -0500',
+        ' CDT': ' -0500',
+        ' CST': ' -0600',
+        ' MDT': ' -0600',
+        ' MST': ' -0700',
+        ' PDT': ' -0700',
+        ' PST': ' -0800'
+    };
+    var military = 'YXWVUTSRQPONZABCDEFGHIKLM';
+    var timezone, timezoneIndex;
+
+    string = config._i
+        .replace(/\([^\)]*\)|[\n\t]/g, ' ') // Remove comments and folding whitespace
+        .replace(/(\s\s+)/g, ' ') // Replace multiple-spaces with a single space
+        .replace(/^\s|\s$/g, ''); // Remove leading and trailing spaces
+    match = basicRfcRegex.exec(string);
+
+    if (match) {
+        dayFormat = match[1] ? 'ddd' + ((match[1].length === 5) ? ', ' : ' ') : '';
+        dateFormat = 'D MMM ' + ((match[2].length > 10) ? 'YYYY ' : 'YY ');
+        timeFormat = 'HH:mm' + (match[4] ? ':ss' : '');
+
+        // TODO: Replace the vanilla JS Date object with an indepentent day-of-week check.
+        if (match[1]) { // day of week given
+            var momentDate = new Date(match[2]);
+            var momentDay = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][momentDate.getDay()];
+
+            if (match[1].substr(0,3) !== momentDay) {
+                getParsingFlags(config).weekdayMismatch = true;
+                config._isValid = false;
+                return;
+            }
+        }
+
+        switch (match[5].length) {
+            case 2: // military
+                if (timezoneIndex === 0) {
+                    timezone = ' +0000';
+                } else {
+                    timezoneIndex = military.indexOf(match[5][1].toUpperCase()) - 12;
+                    timezone = ((timezoneIndex < 0) ? ' -' : ' +') +
+                        (('' + timezoneIndex).replace(/^-?/, '0')).match(/..$/)[0] + '00';
+                }
+                break;
+            case 4: // Zone
+                timezone = timezones[match[5]];
+                break;
+            default: // UT or +/-9999
+                timezone = timezones[' GMT'];
+        }
+        match[5] = timezone;
+        config._i = match.splice(1).join('');
+        tzFormat = ' ZZ';
+        config._f = dayFormat + dateFormat + timeFormat + tzFormat;
+        configFromStringAndFormat(config);
+        getParsingFlags(config).rfc2822 = true;
+    } else {
+        config._isValid = false;
+    }
+}
+
 // date from iso format or fallback
 function configFromString(config) {
     var matched = aspNetJsonRegex.exec(config._i);
@@ -55828,13 +55979,24 @@ function configFromString(config) {
     configFromISO(config);
     if (config._isValid === false) {
         delete config._isValid;
-        hooks.createFromInputFallback(config);
+    } else {
+        return;
     }
+
+    configFromRFC2822(config);
+    if (config._isValid === false) {
+        delete config._isValid;
+    } else {
+        return;
+    }
+
+    // Final attempt, use Input Fallback
+    hooks.createFromInputFallback(config);
 }
 
 hooks.createFromInputFallback = deprecate(
-    'value provided is not in a recognized ISO format. moment construction falls back to js Date(), ' +
-    'which is not reliable across all browsers and versions. Non ISO date formats are ' +
+    'value provided is not in a recognized RFC2822 or ISO format. moment construction falls back to js Date(), ' +
+    'which is not reliable across all browsers and versions. Non RFC2822/ISO date formats are ' +
     'discouraged and will be removed in an upcoming major release. Please refer to ' +
     'http://momentjs.com/guides/#/warnings/js-date/ for more info.',
     function (config) {
@@ -55881,10 +56043,10 @@ function configFromArray (config) {
     }
 
     //if the day of the year is set, figure out what it is
-    if (config._dayOfYear) {
+    if (config._dayOfYear != null) {
         yearToUse = defaults(config._a[YEAR], currentDate[YEAR]);
 
-        if (config._dayOfYear > daysInYear(yearToUse)) {
+        if (config._dayOfYear > daysInYear(yearToUse) || config._dayOfYear === 0) {
             getParsingFlags(config)._overflowDayOfYear = true;
         }
 
@@ -55988,6 +56150,9 @@ function dayOfYearFromWeekInfo(config) {
 // constant that refers to the ISO standard
 hooks.ISO_8601 = function () {};
 
+// constant that refers to the RFC 2822 form
+hooks.RFC_2822 = function () {};
+
 // date from string and format string
 function configFromStringAndFormat(config) {
     // TODO: Move this to another part of the creation flow to prevent circular deps
@@ -55995,7 +56160,10 @@ function configFromStringAndFormat(config) {
         configFromISO(config);
         return;
     }
-
+    if (config._f === hooks.RFC_2822) {
+        configFromRFC2822(config);
+        return;
+    }
     config._a = [];
     getParsingFlags(config).empty = true;
 
@@ -56187,7 +56355,7 @@ function prepareConfig (config) {
 
 function configFromInput(config) {
     var input = config._i;
-    if (input === undefined) {
+    if (isUndefined(input)) {
         config._d = new Date(hooks.now());
     } else if (isDate(input)) {
         config._d = new Date(input.valueOf());
@@ -56198,7 +56366,7 @@ function configFromInput(config) {
             return parseInt(obj, 10);
         });
         configFromArray(config);
-    } else if (typeof(input) === 'object') {
+    } else if (isObject(input)) {
         configFromObject(config);
     } else if (isNumber(input)) {
         // from milliseconds
@@ -56299,6 +56467,38 @@ var now = function () {
     return Date.now ? Date.now() : +(new Date());
 };
 
+var ordering = ['year', 'quarter', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond'];
+
+function isDurationValid(m) {
+    for (var key in m) {
+        if (!(ordering.indexOf(key) !== -1 && (m[key] == null || !isNaN(m[key])))) {
+            return false;
+        }
+    }
+
+    var unitHasDecimal = false;
+    for (var i = 0; i < ordering.length; ++i) {
+        if (m[ordering[i]]) {
+            if (unitHasDecimal) {
+                return false; // only allow non-integers for smallest unit
+            }
+            if (parseFloat(m[ordering[i]]) !== toInt(m[ordering[i]])) {
+                unitHasDecimal = true;
+            }
+        }
+    }
+
+    return true;
+}
+
+function isValid$1() {
+    return this._isValid;
+}
+
+function createInvalid$1() {
+    return createDuration(NaN);
+}
+
 function Duration (duration) {
     var normalizedInput = normalizeObjectUnits(duration),
         years = normalizedInput.year || 0,
@@ -56310,6 +56510,8 @@ function Duration (duration) {
         minutes = normalizedInput.minute || 0,
         seconds = normalizedInput.second || 0,
         milliseconds = normalizedInput.millisecond || 0;
+
+    this._isValid = isDurationValid(normalizedInput);
 
     // representation for dateAddRemove
     this._milliseconds = +milliseconds +
@@ -56434,7 +56636,7 @@ hooks.updateOffset = function () {};
 // a second time. In case it wants us to change the offset again
 // _changeInProgress == true case, then we have to adjust, because
 // there is no such time in the given timezone.
-function getSetOffset (input, keepLocalTime) {
+function getSetOffset (input, keepLocalTime, keepMinutes) {
     var offset = this._offset || 0,
         localAdjust;
     if (!this.isValid()) {
@@ -56446,7 +56648,7 @@ function getSetOffset (input, keepLocalTime) {
             if (input === null) {
                 return this;
             }
-        } else if (Math.abs(input) < 16) {
+        } else if (Math.abs(input) < 16 && !keepMinutes) {
             input = input * 60;
         }
         if (!this._isUTC && keepLocalTime) {
@@ -56504,7 +56706,7 @@ function setOffsetToLocal (keepLocalTime) {
 
 function setOffsetToParsedOffset () {
     if (this._tzm != null) {
-        this.utcOffset(this._tzm);
+        this.utcOffset(this._tzm, false, true);
     } else if (typeof this._i === 'string') {
         var tZone = offsetFromString(matchOffset, this._i);
         if (tZone != null) {
@@ -56636,6 +56838,7 @@ function createDuration (input, key) {
 }
 
 createDuration.fn = Duration.prototype;
+createDuration.invalid = createInvalid$1;
 
 function parseIso (inp, sign) {
     // We'd normally use ~~inp for this, but unfortunately it also
@@ -56872,18 +57075,19 @@ function toString () {
     return this.clone().locale('en').format('ddd MMM DD YYYY HH:mm:ss [GMT]ZZ');
 }
 
-function toISOString () {
+function toISOString() {
+    if (!this.isValid()) {
+        return null;
+    }
     var m = this.clone().utc();
-    if (0 < m.year() && m.year() <= 9999) {
-        if (isFunction(Date.prototype.toISOString)) {
-            // native implementation is ~50x faster, use it when we can
-            return this.toDate().toISOString();
-        } else {
-            return formatMoment(m, 'YYYY-MM-DD[T]HH:mm:ss.SSS[Z]');
-        }
-    } else {
+    if (m.year() < 0 || m.year() > 9999) {
         return formatMoment(m, 'YYYYYY-MM-DD[T]HH:mm:ss.SSS[Z]');
     }
+    if (isFunction(Date.prototype.toISOString)) {
+        // native implementation is ~50x faster, use it when we can
+        return this.toDate().toISOString();
+    }
+    return formatMoment(m, 'YYYY-MM-DD[T]HH:mm:ss.SSS[Z]');
 }
 
 /**
@@ -56903,7 +57107,7 @@ function inspect () {
         zone = 'Z';
     }
     var prefix = '[' + func + '("]';
-    var year = (0 < this.year() && this.year() <= 9999) ? 'YYYY' : 'YYYYYY';
+    var year = (0 <= this.year() && this.year() <= 9999) ? 'YYYY' : 'YYYYYY';
     var datetime = '-MM-DD[T]HH:mm:ss.SSS';
     var suffix = zone + '[")]';
 
@@ -57071,7 +57275,7 @@ function toJSON () {
     return this.isValid() ? this.toISOString() : null;
 }
 
-function isValid$1 () {
+function isValid$2 () {
     return isValid(this);
 }
 
@@ -57231,7 +57435,10 @@ addUnitPriority('date', 9);
 addRegexToken('D',  match1to2);
 addRegexToken('DD', match1to2, match2);
 addRegexToken('Do', function (isStrict, locale) {
-    return isStrict ? locale._ordinalParse : locale._ordinalParseLenient;
+    // TODO: Remove "ordinalParse" fallback in next major release.
+    return isStrict ?
+      (locale._dayOfMonthOrdinalParse || locale._ordinalParse) :
+      locale._dayOfMonthOrdinalParseLenient;
 });
 
 addParseToken(['D', 'DD'], DATE);
@@ -57411,7 +57618,7 @@ proto.isBetween         = isBetween;
 proto.isSame            = isSame;
 proto.isSameOrAfter     = isSameOrAfter;
 proto.isSameOrBefore    = isSameOrBefore;
-proto.isValid           = isValid$1;
+proto.isValid           = isValid$2;
 proto.lang              = lang;
 proto.locale            = locale;
 proto.localeData        = localeData;
@@ -57636,7 +57843,7 @@ function listWeekdaysMin (localeSorted, format, index) {
 }
 
 getSetGlobalLocale('en', {
-    ordinalParse: /\d{1,2}(th|st|nd|rd)/,
+    dayOfMonthOrdinalParse: /\d{1,2}(th|st|nd|rd)/,
     ordinal : function (number) {
         var b = number % 10,
             output = (toInt(number % 100 / 10) === 1) ? 'th' :
@@ -57757,6 +57964,9 @@ function monthsToDays (months) {
 }
 
 function as (units) {
+    if (!this.isValid()) {
+        return NaN;
+    }
     var days;
     var months;
     var milliseconds = this._milliseconds;
@@ -57785,6 +57995,9 @@ function as (units) {
 
 // TODO: Use this.as('ms')?
 function valueOf$1 () {
+    if (!this.isValid()) {
+        return NaN;
+    }
     return (
         this._milliseconds +
         this._days * 864e5 +
@@ -57810,12 +58023,12 @@ var asYears        = makeAs('y');
 
 function get$2 (units) {
     units = normalizeUnits(units);
-    return this[units + 's']();
+    return this.isValid() ? this[units + 's']() : NaN;
 }
 
 function makeGetter(name) {
     return function () {
-        return this._data[name];
+        return this.isValid() ? this._data[name] : NaN;
     };
 }
 
@@ -57833,11 +58046,12 @@ function weeks () {
 
 var round = Math.round;
 var thresholds = {
-    s: 45,  // seconds to minute
-    m: 45,  // minutes to hour
-    h: 22,  // hours to day
-    d: 26,  // days to month
-    M: 11   // months to year
+    ss: 44,         // a few seconds to seconds
+    s : 45,         // seconds to minute
+    m : 45,         // minutes to hour
+    h : 22,         // hours to day
+    d : 26,         // days to month
+    M : 11          // months to year
 };
 
 // helper function for moment.fn.from, moment.fn.fromNow, and moment.duration.fn.humanize
@@ -57854,16 +58068,17 @@ function relativeTime$1 (posNegDuration, withoutSuffix, locale) {
     var months   = round(duration.as('M'));
     var years    = round(duration.as('y'));
 
-    var a = seconds < thresholds.s && ['s', seconds]  ||
-            minutes <= 1           && ['m']           ||
-            minutes < thresholds.m && ['mm', minutes] ||
-            hours   <= 1           && ['h']           ||
-            hours   < thresholds.h && ['hh', hours]   ||
-            days    <= 1           && ['d']           ||
-            days    < thresholds.d && ['dd', days]    ||
-            months  <= 1           && ['M']           ||
-            months  < thresholds.M && ['MM', months]  ||
-            years   <= 1           && ['y']           || ['yy', years];
+    var a = seconds <= thresholds.ss && ['s', seconds]  ||
+            seconds < thresholds.s   && ['ss', seconds] ||
+            minutes <= 1             && ['m']           ||
+            minutes < thresholds.m   && ['mm', minutes] ||
+            hours   <= 1             && ['h']           ||
+            hours   < thresholds.h   && ['hh', hours]   ||
+            days    <= 1             && ['d']           ||
+            days    < thresholds.d   && ['dd', days]    ||
+            months  <= 1             && ['M']           ||
+            months  < thresholds.M   && ['MM', months]  ||
+            years   <= 1             && ['y']           || ['yy', years];
 
     a[2] = withoutSuffix;
     a[3] = +posNegDuration > 0;
@@ -57892,10 +58107,17 @@ function getSetRelativeTimeThreshold (threshold, limit) {
         return thresholds[threshold];
     }
     thresholds[threshold] = limit;
+    if (threshold === 's') {
+        thresholds.ss = limit - 1;
+    }
     return true;
 }
 
 function humanize (withSuffix) {
+    if (!this.isValid()) {
+        return this.localeData().invalidDate();
+    }
+
     var locale = this.localeData();
     var output = relativeTime$1(this, !withSuffix, locale);
 
@@ -57916,6 +58138,10 @@ function toISOString$1() {
     // This is because there is no context-free conversion between hours and days
     // (think of clock changes)
     // and also not between days and months (28-31 days per month)
+    if (!this.isValid()) {
+        return this.localeData().invalidDate();
+    }
+
     var seconds = abs$1(this._milliseconds) / 1000;
     var days         = abs$1(this._days);
     var months       = abs$1(this._months);
@@ -57960,6 +58186,7 @@ function toISOString$1() {
 
 var proto$2 = Duration.prototype;
 
+proto$2.isValid        = isValid$1;
 proto$2.abs            = abs;
 proto$2.add            = add$1;
 proto$2.subtract       = subtract$1;
@@ -58015,7 +58242,7 @@ addParseToken('x', function (input, array, config) {
 // Side effect imports
 
 
-hooks.version = '2.17.1';
+hooks.version = '2.18.1';
 
 setHookCallback(createLocal);
 
@@ -58054,7 +58281,7 @@ return hooks;
 },{}],"numbro":[function(_dereq_,module,exports){
 /*!
  * numbro.js
- * version : 1.9.3
+ * version : 1.10.1
  * author : Företagsplatsen AB
  * license : MIT
  * http://www.foretagsplatsen.se
@@ -58068,7 +58295,7 @@ return hooks;
     ************************************/
 
     var numbro,
-        VERSION = '1.9.3',
+        VERSION = '1.10.1',
         binarySuffixes = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'],
         decimalSuffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
         bytes = {
@@ -58129,6 +58356,11 @@ return hooks;
     // Numbro prototype object
     function Numbro(number) {
         this._value = number;
+    }
+
+    function numberLength(number) {
+        if (number === 0) { return 1; }
+        return Math.floor(Math.log(Math.abs(number)) / Math.LN10) + 1;
     }
 
     function zeroes(count) {
@@ -58526,7 +58758,6 @@ return hooks;
             forcedNeg = false,
             neg = false,
             indexOpenP,
-            size,
             indexMinus,
             paren = '',
             minlen,
@@ -58552,7 +58783,7 @@ return hooks;
             prefix = '';
         }
 
-        if (format.indexOf('}') === format.length - 1) {
+        if (format.indexOf('}') === format.length - 1 && format.length) {
             var start = format.indexOf('{');
             if (start === -1) {
                 throw Error('Format should also contain a "{"');
@@ -58605,30 +58836,16 @@ return hooks;
                 format = format.replace('a', '');
             }
 
-            totalLength = Math.floor(Math.log(abs) / Math.LN10) + 1;
-
+            totalLength = numberLength(value);
             minimumPrecision = totalLength % 3;
             minimumPrecision = minimumPrecision === 0 ? 3 : minimumPrecision;
 
             if (intPrecision && abs !== 0) {
-
-                length = Math.floor(Math.log(abs) / Math.LN10) + 1 - intPrecision;
-
                 pow = 3 * ~~((Math.min(intPrecision, totalLength) - minimumPrecision) / 3);
-
                 abs = abs / Math.pow(10, pow);
-
-                if (format.indexOf('.') === -1 && intPrecision > 3) {
-                    format += '[.]';
-
-                    size = length === 0 ? 0 : 3 * ~~(length / 3) - length;
-                    size = size < 0 ? size + 3 : size;
-
-                    format += zeroes(size);
-                }
             }
 
-            if (Math.floor(Math.log(Math.abs(value)) / Math.LN10) + 1 !== intPrecision) {
+            if (totalLength !== intPrecision) {
                 if (abs >= Math.pow(10, 12) && !abbrForce || abbrT) {
                     // trillion
                     abbr = abbr + cultures[currentCulture].abbreviations.trillion;
@@ -58646,6 +58863,12 @@ return hooks;
                     abbr = abbr + cultures[currentCulture].abbreviations.thousand;
                     value = value / Math.pow(10, 3);
                 }
+            }
+
+            length = numberLength(value);
+            if (intPrecision && length < intPrecision && format.indexOf('.') === -1) {
+                format += '[.]';
+                format += zeroes(intPrecision - length);
             }
         }
 
@@ -58692,13 +58915,18 @@ return hooks;
             format = format.replace('[.]', '.');
         }
 
-        w = value.toString().split('.')[0];
         precision = format.split('.')[1];
         thousands = format.indexOf(',');
 
         if (precision) {
+            var dSplit = [];
+
             if (precision.indexOf('*') !== -1) {
-                d = toFixed(value, value.toString().split('.')[1].length, roundingFunction);
+                d = value.toString();
+                dSplit = d.split('.');
+                if (dSplit.length > 1) {
+                    d = toFixed(value, dSplit[1].length, roundingFunction);
+                }
             } else {
                 if (precision.indexOf('[') > -1) {
                     precision = precision.replace(']', '');
@@ -58710,11 +58938,12 @@ return hooks;
                 }
             }
 
-            w = d.split('.')[0];
+            dSplit = d.split('.');
+            w = dSplit[0];
 
-            if (d.split('.')[1].length) {
+            if (dSplit.length > 1 && dSplit[1].length) {
                 var p = sep ? abbr + sep : cultures[currentCulture].delimiters.decimal;
-                d = p + d.split('.')[1];
+                d = p + dSplit[1];
             } else {
                 d = '';
             }
@@ -58771,10 +59000,10 @@ return hooks;
     numbro = function(input) {
         if (numbro.isNumbro(input)) {
             input = input.value();
-        } else if (input === 0 || typeof input === 'undefined') {
-            input = 0;
-        } else if (!Number(input)) {
+        } else if (typeof input === 'string' || typeof input === 'number') {
             input = numbro.fn.unformat(input);
+        } else {
+            input = NaN;
         }
 
         return new Numbro(Number(input));
@@ -59103,7 +59332,7 @@ return hooks;
             (process.browser === undefined) &&
             process.title &&
             (
-                process.title.indexOf('node') === 0 ||
+                process.title.indexOf('node') !== -1 ||
                 process.title.indexOf('meteor-tool') > 0 ||
                 process.title === 'grunt' ||
                 process.title === 'gulp'
