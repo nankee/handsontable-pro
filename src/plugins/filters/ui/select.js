@@ -86,6 +86,7 @@ class SelectUI extends BaseUI {
     arrayEach([caption, dropdown], (element) => this._element.appendChild(element.element));
 
     this.menu.addLocalHook('select', (command) => this.onMenuSelect(command));
+    this.menu.addLocalHook('afterClose', () => this.onMenuClosed());
     this.update();
   }
 
@@ -139,6 +140,15 @@ class SelectUI extends BaseUI {
       this.update();
       this.runLocalHooks('select', this.options.value);
     }
+  }
+
+  /**
+   * On menu closed listener.
+   *
+   * @private
+   */
+  onMenuClosed() {
+    this.runLocalHooks('afterClose');
   }
 
   /**

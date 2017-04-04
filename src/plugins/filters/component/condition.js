@@ -31,6 +31,7 @@ class ConditionComponent extends BaseComponent {
    */
   registerHooks() {
     this.getSelectElement().addLocalHook('select', (command) => this.onConditionSelect(command));
+    this.getSelectElement().addLocalHook('afterClose', () => this.onSelectUIClosed());
 
     arrayEach(this.getInputElements(), (input) => {
       input.addLocalHook('keydown', (event) => this.onInputKeyDown(event));
@@ -193,6 +194,15 @@ class ConditionComponent extends BaseComponent {
     });
 
     this.runLocalHooks('change', command);
+  }
+
+  /**
+   * On component SelectUI closed listener.
+   *
+   * @private
+   */
+  onSelectUIClosed() {
+    this.runLocalHooks('afterClose');
   }
 
   /**

@@ -362,6 +362,28 @@ describe('Filters UI', function() {
       }, 200);
     });
 
+    it('should disappear dropdown menu after hitting ESC key, next to closing SelectUI #149', function(done) {
+      var hot = handsontable({
+        data: getDataForFilters(),
+        columns: getColumnsForFilters(),
+        filters: true,
+        dropdownMenu: true,
+        width: 500,
+        height: 300
+      });
+
+      dropdownMenu(1);
+      $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click')
+
+      setTimeout(function () {
+        keyDownUp('esc');
+        keyDownUp('esc');
+        expect($(conditionMenuRootElement()).is(':visible')).toBe(false);
+        expect($(dropdownMenuRootElement()).is(':visible')).toBe(false);
+        done();
+      }, 200);
+    });
+
     it('shouldn\'t disappear dropdown menu after conditional options menu click', function() {
       var hot = handsontable({
         data: getDataForFilters(),

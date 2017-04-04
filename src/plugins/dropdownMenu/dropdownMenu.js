@@ -237,10 +237,12 @@ class DropdownMenu extends BasePlugin {
    * @param {Boolean} listen Turn on listening when value is set to true, otherwise turn it off.
    */
   setListening(listen = true) {
-    if (listen) {
-      this.menu.hotMenu.listen();
-    } else {
-      this.menu.hotMenu.unlisten();
+    if (this.menu.isOpened()) {
+      if (listen) {
+        this.menu.hotMenu.listen();
+      } else {
+        this.menu.hotMenu.unlisten();
+      }
     }
   }
 
