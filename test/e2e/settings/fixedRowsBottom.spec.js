@@ -85,7 +85,7 @@ describe('settings', function () {
         expect(getLeftClone().height()).toBe(0);
       });
 
-      it('should not throw errors while scrolling vertically when fixed rows was set', function (done) {
+      it('should not throw errors while scrolling vertically when fixed rows was set', async () => {
         var spy = jasmine.createSpyObj('error', ['test']);
         var prevError = window.onerror;
 
@@ -103,16 +103,14 @@ describe('settings', function () {
           fixedRowsBottom: 2
         });
 
-        setTimeout(function () {
-          hot.scrollViewportTo(30, 30);
-        }, 100);
+        await sleep(100);
 
-        setTimeout(function () {
-          expect(spy.test.calls.count()).toBe(0);
+        hot.scrollViewportTo(30, 30);
 
-          done();
-          window.onerror = prevError;
-        }, 200);
+        await sleep(100);
+
+        expect(spy.test.calls.count()).toBe(0);
+        window.onerror = prevError;
       });
     });
   });

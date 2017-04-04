@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Config responsible for building End-to-End test files (bundled into `test/dist/`). These tests testing `*.full.min.js` files:
  *  - e2e.entry.js
