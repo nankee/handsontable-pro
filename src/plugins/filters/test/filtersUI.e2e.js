@@ -373,7 +373,7 @@ describe('Filters UI', function() {
       });
 
       dropdownMenu(1);
-      $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click')
+      $(dropdownMenuRootElement().querySelector('.htUISelect')).simulate('click');
 
       setTimeout(function () {
         keyDownUp('esc');
