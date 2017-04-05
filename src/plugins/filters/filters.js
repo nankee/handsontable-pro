@@ -115,7 +115,10 @@ class Filters extends BasePlugin {
     };
 
     if (!this.conditionComponent) {
-      this.conditionComponent = addConfirmationHooks(new ConditionComponent(this.hot));
+      const conditionComponent = new ConditionComponent(this.hot);
+      conditionComponent.addLocalHook('afterClose', () => this.onSelectUIClosed());
+
+      this.conditionComponent = addConfirmationHooks(conditionComponent);
     }
     if (!this.valueComponent) {
       this.valueComponent = addConfirmationHooks(new ValueComponent(this.hot));
@@ -464,13 +467,33 @@ class Filters extends BasePlugin {
   /**
    * On component change listener.
    *
+   * @private
    * @param {BaseComponent} component Component inheriting BaseComponent
    * @param {Object} command Menu item object (command).
    */
   onComponentChange(component, command) {
     if (component === this.conditionComponent && !command.inputsCount) {
-      this.dropdownMenuPlugin.setListening();
+      this.setListeningDropdownMenu();
     }
+  }
+
+  /**
+   * On component SelectUI closed listener.
+   *
+   * @private
+   */
+  onSelectUIClosed() {
+    this.setListeningDropdownMenu();
+  }
+
+  /**
+   * Listen to the keyboard input on document body and forward events to instance of Handsontable
+   * created by DropdownMenu plugin
+   *
+   * @private
+   */
+  setListeningDropdownMenu() {
+    this.dropdownMenuPlugin.setListening();
   }
 
   /**
