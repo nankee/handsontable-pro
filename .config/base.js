@@ -80,6 +80,12 @@ module.exports.create = function create(envArgs) {
         '__ENV_ARGS__': JSON.stringify(envArgs),
       }),
     ],
+    node: {
+      global: false,
+      process: false,
+      Buffer: false,
+      setImmediate: false,
+    },
   };
 
   return [config];
