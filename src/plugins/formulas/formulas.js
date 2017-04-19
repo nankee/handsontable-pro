@@ -12,7 +12,6 @@ import UndoRedoSnapshot from './undoRedoSnapshot';
  * The formulas plugin.
  *
  * @plugin Formulas
- * @dependencies hot-formula-parser
  * @pro
  */
 class Formulas extends BasePlugin {

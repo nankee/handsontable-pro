@@ -21,7 +21,7 @@ import './filters.css';
  *
  * @plugin Filters
  * @pro
- * @dependencies DropdownMenu TrimRows BindRowsWithHeaders moment
+ * @dependencies DropdownMenu TrimRows BindRowsWithHeaders
  */
 class Filters extends BasePlugin {
   constructor(hotInstance) {
