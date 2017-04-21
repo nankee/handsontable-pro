@@ -44,6 +44,12 @@ module.exports.create = function create(envArgs) {
         commonjs: 'pikaday',
         amd: 'pikaday',
       },
+      zeroclipboard: {
+        root: 'ZeroClipboard',
+        commonjs2: 'zeroclipboard',
+        commonjs: 'zeroclipboard',
+        amd: 'zeroclipboard',
+      },
       'hot-formula-parser': {
         root: 'formulaParser',
         commonjs2: 'hot-formula-parser',
