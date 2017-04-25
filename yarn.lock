@@ -2497,9 +2497,9 @@ hosted-git-info@^2.1.4:
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.4.1.tgz#4b0445e41c004a8bd1337773a4ff790ca40318c8"
 
-hot-formula-parser@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/hot-formula-parser/-/hot-formula-parser-2.0.2.tgz#89227d95088f5bf44c6d6eff8a86ab51ad53fe32"
+hot-formula-parser@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/hot-formula-parser/-/hot-formula-parser-2.0.3.tgz#b7087b6dd44cd97107ac2e7988c057a48f38841f"
   dependencies:
     formulajs "github:handsontable/formula.js#1.0.6"
     tiny-emitter "^1.0.2"
@@ -2902,7 +2902,7 @@ jasmine-co@^1.2.2:
     co "^4.6.0"
     is-generator "^1.0.2"
 
-jasmine-core@^2.5.2:
+jasmine-core@2.5.2:
   version "2.5.2"
   resolved "https://registry.yarnpkg.com/jasmine-core/-/jasmine-core-2.5.2.tgz#6f61bd79061e27f43e6f9355e44b3c6cab6ff297"
 
