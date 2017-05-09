@@ -8,7 +8,6 @@
   },
   "author": "Handsoncode <hello@handsontable.com>",
   "version": "1.10.2",
-  "compatibleHotVersion": "0.31.2",
   "browser": "dist/handsontable.js",
   "main": "commonjs/index.js",
   "module": "es/index.js",
@@ -51,7 +50,7 @@
     "data-spreadsheet"
   ],
   "dependencies": {
-    "handsontable": "handsontable/handsontable#develop",
+    "handsontable": "handsontable/handsontable#release/0.32.0-beta1",
     "hot-formula-parser": "^2.0.3",
     "moment": "^2.13.0",
     "numbro": "^1.8.0",
