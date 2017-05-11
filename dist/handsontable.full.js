@@ -19,7 +19,7 @@
  * YOU SHALL OBTAIN A COMMERCIAL LICENSE FOR THIS SOFTWARE AT HANDSONTABLE.COM.
  * 
  * Version: 1.10.2
- * Date: Tue May 09 2017 14:52:17 GMT+0200 (CEST)
+ * Date: Thu May 11 2017 10:02:28 GMT+0200 (CEST)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -58517,7 +58517,7 @@ Handsontable.DefaultSettings = _defaultSettings2.default;
 Handsontable.EventManager = _eventManager2.default;
 Handsontable._getListenersCounter = _eventManager.getListenersCounter; // For MemoryLeak tests
 
-Handsontable.buildDate = "2017-05-09T12:52:17.322Z";
+Handsontable.buildDate = "2017-05-11T08:02:28.240Z";
 Handsontable.packageName = "handsontable-pro";
 Handsontable.version = "1.10.2";
 
@@ -61106,7 +61106,7 @@ DataMap.prototype.createMap = function () {
 DataMap.prototype.colToProp = function (col) {
   col = this.instance.runHooks('modifyCol', col);
 
-  if (this.colToPropCache && typeof this.colToPropCache[col] !== 'undefined') {
+  if (!isNaN(col) && this.colToPropCache && typeof this.colToPropCache[col] !== 'undefined') {
     return this.colToPropCache[col];
   }
 
