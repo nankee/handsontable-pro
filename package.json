@@ -7,7 +7,7 @@
     "url": "https://my.handsontable.com/handsontable/handsontable-pro.git"
   },
   "author": "Handsoncode <hello@handsontable.com>",
-  "version": "1.10.2",
+  "version": "1.11.0-beta1",
   "browser": "dist/handsontable.js",
   "main": "commonjs/index.js",
   "module": "es/index.js",
@@ -50,12 +50,12 @@
     "data-spreadsheet"
   ],
   "dependencies": {
-    "handsontable": "handsontable/handsontable#release/0.32.0-beta1",
+    "handsontable": "0.32.0-beta1",
     "hot-formula-parser": "^2.0.3",
-    "moment": "^2.13.0",
-    "numbro": "^1.8.0",
-    "pikaday": "^1.4.0",
-    "zeroclipboard": "^2.2.0"
+    "moment": "2.13.0",
+    "numbro": "1.11.0",
+    "pikaday": "1.4.0",
+    "zeroclipboard": "2.3.0"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",

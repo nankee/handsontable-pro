@@ -18,8 +18,8 @@
  * 
  * YOU SHALL OBTAIN A COMMERCIAL LICENSE FOR THIS SOFTWARE AT HANDSONTABLE.COM.
  * 
- * Version: 1.10.2
- * Date: Thu May 11 2017 10:02:28 GMT+0200 (CEST)
+ * Version: 1.11.0-beta1
+ * Date: Wed May 17 2017 14:56:32 GMT+0200 (CEST)
  */
 /**
  * Fix for bootstrap styles
@@ -33,7 +33,7 @@
 }
 
 .handsontable td {
-  background-color: inherit !important;
+  background-color: inherit;
 }
 
 .table caption + thead tr:first-child th,
