@@ -4,8 +4,10 @@ import {rangeEach} from 'handsontable/helpers/number';
 import {arrayEach} from 'handsontable/helpers/array';
 import {registerPlugin, getPlugin} from 'handsontable/plugins';
 import {SEPARATOR} from 'handsontable/plugins/contextMenu/predefinedItems';
-import {hideColumnItem} from './contextMenuItem/hideColumn';
-import {showColumnItem} from './contextMenuItem/showColumn';
+import hideColumnItem from './contextMenuItem/hideColumn';
+import showColumnItem from './contextMenuItem/showColumn';
+
+import './hiddenColumns.css';
 
 /**
  * Plugin allowing to hide certain columns.
@@ -250,12 +252,9 @@ class HiddenColumns extends BasePlugin {
       }
       cellProperties.renderer = hiddenRenderer;
 
-    } else {
-      // We must pass undefined value too (for the purposes of inheritance cell/column settings).
-      if (cellProperties.baseRenderer !== null) {
-        cellProperties.renderer = cellProperties.baseRenderer;
-        cellProperties.baseRenderer = null;
-      }
+    } else if (cellProperties.baseRenderer !== null) { // We must pass undefined value too (for the purposes of inheritance cell/column settings).
+      cellProperties.renderer = cellProperties.baseRenderer;
+      cellProperties.baseRenderer = null;
     }
 
     if (this.isHidden(cellProperties.visualCol - 1)) {
@@ -522,6 +521,6 @@ function hiddenRenderer(hotInstance, td) {
   td.textContent = '';
 }
 
-export {HiddenColumns};
-
 registerPlugin('hiddenColumns', HiddenColumns);
+
+export default HiddenColumns;

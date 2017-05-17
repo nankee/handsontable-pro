@@ -175,9 +175,9 @@ class DateCalculator {
     if (this.daysInColumns[month][column].length === 1) {
       return new Date(this.year, month, this.daysInColumns[month][column][0]);
 
-    } else {
-      return this.daysInColumns[month][column];
     }
+
+    return this.daysInColumns[month][column];
   }
 
   /**
@@ -329,4 +329,4 @@ class DateCalculator {
 
 }
 
-export {DateCalculator};
+export default DateCalculator;

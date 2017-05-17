@@ -1,6 +1,6 @@
 import {rangeEach} from 'handsontable/helpers/number';
 
-export function hideRowItem(hiddenRowsPlugin) {
+export default function hideRowItem(hiddenRowsPlugin) {
   return {
     key: 'hidden_rows_hide',
     name: 'Hide row',

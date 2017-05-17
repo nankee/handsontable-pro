@@ -1,5 +1,3 @@
-import Handsontable from '../../browser';
-
 /**
  * Check if provided expression is valid formula expression.
  *
@@ -7,9 +5,7 @@ import Handsontable from '../../browser';
  * @returns {Boolean}
  */
 export function isFormulaExpression(expression) {
-  expression = (expression + '');
-
-  return expression && expression.length >= 2 && expression.charAt(0) === '=' ? true : false;
+  return typeof expression === 'string' && expression.length >= 2 && expression.charAt(0) === '=';
 }
 
 /**
@@ -19,7 +15,7 @@ export function isFormulaExpression(expression) {
  * @returns {Boolean}
  */
 export function isFormulaExpressionEscaped(expression) {
-  return expression && ((expression + '').charAt(0) === '\'' && ((expression + '').charAt(1) === '=')) ? true : false;
+  return typeof expression === 'string' && expression.charAt(0) === '\'' && expression.charAt(1) === '=';
 }
 
 /**
@@ -65,10 +61,3 @@ export function cellCoordFactory(axis, defaultIndex) {
     };
   };
 }
-
-// temp for tests only!
-Handsontable.utils.FormulasUtils = Handsontable.utils.FormulasUtils || {};
-Handsontable.utils.FormulasUtils.isFormulaExpression = isFormulaExpression;
-Handsontable.utils.FormulasUtils.isFormulaExpressionEscaped = isFormulaExpressionEscaped;
-Handsontable.utils.FormulasUtils.unescapeFormulaExpression = unescapeFormulaExpression;
-Handsontable.utils.FormulasUtils.toUpperCaseFormula = toUpperCaseFormula;

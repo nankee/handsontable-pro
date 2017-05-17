@@ -1,7 +1,6 @@
+export const FILTERS_DATE_FORMAT = 'YYYY-MM-DD';
 
-var globalDateFormat = 'YYYY-MM-DD';
-
-function getDataForFilters() {
+export function getDataForFilters() {
   return [
     {
       id: 1,
@@ -214,7 +213,7 @@ function getDataForFilters() {
       id: 24,
       name: 'Greta Patterson',
       address: 'Bartonsville',
-      registered: moment().add(-2, 'days').format(globalDateFormat),
+      registered: moment().add(-2, 'days').format(FILTERS_DATE_FORMAT),
       eyeColor: {color: 'green'},
       balance: 2437.58,
       active: false,
@@ -232,7 +231,7 @@ function getDataForFilters() {
       id: 26,
       name: 'Stanton Britt',
       address: 'Nipinnawasee',
-      registered: moment().add(-1, 'days').format(globalDateFormat),
+      registered: moment().add(-1, 'days').format(FILTERS_DATE_FORMAT),
       eyeColor: {color: 'green'},
       balance: 3592.18,
       active: false,
@@ -241,7 +240,7 @@ function getDataForFilters() {
       id: 27,
       name: 'Peterson Bowers',
       address: 'Nelson',
-      registered: moment().add(-1, 'days').format(globalDateFormat),
+      registered: moment().add(-1, 'days').format(FILTERS_DATE_FORMAT),
       eyeColor: {color: 'green'},
       balance: 3710.07,
       active: false,
@@ -286,7 +285,7 @@ function getDataForFilters() {
       id: 32,
       name: 'Long Mathews',
       address: 'Masthope',
-      registered: moment().add(-1, 'days').format(globalDateFormat),
+      registered: moment().add(-1, 'days').format(FILTERS_DATE_FORMAT),
       eyeColor: {color: 'green'},
       balance: 3379.52,
       active: false,
@@ -304,7 +303,7 @@ function getDataForFilters() {
       id: 34,
       name: 'Rocha Maddox',
       address: 'Machias',
-      registered: moment().add(1, 'days').format(globalDateFormat),
+      registered: moment().add(1, 'days').format(FILTERS_DATE_FORMAT),
       eyeColor: {color: 'green'},
       balance: 3365.53,
       active: false,
@@ -313,7 +312,7 @@ function getDataForFilters() {
       id: 35,
       name: 'Craft Keith',
       address: 'Summerfield',
-      registered: moment().add(-3, 'days').format(globalDateFormat),
+      registered: moment().add(-3, 'days').format(FILTERS_DATE_FORMAT),
       eyeColor: {color: 'blue'},
       balance: 3468.15,
       active: false,
@@ -322,7 +321,7 @@ function getDataForFilters() {
       id: 36,
       name: 'Alyssa Francis',
       address: 'Nord',
-      registered: moment().add(-2, 'days').format(globalDateFormat),
+      registered: moment().add(-2, 'days').format(FILTERS_DATE_FORMAT),
       eyeColor: {color: 'blue'},
       balance: 3414.37,
       active: true,
@@ -331,7 +330,7 @@ function getDataForFilters() {
       id: 37,
       name: 'Milagros Parsons',
       address: 'Dunlo',
-      registered: moment().add(2, 'days').format(globalDateFormat),
+      registered: moment().add(2, 'days').format(FILTERS_DATE_FORMAT),
       eyeColor: {color: 'brown'},
       balance: 1230.63,
       active: false,
@@ -349,7 +348,7 @@ function getDataForFilters() {
       id: 39,
       name: 'Everett James',
       address: 'Manitou',
-      registered: moment().add(1, 'days').format(globalDateFormat),
+      registered: moment().add(1, 'days').format(FILTERS_DATE_FORMAT),
       eyeColor: {color: 'blue'},
       balance: 3347,
       active: false,
@@ -357,13 +356,13 @@ function getDataForFilters() {
   ];
 }
 
-function getColumnsForFilters() {
+export function getColumnsForFilters() {
   return [
     {data: 'id', type: 'numeric', title: 'ID'},
     {data: 'name', type: 'text', title: 'Full name'},
     {data: 'address', type: 'text', title: 'Address'},
-    {data: 'registered', type: 'date', title: 'Registered', dateFormat: globalDateFormat},
-    {data: 'eyeColor.color', type: 'dropdown', title: 'Eye color', source: ['blue','brown','green']},
+    {data: 'registered', type: 'date', title: 'Registered', dateFormat: FILTERS_DATE_FORMAT},
+    {data: 'eyeColor.color', type: 'dropdown', title: 'Eye color', source: ['blue', 'brown', 'green']},
     {data: 'balance', type: 'numeric', title: 'Balance', format: '0,00.00 $'},
     {data: 'active', type: 'checkbox', title: 'Active'},
   ];

@@ -1,8 +1,8 @@
 import BasePlugin from 'handsontable/plugins/_base';
 import {objectEach, extend, clone} from 'handsontable/helpers/object';
 import {registerPlugin} from 'handsontable/plugins';
-import {DataProvider} from './dataProvider';
-import {typeFactory, EXPORT_TYPES} from './typeFactory';
+import DataProvider from './dataProvider';
+import typeFactory, {EXPORT_TYPES} from './typeFactory';
 
 /**
  * @plugin ExportFile
@@ -40,10 +40,6 @@ import {typeFactory, EXPORT_TYPES} from './typeFactory';
  * ```
  */
 class ExportFile extends BasePlugin {
-  constructor(hotInstance) {
-    super(hotInstance);
-  }
-
   /**
    * Check if the plugin is enabled in the handsontable settings.
    *
@@ -141,6 +137,6 @@ class ExportFile extends BasePlugin {
   }
 }
 
-export {ExportFile};
-
 registerPlugin('exportFile', ExportFile);
+
+export default ExportFile;
