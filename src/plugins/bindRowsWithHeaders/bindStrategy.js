@@ -1,9 +1,8 @@
-import Handsontable from '../../browser';
 import {arrayMapper} from 'handsontable/mixins/arrayMapper';
 import {mixin} from 'handsontable/helpers/object';
 import {rangeEach} from 'handsontable/helpers/number';
-
-const strategies = {};
+import {toUpperCaseFirst} from 'handsontable/helpers/string';
+import * as strategies from './bindStrategies';
 
 /**
  * @class BindStrategy
@@ -20,16 +19,6 @@ class BindStrategy {
     return 'loose';
   }
 
-  /**
-   * Register strategy class.
-   *
-   * @param {String} name Strategy name.
-   * @param {Function} klass Strategy class.
-   */
-  static registerStrategy(name, klass) {
-    strategies[name] = klass;
-  }
-
   constructor() {
     this.strategy = null;
   }
@@ -40,7 +29,7 @@ class BindStrategy {
    * @param name
    */
   setStrategy(name) {
-    let Strategy = strategies[name];
+    let Strategy = strategies[toUpperCaseFirst(name)];
 
     if (!Strategy) {
       throw new Error(`Bind strategy "${name}" does not exist.`);
@@ -109,7 +98,4 @@ class BindStrategy {
   }
 }
 
-export {BindStrategy};
-
-// For tests only!
-Handsontable.utils.BindStrategy = BindStrategy;
+export default BindStrategy;

@@ -1,6 +1,6 @@
 import {arrayEach} from 'handsontable/helpers/array';
 import {mixin} from 'handsontable/helpers/object';
-import {localHooks} from 'handsontable/mixins/localHooks';
+import localHooks from 'handsontable/mixins/localHooks';
 
 import * as columnSorting from './alterOperation/columnSorting';
 import * as insertColumn from './alterOperation/insertColumn';
@@ -82,9 +82,11 @@ class AlterManager {
 
 mixin(AlterManager, localHooks);
 
+export default AlterManager;
+
 const empty = () => {};
 
-function registerOperation(name, descriptor) {
+export function registerOperation(name, descriptor) {
   if (!operations.has(name)) {
     operations.set(name, {
       prepare: descriptor.prepare || empty,
@@ -92,5 +94,3 @@ function registerOperation(name, descriptor) {
     });
   }
 }
-
-export {AlterManager, registerOperation};

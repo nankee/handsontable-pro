@@ -1,6 +1,4 @@
-import Handsontable from '../../browser';
-
-const formulas = {};
+export const formulas = {};
 
 /**
  * Get formula closure with pre-bound arguments.
@@ -51,6 +49,3 @@ export function registerFormula(name, formula, descriptor) {
     formula, descriptor
   };
 }
-
-// For tests only! TEMP solution!
-Handsontable.utils.FiltersFormulaRegisterer = {getFormula, registerFormula, getFormulaDescriptor, formulas};

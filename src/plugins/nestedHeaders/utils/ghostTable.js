@@ -1,4 +1,5 @@
 import {fastInnerHTML} from 'handsontable/helpers/dom/element';
+import {clone} from 'handsontable/helpers/object';
 
 class GhostTable {
   constructor(plugin) {
@@ -33,7 +34,7 @@ class GhostTable {
     this.buildGhostTable(this.container);
     this.nestedHeaders.hot.rootElement.appendChild(this.container);
 
-    let columns = this.container.querySelectorAll('tr:last-of-type td');
+    let columns = this.container.querySelectorAll('tr:last-of-type th');
     let maxColumns = columns.length;
 
     for (let i = 0; i < maxColumns; i++) {
@@ -68,8 +69,8 @@ class GhostTable {
       lastRowColspan = false;
 
       for (let col = 0; col < maxCols; col++) {
-        let td = d.createElement('td');
-        let headerObj = this.nestedHeaders.colspanArray[row][col];
+        let td = d.createElement('th');
+        let headerObj = clone(this.nestedHeaders.colspanArray[row][col]);
 
         if (headerObj && !headerObj.hidden) {
           if (row === lastRowIndex) {
@@ -96,7 +97,7 @@ class GhostTable {
         let tr = d.createElement('tr');
 
         for (let col = 0; col < maxCols; col++) {
-          let td = d.createElement('td');
+          let td = d.createElement('th');
           tr.appendChild(td);
         }
 
@@ -118,4 +119,4 @@ class GhostTable {
 
 }
 
-export {GhostTable};
+export default GhostTable;

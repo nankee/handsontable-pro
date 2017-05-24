@@ -1,8 +1,8 @@
 import BasePlugin from 'handsontable/plugins/_base.js';
-import {Endpoints} from './endpoints';
-import {deepClone, objectEach} from 'handsontable/helpers/object';
+import {deepClone, objectEach, hasOwnProperty} from 'handsontable/helpers/object';
 import {arrayEach} from 'handsontable/helpers/array';
 import {registerPlugin, getPlugin} from 'handsontable/plugins.js';
+import Endpoints from './endpoints';
 
 /**
  * @plugin ColumnSummary
@@ -95,6 +95,8 @@ class ColumnSummary extends BasePlugin {
       case 'custom':
         endpoint.result = endpoint.customFunction.call(this, endpoint);
         break;
+      default:
+        break;
     }
   }
 
@@ -108,7 +110,7 @@ class ColumnSummary extends BasePlugin {
     let sum = 0;
 
     for (let r in endpoint.ranges) {
-      if (endpoint.ranges.hasOwnProperty(r)) {
+      if (hasOwnProperty(endpoint.ranges, r)) {
         sum += this.getPartialSum(endpoint.ranges[r], endpoint.sourceColumn);
       }
     }
@@ -140,7 +142,7 @@ class ColumnSummary extends BasePlugin {
       i--;
     } while (i >= rowRange[0]);
 
-    //Workaround for e.g. 802.2 + 1.1 = 803.3000000000001
+    // Workaround for e.g. 802.2 + 1.1 = 803.3000000000001
     return Math.round(sum * Math.pow(10, biggestDecimalPlacesCount)) / Math.pow(10, biggestDecimalPlacesCount);
   }
 
@@ -155,7 +157,7 @@ class ColumnSummary extends BasePlugin {
     let result = null;
 
     for (let r in endpoint.ranges) {
-      if (endpoint.ranges.hasOwnProperty(r)) {
+      if (hasOwnProperty(endpoint.ranges, r)) {
         let partialResult = this.getPartialMinMax(endpoint.ranges[r], endpoint.sourceColumn, type);
 
         if (result === null && partialResult !== null) {
@@ -169,6 +171,8 @@ class ColumnSummary extends BasePlugin {
               break;
             case 'max':
               result = Math.max(result, partialResult);
+              break;
+            default:
               break;
           }
 
@@ -204,6 +208,8 @@ class ColumnSummary extends BasePlugin {
             break;
           case 'max':
             result = Math.max(result, cellValue);
+            break;
+          default:
             break;
         }
 
@@ -251,7 +257,7 @@ class ColumnSummary extends BasePlugin {
     let ranges = endpoint.ranges;
 
     for (let r in ranges) {
-      if (ranges.hasOwnProperty(r)) {
+      if (hasOwnProperty(ranges, r)) {
         let partial = ranges[r][1] === void 0 ? 1 : ranges[r][1] - ranges[r][0] + 1;
         let emptyCount = this.countEmpty(ranges[r], endpoint.sourceColumn);
 
@@ -329,7 +335,7 @@ class ColumnSummary extends BasePlugin {
    * @param {String} source
    */
   onAfterChange(changes, source) {
-    if (changes && source !== 'columnSummary' && source !== 'loadData') {
+    if (changes && source !== 'ColumnSummary.reset' && source !== 'ColumnSummary.set' && source !== 'loadData') {
       this.endpoints.refreshChangedEndpoints(changes);
     }
   }
@@ -355,6 +361,6 @@ class ColumnSummary extends BasePlugin {
   }
 }
 
-export {ColumnSummary};
-
 registerPlugin('columnSummary', ColumnSummary);
+
+export default ColumnSummary;

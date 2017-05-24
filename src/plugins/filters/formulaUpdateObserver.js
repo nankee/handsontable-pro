@@ -1,10 +1,10 @@
 import {arrayEach, arrayMap, arrayFilter} from 'handsontable/helpers/array';
-import {FormulaCollection} from './formulaCollection';
-import {DataFilter} from './dataFilter';
-import {createArrayAssertion} from './utils';
 import {mixin, objectEach} from 'handsontable/helpers/object';
 import {curry, debounce} from 'handsontable/helpers/function';
-import {localHooks} from 'handsontable/mixins/localHooks';
+import localHooks from 'handsontable/mixins/localHooks';
+import FormulaCollection from './formulaCollection';
+import DataFilter from './dataFilter';
+import {createArrayAssertion} from './utils';
 
 /**
  * Class which is designed for observing changes in formula collection. When formula is changed by user at specified
@@ -58,8 +58,8 @@ class FormulaUpdateObserver {
     this.latestOrderStack = [];
 
     this.formulaCollection.addLocalHook('beforeRemove', (column) => this._onFormulaBeforeModify(column));
-    this.formulaCollection.addLocalHook('afterAdd', (column) => this._onFormulaAfterModify(column));
-    this.formulaCollection.addLocalHook('afterClear', (column) => this._onFormulaAfterModify(column));
+    this.formulaCollection.addLocalHook('afterAdd', (column) => this.updateStatesAtColumn(column));
+    this.formulaCollection.addLocalHook('afterClear', (column) => this.updateStatesAtColumn(column));
     this.formulaCollection.addLocalHook('beforeClean', () => this._onFormulaBeforeClean());
     this.formulaCollection.addLocalHook('afterClean', () => this._onFormulaAfterClean());
   }
@@ -78,7 +78,10 @@ class FormulaUpdateObserver {
    */
   flush() {
     this.grouping = false;
-    arrayEach(this.changes, column => this._onFormulaAfterModify(column));
+
+    arrayEach(this.changes, (column) => {
+      this.updateStatesAtColumn(column);
+    });
     this.changes.length = 0;
   }
 
@@ -96,9 +99,11 @@ class FormulaUpdateObserver {
    * Update all related states which should be changed after invoking changes applied to current column.
    *
    * @param column
-   * @private
+   * @param {Object} formulaArgsChange Object describing formula changes which can be handled by filters on `update` hook.
+   * It contains keys `formulaKey` and `formulaValue` which refers to change specified key of formula to specified value
+   * based on referred keys.
    */
-  _onFormulaAfterModify(column) {
+  updateStatesAtColumn(column, formulaArgsChange) {
     if (this.grouping) {
       if (this.changes.indexOf(column) === -1) {
         this.changes.push(column);
@@ -137,9 +142,9 @@ class FormulaUpdateObserver {
       if (splitFormulaCollection.isEmpty()) {
         visibleRows = allRows;
       } else {
-        visibleRows = (new DataFilter(splitFormulaCollection, column => this.columnDataFactory(column))).filter();
+        visibleRows = (new DataFilter(splitFormulaCollection, (column) => this.columnDataFactory(column))).filter();
       }
-      visibleRows = arrayMap(visibleRows, rowData => rowData.meta.visualRow);
+      visibleRows = arrayMap(visibleRows, (rowData) => rowData.meta.visualRow);
 
       const visibleRowsAssertion = createArrayAssertion(visibleRows);
 
@@ -148,7 +153,12 @@ class FormulaUpdateObserver {
 
     let editedFormulas = [].concat(this.formulaCollection.getFormulas(column));
 
-    this.runLocalHooks('update', {column, formulas: editedFormulas}, formulasAfter, visibleDataFactory);
+    this.runLocalHooks('update', {
+      editedFormulaStack: {column, formulas: editedFormulas},
+      dependentFormulaStacks: formulasAfter,
+      filteredRowsFactory: visibleDataFactory,
+      formulaArgsChange
+    });
   }
 
   /**
@@ -166,7 +176,9 @@ class FormulaUpdateObserver {
    * @private
    */
   _onFormulaAfterClean() {
-    arrayEach(this.latestOrderStack, column => this._onFormulaAfterModify(column));
+    arrayEach(this.latestOrderStack, (column) => {
+      this.updateStatesAtColumn(column);
+    });
   }
 
   /**
@@ -174,10 +186,13 @@ class FormulaUpdateObserver {
    */
   destroy() {
     this.clearLocalHooks();
-    objectEach(this, (value, property) => this[property] = null);
+
+    objectEach(this, (value, property) => {
+      this[property] = null;
+    });
   }
 }
 
 mixin(FormulaUpdateObserver, localHooks);
 
-export {FormulaUpdateObserver};
+export default FormulaUpdateObserver;

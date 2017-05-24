@@ -1,7 +1,7 @@
 import {arrayEach} from 'handsontable/helpers/array';
 import {rangeEach} from 'handsontable/helpers/number';
-import {CellValue} from './cell/value';
-import {Stack} from 'handsontable/utils/dataStructures/stack';
+import Stack from 'handsontable/utils/dataStructures/stack';
+import CellValue from './cell/value';
 
 /**
  * @class UndoRedoSnapshot
@@ -79,4 +79,4 @@ class UndoRedoSnapshot {
   }
 }
 
-export {UndoRedoSnapshot};
+export default UndoRedoSnapshot;

@@ -52,6 +52,7 @@ export function createArrayAssertion(initialData) {
     if (SUPPORT_SET_CONSTRUCTOR) {
       result = initialData.has(value);
     } else {
+      /* eslint-disable no-bitwise */
       result = !!~initialData.indexOf(value);
     }
 

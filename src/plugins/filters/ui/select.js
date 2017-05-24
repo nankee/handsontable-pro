@@ -1,9 +1,9 @@
-import {BaseUI} from './_base';
 import {addClass, getWindowScrollTop, getWindowScrollLeft} from 'handsontable/helpers/dom/element';
-import {Menu} from 'handsontable/plugins/contextMenu/menu';
+import Menu from 'handsontable/plugins/contextMenu/menu';
 import {clone, extend} from 'handsontable/helpers/object';
 import {arrayEach} from 'handsontable/helpers/array';
 import {SEPARATOR} from 'handsontable/plugins/contextMenu/predefinedItems';
+import BaseUI from './_base';
 
 const privatePool = new WeakMap();
 
@@ -20,8 +20,9 @@ class SelectUI extends BaseUI {
   }
 
   constructor(hotInstance, options) {
-    privatePool.set(this, {});
     super(hotInstance, extend(SelectUI.DEFAULTS, options));
+
+    privatePool.set(this, {});
     /**
      * Instance of {@link Menu}.
      *
@@ -76,11 +77,16 @@ class SelectUI extends BaseUI {
     const dropdown = new BaseUI(this.hot, {
       className: 'htUISelectDropdown'
     });
+    const priv = privatePool.get(this);
 
-    privatePool.get(this).caption = caption.element;
+    priv.caption = caption;
+    priv.captionElement = caption.element;
+    priv.dropdown = dropdown;
+
     arrayEach([caption, dropdown], (element) => this._element.appendChild(element.element));
 
     this.menu.addLocalHook('select', (command) => this.onMenuSelect(command));
+    this.menu.addLocalHook('afterClose', () => this.onMenuClosed());
     this.update();
   }
 
@@ -91,7 +97,7 @@ class SelectUI extends BaseUI {
     if (!this.isBuilt()) {
       return;
     }
-    privatePool.get(this).caption.textContent = this.options.value ? this.options.value.name : 'None';
+    privatePool.get(this).captionElement.textContent = this.options.value ? this.options.value.name : 'None';
     super.update();
   }
 
@@ -137,6 +143,15 @@ class SelectUI extends BaseUI {
   }
 
   /**
+   * On menu closed listener.
+   *
+   * @private
+   */
+  onMenuClosed() {
+    this.runLocalHooks('afterClose');
+  }
+
+  /**
    * On element click listener.
    *
    * @private
@@ -154,8 +169,17 @@ class SelectUI extends BaseUI {
       this.menu.destroy();
       this.menu = null;
     }
+    const {caption, dropdown} = privatePool.get(this);
+
+    if (caption) {
+      caption.destroy();
+    }
+    if (dropdown) {
+      dropdown.destroy();
+    }
+
     super.destroy();
   }
 }
 
-export {SelectUI};
+export default SelectUI;

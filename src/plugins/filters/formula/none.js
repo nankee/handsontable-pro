@@ -2,7 +2,7 @@ import {registerFormula} from './../formulaRegisterer';
 
 export const FORMULA_NAME = 'none';
 
-function formula() {
+export function formula() {
   return true;
 }
 

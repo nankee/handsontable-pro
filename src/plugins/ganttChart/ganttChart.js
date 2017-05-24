@@ -4,9 +4,11 @@ import {arrayEach} from 'handsontable/helpers/array';
 import {rangeEach} from 'handsontable/helpers/number';
 import {createEmptySpreadsheetData} from 'handsontable/helpers/data';
 import {registerPlugin} from 'handsontable/plugins.js';
-import {DateCalculator} from './dateCalculator';
-import {GanttChartDataFeed} from './ganttChartDataFeed';
 import BasePlugin from 'handsontable/plugins/_base.js';
+import DateCalculator from './dateCalculator';
+import GanttChartDataFeed from './ganttChartDataFeed';
+
+import './ganttChart.css';
 
 /**
  * @plugin GanttChart
@@ -295,7 +297,7 @@ class GanttChart extends BasePlugin {
    */
   loadData(data, startDateColumn, endDateColumn, additionalData, asyncUpdates) {
     if (data.length > 1) {
-      this.hot.alter('insert_row', 0, data.length - 1);
+      this.hot.alter('insert_row', 0, data.length - 1, `${this.pluginName}.loadData`);
     }
 
     this.dataFeed = new GanttChartDataFeed(this.hot, data, startDateColumn, endDateColumn, additionalData, asyncUpdates);
@@ -380,7 +382,7 @@ class GanttChart extends BasePlugin {
             this.dateCalculator.addDaysToCache(monthNumber, headers.length - 1, start, end);
 
           } else {
-            let start = month.daysBeforeFullWeeks + (i - areDaysBeforeFullWeeks) * 7 + 1;
+            let start = month.daysBeforeFullWeeks + ((i - areDaysBeforeFullWeeks) * 7) + 1;
             let end = start + 6;
 
             headers.push(start + ' - ' + end);
@@ -561,11 +563,11 @@ class GanttChart extends BasePlugin {
     let rangeBarData = this.rangeBars[rangeBarCoords[0]][rangeBarCoords[1]];
 
     if (rangeBarData && row === rangeBarCoords[0] &&
-      (column === rangeBarCoords[1] || column > rangeBarCoords[1] && column < rangeBarCoords[1] + rangeBarData.barLength)) {
+       (column === rangeBarCoords[1] || column > rangeBarCoords[1] && column < rangeBarCoords[1] + rangeBarData.barLength)) {
       return rangeBarData;
-    } else {
-      return false;
     }
+
+    return false;
   }
 
   /**
@@ -812,7 +814,6 @@ class GanttChart extends BasePlugin {
   }
 }
 
-export {GanttChart};
-
 registerPlugin('ganttChart', GanttChart);
 
+export default GanttChart;

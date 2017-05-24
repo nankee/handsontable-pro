@@ -1,8 +1,7 @@
 import {addClass} from 'handsontable/helpers/dom/element';
 import {arrayEach} from 'handsontable/helpers/array';
-import {BaseComponent} from './_base';
-import {InputUI} from './../ui/input';
-import {SelectUI} from './../ui/select';
+import BaseComponent from './_base';
+import InputUI from './../ui/input';
 
 /**
  * @class ActionBarComponent
@@ -95,4 +94,4 @@ class ActionBarComponent extends BaseComponent {
   }
 }
 
-export {ActionBarComponent};
+export default ActionBarComponent;

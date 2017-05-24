@@ -3,10 +3,10 @@ import {stopImmediatePropagation} from 'handsontable/helpers/dom/event';
 import {arrayEach, arrayFilter} from 'handsontable/helpers/array';
 import {extend} from 'handsontable/helpers/object';
 import {isKey} from 'handsontable/helpers/unicode';
-import {BaseComponent} from './_base';
-import {getOptionsList, FORMULA_NONE, FORMULA_BY_VALUE} from './../constants';
-import {InputUI} from './../ui/input';
-import {SelectUI} from './../ui/select';
+import BaseComponent from './_base';
+import getOptionsList, {FORMULA_NONE, FORMULA_BY_VALUE} from './../constants';
+import InputUI from './../ui/input';
+import SelectUI from './../ui/select';
 import {getFormulaDescriptor} from './../formulaRegisterer';
 
 /**
@@ -31,6 +31,7 @@ class ConditionComponent extends BaseComponent {
    */
   registerHooks() {
     this.getSelectElement().addLocalHook('select', (command) => this.onConditionSelect(command));
+    this.getSelectElement().addLocalHook('afterClose', () => this.onSelectUIClosed());
 
     arrayEach(this.getInputElements(), (input) => {
       input.addLocalHook('keydown', (event) => this.onInputKeyDown(event));
@@ -84,10 +85,15 @@ class ConditionComponent extends BaseComponent {
   /**
    * Update state of component.
    *
-   * @param {Object} editedFormulaStack Formula stack for edited column.
+   * @param {Object} stateInfo Information about state containing stack of edited column,
+   * stack of dependent formulas, data factory and optional formula arguments change. It's described by object containing keys:
+   * `editedFormulaStack`, `dependentFormulaStacks`, `visibleDataFactory` and `formulaArgsChange`.
    */
-  updateState({column, formulas: currentFormulas}) {
-    const [formula] = arrayFilter(currentFormulas, formula => formula.name !== FORMULA_BY_VALUE);
+  updateState(stateInfo) {
+    const column = stateInfo.editedFormulaStack.column;
+    const currentFormulas = stateInfo.editedFormulaStack.formulas;
+
+    const [formula] = arrayFilter(currentFormulas, (formula) => formula.name !== FORMULA_BY_VALUE);
 
     // Ignore formulas by_value
     if (formula && formula.name === FORMULA_BY_VALUE) {
@@ -160,9 +166,10 @@ class ConditionComponent extends BaseComponent {
    * Reset elements to their initial state.
    */
   reset() {
-    let lastSelectedColumn = this.hot.getPlugin('filters').getSelectedColumn();
-    let columnType = this.hot.getDataType.apply(this.hot, this.hot.getSelected() || [0, lastSelectedColumn]);
-    let items = getOptionsList(columnType);
+    const lastSelectedColumn = this.hot.getPlugin('filters').getSelectedColumn();
+    const visualIndex = lastSelectedColumn && lastSelectedColumn.visualIndex;
+    const columnType = this.hot.getDataType.apply(this.hot, this.hot.getSelected() || [0, visualIndex]);
+    const items = getOptionsList(columnType);
 
     arrayEach(this.getInputElements(), (element) => element.hide());
     this.getSelectElement().setItems(items);
@@ -185,6 +192,17 @@ class ConditionComponent extends BaseComponent {
         setTimeout(() => element.focus(), 10);
       }
     });
+
+    this.runLocalHooks('change', command);
+  }
+
+  /**
+   * On component SelectUI closed listener.
+   *
+   * @private
+   */
+  onSelectUIClosed() {
+    this.runLocalHooks('afterClose');
   }
 
   /**
@@ -205,4 +223,4 @@ class ConditionComponent extends BaseComponent {
   }
 }
 
-export {ConditionComponent};
+export default ConditionComponent;

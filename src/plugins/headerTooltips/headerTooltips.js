@@ -156,6 +156,6 @@ class HeaderTooltips extends BasePlugin {
 
 }
 
-export {HeaderTooltips};
-
 registerPlugin('headerTooltips', HeaderTooltips);
+
+export default HeaderTooltips;

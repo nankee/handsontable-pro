@@ -1,5 +1,5 @@
 import {rangeEach} from 'handsontable/helpers/number';
-import {objectEach, extend} from 'handsontable/helpers/object';
+import {objectEach, extend, hasOwnProperty} from 'handsontable/helpers/object';
 import {arrayEach} from 'handsontable/helpers/array';
 import {getTranslator} from 'handsontable/utils/recordTranslator';
 
@@ -229,10 +229,9 @@ class DataManager {
 
     if (parent == null) {
       return this.data.indexOf(rowObj);
-
-    } else {
-      return parent.__children.indexOf(rowObj);
     }
+
+    return parent.__children.indexOf(rowObj);
   }
 
   /**
@@ -352,7 +351,7 @@ class DataManager {
       row = this.getDataObject(row);
     }
 
-    return !!(row.hasOwnProperty('__children'));
+    return !!(hasOwnProperty(row, '__children'));
   }
 
   /**
@@ -443,6 +442,8 @@ class DataManager {
         break;
       case 'above':
         this.addChildAtIndex(parent, indexWithinParent, null, index);
+        break;
+      default:
         break;
     }
   }
@@ -578,13 +579,11 @@ class DataManager {
         newRowParent.__children.splice(indexWithinParent, amount);
       }
 
-    } else {
-      if (element) {
-        this.data.splice(indexWithinParent, amount, element);
+    } else if (element) {
+      this.data.splice(indexWithinParent, amount, element);
 
-      } else {
-        this.data.splice(indexWithinParent, amount);
-      }
+    } else {
+      this.data.splice(indexWithinParent, amount);
     }
 
     this.rewriteCache();
@@ -653,10 +652,10 @@ class DataManager {
   translateTrimmedRow(row) {
     if (this.plugin.collapsingUI) {
       return this.plugin.collapsingUI.translateTrimmedRow(row);
-    } else {
-      return row;
     }
+
+    return row;
   }
 }
 
-export {DataManager};
+export default DataManager;
