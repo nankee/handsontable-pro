@@ -18,8 +18,8 @@
  * 
  * YOU SHALL OBTAIN A COMMERCIAL LICENSE FOR THIS SOFTWARE AT HANDSONTABLE.COM.
  * 
- * Version: 1.11.0-beta2
- * Date: Wed May 24 2017 13:06:09 GMT+0200 (CEST)
+ * Version: 1.11.0
+ * Date: Wed May 31 2017 09:14:03 GMT+0200 (CEST)
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
@@ -25260,8 +25260,8 @@ DefaultSettings.prototype = {
   autoColumnSize: void 0,
 
   /**
-   * Enables or disables autoRowSize plugin. Default value is `undefined`, which has the same effect as `true`.
-   * Disabling this plugin can increase performance, as no size-related calculations would be performed.
+   * Enables or disables autoRowSize plugin. Default value is `undefined`, which has the same effect as `false` (disabled).
+   * Enabling this plugin can decrease performance, as size-related calculations would be performed.
    *
    * Row height calculations are divided into sync and async stages. Each of these stages has their own advantages and
    * disadvantages. Synchronous calculations are faster but they block the browser UI, while the slower asynchronous operations don't
@@ -29637,11 +29637,11 @@ Handsontable.DefaultSettings = _defaultSettings2.default;
 Handsontable.EventManager = _eventManager2.default;
 Handsontable._getListenersCounter = _eventManager.getListenersCounter; // For MemoryLeak tests
 
-Handsontable.buildDate = "2017-05-24T11:06:09.503Z";
+Handsontable.buildDate = "2017-05-31T07:14:03.239Z";
 Handsontable.packageName = "handsontable-pro";
-Handsontable.version = "1.11.0-beta2";
+Handsontable.version = "1.11.0";
 
-var baseVersion = "0.32.0-beta2";
+var baseVersion = "0.32.0";
 
 if (baseVersion) {
   Handsontable.baseVersion = baseVersion;
@@ -51278,7 +51278,7 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-_handsontable2.default.baseVersion = "0.32.0-beta2";
+_handsontable2.default.baseVersion = "0.32.0";
 
 module.exports = _handsontable2.default;
 
@@ -67776,3 +67776,4 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_400__;
 /***/ })
 /******/ ]);
 });
+//# sourceMappingURL=handsontable.js.map
